@@ -1,0 +1,82 @@
+<config>
+	<groupchat>
+		<window>
+			<config path="/groupchat/window">
+				<config>
+					<color>
+						<forreign_text data='#00CC00' label='Others text color' type='string'></forreign_text>
+						<forreign_name data='#000000' label='Others nick color' type='string'></forreign_name>
+						<my_name data='#888888' label='My nick color' type='string'></my_name>
+						<my_text data='#AAAAAA' label='My text color' type='string'></my_text>
+						<highlight data='#0000FF' label='Highlight color' type='string'></highlight>
+						<notice data='#000044' label='Notice color' type='string'></notice>
+						<timestamp data='#BBBBBB' label='Timestamp color' type='string'></timestamp>
+					</color>
+					<nickcompletion>
+						<separator label='What to write after nick completion' type='text'>, </separator>
+					</nickcompletion>
+					<textarea height='1' width='1'></textarea>
+					<timestamp>
+						<format label='Timestamp Format' type='text'>[%H:%M]</format>
+					</timestamp>
+				</config>
+			</config>
+		</window>
+		
+		<joinwindow>
+			<config path='/groupchat/joinwindow'>
+				<config>
+					<server data='conference.jabber.org'></server>
+					<room data='jabber'></room>
+					<nick data=''></nick>
+				</config>
+			</config>
+		</joinwindow>
+	</groupchat>
+	<chat>
+		<window>
+			<config path='/chat/window'><config>
+					<display type=''>
+						<myname type=''>
+							<show data='false' label='To show your own nick' type='bool'></show>
+							<pre label='Before my nick' type='text'></pre>
+							<post label='After my nick' type='text'>> </post>
+							<pre_me label='Before my nick with /me' type='text'></pre_me>
+							<post_me label='After my nick with /me' type='text'>* </post_me>
+							<continuing label='Second marker' type='text'></continuing>
+						</myname>
+						<forreignname type=''>
+							<pre label='Before others nick' type='text'></pre>
+							<post label='Before others nick' type='text'>> </post>
+							<pre_me label='Before others nick with /me' type='text'></pre_me>
+							<post_me label='After others nick with /me' type='text'>* </post_me>
+							<continuing label='Second marker' type='text'></continuing>
+						</forreignname>
+					</display>
+					<timestamp type=''>
+						<format label='Timestamp format' type='text'>[%H:%M]</format>
+					</timestamp>
+					<color type=''>
+						<my_name data='#888888' label='My nick color' type='string'></my_name>
+						<my_text data='#AAAAAA' label='My text color' type='string'></my_text>
+						<forreign_name data='#00CC00' label='Others nick color' type='string'></forreign_name>
+						<forreign_text data='#000000' label='Others text color' type='string'></forreign_text>
+						<timestamp data='#BBBBBB' label='Timestamp color' type='string'></timestamp>
+					</color>
+					<window_spec input_area_height='49' type=''></window_spec>
+					<jidbar type=''>
+						<show data='true' label='Show Jid Bar' type='bool'></show>
+					</jidbar>
+				</config></config></window></chat>
+	<connect>
+		
+	<config><config></config></config><window><config path='/connect/window'><config>
+					<account>
+						<nick data='' type='string'></nick>
+						<password data='' type='string'></password>
+						<port data='5222' type='string'></port>
+						<resource data='wokjab' type='string'></resource>
+						<server data='' type='string'></server>
+					</account>
+				</config></config></window></connect>
+</config>

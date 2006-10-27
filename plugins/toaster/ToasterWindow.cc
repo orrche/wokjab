@@ -1,0 +1,77 @@
+/***************************************************************************
+ *  Copyright (C) 2003-2005  Kent Gustavsson <nedo80@gmail.com>
+ ****************************************************************************/
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
+
+//
+// Class: ToasterWindow
+//
+// Created by: Kent Gustavsson <nedo80@gmail.com>
+// Created on: Tue Aug  8 16:29:20 2006
+//
+
+#include "ToasterWindow.h"
+
+
+ToasterWindow::ToasterWindow(WLSignal *wls, WokXMLTag *xml, int x, int y) : WLSignalInstance(wls)
+{
+	window = gtk_window_new(GTK_WINDOW_POPUP);
+	GtkWidget *port = gtk_viewport_new(NULL, NULL);
+	GtkWidget *vbox = gtk_vbox_new(FALSE, 2);
+	GtkWidget *label = gtk_label_new(xml->GetFirstTag("body").GetBody().c_str());
+	
+	
+	gtk_viewport_set_shadow_type (GTK_VIEWPORT (port), GTK_SHADOW_OUT);
+	
+	gtk_container_add(GTK_CONTAINER(window), port);
+	gtk_container_add(GTK_CONTAINER(port), vbox);
+	gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 2);
+		
+	gtk_widget_show_all(window);
+
+	int height,width;
+	gtk_window_get_size(GTK_WINDOW(window), &width, &height);
+	gtk_window_move(GTK_WINDOW(window), x - width, y - height);
+
+}
+
+
+ToasterWindow::~ToasterWindow()
+{
+	gtk_widget_destroy(window);
+}
+
+int
+ToasterWindow::GetHeight()
+{
+	int height;
+	
+	gtk_window_get_size(GTK_WINDOW(window), NULL, &height);
+	
+	return height;
+}
+
+void
+ToasterWindow::MoveTo(int x, int y)
+{
+	int height,width;
+	gtk_window_get_size(GTK_WINDOW(window), &width, &height);
+	
+	gtk_window_move(GTK_WINDOW(window), x-width, y-height);
+}
+
