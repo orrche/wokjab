@@ -298,7 +298,6 @@ User::RemoveEvent(WokXMLTag *tag)
 	{
 		if (tag->In(**iter))
 		{
-			std::cout << "Now we are removing shit..." << std::endl;
 		
 			tmpiter = iter;
 			iter++;
@@ -307,7 +306,6 @@ User::RemoveEvent(WokXMLTag *tag)
 		}
 		else
 		{
-			std::cout << "Not similar.. " << *tag << " !!!!!\n " << **iter << std::endl;
 			iter++;
 		}
 	}

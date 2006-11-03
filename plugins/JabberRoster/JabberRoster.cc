@@ -27,8 +27,6 @@
 
 JabberRoster::JabberRoster(WLSignal *wls) : WoklibPlugin(wls)
 {
-	std::cout << "Jabber Roster..." << std::endl;
-		
 	EXP_SIGHOOK("Jabber XML Presence", &JabberRoster::Presence, 999);
 	EXP_SIGHOOK("Jabber Event Add", &JabberRoster::AddItemEvent, 1);
 	EXP_SIGHOOK("Jabber Event Remove", &JabberRoster::RemoveItemEvent, 1);
@@ -86,7 +84,6 @@ JabberRoster::LoggedOut(WokXMLTag *tag)
 int
 JabberRoster::SignIn(WokXMLTag *tag)
 {	
-	std::cout << "This should be here ... wow IQ drop " << tag->GetAttr("session") << std::endl;
 	session[tag->GetAttr("session")] = new JabberSession(wls, tag);
 	
 	return 1;

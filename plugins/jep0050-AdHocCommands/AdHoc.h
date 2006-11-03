@@ -24,6 +24,10 @@
 #ifndef _ADHOC_H_
 #define _ADHOC_H_
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
@@ -36,6 +40,9 @@ class AdHoc : public WoklibPlugin
 		AdHoc(WLSignal *wls);
 		 ~AdHoc();
 	
+		virtual std::string GetInfo() {return "xep-0050 AdHocCommands";};
+		virtual std::string GetVersion() {return VERSION;};
+		
 		int Feature(WokXMLTag *tag);
 		int Menu(WokXMLTag *tag);
 		int Start(WokXMLTag *tag);

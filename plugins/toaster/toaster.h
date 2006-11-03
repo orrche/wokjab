@@ -27,6 +27,10 @@
 #ifndef _TOASTER_H_
 #define _TOASTER_H_
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include "ToasterWindow.h"
 
 #include <Woklib/WLSignal.h>
@@ -49,6 +53,10 @@ class Toaster : public WoklibPlugin
 		int DisplayMSG(WokXMLTag *tag);
 		static gboolean Timeout(Toaster *c);
 		bool GetXWorkArea(GdkRectangle *rect);
+		
+			
+		virtual std::string GetInfo() {return "Toaster";};
+		virtual std::string GetVersion() {return VERSION;};
 	protected:
 		GdkRectangle rect_workspace;
 		std::list <ToasterWindow*> twlist;

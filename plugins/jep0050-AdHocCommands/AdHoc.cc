@@ -28,7 +28,7 @@
 AdHoc::AdHoc(WLSignal *wls) : WoklibPlugin(wls)
 {
 	EXP_SIGHOOK("Jabber disco Feature http://jabber.org/protocol/commands", &AdHoc::Feature, 500);
-	EXP_SIGHOOK("Jabber GUI GetJIDMenu", &AdHoc::Menu, 1000);
+	EXP_SIGHOOK("Jabber GUI GetJIDMenu", &AdHoc::Menu, 2000);
 	EXP_SIGHOOK("Jabber AdHoc Start", &AdHoc::Start, 1000);
 	EXP_SIGHOOK("Jabber XML IQ New command set xmlns:http://jabber.org/protocol/commands", &AdHoc::CommandExec, 1000);
 }
@@ -57,8 +57,30 @@ AdHoc::Start(WokXMLTag *tag)
 int
 AdHoc::Menu(WokXMLTag *tag)
 {
+	std::string jid = tag->GetAttr("jid");
+
 	WokXMLTag &item = tag->AddTag("item");
-	item.AddAttr("name", "AdHoc Command");
+	if ( jid.find("/") == std::string::npos )
+	{
+		WokXMLTag xml(NULL, "query");
+		WokXMLTag &itag = xml.AddTag("item");
+		itag.AddAttr("jid", jid);
+		itag.AddAttr("session", tag->GetAttr("session"));
+		wls->SendSignal("Jabber Roster GetResource", xml);
+		std::string resource = itag.GetFirstTag("resource").GetAttr("name");
+		
+		if ( resource.empty() )
+			item.AddAttr("name", "AdHoc Command");
+		else
+		{
+			item.AddAttr("name", "AdHoc Command (" + resource + ")");
+			WokXMLTag &dtag = item.AddTag("data");
+			dtag.AddAttr("jid", jid+"/"+resource);
+			dtag.AddAttr("session", tag->GetAttr("session"));
+		}
+	}
+	else
+		item.AddAttr("name", "AdHoc Command");
 	item.AddAttr("signal", "Jabber AdHoc Start");
 
 

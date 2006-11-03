@@ -17,6 +17,10 @@
 #ifndef _WOKJABXDATAHANDLER_H_
 #define _WOKJABXDATAHANDLER_H_
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
@@ -30,7 +34,7 @@ class WokJabxdatahandler : public WoklibPlugin
 		 ~WokJabxdatahandler();
 	
 		virtual std::string GetInfo() {return "Jabber:x:data";};
-		virtual std::string GetVersion() {return "0.0.1";};
+		virtual std::string GetVersion() {return VERSION;};
 	
 		void  init(WokXMLTag *);
 	

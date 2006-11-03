@@ -154,6 +154,9 @@ WokJabxdataWidget::CancelButton (GtkWidget * widget, WokJabxdataWidget *c)
 void
 WokJabxdataWidget::OkButton (GtkWidget * widget, WokJabxdataWidget *c)
 {
+	// Need to cache this because get data deletes the class ;) 
+	std::string repsig = c->replsig;
+	
 	WokXMLTag repltag(NULL, "data");
 	c->GetData(&repltag);
 	

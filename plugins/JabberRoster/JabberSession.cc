@@ -28,7 +28,6 @@
 JabberSession::JabberSession(WLSignal *wls, WokXMLTag *tag) : WLSignalInstance(wls),
 session(tag->GetAttr("session"))
 {
-	std::cout << "Session: " << session << std::endl;
 	EXP_SIGHOOK("Jabber Roster Update " + session , &JabberSession::UpdateRoster, 1000);
 	
 	std::string name = tag->GetAttr("username") + "@" + tag->GetAttr("server") + "/" + tag->GetAttr("resource");

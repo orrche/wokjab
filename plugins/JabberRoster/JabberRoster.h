@@ -24,6 +24,10 @@
 #ifndef _JABBERROSTER_H_
 #define _JABBERROSTER_H_
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
@@ -44,6 +48,10 @@ class JabberRoster : public WoklibPlugin
 		int RemoveItemEvent(WokXMLTag *tag);
 		int LoggedOut(WokXMLTag *tag);
 		int SignIn(WokXMLTag *tag);
+				
+		virtual std::string GetInfo() {return "Jabber Roster";};
+		virtual std::string GetVersion() {return VERSION;};
+		
 	protected:
 		std::map <std::string, JabberSession *> session;
 
