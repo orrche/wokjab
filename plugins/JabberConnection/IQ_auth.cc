@@ -22,16 +22,19 @@
 #include <Woklib/WokXMLTag.h>
 #include <iostream>
 
-#include "openssl/sha.h"
+#include <openssl/sha.h>
+#include <openssl/md5.h>
 
 using std::cout;
 using std::endl;
 
-IQauth::IQauth (WLSignal *wls, std::string con_id, std::string session):
+IQauth::IQauth (WLSignal *wls, std::string session):
 WLSignalInstance ( wls ),
-con_id(con_id),
 session(session)
 {
+	EXP_SIGHOOK("Jabber XML Object challenge", &IQauth::SD_Challange, 1000);
+	EXP_SIGHOOK("Jabber XML Object success", &IQauth::SD_Success, 1000);
+	
 	WokXMLTag querytag(NULL,"variables");
 	WokXMLTag &itemtag = querytag.AddTag("item");
 	itemtag.AddAttr("session", session);
@@ -45,7 +48,7 @@ session(session)
 	con_type = atoi(itemtag.GetFirstTag("type").GetBody().c_str());
 	
 	//switch (con_type)
-	switch(ClearTextUser)
+	switch(SASLDIGESTMD5)
 	{
 		case ClearTextUser:
 			InitClearTextUser();
@@ -55,6 +58,9 @@ session(session)
 			break;
 		case HandshakeComponent:
 			InitHandshakeComponent();
+			break;
+		case SASLDIGESTMD5:
+			InitSASLDIGESTMD5();
 			break;
 		default:
 			InitSHA1UserStage1();
@@ -113,6 +119,148 @@ IQauth::InitClearTextUser()
 	signal = std::string("Jabber XML IQ ID ") + iqtag.GetAttr("id");
 	
 	EXP_SIGHOOK(signal, &IQauth::xmlClearTextUser, 1000);
+}
+
+std::string
+IQauth::SD_A1(std::string username, std::string realm, std::string passwd, std::string nonce, std::string cnonce, std::string authzid)
+{	
+	std::string ret;
+	std::string md1 = username + ":" + realm + ":" + passwd;
+	std::string md2;
+	if ( authzid.empty() )
+		md2 = ":" + nonce + ":" + cnonce;
+	else
+		md2 = ":" + nonce + ":" + cnonce + ":" + authzid;
+	
+	ret.append(H(md1));
+	ret.append(md2);
+	
+	return ret;
+}
+
+std::string
+IQauth::SD_A2(std::string digest_uri_value)
+{
+	return std::string("AUTHENTICATE:") + digest_uri_value;
+}
+
+std::string
+IQauth::H(std::string data)
+{
+	std::string ret;
+ char buf[160];
+	MD5( (unsigned char*) data.c_str(), data.size(), (unsigned char*)buf );
+	ret.append(buf, 16);
+	
+	return ret;
+}
+
+std::string
+IQauth::HEX(std::string data)
+{
+	std::string myhash;
+	
+	for( int i = 0 ; i < data.size() ; i++)
+	{
+		char buf2[3];
+		if((unsigned char)data[i] < 16)
+			sprintf(buf2, "0%x", (unsigned char)data[i]);
+		else
+			sprintf(buf2, "%x", (unsigned char)data[i]);
+		myhash += buf2;
+	}
+	return myhash;
+}
+
+int
+IQauth::SD_Challange(WokXMLTag *tag)
+{
+	if ( tag->GetAttr("session") != session )
+		return 1;
+	
+	
+	char buffer[500];
+	std::cout << tag->GetFirstTag("challenge").GetBodyAsBase64(buffer,500) << std::endl;
+	std::string chal(buffer);
+	std::map<std::string, std::string> data;
+	
+	for ( int i = 0 ; i < chal.size() ; )
+	{
+		std::string value = chal.substr(chal.find("=", i)+1, chal.find(",",i)-chal.find("=",i)-1);
+		if( value[0] == '"' )
+			value = value.substr(1,value.size()-2);
+		data[chal.substr(i,chal.find("=",i)-i)] = value;
+		if ( chal.find(",", i) == std::string::npos )
+			break;
+			
+		i = chal.find(",",i)+1;
+	}
+	
+	std::map<std::string, std::string>::iterator iter;
+	for ( iter = data.begin() ; iter != data.end(); iter++)
+	{
+		std::cout << iter->first << " = " << iter->second << std::endl;	
+	}
+	
+	if ( !data["rspauth"].empty() )
+	{
+		WokXMLTag message(NULL, "message");
+		message.AddAttr("session", session);
+		WokXMLTag &resptag = message.AddTag("response");
+		resptag.AddAttr("xmlns", "urn:ietf:params:xml:ns:xmpp-sasl");
+		
+		wls->SendSignal("Jabber XML Send", message);
+				
+		return 1;
+	}
+	
+	const char* base64char = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+	std::string cnonce;
+	for( int i = 30 ; i ; i-- )
+	{
+		cnonce += base64char[rand()%strlen(base64char)];
+	}
+	
+	std::string resp = HEX(H( HEX(H(SD_A1(username, "jabber", password, data["nonce"], cnonce, ""))) + ":" + data["nonce"] + ":00000001:" +
+                   cnonce + ":auth:" + HEX(H(SD_A2("xmpp/jabber")))));
+																			
+	std::string response="charset=utf-8,username=\"" + username + "\",realm=\"jabber\",nonce=\"" + data["nonce"] + "\",nc=00000001,cnonce=\"" + cnonce + "\",digest-uri=\"xmpp/jabber\",response=" +
+								resp + ",qop=auth";
+								
+	WokXMLTag message(NULL, "message");
+	message.AddAttr("session", session);
+	WokXMLTag &resptag = message.AddTag("response");
+	resptag.AddData(response);
+	resptag.AddAttr("xmlns", "urn:ietf:params:xml:ns:xmpp-sasl");
+	
+	wls->SendSignal("Jabber XML Send", message);
+	
+	return 1;
+}
+
+int
+IQauth::SD_Success(WokXMLTag *tag)
+{
+
+	WokXMLTag message(NULL, "message");
+	message.AddAttr("session", session);
+	
+	wls->SendSignal("Jabber Connection Reset " + session, message);
+	
+	delete this;
+	return 1;
+}
+
+void
+IQauth::InitSASLDIGESTMD5()
+{
+	WokXMLTag message(NULL, "message");
+	message.AddAttr("session", session);
+	WokXMLTag &authtag = message.AddTag("auth");
+	authtag.AddAttr("xmlns", "urn:ietf:params:xml:ns:xmpp-sasl");
+	authtag.AddAttr("mechanism", "DIGEST-MD5");
+	
+	wls->SendSignal("Jabber XML Send", &message);
 }
 
 void

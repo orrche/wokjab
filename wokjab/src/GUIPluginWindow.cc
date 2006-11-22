@@ -19,84 +19,43 @@
 #include <Woklib/WokLibSignal.h>
 #include <Woklib/WokXMLTag.h>
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 GUIPluginWindow::GUIPluginWindow(int *feedback, WLSignal *wls)
 {
-	GtkWidget *hbox1;
-	GtkWidget *scrolledwindow1;
-	GtkWidget *vbuttonbox1;
-	GtkWidget *button3;
-	GtkWidget *button4;
-	GtkWidget *button7;
-	GtkWidget *button_reload;
-
+	xml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/plugin.glade", NULL, NULL);
+	
+	filexml = NULL;
+	
 	this->feedback = feedback;
 	this->wls = wls;
 
-	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title (GTK_WINDOW (window), "Plugin Manager");
-
-	hbox1 = gtk_hbox_new (FALSE, 3);
-	gtk_widget_show (hbox1);
-	gtk_container_add (GTK_CONTAINER (window), hbox1);
-
-	scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
-	gtk_widget_show (scrolledwindow1);
-	gtk_box_pack_start (GTK_BOX (hbox1), scrolledwindow1, TRUE, TRUE, 3);
-	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow1), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-
-	treeview1 = gtk_tree_view_new ();
-	gtk_widget_show (treeview1);
-	gtk_container_add (GTK_CONTAINER (scrolledwindow1), treeview1);
-	gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (treeview1), FALSE);
-
-	vbuttonbox1 = gtk_vbutton_box_new ();
-	gtk_widget_show (vbuttonbox1);
-	gtk_box_pack_start (GTK_BOX (hbox1), vbuttonbox1, FALSE, FALSE, 3);
-	gtk_button_box_set_layout (GTK_BUTTON_BOX (vbuttonbox1), GTK_BUTTONBOX_SPREAD);
-	gtk_button_box_set_spacing (GTK_BUTTON_BOX (vbuttonbox1), 3);
-
-	button3 = gtk_button_new_with_mnemonic ("Add");
-	gtk_widget_show (button3);
-	gtk_container_add (GTK_CONTAINER (vbuttonbox1), button3);
-	GTK_WIDGET_SET_FLAGS (button3, GTK_CAN_DEFAULT);
-
-	button_reload = gtk_button_new_with_mnemonic ("Reload");
-	gtk_widget_show (button_reload);
-	gtk_container_add (GTK_CONTAINER (vbuttonbox1), button_reload);
-	GTK_WIDGET_SET_FLAGS (button_reload, GTK_CAN_DEFAULT);
 	
-	button4 = gtk_button_new_with_mnemonic ("Remove");
-	gtk_widget_show (button4);
-	gtk_container_add (GTK_CONTAINER (vbuttonbox1), button4);
-	GTK_WIDGET_SET_FLAGS (button4, GTK_CAN_DEFAULT);
-
-	button7 = gtk_button_new_with_mnemonic ("Close");
-	gtk_widget_show (button7);
-	gtk_container_add (GTK_CONTAINER (vbuttonbox1), button7);
-	GTK_WIDGET_SET_FLAGS (button7, GTK_CAN_DEFAULT);
-		
-	g_signal_connect (G_OBJECT (button7), "clicked",
+	
+	g_signal_connect (glade_xml_get_widget(xml, "close_button"), "clicked",
 		G_CALLBACK (GUIPluginWindow::Cancel_Button), this);
-	g_signal_connect (G_OBJECT (button4), "clicked",
+	g_signal_connect (glade_xml_get_widget(xml, "delete_button"), "clicked",
 	      G_CALLBACK (GUIPluginWindow::Remove_Button), this);
-	g_signal_connect (G_OBJECT (button3), "clicked",
+	g_signal_connect (glade_xml_get_widget(xml, "add_button"), "clicked",
 	      G_CALLBACK (GUIPluginWindow::Add_Button), this);
-	g_signal_connect (G_OBJECT (button_reload), "clicked",
+	g_signal_connect (glade_xml_get_widget(xml, "revert_button"), "clicked",
 	      G_CALLBACK (GUIPluginWindow::Reload_Button), this);
-	g_signal_connect (G_OBJECT (window), "destroy",
+	g_signal_connect (glade_xml_get_widget(xml, "window"), "destroy",
 	   G_CALLBACK (GUIPluginWindow::Destroy), this);
 	
 	GtkCellRenderer *renderer;
 	renderer = gtk_cell_renderer_text_new ();
-	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (treeview1), -1,
+	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (glade_xml_get_widget(xml, "plugin_view")), -1,
 							     "info",
 							     renderer, "text",
 							     0, NULL);
-	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (treeview1), -1,
+	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (glade_xml_get_widget(xml, "plugin_view")), -1,
 							     "version",
 							     renderer, "text",
 							     1, NULL);
-	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (treeview1), -1,
+	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (glade_xml_get_widget(xml, "plugin_view")), -1,
 							     "filename",
 							     renderer, "text",
 							     2, NULL);
@@ -104,12 +63,9 @@ GUIPluginWindow::GUIPluginWindow(int *feedback, WLSignal *wls)
 	
 	model = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	gtk_tree_view_set_model (GTK_TREE_VIEW
-		(treeview1), GTK_TREE_MODEL (model));
+		(glade_xml_get_widget(xml, "plugin_view")), GTK_TREE_MODEL (model));
 	
 	DisplayPlugins();
-	
-	gtk_window_set_default_size(GTK_WINDOW(window), 500, 300);
-	gtk_widget_show(window);
 }
 
 
@@ -146,42 +102,48 @@ GUIPluginWindow::DisplayPlugins()
 }
 
 void
-GUIPluginWindow::Destroy( GtkWidget *widget, gpointer   user_data )
+GUIPluginWindow::Destroy( GtkWidget *widget, GUIPluginWindow *c)
 {
-	GUIPluginWindow *data;
-	data = static_cast < GUIPluginWindow * > ( user_data );
-	delete data;
+	if ( c->filexml )
+		gtk_widget_destroy(glade_xml_get_widget(c->filexml, "window"));
+	delete c;
 }
 
 void
-GUIPluginWindow::Cancel_Button( GtkWidget *widget, gpointer sig_data )
+GUIPluginWindow::load_destroy( GtkWidget *widget, GUIPluginWindow * c )
 {
-	GUIPluginWindow *data;
-	data = static_cast < GUIPluginWindow *> ( sig_data);
-	
-	gtk_widget_destroy( data->window );
+	g_object_unref(c->filexml);
+	c->filexml = NULL;
+}
+
+
+void
+GUIPluginWindow::Cancel_Button( GtkWidget *widget, GUIPluginWindow *c )
+{	
+	gtk_widget_destroy( glade_xml_get_widget(c->xml, "window") );
 }
 void 
-GUIPluginWindow::load_plugin (GtkFileSelection *file_selector, gpointer sig_data )
+GUIPluginWindow::load_plugin (GtkFileSelection *file_selector, GUIPluginWindow *c )
 {
-	GUIPluginWindow *data;
-	data = static_cast < GUIPluginWindow *> ( sig_data);
-
-	const gchar *selected_filename;
-	selected_filename = gtk_file_selection_get_filename (GTK_FILE_SELECTION (data->file_selector));
-	
+	gchar *selected_filename;
+	selected_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (glade_xml_get_widget(c->filexml, "chooser")));
+	if ( selected_filename == NULL )
+		return;
+		
 	WokXMLTag tag(NULL, "add");
 	tag.AddAttr("filename", selected_filename);
-	data->wls->SendSignal("Woklib Plugin Add", &tag);
+	c->wls->SendSignal("Woklib Plugin Add", &tag);
 	
-	data->DisplayPlugins();
+	c->DisplayPlugins();
+	
+	g_free(selected_filename);
 }
 
 void
 GUIPluginWindow::Remove_Button( GtkWidget *widget, GUIPluginWindow *c )
 {
 	GtkTreeIter       iter;
-	GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(c->treeview1));
+	GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(glade_xml_get_widget(c->xml, "plugin_view")));
 	
 	if(gtk_tree_selection_get_selected(selection,  NULL, &iter));
 	{
@@ -203,7 +165,7 @@ void
 GUIPluginWindow::Reload_Button( GtkWidget *widget, GUIPluginWindow *c )
 {
 	GtkTreeIter       iter;
-	GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(c->treeview1));
+	GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(glade_xml_get_widget(c->xml, "plugin_view")));
 	
 	if(gtk_tree_selection_get_selected(selection,  NULL, &iter));
 	{
@@ -228,28 +190,28 @@ GUIPluginWindow::Reload_Button( GtkWidget *widget, GUIPluginWindow *c )
 
 
 void
-GUIPluginWindow::Add_Button( GtkWidget *widget, gpointer sig_data )
+GUIPluginWindow::Add_Button( GtkWidget *widget, GUIPluginWindow *c )
 {
-	GUIPluginWindow *data;
-	data = static_cast < GUIPluginWindow *> ( sig_data);
+	if(c->filexml)
+		return;
 
-
-   data->file_selector = gtk_file_selection_new ("Select plugin to be loaded.");
-   
-   g_signal_connect (GTK_OBJECT (GTK_FILE_SELECTION (data->file_selector)->ok_button),
-                     "clicked",
-                     G_CALLBACK (GUIPluginWindow::load_plugin),
-                     sig_data );
-   			   
-   g_signal_connect_swapped (GTK_OBJECT (GTK_FILE_SELECTION (data->file_selector)->ok_button),
-                             "clicked",
-                             G_CALLBACK (gtk_widget_destroy), 
-                             (gpointer) data->file_selector); 
-
-   g_signal_connect_swapped (GTK_OBJECT (GTK_FILE_SELECTION (data->file_selector)->cancel_button),
-                             "clicked",
-                             G_CALLBACK (gtk_widget_destroy),
-                             (gpointer) data->file_selector); 
-   
-   gtk_widget_show (data->file_selector);
+	c->filexml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/fileloadplugin.glade", NULL, NULL);
+	
+	GtkFileFilter *filter = gtk_file_filter_new ();
+	gtk_file_filter_add_pattern (filter, "*.so");
+	gtk_file_filter_set_name (filter,"Plugins");
+	
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(glade_xml_get_widget(c->filexml, "chooser")), GTK_FILE_FILTER(filter));
+	
+	g_signal_connect (G_OBJECT (glade_xml_get_widget(c->filexml, "open_button")), "clicked",
+						G_CALLBACK(GUIPluginWindow::load_plugin), c);
+	g_signal_connect (G_OBJECT (glade_xml_get_widget(c->filexml, "window")), "destroy",
+						G_CALLBACK(GUIPluginWindow::load_destroy), c);
+						
+	g_signal_connect_swapped (G_OBJECT (glade_xml_get_widget(c->filexml, "close_button")), "clicked",
+			      G_CALLBACK (gtk_widget_destroy),
+            G_OBJECT (glade_xml_get_widget(c->filexml, "window")));
+	g_signal_connect_swapped (G_OBJECT (glade_xml_get_widget(c->filexml, "open_button")), "clicked",
+			      G_CALLBACK (gtk_widget_destroy),
+            G_OBJECT (glade_xml_get_widget(c->filexml, "window")));
 }

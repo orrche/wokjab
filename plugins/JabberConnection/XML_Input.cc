@@ -152,7 +152,7 @@ XML_Input::start (const char *el, const char **attr)
 			if( version < 1 )
 			{
 				wls->SendSignal("Jabber Connection Established", &msg);
-				new IQauth(wls, con_id, session); // Has selfdestruct...
+				new IQauth(wls, session); // Has selfdestruct...
 			}
 			return;
 		}

@@ -23,6 +23,7 @@
 #include <gtk/gtk.h>
 #include <Woklib/WLSignal.h>
 #include <iostream>
+#include <glade/glade.h>
 
 using namespace Woklib;
 
@@ -34,18 +35,18 @@ class GUIPluginWindow
 	
 	void DisplayPlugins();
 
-
-	static void Destroy( GtkWidget *widget, gpointer   user_data );
-	static void Cancel_Button( GtkWidget *widget, gpointer sig_data );
-	static void load_plugin (GtkFileSelection *file_selector, gpointer user_data);
-	static void Add_Button( GtkWidget *widget, gpointer sig_data );
+	static void load_destroy( GtkWidget *widget, GUIPluginWindow *c );
+	static void Destroy( GtkWidget *widget, GUIPluginWindow *c );
+	static void Cancel_Button( GtkWidget *widget, GUIPluginWindow *c  );
+	static void load_plugin (GtkFileSelection *file_selector, GUIPluginWindow *c);
+	static void Add_Button( GtkWidget *widget, GUIPluginWindow *data );
 	static void Remove_Button( GtkWidget *widget, GUIPluginWindow *c );
 	static void Reload_Button( GtkWidget *widget, GUIPluginWindow *c );
 	protected:
-		GtkWidget *window;
-		GtkWidget *treeview1;
+		GladeXML *filexml;
+		GladeXML *xml;
 		GtkListStore *model;
-		GtkWidget *file_selector;
+
 		int *feedback;
 		WLSignal *wls;
 };

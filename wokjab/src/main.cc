@@ -143,11 +143,6 @@ main (int argc, char **argv)
 	}
 
 	Roster roster(&sj.wls_main);
-#warning Grrr whats this..
-/*
-	MessageHook mhook(&sj.wls_main);
-	Presence presence(&sj.wls_main);
-*/	
 	GUIWindow win(&sj.wls_main);
 	
 	gtk_main();

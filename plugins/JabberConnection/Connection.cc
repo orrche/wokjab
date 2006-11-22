@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2003-2006  Kent Gustavsson <oden@gmx.net>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -39,6 +39,8 @@ session(session)
 {
 	EXP_SIGHOOK("Jabber Connection GetUserData", &Connection::GetUserVariables, 1);
 	EXP_SIGHOOK("Jabber Connection GetSocket", &Connection::GetSocket, 500);
+	EXP_SIGHOOK("Jabber Connection Reset " +session, &Connection::Reset, 500);
+	
 	EXP_SIGHOOK("Jabber GetMyNick", &Connection::GetMyNick, 1);
 	socket_nr = 0;
 	ssl = NULL;
@@ -71,10 +73,26 @@ Connection::~Connection()
 }
 
 int
+Connection::Reset(WokXMLTag *tag)
+{
+//	delete xmlinput;
+	xmlinput = new XML_Input(this, wls, session);
+	if ( ssl )
+		xmlinput->SetSSL(ssl->ssl);
+	sendinit();
+}
+
+int
 Connection::ReadData(WokXMLTag *tag)
 {
+	XML_Input *xi;
+	
+	xi = xmlinput;
 	if (!xmlinput->read_data (get_socket ()))
 		tag->AddAttr("error", "connection lost");
+	
+	if ( xi != xmlinput )
+		delete xi;
 	
 	return 1;
 }

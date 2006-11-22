@@ -180,7 +180,9 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 pkgdata_DATA = \
         connect.window.glade \
-	main.window.glade
+	main.window.glade \
+	plugin.glade \
+	fileloadplugin.glade 
 
 EXTRA_DIST = ${pkgdata_DATA}
 all: all-am

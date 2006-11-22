@@ -29,6 +29,8 @@ Jabber::Jabber(WLSignal *wls) : WoklibPlugin(wls)
 	
 	EXP_SIGHOOK("Jabber Connection Disconnect", &Jabber::SignalDisconnect, 1000);
 	EXP_SIGHOOK("Jabber Connection Lost", &Jabber::ConnectionLost, 1000);
+	
+	authmanager = new IQAuthManager(wls);
 }
 
 

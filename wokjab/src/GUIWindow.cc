@@ -511,7 +511,6 @@ void
 GUIWindow::UpdateStruts()
 {
 	// Fucks up kde at the moment
-	#warning FIXME OR KILLME
 	return;
 #if 0
 	gulong	struts[12] = { 0, };

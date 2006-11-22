@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2005-2006  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,12 +16,6 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-
-/* Side note 
- * This file has been recovered from a deletion on a reiserfs partition by using 
- * grep on the partition /dev/hda1 ;) 
- */
-
 #include "SSL.h"
 #include "IQauth.h"
 
@@ -32,7 +26,6 @@ namespace Woklib
 	{
 		SSL_library_init();
 		
-		// Kinda wrong no ?
 		EXP_SIGHOOK("Jabber XML Object stream:features", &SSL::StartSession, 500);
 		EXP_SIGHOOK("Jabber XML Object proceed", &SSL::Proceed, 500);
 		
@@ -58,18 +51,12 @@ namespace Woklib
 				tlstag.AddAttr("xmlns", "urn:ietf:params:xml:ns:xmpp-tls");
 				
 				wls->SendSignal("Jabber XML Send", &msgtag);
-			}
-			else
-			{
-				WokXMLTag msg(NULL, "message");
-				msg.AddAttr("session", tag->GetAttr("session"));
-				wls->SendSignal("Jabber Connection Established", &msg);
-				new IQauth(wls, conn->GetConID(), tag->GetAttr("session"));
+				
+				return 0;
 			}
 		}
-	
-	
-		return true;
+		
+		return 1;
 	}
 	
 	int
@@ -79,7 +66,6 @@ namespace Woklib
 			return true;
 		SSL_METHOD *meth;
 		SSL_CTX *ctx;
-		::SSL *ssl;
 		BIO *sbio;
 						
 		meth=SSLv23_method();
@@ -93,7 +79,7 @@ namespace Woklib
 		sbio=BIO_new_socket(atoi(socktag.GetAttr("socket").c_str()),BIO_NOCLOSE);
 		SSL_set_bio(ssl,sbio,sbio);
 	
-		/* Wow really super code here hehe */
+		/* Wow really super code here */
 		if(SSL_connect(ssl)<=0)
 		 std::cout<< "Didn't go so good.. :/" << std::endl;
 		else

@@ -53,7 +53,7 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 libjabberconnection_la_LIBADD =
 am_libjabberconnection_la_OBJECTS = main.lo Jabber.lo Connection.lo \
 	IQ_auth.lo SSL.lo XML_Input.lo XML_Output.lo \
-	staticfunctions.lo
+	staticfunctions.lo IQAuthManager.lo
 libjabberconnection_la_OBJECTS = $(am_libjabberconnection_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(top_builddir)@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -207,7 +207,9 @@ libjabberconnection_la_SOURCES = \
 	XML_Output.cc       \
 	XML_Output.h       \
 	staticfunctions.cc       \
-	staticfunctions.h       
+	staticfunctions.h       \
+	IQAuthManager.cc       \
+	IQAuthManager.h 
 
 all: all-am
 
@@ -279,6 +281,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Connection.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/IQAuthManager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/IQ_auth.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Jabber.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SSL.Plo@am__quote@

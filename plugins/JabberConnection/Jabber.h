@@ -28,6 +28,7 @@ class Jabber;
 #include <Woklib/WokXMLTag.h>
 
 #include "Connection.h"
+#include "IQAuthManager.h"
 
 using namespace Woklib;
 
@@ -48,6 +49,7 @@ class Jabber : public WoklibPlugin
 	protected:
 		int session_nr;
 		std::map<std::string, Connection *> connections;
+		IQAuthManager *authmanager;
 };
 
 

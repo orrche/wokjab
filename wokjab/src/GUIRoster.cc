@@ -97,7 +97,7 @@ GUIRoster::GUIRoster (WLSignal * wls):WLSignalInstance (wls)
 GUIRoster::~GUIRoster ()
 {
 	EXP_SIGUNHOOK("Config XML Change /main/window", &GUIRoster::ReadConfig, 500);
-
+	
 	SaveConfig(false);
 }
 
@@ -109,7 +109,6 @@ GUIRoster::ToggleButton(GtkWidget *widget, GUIRoster *c)
 	else 
 		c->bstate[widget] = FALSE;
 		
-	std::cout << "Umpa umpa.." << std::endl;
 	WokXMLTag empty(NULL, "empty");
 	c->wls->SendSignal("Jabber Roster Recheck", empty);
 }

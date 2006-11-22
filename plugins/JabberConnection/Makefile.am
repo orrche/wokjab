@@ -18,7 +18,9 @@ libjabberconnection_la_SOURCES = \
 	XML_Output.cc       \
 	XML_Output.h       \
 	staticfunctions.cc       \
-	staticfunctions.h       
+	staticfunctions.h       \
+	IQAuthManager.cc       \
+	IQAuthManager.h 
 
 ## File created by the gnome-build tools
 

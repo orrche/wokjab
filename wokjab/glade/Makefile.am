@@ -19,6 +19,8 @@ datadir = $(prefix)/lib/woklib/glade
  
 pkgdata_DATA = \
         connect.window.glade \
-	main.window.glade
+	main.window.glade \
+	plugin.glade \
+	fileloadplugin.glade 
  
 EXTRA_DIST = ${pkgdata_DATA}

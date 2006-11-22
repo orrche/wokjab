@@ -27,33 +27,41 @@ using namespace Woklib;
 class IQauth : public WLSignalInstance
 {
 	public:
-		IQauth (WLSignal *wls, std::string con_id, std::string session);
+		IQauth (WLSignal *wls, std::string session);
 		~IQauth ();
 
 		int xmlClearTextUser (WokXMLTag *tag);
+		int SD_Challange(WokXMLTag *tag);
+		int SD_Success(WokXMLTag *tag);
 		
 		enum ConnectionType
 		{
 			ClearTextUser,
 			SHA1User,
-			HandshakeComponent
+			HandshakeComponent,
+			SASLDIGESTMD5
 		};
 	
 		
-      private:
-		void InitSHA1UserStage1();
-		void InitSHA1UserStage2(WokXMLTag *tag);
-		void InitClearTextUser();
-	  	void InitHandshakeComponent();
-		int con_type;
-	  	std::string con_id;
+	private:
+			void InitSHA1UserStage1();
+			void InitSHA1UserStage2(WokXMLTag *tag);
+			void InitClearTextUser();
+			void InitHandshakeComponent();
+			void InitSASLDIGESTMD5();
+			std::string SD_A2(std::string digest_uri_value);
+			std::string SD_A1(std::string username, std::string realm, std::string passwd, std::string nonce, std::string cnonce, std::string authzid);
+			std::string HEX(std::string data);
+			std::string H(std::string data);
+			int con_type;
+			std::string con_id;
 			std::string session;
 			std::string signal;
-	  
-	  	std::string username;
-	  	std::string server;
-	  	std::string resource;
-	  	std::string password;
+		
+			std::string username;
+			std::string server;
+			std::string resource;
+			std::string password;
 };
 
 

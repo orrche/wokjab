@@ -55,6 +55,7 @@ class Connection : public WLSignalInstance
 	int ReadData(WokXMLTag *tag);
 	int GetSocket(WokXMLTag *tag);
 	int GetMyNick(WokXMLTag *tag);
+	int Reset(WokXMLTag *tag);
 	
 	void sendinit();
 	

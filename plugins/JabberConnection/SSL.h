@@ -43,6 +43,9 @@ namespace Woklib
 			
 			int StartSession(WokXMLTag *tag);
 			int Proceed(WokXMLTag *tag);
+			
+			
+			::SSL *ssl;
 		protected:
 			std::map <std::string, SSL_CTX *> sslsession;
 			Connection *conn;
