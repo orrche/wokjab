@@ -220,11 +220,13 @@ IQauth::SD_Challange(WokXMLTag *tag)
 	{
 		cnonce += base64char[rand()%strlen(base64char)];
 	}
-	
+	if ( data["realm"] == "" )
+		data["realm"] = "jabber";
+		
 	std::string resp = HEX(H( HEX(H(SD_A1(username, "jabber", password, data["nonce"], cnonce, ""))) + ":" + data["nonce"] + ":00000001:" +
                    cnonce + ":auth:" + HEX(H(SD_A2("xmpp/jabber")))));
 																			
-	std::string response="charset=utf-8,username=\"" + username + "\",realm=\"jabber\",nonce=\"" + data["nonce"] + "\",nc=00000001,cnonce=\"" + cnonce + "\",digest-uri=\"xmpp/jabber\",response=" +
+	std::string response="charset=utf-8,username=\"" + username + "\",realm=\""+ data["realm"] + "\",nonce=\"" + data["nonce"] + "\",nc=00000001,cnonce=\"" + cnonce + "\",digest-uri=\"xmpp/jabber\",response=" +
 								resp + ",qop=auth";
 								
 	WokXMLTag message(NULL, "message");
