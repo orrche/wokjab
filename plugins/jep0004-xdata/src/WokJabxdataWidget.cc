@@ -73,7 +73,9 @@ replsig(tag_iq->GetAttr("signal"))
 		tag_iq->GetFirstTag("plug").AddAttr("id", str.str());
 	}
 	
+	//GtkWidget *scroll_win = gtk_scrolled_window_new(NULL, NULL);
 	
+	//gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW(scroll_win), main_hbox);
 	gtk_container_add(GTK_CONTAINER(window), main_hbox);
 	
 	if(tag_title)

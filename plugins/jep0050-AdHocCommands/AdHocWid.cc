@@ -48,6 +48,8 @@ session(session)
 	xml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/AdHocWid.glade", NULL, NULL);
 	g_signal_connect (G_OBJECT (glade_xml_get_widget(xml, "window")), "destroy",
 				G_CALLBACK (AdHocWid::Destroy), this);
+	g_signal_connect (G_OBJECT (glade_xml_get_widget(xml, "close_button")), "clicked",
+					G_CALLBACK (AdHocWid::CloseButton), this);
 	GtkCellRenderer *renderer;
 
 	renderer = gtk_cell_renderer_text_new ();
@@ -73,6 +75,12 @@ void
 AdHocWid::Destroy(GtkWidget *widget, AdHocWid *c)
 {
 	delete c;
+}
+
+void
+AdHocWid::CloseButton(GtkButton *button, AdHocWid *c)
+{
+	gtk_widget_destroy(glade_xml_get_widget(c->xml, "window"));
 }
 
 void

@@ -48,8 +48,15 @@ int
 GUIAddJIDWidget::GUIAddJIDAction (WokXMLTag *tag)
 {
 	widget_created = true;
+
 	if(tag)
-		CreateWidget (tag->GetAttr("jid"));
+	{
+		std::string jid = tag->GetAttr("jid");
+		if ( jid.find("/") != std::string::npos )
+			jid = jid.substr(0, jid.find("/"));
+		
+		CreateWidget (jid);
+	}
 	else
 		CreateWidget();
 	return 1;
@@ -254,7 +261,11 @@ GUIAddJIDWidget::OK_Button(GtkWidget * widget, GUIAddJIDWidget *add_jid)
 	msg2tag.AddAttr("session", session);
 	WokXMLTag &presence = msg2tag.AddTag("presence");
 	presence.AddAttr("type", "subscribe");
-	presence.AddAttr("to", gtk_entry_get_text(GTK_ENTRY(add_jid->jid_entry)));
+	
+	std::string jid = gtk_entry_get_text(GTK_ENTRY(add_jid->jid_entry));
+	if ( jid.find("/") != std::string::npos )
+			jid = jid.substr(0, jid.find("/"));
+	presence.AddAttr("to", jid);
 	add_jid->wls->SendSignal("Jabber XML Send", &msg2tag);
 	
 	gtk_widget_destroy(GTK_WIDGET(add_jid->window));

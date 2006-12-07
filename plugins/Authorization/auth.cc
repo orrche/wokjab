@@ -56,8 +56,12 @@ Auth::ReqAuthAction(WokXMLTag *tag)
 	msgtag.AddAttr("session", tag->GetAttr("session"));
 	WokXMLTag &presencetag = msgtag.AddTag("presence");
 	presencetag.AddAttr("type", "subscribe");
-	presencetag.AddAttr("to", tag->GetAttr("jid"));
 	
+	std::string jid = tag->GetAttr("jid");
+	if ( jid.find("/") != std::string::npos )
+			jid = jid.substr(0, jid.find("/"));
+			
+	presencetag.AddAttr("to", jid);
 	wls->SendSignal("Jabber XML Send", &msgtag);
 	
 	return true;

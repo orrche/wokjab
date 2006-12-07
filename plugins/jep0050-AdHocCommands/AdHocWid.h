@@ -47,6 +47,7 @@ class AdHocWid : public WLSignalInstance
 		
 		static void ExecButton(GtkButton *button, AdHocWid *);
 		static void Destroy(GtkWidget *widget, AdHocWid *c);
+		static void CloseButton(GtkButton *button, AdHocWid *c);
 	protected:
 		GtkListStore *model;
 		GladeXML *xml;

@@ -85,8 +85,7 @@ AdHocSession::CancelButton(GtkButton *button, AdHocSession *c)
 void
 AdHocSession::Button(GtkButton *button, AdHocSession *c)
 {
-	std::cout << "Button: " << c->buttons[GTK_WIDGET(button)] << std::endl;
-	WokXMLTag xdata(NULL, "empty");
+		WokXMLTag xdata(NULL, "empty");
 	c->wls->SendSignal("Jabber jabber:x:data Get " + c->xdataid, xdata);
 	c->XDataResponse(&xdata, c->buttons[GTK_WIDGET(button)]);
 	
@@ -135,8 +134,10 @@ AdHocSession::ExecResponse(WokXMLTag *tag)
 		gtk_box_pack_start(GTK_BOX(glade_xml_get_widget(xml, "mainvbox")), note_label, FALSE, FALSE, 0);
 	}
 	
-		
-	gtk_box_pack_start(GTK_BOX(glade_xml_get_widget(xml, "mainbox")), socket, TRUE, TRUE, 0);
+	GtkWidget *scroll_win = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy  (GTK_SCROLLED_WINDOW(scroll_win), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW(scroll_win), socket);
+	gtk_box_pack_start(GTK_BOX(glade_xml_get_widget(xml, "mainbox")), scroll_win, TRUE, TRUE, 0);
 
 	gtk_socket_add_id(GTK_SOCKET(socket), atoi(msgtag.GetFirstTag("plug").GetAttr("id").c_str()));
 	status = tag_iq->GetFirstTag("command").GetAttr("status");

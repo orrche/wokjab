@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2005-2006  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
@@ -43,7 +43,8 @@ gboolean
 GtkJabberMenu::MenuActivate(GtkMenuItem *menuitem,GtkJabberMenu *c)
 {
 	g_assert( c->MenuSignals.find(GTK_WIDGET(menuitem)) != c->MenuSignals.end());
-	c->wls->SendSignal(c->MenuSignals[GTK_WIDGET(menuitem)], c->MenuData[GTK_WIDGET(menuitem)]);
+	if ( c->MenuSignals[GTK_WIDGET(menuitem)] != "" )
+		c->wls->SendSignal(c->MenuSignals[GTK_WIDGET(menuitem)], c->MenuData[GTK_WIDGET(menuitem)]);
 	
 	c->CleanDataStore();
 	

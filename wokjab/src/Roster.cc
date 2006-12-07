@@ -447,15 +447,17 @@ Roster::Presence(WokXMLTag *tag)
 {
 	WokXMLTag *tag_presence;
 	tag_presence = &tag->GetFirstTag("presence");
-	if( tag_presence->GetAttr("type") == "error" )
-		return 1;
-	std::string jid;
-	std::string session = tag->GetAttr("session");
+	std::string type = tag_presence->GetAttr("type");
 	
-	jid = tag_presence->GetAttr("from").substr(0, tag_presence->GetAttr("from").find("/"));
+	if( type == "" || type == "unavailable")
+	{
+		std::string jid;
+		std::string session = tag->GetAttr("session");
+		
+		jid = tag_presence->GetAttr("from").substr(0, tag_presence->GetAttr("from").find("/"));
 
-	if(Users[session].find(jid) != Users[session].end())
-		Users[session][jid]->Presence(tag);
-	
+		if(Users[session].find(jid) != Users[session].end())
+			Users[session][jid]->Presence(tag);
+	}
 	return 1;
 }

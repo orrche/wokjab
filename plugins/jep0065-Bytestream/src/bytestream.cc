@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2006  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -59,12 +59,23 @@ WoklibPlugin(wls)
 	echoserver.sin_port = htons(atoi(sport.c_str()));	/* server port */
 	
 	/* Bind the server socket */
-	if (bind(serversock, (struct sockaddr *) &echoserver,
-			sizeof(echoserver)) < 0) {
-		woklib_error(wls, "Failed to bind server socket");
+	int i = 1; 
+	while (bind(serversock, (struct sockaddr *) &echoserver,
+			sizeof(echoserver)) < 0) 
+	{
+		echoserver.sin_port = htons(atoi(sport.c_str()) + i++);	/* server port */
+		//woklib_error(wls, "Failed to bind server socket");
 		//Die("Failed to bind the server socket");
 	}
-	
+	if ( i > 1 )
+	{
+		i--;
+		std::stringstream str;
+		str << 8011 + i;
+		sport = str.str();
+		
+		woklib_debug(wls, "New listening port " + sport);
+	}
 	/* Listen on the server socket */
 	if (listen(serversock, MAXPENDING) < 0) {
 		woklib_error(wls, "Failed to listen on server socket");

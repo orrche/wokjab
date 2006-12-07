@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2003-2006  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,6 +21,9 @@ xdatamultitext::xdatamultitext(WLSignal *wls, WLSignalData* wlsd, GtkWidget *vbo
 	GtkWidget *hbox;
 	GtkWidget *scroll1;
 	
+	std::string value = tag_field->GetFirstTag("value").GetBody();
+	
+	
 	hbox = gtk_hbox_new(FALSE, 1);
 	textview = gtk_text_view_new();
 	scroll1 = gtk_scrolled_window_new(NULL, NULL);
@@ -31,6 +34,8 @@ xdatamultitext::xdatamultitext(WLSignal *wls, WLSignalData* wlsd, GtkWidget *vbo
 	
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 1);
 	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(textview));
+	
+	gtk_text_buffer_set_text(buffer, value.c_str(), value.size());
 	required = false;
 }
 

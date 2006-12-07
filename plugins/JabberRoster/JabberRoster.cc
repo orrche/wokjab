@@ -27,7 +27,6 @@
 
 JabberRoster::JabberRoster(WLSignal *wls) : WoklibPlugin(wls)
 {
-	EXP_SIGHOOK("Jabber XML Presence", &JabberRoster::Presence, 999);
 	EXP_SIGHOOK("Jabber Event Add", &JabberRoster::AddItemEvent, 1);
 	EXP_SIGHOOK("Jabber Event Remove", &JabberRoster::RemoveItemEvent, 1);
 	EXP_SIGHOOK("Jabber Connection Lost", &JabberRoster::LoggedOut, 1);
