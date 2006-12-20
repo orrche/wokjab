@@ -119,16 +119,11 @@ Initiat::input_callback(GIOChannel *source, GIOCondition condition, Initiat *c)
 		
 		for( iter = c->errorsockets[socket].begin() ; iter != c->errorsockets[socket].end() ; iter++)
 			g_source_remove(*iter);
+		
 		return FALSE;
 	}
 	
-	if ( ret == 0 ) 
-	{
-		g_io_channel_close (source);
-		return FALSE;
-	}
-	
-	if(sigdata.GetAttr("error").size() || sigdata.GetAttr("stop").size())
+	if(sigdata.GetAttr("error").size() || sigdata.GetAttr("stop").size() || ret == 0)
 	{
 		if ( condition == G_IO_IN )
 		{
