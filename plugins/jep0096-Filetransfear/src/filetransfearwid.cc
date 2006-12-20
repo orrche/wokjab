@@ -64,6 +64,7 @@ jep96Widget::~jep96Widget()
 {
 	if(!requested)
 	{
+		woklib_debug(wls, "File is not requested");
 		WokXMLTag msgtag(NULL, "message");
 		msgtag.AddAttr("session", session);
 		WokXMLTag &unauthorized = msgtag.AddTag("iq");
@@ -94,6 +95,7 @@ jep96Widget::Destroy (GtkWidget * widget, jep96Widget *c)
 void
 jep96Widget::Activate()
 {
+	requested = true;
 	filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER(chooser));
 	EXP_SIGHOOK("Jabber Stream RequestAuthorisation", &jep96Widget::FileAuth, 1000);
 	

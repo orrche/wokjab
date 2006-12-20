@@ -83,8 +83,6 @@ void
 filepicker::ButtonPress (GtkButton *button, filepicker *c)
 {
 	WokXMLTag tag(NULL, "send");
-	std::cout << "WHat the fuck !?" << tag << std::endl;
-	std::cout << "This is not working right ?!?" << c->to << std::endl;
 	tag.AddAttr("to", c->to);
 	tag.AddAttr("session", c->session);
 	std::cout << tag << std::endl;

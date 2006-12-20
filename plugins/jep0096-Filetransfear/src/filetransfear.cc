@@ -312,11 +312,15 @@ int
 jep96::Accepted(WokXMLTag *acctag)
 {
 	GtkTreeIter iter;
-	if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[acctag->GetAttr("sid")])))
+	GtkTreePath* path;
+	
+	if( ( path = gtk_tree_row_reference_get_path(rows[acctag->GetAttr("sid")]) ) != NULL )
 	{
-		gtk_list_store_set (file_store, &iter, 2, "Accepted" , -1);
+		if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, path ))
+		{
+			gtk_list_store_set (file_store, &iter, 2, "Accepted" , -1);
+		}
 	}
-
 
 	return true;
 }
@@ -448,14 +452,16 @@ jep96::SendReply(WokXMLTag *msgtag)
 		}
 		
 		std::string method = iqtag.GetFirstTag("si").GetFirstTag("feature").GetFirstTag("x").GetFirstTag("field").GetFirstTag("value").GetBody();
-		
-		WokXMLTag filesend(NULL, "file");
-		filesend.AddTag(filetag);
-		filesend.AddAttr("file", sessions[id]->GetAttr("file"));
-		filesend.AddAttr("to", sessions[id]->GetFirstTag("iq").GetAttr("to"));
-		filesend.AddAttr("sid", sid);
-		filesend.AddAttr("session", msgtag->GetAttr("session"));
-		wls->SendSignal("Jabber Stream File Send Method " + method, filesend);
+		if ( method.find(" ") == std::string::npos )
+		{
+			WokXMLTag filesend(NULL, "file");
+			filesend.AddTag(filetag);
+			filesend.AddAttr("file", sessions[id]->GetAttr("file"));
+			filesend.AddAttr("to", sessions[id]->GetFirstTag("iq").GetAttr("to"));
+			filesend.AddAttr("sid", sid);
+			filesend.AddAttr("session", msgtag->GetAttr("session"));
+			wls->SendSignal("Jabber Stream File Send Method " + method, filesend);
+		}
 	}
 	
 	delete sessions[id];
