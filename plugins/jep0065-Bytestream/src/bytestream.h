@@ -38,12 +38,11 @@ class jep65 : public WoklibPlugin
 
 		int Session(WokXMLTag *xml);
 		int Send(WokXMLTag *xml);
-		int ReadData(WokXMLTag *xml);
 		int DiscoInfo(WokXMLTag *xml);
+		int ReadData(WokXMLTag *xml);
 	private:
 		std::string sport;
 		int serversock;
-		std::map <std::string , jep65send*> sendingfiles;
 		std::map <int, jep65send* > socketfiles;
 	
 };

@@ -28,12 +28,27 @@
 
 
 
-jep65send::jep65send(WLSignal *wls,  WokXMLTag *msgtag, std::string me, std::string iqid):
+jep65send::jep65send(WLSignal *wls,  WokXMLTag *msgtag):
 WLSignalInstance ( wls ),
-me(me),
-iqid(iqid),
-session(msgtag->GetAttr("session"))
+session(msgtag->GetAttr("session")),
+sid(msgtag->GetAttr("sid")),
+to(msgtag->GetAttr("to"))
 {
+
+	std::cout << "We are now here trying to init the shit"<< std::endl;
+	std::cout << "What the hell XML: " << *msgtag << std::endl;
+#warning "the me variable not initilized"
+	proxy = "proxy.jabber.se";
+	if ( proxy == "" )
+	{
+		SendInitiat(false);
+	}
+	else
+	{
+		InitProxy();
+	}
+
+
 	unsigned char buffer[50];
 	WokXMLTag &filetag = msgtag->GetFirstTag("file");
 	data = new WokXMLTag(*msgtag);
@@ -41,7 +56,8 @@ session(msgtag->GetAttr("session"))
 	fsize = size = atoi(filetag.GetAttr("size").c_str());
 	file = msgtag->GetAttr("file");
 	sid = msgtag->GetAttr("sid");
-	//msgtag->AddAttr("rate","3");
+	
+	msgtag->AddAttr("rate","3");
 	if( (baserate = atoi(msgtag->GetAttr("rate").c_str())) > 0 )
 	{
 		throttled = true;
@@ -63,7 +79,7 @@ session(msgtag->GetAttr("session"))
 	
 	socket = 0;
 	hash = "";
-	std::string digest = sid + me +  msgtag->GetAttr("to");
+	std::string digest = sid + me +  to;
 	SHA1((unsigned char *)digest.c_str(), digest.size(), buffer);
 	for( int i = 0 ; i < 20 ; i++)
 	{
@@ -76,7 +92,6 @@ session(msgtag->GetAttr("session"))
 	}
 	
 	EXP_SIGHOOK("Jabber Stream File Send Method http://jabber.org/protocol/bytestreams push hash:" + hash, &jep65send::FileTransfear, 1000);
-	EXP_SIGHOOK("Jabber XML IQ ID " + iqid, &jep65send::TransfearStart, 1000);
 }
 
 jep65send::~jep65send()
@@ -85,6 +100,168 @@ jep65send::~jep65send()
 		close ( socket);
 	delete data;
 }
+
+void
+jep65send::InitProxy()
+{
+	WokXMLTag msgtag(NULL, "message");
+	msgtag.AddAttr("session", session);
+	WokXMLTag &iqtag = msgtag.AddTag("iq");
+	iqtag.AddAttr("type", "get");
+	iqtag.AddAttr("to", proxy);
+	WokXMLTag &querytag = iqtag.AddTag("query");
+	querytag.AddAttr("xmlns", "http://jabber.org/protocol/bytestreams");
+	
+	wls->SendSignal("Jabber XML IQ Send", &msgtag);
+	
+	EXP_SIGHOOK("Jabber XML IQ ID "  + iqtag.GetAttr("id"), &jep65send::InitProxyReply, 500);
+	
+/*
+	<iq type='get' 
+    from='initiator@host1/foo' 
+    to='proxy.host3' 
+    id='discover'>
+  <query xmlns='http://jabber.org/protocol/bytestreams'/>
+</iq>
+*/
+}
+
+int
+jep65send::InitProxyReply(WokXMLTag *tag)
+{
+	if ( tag->GetFirstTag("iq").GetAttr("type") == "result" )
+	{
+		std::cout << "tag: " << tag << std::endl;
+
+		
+		pjid = tag->GetFirstTag("iq").GetFirstTag("query").GetFirstTag("streamhost").GetAttr("jid");
+		phost = tag->GetFirstTag("iq").GetFirstTag("query").GetFirstTag("streamhost").GetAttr("host");
+		pzeroconf = tag->GetFirstTag("iq").GetFirstTag("query").GetFirstTag("streamhost").GetAttr("zeroconf");
+		pport = tag->GetFirstTag("iq").GetFirstTag("query").GetFirstTag("streamhost").GetAttr("port");
+		std::cout << "PJID: " << pjid << " PHost: " << phost << " zconf: " << pzeroconf << std::endl;
+		
+		
+		
+		
+	
+		WokXMLTag msgtag(NULL, "message");
+		msgtag.AddAttr("session", session);
+		WokXMLTag &iqtag = msgtag.AddTag("iq");
+		iqtag.AddAttr("type", "set");
+		iqtag.AddAttr("to", to);
+		WokXMLTag &querytag = iqtag.AddTag("query");
+		querytag.AddAttr("xmlns", "http://jabber.org/protocol/bytestreams");
+		querytag.AddAttr("sid", sid);
+		querytag.AddAttr("mode", "tcp");
+		WokXMLTag &streamhost = querytag.AddTag("streamhost");
+		streamhost.AddAttr("port", pport);
+		streamhost.AddAttr("host", phost);
+		streamhost.AddAttr("jid", proxy);
+		
+		wls->SendSignal("Jabber XML IQ Send", &msgtag);
+	
+	}
+	else
+	{
+		woklib_error(wls, "Proxy didn't agree!!");
+	}
+
+	return 1;
+/*
+<iq type='result' 
+    from='proxy.host3' 
+    to='initiator@host1/foo' 
+    id='discover'>
+  <query xmlns='http://jabber.org/protocol/bytestreams'>
+    <streamhost 
+        jid='proxy.host3' 
+        host='24.24.24.1' 
+        zeroconf='_jabber.bytestreams'/>
+  </query>
+</iq>
+*/
+}
+
+void
+jep65send::ReqProxy()
+{
+	WokXMLTag msgtag(NULL, "message");
+	msgtag.AddAttr("session", session);
+	WokXMLTag &iqtag = msgtag.AddTag("iq");
+	iqtag.AddAttr("type", "set");
+	iqtag.AddAttr("to", proxy);
+	WokXMLTag &querytag = iqtag.AddTag("query");
+	querytag.AddAttr("xmlns", "http://jabber.org/protocol/bytestreams");
+	querytag.AddAttr("sid", sid);
+	querytag.AddTag("activate").AddText(to);
+	
+	wls->SendSignal("Jabber XML IQ Send", &msgtag);
+	
+	EXP_SIGHOOK("Jabber XML IQ ID "  + iqtag.GetAttr("id"), &jep65send::ProxyReply, 500);
+	
+/*
+<iq type='set' 
+    from='initiator@host1/foo' 
+    to='proxy.host3' 
+    id='activate'>
+  <query xmlns='http://jabber.org/protocol/bytestreams' sid='mySID'>
+    <activate>target@host2/bar</activate>
+  </query>
+</iq>
+
+
+<iq id='wokjab3' to='proxy.jabber.se' type='set'>
+<query sid='jep96-0-dlhftqmlri' xmlns='http://jabber.org/protocol/bytestreams'>
+<activate>nedo@jabber.se/Psi</activate></query></iq>
+*/	
+}
+
+int 
+jep65send::ProxyReply(WokXMLTag *tag)
+{
+	if ( tag->GetFirstTag("iq").GetAttr("type") == "result" )
+	{
+		//Yay we got our self a proxy !!
+		
+	}
+	else
+	{
+		// Damn no proxy
+	}
+
+	return 1;
+}
+
+void
+jep65send::SendInitiat( bool use_proxy)
+{
+#warning "This is not the right way !"
+	std::string sport= "8011";
+
+	WokXMLTag msgtag(NULL, "message");
+	msgtag.AddAttr("session", session);
+	WokXMLTag &iqtag = msgtag.AddTag("iq");
+	iqtag.AddAttr("type", "set");
+	iqtag.AddAttr("to", to);
+	WokXMLTag &querytag = iqtag.AddTag("query");
+	querytag.AddAttr("xmlns", "http://jabber.org/protocol/bytestreams");
+	querytag.AddAttr("sid", sid);
+	querytag.AddAttr("mode", "tcp");
+	WokXMLTag &streamhost = querytag.AddTag("streamhost");
+	streamhost.AddAttr("port", sport);
+	
+	WokXMLTag userinfo(NULL, "userinfo");
+	WokXMLTag &itemtag = userinfo.AddTag("item");
+	itemtag.AddAttr("session", session);
+	wls->SendSignal("Jabber Connection GetUserData", &userinfo);
+	streamhost.AddAttr("host", itemtag.GetFirstTag("ip").GetBody());
+	streamhost.AddAttr("jid", itemtag.GetFirstTag("jid").GetBody());
+	
+	wls->SendSignal("Jabber XML IQ Send", &msgtag);
+	EXP_SIGHOOK("Jabber XML IQ ID " + iqtag.GetAttr("id"), &jep65send::TransfearStart, 1000);
+}
+
+
 
 const std::string &
 jep65send::GetHash()

@@ -38,3 +38,5 @@ libjep0065_Bytestream_la_LDFLAGS = \
 	`pkg-config gtk+-2.0 --libs`
 
 libjep0065_Bytestream_la_LIBADD =
+
+

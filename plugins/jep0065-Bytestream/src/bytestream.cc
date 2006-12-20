@@ -108,49 +108,8 @@ jep65::Session(WokXMLTag *xml)
 int
 jep65::Send(WokXMLTag *xml)
 {
-	WokXMLTag msgtag(NULL, "message");
-	msgtag.AddAttr("session", xml->GetAttr("session"));
-	WokXMLTag &iqtag = msgtag.AddTag("iq");
-	iqtag.AddAttr("type", "set");
-	iqtag.AddAttr("to", xml->GetAttr("to"));
-	WokXMLTag &querytag = iqtag.AddTag("query");
-	querytag.AddAttr("xmlns", "http://jabber.org/protocol/bytestreams");
-	querytag.AddAttr("sid", xml->GetAttr("sid"));
-	querytag.AddAttr("mode", "tcp");
-	WokXMLTag &streamhost = querytag.AddTag("streamhost");
-	streamhost.AddAttr("port", sport);
-	
-	WokXMLTag userinfo(NULL, "userinfo");
-	WokXMLTag &itemtag = userinfo.AddTag("item");
-	itemtag.AddAttr("session", xml->GetAttr("session"));
-	wls->SendSignal("Jabber Connection GetUserData", &userinfo);
-	streamhost.AddAttr("host", itemtag.GetFirstTag("ip").GetBody());
-	streamhost.AddAttr("jid", itemtag.GetFirstTag("jid").GetBody());
-	
-	wls->SendSignal("Jabber XML IQ Send", &msgtag);
-	
-	jep65send *instance = new jep65send(wls, xml, itemtag.GetFirstTag("jid").GetBody(), iqtag.GetAttr("id"));
-	sendingfiles[instance->GetHash()] = instance;
-
-/* <iq type='set' 
- *     from='initiator@host1/foo' 
- *     to='target@host2/bar' 
- *     id='initiate'>
- *   <query xmlns='http://jabber.org/protocol/bytestreams' 
- *          sid='mySID' 
- * 	 mode='tcp'>
- *     <streamhost 
- *         jid='initiator@host1/foo' 
- *         host='192.168.4.1' 
- *         port='5086'/>
- *     <streamhost 
- *         jid='proxy.host3' 
- *         host='24.24.24.1' 
- *         zeroconf='_jabber.bytestreams'/>
- *   </query>
- * </iq>
- */
-	
+	std::cout << "Sending shit.." << std::endl;
+	new jep65send(wls, xml);
 	return 1;
 }
 

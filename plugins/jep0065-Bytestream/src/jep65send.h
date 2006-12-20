@@ -32,7 +32,7 @@ using namespace Woklib;
 class jep65send : public WLSignalInstance
 {
 	public:
-		jep65send(WLSignal *wls, WokXMLTag *xml, std::string me, std::string iqid);
+		jep65send(WLSignal *wls, WokXMLTag *xml);
 		~jep65send();
 		
 		virtual std::string GetInfo() {return "Jep65 ( filetransfear )";};
@@ -40,6 +40,12 @@ class jep65send : public WLSignalInstance
 	
 		const std::string & GetHash();
 	
+		void ReqProxy();
+		void SendInitiat( bool use_proxy);
+		void InitProxy();
+
+		int InitProxyReply(WokXMLTag *tag);
+		int ProxyReply(WokXMLTag *tag);
 		int FileTransfear(WokXMLTag *tag);
 		int SocketAvailibule( WokXMLTag *tag);
 		int TransfearStart(WokXMLTag *tag);
@@ -48,13 +54,20 @@ class jep65send : public WLSignalInstance
 		int SendData(char *data, uint len);
 	private:
 		WokXMLTag *data;
+		std::string proxy;
 		std::string me;
 		std::string hash;
 		std::string file;
 		std::string iqid;
 		std::string session;
 		std::string sid;
-
+		std::string to;
+	
+		std::string pjid;
+		std::string phost;
+		std::string pzeroconf;
+		std::string pport;
+		
 		int socket;
 		int rate;
 		int baserate;

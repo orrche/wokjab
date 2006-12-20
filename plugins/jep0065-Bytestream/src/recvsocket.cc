@@ -25,6 +25,7 @@
 #include <netinet/in.h>
 
 #include "recvsocket.h"
+#include <sstream>
 #define BUFFERSIZE 300
 
 RecvSocket::RecvSocket(WLSignal *wls, int socket):
@@ -138,4 +139,3 @@ RecvSocket::SendData(char *data, uint len)
 	
 	return(0);
 }
-

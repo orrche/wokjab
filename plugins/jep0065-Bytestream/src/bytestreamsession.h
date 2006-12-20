@@ -40,11 +40,8 @@ class jep65Session : public WLSignalInstance
 		~jep65Session();
 
 	
-		int GetSocket();
-		int ReadData(WokXMLTag *xml);
-		int SendInitData();
-		int OpenConnection(std::string host, int port);
-		int senddata(char *data, uint len);
+		int SOCKS_Established(WokXMLTag *xml);
+		int SOCKS_Data(WokXMLTag *tag);
 	protected:
 		WokXMLTag *orig;
 		std::string initiator;
