@@ -193,7 +193,8 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = src
 pkgdata_DATA = \
-        streams.glade
+        streams.glade \
+	filepicker.glade
 
 EXTRA_DIST = ${pkgdata_DATA}
 all: all-recursive

@@ -28,26 +28,18 @@
 
 
 
-jep65send::jep65send(WLSignal *wls,  WokXMLTag *msgtag):
+jep65send::jep65send(WLSignal *wls,  WokXMLTag *msgtag, std::string sport):
 WLSignalInstance ( wls ),
 session(msgtag->GetAttr("session")),
 sid(msgtag->GetAttr("sid")),
-to(msgtag->GetAttr("to"))
+to(msgtag->GetAttr("to")),
+sport(sport)
 {
-
-	std::cout << "We are now here trying to init the shit"<< std::endl;
-	std::cout << "What the hell XML: " << *msgtag << std::endl;
-#warning "the me variable not initilized"
-	proxy = "proxy.jabber.se";
-	if ( proxy == "" )
-	{
-		SendInitiat(false);
-	}
-	else
-	{
-		InitProxy();
-	}
-
+	WokXMLTag querytag(NULL, "query");
+	WokXMLTag &itemtag = querytag.AddTag("item");
+	itemtag.AddAttr("session", session);
+	wls->SendSignal("Jabber Connection GetUserData", &querytag);
+	me = itemtag.GetFirstTag("jid").GetBody();
 
 	unsigned char buffer[50];
 	WokXMLTag &filetag = msgtag->GetFirstTag("file");
@@ -57,18 +49,12 @@ to(msgtag->GetAttr("to"))
 	file = msgtag->GetAttr("file");
 	sid = msgtag->GetAttr("sid");
 	
-	msgtag->AddAttr("rate","3");
 	if( (baserate = atoi(msgtag->GetAttr("rate").c_str())) > 0 )
 	{
 		throttled = true;
 		rate = baserate;
 		
 		EXP_SIGHOOK("Jabber Stream File Send Method http://jabber.org/protocol/bytestreams TimeOut " + sid, &jep65send::Timeout, 1000);
-	
-		WokXMLTag time(NULL, "timer");
-		time.AddAttr("time","1000");
-		time.AddAttr("signal", "Jabber Stream File Send Method http://jabber.org/protocol/bytestreams TimeOut "+sid);
-		wls->SendSignal("Woklib Timmer Add", &time);
 	}
 	else
 	{
@@ -92,6 +78,17 @@ to(msgtag->GetAttr("to"))
 	}
 	
 	EXP_SIGHOOK("Jabber Stream File Send Method http://jabber.org/protocol/bytestreams push hash:" + hash, &jep65send::FileTransfear, 1000);
+	
+	proxy = msgtag->GetAttr("proxy");
+	if ( proxy == "" )
+	{
+		SendInitiat(false);
+	}
+	else
+	{
+		InitProxy();
+	}
+	
 }
 
 jep65send::~jep65send()
@@ -159,6 +156,7 @@ jep65send::InitProxyReply(WokXMLTag *tag)
 		streamhost.AddAttr("jid", proxy);
 		
 		wls->SendSignal("Jabber XML IQ Send", &msgtag);
+		EXP_SIGHOOK("Jabber XML IQ ID "  + iqtag.GetAttr("id"), &jep65send::InitProxyConnect, 500);
 	
 	}
 	else
@@ -182,6 +180,48 @@ jep65send::InitProxyReply(WokXMLTag *tag)
 */
 }
 
+int
+jep65send::InitProxyConnect(WokXMLTag *tag)
+{
+	WokXMLTag sockettag ( NULL, "socket");
+	sockettag.AddAttr("hostname", phost);
+	sockettag.AddAttr("port", pport);
+	sockettag.AddAttr("cmd", "1");
+	sockettag.AddAttr("atype", "3");
+	sockettag.AddAttr("dst.addr", hash);
+	sockettag.AddAttr("dst.port", "0");
+	
+	wls->SendSignal("SOCKS5 Connect", sockettag);
+	
+	EXP_SIGHOOK("SOCKS5 Connection Established " + sockettag.GetAttr("id"), &jep65send::SOCKS_Established, 1000);
+	EXP_SIGHOOK("SOCKS5 Connection Data " + sockettag.GetAttr("id"), &jep65send::SOCKS_Data, 1000);
+	
+	return 1;
+}
+
+int
+jep65send::SOCKS_Established(WokXMLTag *tag)
+{
+	socket = atoi(tag->GetAttr("socket").c_str());
+	ReqProxy();
+	return 1;
+}
+
+int
+jep65send::SOCKS_Data(WokXMLTag *tag)
+{
+	// If we get here the connection is most likely closed
+	char buffer[10];
+	int len;
+	
+	len = recv (socket, buffer, 10, 0);
+	if ( len == 0 )
+	{
+		delete this;
+	}
+	return 1;
+}
+
 void
 jep65send::ReqProxy()
 {
@@ -198,22 +238,6 @@ jep65send::ReqProxy()
 	wls->SendSignal("Jabber XML IQ Send", &msgtag);
 	
 	EXP_SIGHOOK("Jabber XML IQ ID "  + iqtag.GetAttr("id"), &jep65send::ProxyReply, 500);
-	
-/*
-<iq type='set' 
-    from='initiator@host1/foo' 
-    to='proxy.host3' 
-    id='activate'>
-  <query xmlns='http://jabber.org/protocol/bytestreams' sid='mySID'>
-    <activate>target@host2/bar</activate>
-  </query>
-</iq>
-
-
-<iq id='wokjab3' to='proxy.jabber.se' type='set'>
-<query sid='jep96-0-dlhftqmlri' xmlns='http://jabber.org/protocol/bytestreams'>
-<activate>nedo@jabber.se/Psi</activate></query></iq>
-*/	
 }
 
 int 
@@ -221,11 +245,30 @@ jep65send::ProxyReply(WokXMLTag *tag)
 {
 	if ( tag->GetFirstTag("iq").GetAttr("type") == "result" )
 	{
-		//Yay we got our self a proxy !!
+		WokXMLTag time(NULL, "timer");
+		time.AddAttr("time","1000");
+		time.AddAttr("signal", "Jabber Stream File Send Method http://jabber.org/protocol/bytestreams TimeOut "+sid);
+		wls->SendSignal("Woklib Timmer Add", &time);
 		
+			
+		WokXMLTag contag(NULL, "connected");
+		contag.AddAttr("sid", sid);
+		wls->SendSignal("Jabber Stream File Status", &contag);
+		wls->SendSignal("Jabber Stream File Status Connected", &contag);
+		
+		
+		std::stringstream sstr_socket;
+		sstr_socket << socket;
+		WokXMLTag sigtag(NULL, "socket");
+		sigtag.AddAttr("socket", sstr_socket.str());
+		wls->SendSignal("Woklib Socket Out Add", sigtag);
+		EXP_SIGHOOK(sigtag.GetAttr("signal"), &jep65send::SocketAvailibule, 1000);
+		
+		ffile.open(file.c_str(), std::ios::in);
 	}
 	else
 	{
+		delete this;
 		// Damn no proxy
 	}
 
@@ -235,9 +278,6 @@ jep65send::ProxyReply(WokXMLTag *tag)
 void
 jep65send::SendInitiat( bool use_proxy)
 {
-#warning "This is not the right way !"
-	std::string sport= "8011";
-
 	WokXMLTag msgtag(NULL, "message");
 	msgtag.AddAttr("session", session);
 	WokXMLTag &iqtag = msgtag.AddTag("iq");
@@ -266,7 +306,6 @@ jep65send::SendInitiat( bool use_proxy)
 const std::string &
 jep65send::GetHash()
 {
-	
 	return hash;
 }
 
@@ -375,12 +414,13 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 	else
 		maxsize = SHUNKSIZE;
 	
+	std::cout << "Size: " << size << " fbpos: " << fbpos << " fbend: " << fbend << std::endl;
 	
 	if(size > 0 )
 	{
 		if( fbpos != fbend )
 		{
-			fbpos += (sent = send ( socket, filebuf + fbpos, fbend - fbpos, 0));
+			fbpos += (sent = send ( socket, filebuf + fbpos, fbend - fbpos, MSG_DONTWAIT));
 		}
 		else
 		{
@@ -419,10 +459,10 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 	
 	if(size <= 0)
 	{
-		WokXMLTag fintag(NULL, "finnished");
+		WokXMLTag fintag(NULL, "finished");
 		fintag.AddAttr("sid", sid);
 		wls->SendSignal("Jabber Stream File Status", &fintag);
-		wls->SendSignal("Jabber Stream File Status Finnished", &fintag);
+		wls->SendSignal("Jabber Stream File Status Finished", &fintag);
 	
 		tag->AddAttr("stop", "finished");
 		delete this;
@@ -434,6 +474,8 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 int
 jep65send::SendData(char *data, uint len)
 {
+	std::cout << "We are sending data this way ... that wasn't the point..." << std::endl;
+
 	uint bcount;
 	uint br;
 	char *str;
@@ -442,7 +484,6 @@ jep65send::SendData(char *data, uint len)
 	str =(char *) data;
 	while (bcount < len)
 	{
-		std::cout << "Send loop..." << std::endl;
 		if ((br = send (socket, str, len - bcount, 0)) > 0)
 		{
 			bcount += br;

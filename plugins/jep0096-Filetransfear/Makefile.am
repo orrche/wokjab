@@ -19,6 +19,7 @@ SUBDIRS=src
 
 datadir = $(prefix)/lib/woklib/glade
 pkgdata_DATA = \
-        streams.glade
+        streams.glade \
+	filepicker.glade
 				
 EXTRA_DIST = ${pkgdata_DATA}

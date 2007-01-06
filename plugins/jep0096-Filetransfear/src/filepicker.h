@@ -32,6 +32,7 @@
 #include <Woklib/WokXMLTag.h>
 
 #include <gtk/gtk.h>
+#include <glade/glade.h>
 
 using namespace Woklib;
 
@@ -44,8 +45,7 @@ class filepicker : public WLSignalInstance
 		static void Destroy (GtkWidget * widget, filepicker *c);
 		static void ButtonPress (GtkButton *button, filepicker *c);
 	protected:
-		GtkWidget *window;
-		GtkWidget *chooser;
+		GladeXML *gxml;
 		
 		std::string session;
 		std::string to;

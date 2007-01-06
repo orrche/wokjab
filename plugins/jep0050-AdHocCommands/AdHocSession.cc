@@ -1,3 +1,6 @@
+/***************************************************************************
+ *  Copyright (C) 2006  Kent Gustavsson <nedo80@gmail.com>
+ ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -89,6 +92,9 @@ AdHocSession::Button(GtkButton *button, AdHocSession *c)
 	c->wls->SendSignal("Jabber jabber:x:data Get " + c->xdataid, xdata);
 	c->XDataResponse(&xdata, c->buttons[GTK_WIDGET(button)]);
 	
+	
+	gtk_widget_destroy(c->container);
+	
 	/*
 	if ( c->buttons[GTK_WIDGET(button)] == "complete" )
 		gtk_widget_destroy(glade_xml_get_widget(c->xml, "window"));	
@@ -134,10 +140,10 @@ AdHocSession::ExecResponse(WokXMLTag *tag)
 		gtk_box_pack_start(GTK_BOX(glade_xml_get_widget(xml, "mainvbox")), note_label, FALSE, FALSE, 0);
 	}
 	
-	GtkWidget *scroll_win = gtk_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_policy  (GTK_SCROLLED_WINDOW(scroll_win), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW(scroll_win), socket);
-	gtk_box_pack_start(GTK_BOX(glade_xml_get_widget(xml, "mainbox")), scroll_win, TRUE, TRUE, 0);
+	container = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy  (GTK_SCROLLED_WINDOW(container), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW(container), socket);
+	gtk_box_pack_start(GTK_BOX(glade_xml_get_widget(xml, "mainbox")), container, TRUE, TRUE, 0);
 
 	gtk_socket_add_id(GTK_SOCKET(socket), atoi(msgtag.GetFirstTag("plug").GetAttr("id").c_str()));
 	status = tag_iq->GetFirstTag("command").GetAttr("status");

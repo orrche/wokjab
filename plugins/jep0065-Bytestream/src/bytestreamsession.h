@@ -51,6 +51,7 @@ class jep65Session : public WLSignalInstance
 		std::string sha1;
 		std::string filename;
 		std::string session;
+		std::string usedstreamhost;
 		std::ofstream file;
 		int socket_nr;
 		unsigned long long pos;

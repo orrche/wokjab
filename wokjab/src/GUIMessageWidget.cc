@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -217,12 +217,7 @@ from(from)
 	conftag.AddAttr("path", "/chat/window");
 	wls->SendSignal("Config XML Trigger", &conftag);
 	
-	// Reading the spool file
-	//write_history = false;
 	focus = true;
-	//Something wrong here anyways so no point in using it
-	//read_xml(std::string(std::getenv("HOME")) + string(CONFDIR) + "/history/" + from);
-	write_history = true;
 	
 	WokXMLTag spooltag(NULL, "spool");
 	spooltag.AddAttr("jid", from);

@@ -27,7 +27,7 @@
 
 #include "Socks5Session.h"
 #include <sstream>
-
+#include <fcntl.h> 
 
 Socks5Session::Socks5Session(WLSignal *wls, WokXMLTag *tag, int id) : WLSignalInstance(wls),
 socktag(new WokXMLTag(*tag)),
@@ -42,9 +42,27 @@ id(id)
 	if ( OpenConnection() == -1 )
 	{
 		woklib_error(wls, "Couldn't open connection to the streamhost");
+		tag->AddAttr("result", "error");
 		delete this;
+		return;
 	}
+
 	
+std::cout << "Ohhh nooo we are in the shit here" << std::endl;
+	int flags;
+	if ((flags = fcntl(socket_nr, F_GETFL, 0)) < 0)
+	{
+		std::cout << "Ohhh shit" << std::endl;
+	}
+
+
+	if (fcntl(socket_nr, F_SETFL, flags | O_NONBLOCK) < 0)
+	{
+		std::cout << "For fucks sake !!" << std::endl;
+	} 
+	
+	
+
 	std::stringstream sstr_socket;
 	sstr_socket << socket_nr;
 	str_socket = sstr_socket.str();
@@ -289,7 +307,7 @@ Socks5Session::Ready(WokXMLTag *tag)
 {
 // Version 5  Ways of authentication 1  Authentication method 0
 
-	outpos += send (socket_nr, outbuffer , outsize - outpos, 0);
+	outpos += send (socket_nr, outbuffer , outsize - outpos, MSG_DONTWAIT);
 	if ( outpos == outsize ) 
 	{
 		EXP_SIGUNHOOK(signal_out, &Socks5Session::Ready, 1000);

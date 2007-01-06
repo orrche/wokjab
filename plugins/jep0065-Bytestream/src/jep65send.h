@@ -24,7 +24,7 @@
 
 #include "fstream"
 
-#define SHUNKSIZE 300000
+#define SHUNKSIZE 1000000
 //#define SHUNKSIZE 10
 
 using namespace Woklib;
@@ -32,7 +32,7 @@ using namespace Woklib;
 class jep65send : public WLSignalInstance
 {
 	public:
-		jep65send(WLSignal *wls, WokXMLTag *xml);
+		jep65send(WLSignal *wls, WokXMLTag *xml, std::string sport);
 		~jep65send();
 		
 		virtual std::string GetInfo() {return "Jep65 ( filetransfear )";};
@@ -47,10 +47,13 @@ class jep65send : public WLSignalInstance
 		int InitProxyReply(WokXMLTag *tag);
 		int ProxyReply(WokXMLTag *tag);
 		int FileTransfear(WokXMLTag *tag);
+		int InitProxyConnect(WokXMLTag *tag);
 		int SocketAvailibule( WokXMLTag *tag);
+		int SOCKS_Established(WokXMLTag *tag);
+		int SOCKS_Data(WokXMLTag *tag);
 		int TransfearStart(WokXMLTag *tag);
 		int Timeout(WokXMLTag *tag);
-		
+			
 		int SendData(char *data, uint len);
 	private:
 		WokXMLTag *data;
@@ -62,7 +65,8 @@ class jep65send : public WLSignalInstance
 		std::string session;
 		std::string sid;
 		std::string to;
-	
+		std::string sport;
+		
 		std::string pjid;
 		std::string phost;
 		std::string pzeroconf;

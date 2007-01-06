@@ -40,9 +40,7 @@ class GUIMessageWidget : public WLSignalInstance
 						 gpointer user_data);
 		void own_message(std::string msg, time_t t = time (NULL));
 		void MessageWithEmotions(std::string msg);
-	//	void read_xml(std::string filename);
-	//	int WriteHistory(std::string str, std::string nick, std::string jid, time_t t = time (NULL));
-		
+	
 		int Config(WokXMLTag *tag);
 		int NewPresence(WokXMLTag *tag);
 		int Activate(WokXMLTag *tag);
@@ -92,7 +90,6 @@ class GUIMessageWidget : public WLSignalInstance
 		std::string xml_jid;
 		std::string xml_msg;
 		time_t xml_time;
-		bool write_history;
 		
 		std::string from;
 		std::string nick;

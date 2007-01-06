@@ -108,8 +108,7 @@ jep65::Session(WokXMLTag *xml)
 int
 jep65::Send(WokXMLTag *xml)
 {
-	std::cout << "Sending shit.." << std::endl;
-	new jep65send(wls, xml);
+	new jep65send(wls, xml, sport);
 	return 1;
 }
 

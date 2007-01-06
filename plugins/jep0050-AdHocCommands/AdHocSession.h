@@ -1,3 +1,6 @@
+/***************************************************************************
+ *  Copyright (C) 2006  Kent Gustavsson <nedo80@gmail.com>
+ ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -51,7 +54,8 @@ class AdHocSession : public WLSignalInstance
 	protected:
 		std::map< GtkWidget *, std::string > buttons;
 		GladeXML *xml;
-				
+		GtkWidget *container;
+		
 		std::string xdataid;
 		std::string sessionid;
 		std::string session;

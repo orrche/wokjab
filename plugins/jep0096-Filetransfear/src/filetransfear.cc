@@ -70,18 +70,14 @@ WoklibPlugin(wls)
 	EXP_SIGHOOK("Jabber Stream File Status Position", &jep96::Position, 500);
 	EXP_SIGHOOK("Jabber Stream File Status Connected", &jep96::Connected, 500);
 	EXP_SIGHOOK("Jabber Stream File Status Terminated", &jep96::Terminated, 500);
-	EXP_SIGHOOK("Jabber Stream File Status Finnished", &jep96::Finnished, 500);
+	EXP_SIGHOOK("Jabber Stream File Status Finished", &jep96::Finnished, 500);
 	EXP_SIGHOOK("Jabber Stream File Status Rejected", &jep96::Rejected, 500);
 	EXP_SIGHOOK("Jabber Stream File Status Accepted", &jep96::Accepted, 500);
-	filetag = NULL;
 	sidnum = 0;
 }
 
 jep96::~jep96()
-{
-	if(filetag)
-		delete filetag;
-	
+{	
 	std::map <std::string, WokXMLTag*>::iterator iter;
 	
 	for( iter = sessions.begin() ; iter != sessions.end() ; iter++)
@@ -270,7 +266,6 @@ jep96::SendFile(WokXMLTag *xml)
 	file_tag.AddAttr("name", filename);
 	file_tag.AddAttr("size", ssize);
 	file_tag.AddTag("range");
-	filetag = new WokXMLTag (file_tag);
 	
 	WokXMLTag &feature_tag = si_tag.AddTag("feature");
 	feature_tag.AddAttr("xmlns", "http://jabber.org/protocol/feature-neg");
@@ -286,8 +281,14 @@ jep96::SendFile(WokXMLTag *xml)
 	wls->SendSignal("Jabber XML IQ Send", msgtag);
 	
 	WokXMLTag *data = new WokXMLTag (msgtag);
+	data->AddAttr("proxy", xml->GetAttr("proxy"));
+	data->AddAttr("rate", xml->GetAttr("rate"));
 	data->AddAttr("file", file);
 	data->AddAttr("strsize", PrettySize(size));
+	data->AddTag(&file_tag);
+	
+	std::cout << "Data: " << data << std::endl;
+	
 	sessions[iqtag.GetAttr("id")] = data;
 	
 	EXP_SIGHOOK("Jabber XML IQ ID "  + iqtag.GetAttr("id"), &jep96::SendReply, 500);
@@ -301,7 +302,7 @@ jep96::Finnished(WokXMLTag *fintag)
 	GtkTreeIter iter;
 	if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[fintag->GetAttr("sid")])))
 	{
-		gtk_list_store_set (file_store, &iter, 2, "Finnished" , -1);
+		gtk_list_store_set (file_store, &iter, 2, "Finished" , -1);
 	}
 
 
@@ -355,7 +356,7 @@ jep96::PrettySize(unsigned long long size)
 	}
 	else if ( size > 1024 * 1024 )
 	{
-		divider = 1024 * 10245;
+		divider = 1024 * 1024;
 		ending = "MB";
 	}
 	else if ( size > 1024 )	
@@ -455,9 +456,11 @@ jep96::SendReply(WokXMLTag *msgtag)
 		if ( method.find(" ") == std::string::npos )
 		{
 			WokXMLTag filesend(NULL, "file");
-			filesend.AddTag(filetag);
+			filesend.AddTag(&sessions[id]->GetFirstTag("file"));
 			filesend.AddAttr("file", sessions[id]->GetAttr("file"));
 			filesend.AddAttr("to", sessions[id]->GetFirstTag("iq").GetAttr("to"));
+			filesend.AddAttr("rate", sessions[id]->GetAttr("rate"));
+			filesend.AddAttr("proxy", sessions[id]->GetAttr("proxy"));
 			filesend.AddAttr("sid", sid);
 			filesend.AddAttr("session", msgtag->GetAttr("session"));
 			wls->SendSignal("Jabber Stream File Send Method " + method, filesend);

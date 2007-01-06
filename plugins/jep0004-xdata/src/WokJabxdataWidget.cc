@@ -36,6 +36,9 @@ using std::cout;
 WokJabxdataWidget::WokJabxdataWidget(WLSignal *wls, WokXMLTag *tag_iq) : WLSignalInstance(wls),
 replsig(tag_iq->GetAttr("signal"))
 {
+
+std::cout << "Signal: " << replsig << std::endl;
+	
 	WokXMLTag* tag_title;
 	WokXMLTag* tag_instructions;
 	WokXMLTag *tag_x = &tag_iq->GetFirstTag("x");
@@ -158,11 +161,12 @@ WokJabxdataWidget::OkButton (GtkWidget * widget, WokJabxdataWidget *c)
 {
 	// Need to cache this because get data deletes the class ;) 
 	std::string repsig = c->replsig;
+	WLSignal *wls = c->wls;
 	
 	WokXMLTag repltag(NULL, "data");
 	c->GetData(&repltag);
 	
-	c->wls->SendSignal(c->replsig, &repltag);
+	wls->SendSignal(repsig, &repltag);
 }
 
 int

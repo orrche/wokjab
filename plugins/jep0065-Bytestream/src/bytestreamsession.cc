@@ -63,18 +63,35 @@ session(xml->GetAttr("session"))
 		filename = reqauth.GetFirstTag("file").GetAttr("name");
 		lsid = reqauth.GetFirstTag("file").GetAttr("lsid");
 		
-		WokXMLTag sockettag ( NULL, "socket");
-		sockettag.AddAttr("hostname", xml->GetFirstTag("iq").GetFirstTag("query").GetFirstTag("streamhost").GetAttr("host"));
-		sockettag.AddAttr("port", xml->GetFirstTag("iq").GetFirstTag("query").GetFirstTag("streamhost").GetAttr("port"));
-		sockettag.AddAttr("cmd", "1");
-		sockettag.AddAttr("atype", "3");
-		sockettag.AddAttr("dst.addr", sha1);
-		sockettag.AddAttr("dst.port", "0");
+		std::list <WokXMLTag*>::iterator hostiter;
+		std::string s5id = "";
 		
-		wls->SendSignal("SOCKS5 Connect", sockettag);
-		
-		EXP_SIGHOOK("SOCKS5 Connection Established " + sockettag.GetAttr("id"), &jep65Session::SOCKS_Established, 1000);
-		EXP_SIGHOOK("SOCKS5 Connection Data " + sockettag.GetAttr("id"), &jep65Session::SOCKS_Data, 1000);
+		for ( hostiter = xml->GetFirstTag("iq").GetFirstTag("query").GetTagList("streamhost").begin() ;
+								hostiter != xml->GetFirstTag("iq").GetFirstTag("query").GetTagList("streamhost").end() ;
+								hostiter++)
+		{
+			WokXMLTag sockettag ( NULL, "socket");
+			sockettag.AddAttr("hostname", (*hostiter)->GetAttr("host"));
+			sockettag.AddAttr("port", (*hostiter)->GetAttr("port"));
+			sockettag.AddAttr("cmd", "1");
+			sockettag.AddAttr("atype", "3");
+			sockettag.AddAttr("dst.addr", sha1);
+			sockettag.AddAttr("dst.port", "0");
+			
+			wls->SendSignal("SOCKS5 Connect", sockettag);
+			if ( sockettag.GetAttr("result") != "error")
+			{
+				s5id = sockettag.GetAttr("id");
+				usedstreamhost = (*hostiter)->GetAttr("jid");
+			}
+		}
+		if ( !s5id.empty() )
+		{
+			EXP_SIGHOOK("SOCKS5 Connection Established " + s5id, &jep65Session::SOCKS_Established, 1000);
+			EXP_SIGHOOK("SOCKS5 Connection Data " + s5id, &jep65Session::SOCKS_Data, 1000);
+		}
+		else
+			delete this;
 	}
 	else
 	{
@@ -160,7 +177,7 @@ jep65Session::SOCKS_Established(WokXMLTag *tag)
 	repiq.AddAttr("id", orig->GetFirstTag("iq").GetAttr("id"));
 	WokXMLTag &querytag = repiq.AddTag("query");
 	querytag.AddAttr("xmlns", "http://jabber.org/protocol/bytestreams");
-	querytag.AddTag("streamhost-used").AddAttr("jid",orig->GetFirstTag("iq").GetFirstTag("query").GetFirstTag("streamhost").GetAttr("jid"));
+	querytag.AddTag("streamhost-used").AddAttr("jid",usedstreamhost);
 	wls->SendSignal("Jabber XML Send", &msgtag);
 	return 1;
 }

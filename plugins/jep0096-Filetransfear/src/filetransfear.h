@@ -59,7 +59,6 @@ class jep96 : public WoklibPlugin
 	protected:
 		std::map <std::string, WokXMLTag *> sessions;
 		int sidnum;
-		WokXMLTag *filetag;
 		GladeXML *gxml;
 		GtkWidget *filewindow;
 		GtkListStore *file_store;
