@@ -37,18 +37,18 @@ session(session)
 	this->mynick = mynick;
 	fontsize = 1;
 	minimized = false;
-	
+
 	xml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/groupchat.glade", "groupchat", NULL);
 	inputview = glade_xml_get_widget (xml, "input");
 	outputview = glade_xml_get_widget(xml, "view");
 	occupantlist = glade_xml_get_widget(xml, "occupantlist");
 	eventbox = glade_xml_get_widget(xml, "groupchat");
 	subject_entry = glade_xml_get_widget(xml, "subject");
-	
+
 	GtkCellRenderer *renderer;
 	GtkTreeViewColumn *column;
 	GtkTooltips *tooltip;
-	
+
 	g_signal_connect ((gpointer) inputview, "focus-in-event",
                     G_CALLBACK (GroupChatWidget::focus_event),this);
 	g_signal_connect ((gpointer) inputview, "focus-out-event",
@@ -59,10 +59,10 @@ session(session)
 										GTK_SIGNAL_FUNC (GroupChatWidget::key_press_handler), this);
 	g_signal_connect((gpointer) outputview, "scroll-event",
 										G_CALLBACK (GroupChatWidget::Scroll), this);
-										
+
 	outputbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(outputview));
 	inputbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(inputview));
-		
+
 	GtkTextIter iter;
 	gtk_text_buffer_get_start_iter (outputbuffer, &iter);
 	gtk_text_buffer_insert(outputbuffer, &iter, " ", 1);
@@ -71,7 +71,7 @@ session(session)
 
 	// The liste views settings
 	model = gtk_list_store_new (4, G_TYPE_STRING, G_TYPE_STRING, GDK_TYPE_PIXBUF, GDK_TYPE_PIXBUF);
-				  
+
 	renderer = gtk_cell_renderer_pixbuf_new ();
 	column = gtk_tree_view_column_new_with_attributes ("status",
 							 renderer,
@@ -84,22 +84,22 @@ session(session)
 							 renderer,
 							 "pixbuf",
 							 3,
-							 NULL);				 
+							 NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW(occupantlist), column);
 	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes ("Nick",
 							 renderer,
 							 "text",
 							 0,
-							 NULL);				 
+							 NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW(occupantlist), column);
-	
+
 	gtk_tree_view_set_model (GTK_TREE_VIEW(occupantlist), GTK_TREE_MODEL (model));
 
-	g_signal_connect (G_OBJECT (occupantlist), "button_press_event", 
+	g_signal_connect (G_OBJECT (occupantlist), "button_press_event",
 		G_CALLBACK (GroupChatWidget::popup_menu), this);
 	// Colors
-	
+
 	// Assigning a color for the tab
 	// Should make this a configurable color
 	color_red.red = 66535/2;
@@ -110,7 +110,7 @@ session(session)
 	color_blue.green = 0;
 	color_blue.blue = 66535/2;
 	gdk_color_parse ("blue", &color_blue);
-	
+
 	// The label
 	GtkWidget *label_hbox;
 	GtkWidget *label_image;
@@ -128,38 +128,38 @@ session(session)
 	gtk_container_add(GTK_CONTAINER(label_eventbox), label_hbox);
 	g_signal_connect((gpointer) minimize_button, "clicked",
 									G_CALLBACK (GroupChatWidget::Minimize_button), this);
-	
-	
+
+
 	Defocus();
-	
+
 	config = new WokXMLTag (NULL, "NULL");
 	EXP_SIGHOOK("Config XML Change /groupchat/window", &GroupChatWidget::Config, 500);
 	WokXMLTag conftag(NULL, "config");
 	conftag.AddAttr("path", "/groupchat/window");
 	wls->SendSignal("Config XML Trigger", &conftag);
-		
+
 	mainwindowplug = gtk_plug_new(0);
 	labelplug = gtk_plug_new(0);
-	
+
 	gtk_container_add(GTK_CONTAINER(mainwindowplug), eventbox);
 	gtk_container_add(GTK_CONTAINER(labelplug), label_eventbox);
-	
+
 	g_object_ref(eventbox);
 	g_object_ref(label_eventbox);
-	
+
 	gtk_widget_show_all(mainwindowplug);
 	gtk_widget_show_all(labelplug);
-	
+
 	/* Uhm...
 	std::stringstream sig;
-	EXP_SIGHOOK(sig.str(), &GroupChatWidget::Close, 500);	
+	EXP_SIGHOOK(sig.str(), &GroupChatWidget::Close, 500);
 	*/
-	
+
 	GError *err = NULL;
 	roles["moderator"] = gdk_pixbuf_new_from_file(PACKAGE_DATA_DIR"/wokjab/groupchat/wokjab/moderator.png", &err);
 	roles["participant"] = gdk_pixbuf_new_from_file(PACKAGE_DATA_DIR"/wokjab/groupchat/wokjab/participant.png", &err);
 	roles["visitor"] = gdk_pixbuf_new_from_file(PACKAGE_DATA_DIR"/wokjab/groupchat/wokjab/visitor.png", &err);
-	
+
 	presence[""] = gdk_pixbuf_new_from_file(PACKAGE_DATA_DIR"/wokjab/online.png", &err);
 	presence["away"] = gdk_pixbuf_new_from_file(PACKAGE_DATA_DIR"/wokjab/away.png", &err);
 	presence["dnd"] = gdk_pixbuf_new_from_file(PACKAGE_DATA_DIR"/wokjab/dnd.png", &err);
@@ -169,7 +169,7 @@ session(session)
 GroupChatWidget::~GroupChatWidget ()
 {
 	EXP_SIGUNHOOK("Config XML Change /groupchat/window", &GroupChatWidget::Config, 500);
-	
+
 	if ( mainwindowplug )
 	{
 		char buf[20];
@@ -177,36 +177,36 @@ GroupChatWidget::~GroupChatWidget ()
 		config->GetFirstTag("textarea").AddAttr("height", buf);
 		sprintf(buf, "%d", gtk_paned_get_position (GTK_PANED(glade_xml_get_widget(xml, "hpaned"))));
 		config->GetFirstTag("textarea").AddAttr("width", buf);
-		
+
 		WokXMLTag conftag(NULL, "config");
 		conftag.AddAttr("path", "/groupchat/window");
 		conftag.AddTag(config);
-		
+
 		wls->SendSignal("Config XML Store", &conftag);
-		
+
 		gtk_widget_destroy(mainwindowplug);
-	
+
 	}
 	if( labelplug )
 		gtk_widget_destroy(labelplug);
-	
+
 	std::string message;
-	message = "<presence to='" + roomjid + "' type='unavailable'/>";	
-	
+	message = "<presence to='" + roomjid + "' type='unavailable'/>";
+
 	WokXMLTag msgtag(NULL, "message");
 	msgtag.AddAttr("session", session);
 	WokXMLTag &presencetag = msgtag.AddTag("presence");
 	presencetag.AddAttr("to",roomjid);
 	presencetag.AddAttr("type","unavailable");
-	
-	
+
+
 	wls->SendSignal("Jabber XML Send", &msgtag);
-	
+
 	mclass->Remove(session, roomjid, this);
-	
-	if( config ) 
+
+	if( config )
 		delete config;
-		
+
 	g_object_unref(xml);
 }
 
@@ -226,7 +226,7 @@ GroupChatWidget::Scroll (GtkWidget *widget, GdkEventScroll *event, GroupChatWidg
 			default:
 				return FALSE;
 		}
-		
+
 		GtkTextIter startiter;
 		GtkTextIter enditer;
 		gtk_text_buffer_get_start_iter(c->outputbuffer, &startiter);
@@ -235,7 +235,7 @@ GroupChatWidget::Scroll (GtkWidget *widget, GdkEventScroll *event, GroupChatWidg
 		GtkTextTag *oldtag = gtk_text_tag_table_lookup(tag_table, "fontsize");
 		if ( oldtag )
 			gtk_text_tag_table_remove(tag_table, oldtag);
-		
+
 		GtkTextTag *tag = gtk_text_buffer_create_tag (c->outputbuffer, "fontsize","scale", c->fontsize, NULL);
 		gtk_text_buffer_remove_tag_by_name (c->outputbuffer, "fontsize", &startiter, &enditer);
 		gtk_text_buffer_apply_tag (c->outputbuffer, tag, &startiter, &enditer);
@@ -258,7 +258,7 @@ GroupChatWidget::Minimize_button(GtkButton *button, GroupChatWidget *c)
 	sprintf(buf, "%d", c->GetWidget());
 	WokXMLTag widget(NULL, "widget");
 	widget.AddAttr("widget", buf);
-	
+
 	c->wls->SendSignal("GUI WindowDock HideWidget", widget);
 }
 
@@ -283,7 +283,7 @@ GroupChatWidget::focus_event (GtkWidget *widget, GdkEventFocus *event, GroupChat
 		c->Focus();
 	else
 		c->Defocus();
-	
+
 	return false;
 }
 
@@ -292,29 +292,29 @@ GroupChatWidget::popup_menu(GtkTreeView *tree_view, GdkEventButton *event, Group
 {
 	GtkTreePath      *path;
 
-	if (event->button == 3 && 
-		gtk_tree_view_get_path_at_pos (tree_view, (int)event->x, (int)event->y, &path, NULL, NULL, NULL)) 
+	if (event->button == 3 &&
+		gtk_tree_view_get_path_at_pos (tree_view, (int)event->x, (int)event->y, &path, NULL, NULL, NULL))
 	{
 		GtkTreeSelection *selection;
 		GtkTreeIter iter;
 		gchar *jid;
-		
+
 		selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(c->occupantlist));
 		gtk_tree_selection_unselect_all (selection);
 		gtk_tree_selection_select_path (selection, path);
 		gtk_tree_model_get_iter (GTK_TREE_MODEL(c->model), &iter, path);
 
 		gtk_tree_model_get(GTK_TREE_MODEL(c->model), &iter, 1, &jid, -1);
-		
+
 		if(!jid)
 		{
 			WokXMLTag sigtag(NULL, "message");
 			sigtag.AddAttr("type", "in");
 			sigtag.AddTag("body").AddText("No jid for this entry");
 			c->wls->SendSignal("Display Message", sigtag);
-			return false;			
+			return false;
 		}
-		
+
 		char buf[20];
 		WokXMLTag MenuXML(NULL, "menu");
 		sprintf(buf, "%d", event->button);
@@ -327,29 +327,29 @@ GroupChatWidget::popup_menu(GtkTreeView *tree_view, GdkEventButton *event, Group
 		data.AddAttr("jid", jid);
 		data.AddAttr("session", c->session);
 		c->wls->SendSignal("Jabber GUI JIDMenu", &MenuXML);
-				
+
 		gtk_tree_path_free (path);
-		
+
 		return true;
 	}
 	return false;
 }
 
-gboolean 
+gboolean
 GroupChatWidget::subject_activation( GtkWidget *widget, gpointer user_data )
 {
 	GroupChatWidget *data;
 	data = static_cast < GroupChatWidget *>(user_data);
-	
+
 	std::string text = XMLisize(gtk_entry_get_text(GTK_ENTRY(widget)));
-	
+
 	WokXMLTag msgtag(NULL, "message");
 	msgtag.AddAttr("session", data->session);
 	WokXMLTag &mtag = msgtag.AddTag("message");
 	mtag.AddAttr("to", data->roomjid);
 	mtag.AddAttr("type", "groupchat");
 	mtag.AddTag("subject").AddText(text);
-	
+
 	data->wls->SendSignal("Jabber XML Send", &mtag);
 
 	return true;
@@ -364,7 +364,7 @@ GroupChatWidget::own_message(std::string msg )
 	message.AddAttr("to", roomjid);
 	message.AddAttr("type", "groupchat");
 	message.AddTag("body").AddText(XMLisize(msg));
-	
+
 	wls->SendSignal("Jabber XML Send", &msgtag);
 
 	return 1;
@@ -384,28 +384,28 @@ GroupChatWidget::GetLabel()
 
 int
 GroupChatWidget::Config (WokXMLTag *tag)
-{	
-	if( config ) 
+{
+	if( config )
 		delete config;
 	config = new WokXMLTag (tag->GetFirstTag("config"));
 
 	std::list <WokXMLTag *>::iterator iter;
 	std::list <WokXMLTag *> *list;
-	
+
 	list = &config->GetFirstTag("color").GetTags();
 	for( iter = list->begin() ; iter != list->end(); iter++)
 	{
 		tags[(*iter)->GetName()] = gtk_text_buffer_create_tag( outputbuffer, NULL, "foreground", (*iter)->GetAttr("data").c_str(), NULL);
 	}
-	
+
 	/*
 	int width = atoi(config->GetFirstTag("textarea").GetAttr("width").c_str());
 	int height = atoi(config->GetFirstTag("textarea").GetAttr("height").c_str());
-	
+
 	gtk_paned_set_position (GTK_PANED(glade_xml_get_widget(xml, "hpaned")), width);
 	gtk_paned_set_position (GTK_PANED(glade_xml_get_widget(xml, "vpaned")), height);
 	*/
-	
+
 	return true;
 }
 
@@ -414,16 +414,16 @@ GroupChatWidget::Message (WokXMLTag& tag_msg)
 {
 	GtkTextIter iter;
 	std::string str;
-	
+
 	gtk_text_buffer_get_iter_at_mark(outputbuffer, &iter, end_mark);
 	if(tag_msg.GetFirstTag("subject").GetBody().size())
 		gtk_entry_set_text(GTK_ENTRY(subject_entry), tag_msg.GetFirstTag("subject").GetBody().c_str());
 
 	if(tag_msg.GetFirstTag("body").GetBody().size())
-	{	
+	{
 		std::string message = tag_msg.GetFirstTag("body").GetBody() + "\n";
 		std::string timestamp = GetTimeStamp(tag_msg);
-		
+
 		if(!focus)
 		{
 			gtk_widget_modify_fg(GTK_WIDGET(label_label), GTK_STATE_ACTIVE, &color_red);
@@ -456,17 +456,17 @@ GroupChatWidget::Message (WokXMLTag& tag_msg)
 						gtk_widget_modify_fg(GTK_WIDGET(label_label), GTK_STATE_ACTIVE, &color_blue);
 						gtk_widget_modify_fg(GTK_WIDGET(label_label), GTK_STATE_NORMAL, &color_blue);
 					}
-		
+
 					gtk_text_buffer_insert_with_tags (outputbuffer, &iter, str.c_str(), str.length(), tags["highlight"], NULL);
 				}
-					
+
 				gtk_text_buffer_insert_with_tags (outputbuffer, &iter, message.c_str(), message.length(), tags["forreign_text"], NULL);
 			}
 		}
 	}
 	gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (outputview),
 				      end_mark, 0.4, TRUE, 1, 1);
-	
+
 	return 1;
 }
 
@@ -476,16 +476,16 @@ GroupChatWidget::key_press_handler(GtkWidget * widget, GdkEventKey * event,
 {
 	GroupChatWidget *obj;
 	obj = static_cast < GroupChatWidget * > ( data );
-	
+
 	if ((event->keyval == GDK_Return || event->keyval == GDK_KP_Enter)
 	    && !(event->state & GDK_CONTROL_MASK))
 	{
 		std::string str;
 		GtkTextIter start_iter, end_iter;
-		
+
 		gtk_text_buffer_get_start_iter(obj->inputbuffer, &start_iter);
 		gtk_text_buffer_get_end_iter(obj->inputbuffer, &end_iter);
-		
+
 		str = gtk_text_buffer_get_text(obj->inputbuffer,&start_iter, &end_iter, false);
 		gtk_text_buffer_set_text(obj->inputbuffer, "", 0 );
 		obj->own_message(str);
@@ -495,32 +495,32 @@ GroupChatWidget::key_press_handler(GtkWidget * widget, GdkEventKey * event,
 	{
 		GtkTextIter start;
 		GtkTextIter end;
-		
+
 		GtkTextMark *cursor =  gtk_text_buffer_get_insert(obj->inputbuffer);
 		gtk_text_buffer_get_iter_at_mark (obj->inputbuffer, &start, cursor);
 		gtk_text_buffer_get_iter_at_mark (obj->inputbuffer, &end, cursor);
-		
+
 		if( gtk_text_iter_backward_word_start(&start) )
 		{
 			std::string nick;
 			std::string word;
 			int num = 0;
-			
+
 			word = gtk_text_buffer_get_text(obj->inputbuffer,&start, &end, false);
-			
+
 			std::map<std::string, GtkTreeRowReference*>::iterator ppl;
-			
+
 			for( ppl = obj->participants.begin() ; ppl != obj->participants.end() ; ppl++)
 			{
 				if ( ppl->first.substr(0, word.size()) == word )
 				{
 					if ( num++ )
 						return true;
-					
+
 					nick = ppl->first;
 				}
 			}
-			
+
 			if( num == 1 )
 			{
 				gtk_text_buffer_insert_interactive_at_cursor
@@ -535,10 +535,10 @@ GroupChatWidget::key_press_handler(GtkWidget * widget, GdkEventKey * event,
                                              true);
 			}
 		}
-		
+
 		return true;
 	}
-	
+
 	return false;
 }
 
@@ -548,24 +548,28 @@ GroupChatWidget::GetTimeStamp(WokXMLTag& tag_body)
 	std::list<WokXMLTag *>::iterator iter;
 	std::string stamp = "";
 	std::string ret;
-	
+
 	for( iter = tag_body.GetTagList("x").begin() ; iter != tag_body.GetTagList("x").end() ; iter++)
 	{
 		if( (*iter)->GetAttr("xmlns") == "jabber:x:delay")
 			stamp = (*iter)->GetAttr("stamp");
 	}
-	
+
 	if( stamp.size())
 	{
+#ifdef __WIN32
+#else
 		struct tm tp;
 		strptime (stamp.c_str(), "%Y%m%dT%T", &tp);
+
 		ret = GetTimeStamp(mktime(&tp));
+#endif
 	}
 	else
 	{
 		ret = GetTimeStamp(time(0));
 	}
-	
+
 	return ret;
 }
 
@@ -578,11 +582,11 @@ GroupChatWidget::GetTimeStamp(time_t t)
 	const char *timestamp;
 
 	tm = localtime (&t);
-	
+
 	buf[0] = 0;
 
 	timestamp = config->GetFirstTag("timestamp").GetFirstTag("format").GetBody().c_str();
-	
+
 	strftime (buf, sizeof (buf),timestamp, tm);
 	return buf;
 }
@@ -600,7 +604,7 @@ GroupChatWidget::Presence(WokXMLTag *tag)
 		GtkTextIter iter;
 		gtk_text_buffer_get_iter_at_mark(outputbuffer, &iter, end_mark);
 		std::string str = "Error presence recived, probably you wasnt allowed to enter the room\n";
-		
+
 		gtk_text_buffer_insert (outputbuffer, &iter, str.c_str(), str.length());
 		gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (outputview),
 				      end_mark, 0.4, TRUE, 1, 1);
@@ -623,20 +627,20 @@ GroupChatWidget::Presence(WokXMLTag *tag)
 		else
 		{
 			GtkTreePath *path = gtk_tree_row_reference_get_path (participants[tag->GetAttr("nick")]);
-			
+
 			gtk_tree_model_get_iter(GTK_TREE_MODEL(model), &RosterIter, path);
 			gtk_tree_path_free (path);
 		}
-		
+
 		if ( roles.find(role) == roles.end() )
 				roles[role] = NULL;
 		if ( presence.find(tag_presence->GetFirstTag("show").GetBody()) == presence.end() )
 				presence[tag_presence->GetFirstTag("show").GetBody()] = NULL;
-			
+
 		gtk_list_store_set (model, &RosterIter,
-					0, tag->GetAttr("nick").c_str(), 
-					1, tag_presence->GetAttr("from").c_str(), 
-					2, roles[role], 
+					0, tag->GetAttr("nick").c_str(),
+					1, tag_presence->GetAttr("from").c_str(),
+					2, roles[role],
 					3, presence[tag_presence->GetFirstTag("show").GetBody()], -1);
 	}
 	else
@@ -650,13 +654,13 @@ GroupChatWidget::Presence(WokXMLTag *tag)
 		}
 		else
 			message = tag->GetAttr("nick") + " has left but something wierd happend";
-		
+
 	}
 	if(message.size())
-	{	
+	{
 		GtkTextIter iter;
 		gtk_text_buffer_get_iter_at_mark(outputbuffer, &iter, end_mark);
-	
+
 		message += '\n';
 		gtk_text_buffer_insert_with_tags (outputbuffer, &iter, message.c_str(), message.length(), tags["notice"], NULL);
 		gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (outputview),
@@ -670,7 +674,7 @@ GroupChatWidget::Presence(WokXMLTag *tag)
 			/*
 			std::string iqmsg = "<query xmlns='http://jabber.org/protocol/muc#owner'/>";
 			*/
-			
+
 			WokXMLTag msgtag(NULL, "message");
 			msgtag.AddAttr("session", session);
 			WokXMLTag &iqtag = msgtag.AddTag("iq");
@@ -678,9 +682,9 @@ GroupChatWidget::Presence(WokXMLTag *tag)
 			iqtag.AddAttr("to", roomjid);
 			WokXMLTag &querytag = iqtag.AddTag("query");
 			querytag.AddAttr("xmlns", "http://jabber.org/protocol/muc#owner");
-			
+
 			wls->SendSignal("Jabber XML IQ Send", &msgtag);
-			
+
 			new ownerwidget(wls, session, roomjid, iqtag.GetAttr("id")); // Has selfdestruct...
 		}
 	}
@@ -695,7 +699,7 @@ GroupChatWidget::Focus()
 
 	gtk_widget_modify_fg(GTK_WIDGET(label_label), GTK_STATE_ACTIVE, NULL);
 	gtk_widget_modify_fg(GTK_WIDGET(label_label), GTK_STATE_NORMAL, NULL);
-	
+
 	gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (outputview),
 				      end_mark, .4, TRUE, 1, 1);
 }

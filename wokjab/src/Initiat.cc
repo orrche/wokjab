@@ -1,5 +1,5 @@
-/***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <oden@gmx.net>
+/**************************************************************************
+ *  Copyright (C) 2003-2007  Kent Gustavsson <oden@gmx.net>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,7 +18,13 @@
 
 #include "../include/Initiat.h"
 #include <string>
+#ifdef __WIN32
+#include <winsock.h>
+typedef unsigned int uint;
+#else
 #include <sys/utsname.h>
+#endif
+
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
@@ -33,6 +39,13 @@ sj(sj)
 	EXP_SIGHOOK("Jabber XML IQ New query get xmlns:jabber:iq:version", &Initiat::Version, 500);
 	logged_in = false;
 
+#ifdef __WIN32
+    WSAData wsad;
+    if ( WSAStartup(1,&wsad) != 0)
+    {
+        woklib_error(wls,"Couldn't init WSA no connections will be possibule");
+    }
+#endif
 
 	/*
 	WokXMLTag conf2tag(NULL, "config");
@@ -48,13 +61,16 @@ sj(sj)
 
 Initiat::~Initiat ()
 {
+#ifdef __WIN32
+    WSACleanup();
+#endif
 }
 
 int
 Initiat::Plugins(WokXMLTag *xml)
 {
 	std::cout << "PLUGINS: " << *xml << std::endl;
-	
+
 	return 1;
 }
 
@@ -68,7 +84,7 @@ Initiat::AddWatcher(WokXMLTag *xml)
 	sprintf(freebuf, "Socket Availibule %d", id);
 	freesockets[atoi(xml->GetAttr("socket").c_str())] = freebuf;
 	xml->AddAttr("signal", freebuf);
-	
+
 	GIOChannel *source = g_io_channel_unix_new (socket);
 	errorsockets[socket].push_back( g_io_add_watch(source, (GIOCondition)(G_IO_OUT | G_IO_NVAL), (GIOFunc) &Initiat::input_callback, this));
 
@@ -86,10 +102,10 @@ Initiat::AddListener(WokXMLTag *xml)
 	sprintf(buf, "Socket Activate %d", id);
 	sockets[atoi(xml->GetAttr("socket").c_str())] = buf;
 	xml->AddAttr("signal", buf);
-	
+
 	GIOChannel *source = g_io_channel_unix_new (socket);
 	errorsockets[socket].push_back( g_io_add_watch(source, (GIOCondition)(G_IO_IN | G_IO_NVAL), (GIOFunc) &Initiat::input_callback, this));
-	
+
 	return 0;
 }
 
@@ -116,13 +132,13 @@ Initiat::input_callback(GIOChannel *source, GIOCondition condition, Initiat *c)
 	if( condition & G_IO_NVAL )
 	{
 		std::vector<uint>::iterator iter;
-		
+
 		for( iter = c->errorsockets[socket].begin() ; iter != c->errorsockets[socket].end() ; iter++)
 			g_source_remove(*iter);
-		
+
 		return FALSE;
 	}
-	
+
 	if(sigdata.GetAttr("error").size() || sigdata.GetAttr("stop").size() || ret == 0)
 	{
 		if ( condition == G_IO_IN )
@@ -139,8 +155,8 @@ Initiat::input_callback(GIOChannel *source, GIOCondition condition, Initiat *c)
 	return TRUE;
 }
 
-int 
-Initiat::Connected(WokXMLTag *tag) 
+int
+Initiat::Connected(WokXMLTag *tag)
 {
 	WokXMLTag msgtag(NULL,"message");
 	msgtag.AddAttr("session", tag->GetAttr("session"));
@@ -166,13 +182,16 @@ Initiat::Version(WokXMLTag *tag)
 	querytag.AddTag("version").AddText(VERSION);
 #endif
 
-	
+
+#ifdef __WIN32
+#else
 	struct utsname buf;
 	uname(&buf);
 	int i(0);
-	
+
 	querytag.AddTag("os").AddText(std::string(buf.sysname) + " " + buf.release);
+#endif
 	wls->SendSignal("Jabber XML Send", &msgtag);
-	
+
 	return 1;
 }

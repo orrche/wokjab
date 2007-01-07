@@ -27,6 +27,7 @@
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 #include <iostream>
+#include <sstream>
 
 #define NOTSEND current_tag=="presence" || current_tag == "message" || current_tag == "iq"
 
@@ -61,23 +62,38 @@ XML_Input::read_data (int source)
 {
 	char buffer[BUFFSIZE+1];
 	int len;
-		
+
 	if(ssl)
 	{
 		len = SSL_read(ssl, buffer, BUFFSIZE);
+		if ( len < 0 )
+		{
+            switch ( SSL_get_error(ssl, len) )
+            {
+                case SSL_ERROR_WANT_READ:
+                case SSL_ERROR_WANT_WRITE:
+                case SSL_ERROR_WANT_CONNECT:
+                case SSL_ERROR_WANT_ACCEPT:
+                    return 2;
+            }
+		}
 	}
 	else
 	{
 		len = recv (source, buffer, BUFFSIZE, 0);
 	}
 
-	if (len == 0 || len == -1)  // wounder what this really could result in
+	if (len == -1 || len == -1)  // wounder what this really could result in
 	{/* Connection closed */
+        std::stringstream sstr;
+        sstr << len << " ssl: " << ssl;
+
+        woklib_message(wls,"Assuming that the connection is closed..." + sstr.str());
 		return 0;
 	}
-	
+
 	buffer[len] = 0;
-	
+
 #ifdef DEBUG
 	{
 		WokXMLTag sigtag(NULL, "message");
@@ -86,7 +102,7 @@ XML_Input::read_data (int source)
 		wls->SendSignal("Display Socket", sigtag);
 	}
 #endif // DEBUG
-	
+
 	if (!XML_Parse (p, buffer, len, 0))
 	{
 		std::string msg;
@@ -95,7 +111,7 @@ XML_Input::read_data (int source)
 		msg += ":\n";
 		msg +=  XML_ErrorString (XML_GetErrorCode (p));
 		msg += '\n';
-		
+
 		WokXMLTag sigtag(NULL, "message");
 		sigtag.AddTag("body").AddText(std::string("Error Socket Recv: ") + msg);
 		wls->SendSignal("Display Error", sigtag);
@@ -111,7 +127,7 @@ void
 XML_Input::start (const char *el, const char **attr)
 {
 	depth++;
-	
+
 	if(depth > 1 )
 	{
 		if(depth == 2)
@@ -121,7 +137,7 @@ XML_Input::start (const char *el, const char **attr)
 		for (int i = 0; attr[i]; i += 2)
 			current_xml_tag->AddAttr(attr[i], attr[i+1]);
 	}
-	
+
 	if (depth == 2)
 	{
 		current_tag = el;
@@ -163,10 +179,10 @@ XML_Input::start (const char *el, const char **attr)
 void
 XML_Input::contence (const char *string, int len)
 {
-	if( current_xml_tag ) 
+	if( current_xml_tag )
 	{
 		std::string str = std::string(string, 0 , len );
-	
+
 		current_xml_tag->AddText(str);
 	}
 }
@@ -177,7 +193,7 @@ XML_Input::end (const char *el)
 	depth--;
 	if (depth == 0)
 	{
-		
+
 		// This might not be the greatest place to put this...
 		if (std::string(el) == "stream:stream")  // Connection closing
 		{
@@ -192,7 +208,7 @@ XML_Input::end (const char *el)
 		WokXMLTag msgtag(NULL, "message");
 		msgtag.AddTag(current_xml_tag);
 		msgtag.AddAttr("session", session);
-		
+
 		wls->SendSignal("Jabber XML Object " + current_tag, &msgtag);
 		delete current_xml_tag;
 		current_xml_tag = NULL;
@@ -208,7 +224,7 @@ XML_Input::SetSSL(::SSL * s)
 	{
 		//XML_ParserFree(p);
 		p = XML_ParserCreate (NULL); // FIX shouldnt this be cleared ?
-		
+
 		XML_SetUserData (p, this);
 		XML_SetElementHandler (p, xml_start, xml_end);
 		XML_SetCharacterDataHandler (p, xml_charhndl);

@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,11 +16,19 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "groupchat.h"
 
-extern "C" WoklibPlugin *maker(WLSignal *wls) {
+extern "C"
+#ifdef __WIN32
+__declspec(dllexport)
+#endif
+WoklibPlugin *maker(WLSignal *wls) {
 	return reinterpret_cast <WoklibPlugin *> (new GroupChat(wls));
 }
 
-extern "C" void destroyer(WoklibPlugin *plugin) {
+extern "C"
+#ifdef __WIN32
+__declspec(dllexport)
+#endif
+void destroyer(WoklibPlugin *plugin) {
         delete plugin;
 }
 

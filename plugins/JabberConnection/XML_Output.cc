@@ -15,16 +15,21 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-/* This is one of the sader classes in this library 
+/* This is one of the sader classes in this library
  * Horribule horribule code will follow here after
  */
 
 #include "XML_Output.h"
 #include <iostream>
+#ifdef __WIN32
+#include <winsock.h>
+typedef unsigned int uint;
+#else
 #include <netinet/in.h>
-#include <netdb.h>
-#include <errno.h>
 #include <sys/socket.h>
+#include <netdb.h>
+#endif
+#include <errno.h>
 #include <unistd.h>  // close
 
 XML_Output::XML_Output(WLSignal *wls):
@@ -36,7 +41,7 @@ wls(wls)
 
 XML_Output::~XML_Output()
 {
-	
+
 }
 
 void
@@ -53,15 +58,15 @@ XML_Output::sendxml(std::string data)
 		WokXMLTag sigtag(NULL, "message");
 		sigtag.AddTag("body").AddText("Session not connected");
 		wls->SendSignal("Display Error", sigtag);
-		
+
 		return(-1);
 	}
-	
+
 	uint bcount;
 	uint br;
 	char *str;
 	std::string msg;
-	
+
 #ifdef DEBUG
 	{
 		WokXMLTag sigtag(NULL, "message");
@@ -70,13 +75,13 @@ XML_Output::sendxml(std::string data)
 		wls->SendSignal("Display Socket", sigtag);
 	}
 #endif // DEBUG
-	
+
 	bcount = br = 0;
 
 	str =(char *) data.c_str();
 	while (bcount < data.size())
 	{
-		
+
 		if ( ssl )
 			br = SSL_write(ssl, str, data.size() - bcount);
 		else
@@ -89,16 +94,18 @@ XML_Output::sendxml(std::string data)
 		}
 		else if (br < 0)
 		{
+#ifdef __WIN32
+#else
 			char buf[50];
 			strerror_r(br, buf, 50);
 			WokXMLTag sigtag(NULL, "message");
 			sigtag.AddTag("body").AddText(std::string("Error Socket Send: ") + buf);
 			wls->SendSignal("Display Error", sigtag);
-			
+#endif
 			return (-1);
 		}
 	}
-	
+
 	return(0);
 }
 
@@ -110,7 +117,7 @@ XML_Output::sendxml(const char *data)
 
 	xml_data = data;
 	ret = sendxml(xml_data);
-	
+
 	return(ret);
 }
 

@@ -20,11 +20,19 @@
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
-extern "C" WoklibPlugin *maker(WLSignal *wls) {
+extern "C"
+#ifdef __WIN32
+__declspec(dllexport)
+#endif
+WoklibPlugin *maker(WLSignal *wls) {
 	return reinterpret_cast <WoklibPlugin *> (new Jabber(wls));
 }
 
-extern "C" void destroyer(WoklibPlugin *plugin) {
+extern "C"
+#ifdef __WIN32
+__declspec(dllexport)
+#endif
+void destroyer(WoklibPlugin *plugin) {
         delete plugin;
 }
 

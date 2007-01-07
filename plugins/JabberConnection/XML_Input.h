@@ -22,10 +22,16 @@
 
 //#include <glib.h>
 #include <expat.h>
+
+#ifdef __WIN32
+#include <winsock.h>
+#else
 #include <netinet/in.h>
 #include <netdb.h>
-#include <errno.h>
 #include <sys/socket.h>
+#endif
+
+#include <errno.h>
 
 class XML_Input;
 
@@ -42,7 +48,7 @@ class XML_Input
       public:
 	XML_Input (Connection * conn, WLSignal *wls, std::string session);
 	~XML_Input();
-	
+
 	int read_data (int source);
 	int get_depth ();
 	void SetSSL( ::SSL *s);
@@ -52,7 +58,7 @@ class XML_Input
 	void start(const char *el, const char **attr);
 	void contence(const char *string, int len);
 	void end(const char *el);
-	
+
 	private:
 
 	std::string session;

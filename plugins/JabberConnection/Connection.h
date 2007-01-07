@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2004  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,10 +18,14 @@
 #ifndef __WOKJAB_CONNECTION_H
 #define __WOKJAB_CONNECTION_H
 
+#ifdef __WIN32
+#else
 #include <netinet/in.h>
 #include <netdb.h>
-#include <errno.h>
 #include <sys/socket.h>
+#endif
+
+#include <errno.h>
 #include <unistd.h>  // close
 #include <string>
 
@@ -47,7 +51,7 @@ class Connection : public WLSignalInstance
 	Connection (WLSignal *wls, std::string in_username, std::string in_password, std::string in_server, std::string resource, int in_port, int type, std::string session);
 	~Connection();
 	int get_socket();
-	
+
 	XML_Input *xmlinput;
 	XML_Output *xmloutput;
 
@@ -56,14 +60,14 @@ class Connection : public WLSignalInstance
 	int GetSocket(WokXMLTag *tag);
 	int GetMyNick(WokXMLTag *tag);
 	int Reset(WokXMLTag *tag);
-	
+
 	void sendinit();
-	
+
 	void StartSSL();
 	void SetSSL(::SSL *s);
 	std::string GetConID();
 	void SetConID(const std::string &id);
-	
+
 	std::string username;
 	std::string password;
 	std::string server;
@@ -74,7 +78,7 @@ class Connection : public WLSignalInstance
 	private:
 
 	int openconnection();
-	
+
 	int port;
 	int socket_nr;
 	int type;

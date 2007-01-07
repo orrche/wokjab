@@ -32,30 +32,37 @@ using std::string;
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sstream>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <io.h>
 
 GUIMessageHandler::GUIMessageHandler(WLSignal *wls) : WLSignalInstance(wls)
 {
 	EXP_SIGHOOK("Jabber XML Message Normal", &GUIMessageHandler::new_message, 999);
-	EXP_SIGHOOK("Jabber GUI MessageDialog Open", &GUIMessageHandler::OpenDialog, 1000);	
-	EXP_SIGHOOK("Jabber XML Presence", &GUIMessageHandler::Presence, 1000);	
+	EXP_SIGHOOK("Jabber GUI MessageDialog Open", &GUIMessageHandler::OpenDialog, 1000);
+	EXP_SIGHOOK("Jabber XML Presence", &GUIMessageHandler::Presence, 1000);
 	EXP_SIGHOOK("Jabber GUI GetJIDMenu", &GUIMessageHandler::JIDMenu, 1000);
 	EXP_SIGHOOK("Jabber GUI MessageDialogOpenMenu", &GUIMessageHandler::MenuOpenDialog, 1000);
 	EXP_SIGHOOK("Jabber GUI Message GetSpool", &GUIMessageHandler::GetSpool, 1000);
-	
+
 	std::string datadir = PACKAGE_DATA_DIR;
 	pix_msg = gdk_pixbuf_new_from_file(std::string(datadir + "/wokjab/msg.png").c_str(),NULL);
 	msgicon = datadir + "/wokjab/msg.png";
-	
-	SpoolDir = std::string(std::getenv("HOME")) + string(CONFDIR) + "/spool/";
+
+	SpoolDir = std::string(g_get_home_dir()) + string(CONFDIR) + "/spool/";
+#ifdef __WIN32
+    mkdir(SpoolDir.c_str());
+#else
 	mkdir(SpoolDir.c_str(), 0700);
+#endif
 
 	XMLSpool = new WokXMLTag(NULL,"spool");
-	
+
 	std::string filename = SpoolDir + "spool.xml";
 	std::ifstream spoolfile( filename.c_str() , std::ios::in);
 	spoolfile >> *XMLSpool;
 	spoolfile.close();
-	
+
 	// What is this doing here ?!?
 	guiwd = new GUIWindowDock(wls);
 	id = 0;
@@ -77,17 +84,17 @@ GUIMessageHandler::WriteToSpool(WokXMLTag *tag)
 	std::ofstream outfile(filename.c_str(), std::ios::out);
 
 	if(tag)
-	{	
+	{
 		std::list<WokXMLTag *>::iterator iter;
 		bool stamp = false;
 		WokXMLTag &tag_body = tag->GetFirstTag("message");
-		
+
 		for( iter = tag_body.GetTagList("x").begin() ; iter != tag_body.GetTagList("x").end() ; iter++)
 		{
 			if( (*iter)->GetAttr("xmlns") == "jabber:x:delay")
 				stamp = true;
 		}
-		
+
 		if( !stamp )
 		{
 			char buf[20];
@@ -95,17 +102,17 @@ GUIMessageHandler::WriteToSpool(WokXMLTag *tag)
 			time_t t = time(0);
 			tm = localtime (&t);
 			strftime (buf, sizeof (buf),"%Y%m%dT%T", tm);
-			
+
 			WokXMLTag &xtag = tag_body.AddTag("x");
 			xtag.AddAttr("xmlns","jabber:x:delay");
 			xtag.AddAttr("stamp", buf);
 		}
-			
+
 		XMLSpool->GetFirstTag("spool").AddTag(tag);
 	}
-	
+
 	outfile << XMLSpool->GetFirstTag("spool") << std::endl;
-	
+
 	outfile.close();
 }
 
@@ -117,9 +124,9 @@ GUIMessageHandler::GetSpool(WokXMLTag *tag)
 	std::list < WokXMLTag *>::iterator iter;
 	std::list < WokXMLTag *> *list;
 	std::list < WokXMLTag *> todelete;
-	
+
 	list = &XMLSpool->GetFirstTag("spool").GetTags();
-	
+
 	for( iter = list->begin() ; iter != list->end() ; iter++ )
 	{
 		if( (*iter)->GetFirstTag("message").GetAttr("from") == jid )
@@ -128,14 +135,14 @@ GUIMessageHandler::GetSpool(WokXMLTag *tag)
 			todelete.push_back(*iter);
 		}
 	}
-	
+
 	for ( iter = todelete.begin() ; iter != todelete.end() ; iter++)
 	{
 		XMLSpool->GetFirstTag("spool").RemoveTag(*iter);
 	}
-	
+
 	WriteToSpool(NULL);
-	return true;		
+	return true;
 }
 
 
@@ -144,7 +151,7 @@ GUIMessageHandler::TriggerEvent(WokXMLTag *tag)
 {
 	WokXMLTag eventtag(NULL, "event");
 	WokXMLTag &itemtag = eventtag.AddTag("item");
-	
+
 	itemtag.AddAttr("jid", tag->GetFirstTag("message").GetAttr("from"));
 	itemtag.AddAttr("session", tag->GetAttr("session"));
 	itemtag.AddAttr("icon", msgicon);
@@ -158,22 +165,22 @@ GUIMessageHandler::TriggerEvent(WokXMLTag *tag)
 	wls->SendSignal("Jabber Event Add", &eventtag);
 }
 
-int 
+int
 GUIMessageHandler::new_message(WokXMLTag *tag)
 {
 	if(tag->GetAttr("displayed") == "true")
 		return true;
-		
+
 	std::string jid;
 	std::string session;
 	std::string resource;
 
 	WokXMLTag *message_tag;
 	message_tag = &tag->GetFirstTag("message");
-	
+
 	if( message_tag->GetFirstTag("body").GetBody() == "" )
 		return 1;
-	
+
 	string::size_type pos = message_tag->GetAttr("from").find("/");
 	if( pos != std::string::npos )
 	{
@@ -182,19 +189,19 @@ GUIMessageHandler::new_message(WokXMLTag *tag)
 	}
 	else
 		jid = message_tag->GetAttr("from");
-		
+
 	session = tag->GetAttr("session");
 
-	
+
 	wls->SendSignal("Jabber XML Message To " + session + " " + message_tag->GetAttr("from"), tag);
 	wls->SendSignal("Jabber XML Message To " + session + " " + jid, tag);
-	
+
 	if( tag->GetAttr("displayed") != "true")
 	{
 		WriteToSpool(tag);
 		TriggerEvent(tag);
 	}
-	
+
 	return 1;
 }
 
@@ -221,10 +228,10 @@ GUIMessageHandler::OpenDialog(WokXMLTag *tag)
 {
 	std::string jid;
 	std::string session;
-	
+
 	jid = tag->GetAttr("jid");
 	session = tag->GetAttr("session");
-	
+
 	WokXMLTag emptytag(NULL, "activate");
 	if (!wls->SendSignal("Jabber GUI Message Activate " + session + " " + jid, &emptytag ))
 	{
@@ -233,7 +240,7 @@ GUIMessageHandler::OpenDialog(WokXMLTag *tag)
 		new GUIMessageWidget(wls, session, tag->GetAttr("jid"), id++);
 	}
 	return 1;
-		
+
 }
 
 int
@@ -241,11 +248,11 @@ GUIMessageHandler::Presence(WokXMLTag *tag)
 {
 	WokXMLTag &tag_presence = tag->GetFirstTag("presence");
 	std::string jid;
-	
+
 	jid = tag_presence.GetAttr("from").substr(0, tag_presence.GetAttr("from").find("/"));
-	
+
 	wls->SendSignal(std::string("Jabber XML Presence To ") + tag->GetAttr("session") + " " + tag_presence.GetAttr("from"), tag);
 	wls->SendSignal(std::string("Jabber XML Presence To ") + tag->GetAttr("session") + " " + jid, tag );
 
-	return 1;		
+	return 1;
 }

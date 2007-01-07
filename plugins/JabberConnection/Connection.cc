@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2006  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,10 +18,15 @@
 
 #include "Connection.h"
 #include "IQauth.h"
+#ifdef __WIN32
+#include <winsock.h>
+#else
 #include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+#endif
+
+#include <unistd.h>
 
 #include <iostream>
 #include <sstream>
@@ -40,16 +45,16 @@ session(session)
 	EXP_SIGHOOK("Jabber Connection GetUserData", &Connection::GetUserVariables, 1);
 	EXP_SIGHOOK("Jabber Connection GetSocket", &Connection::GetSocket, 500);
 	EXP_SIGHOOK("Jabber Connection Reset " +session, &Connection::Reset, 500);
-	
+
 	EXP_SIGHOOK("Jabber GetMyNick", &Connection::GetMyNick, 1);
 	socket_nr = 0;
 	ssl = NULL;
 
 	xmlinput = new XML_Input(this, wls, session);
 	xmloutput = new XML_Output(wls);
-	
+
 	openconnection();
-	
+
 	char buf[20];
 	sprintf(buf, "%d", get_socket());
 	WokXMLTag sigtag(NULL, "socket");
@@ -86,14 +91,14 @@ int
 Connection::ReadData(WokXMLTag *tag)
 {
 	XML_Input *xi;
-	
+
 	xi = xmlinput;
 	if (!xmlinput->read_data (get_socket ()))
 		tag->AddAttr("error", "connection lost");
-	
+
 	if ( xi != xmlinput )
 		delete xi;
-	
+
 	return 1;
 }
 
@@ -102,7 +107,7 @@ Connection::GetMyNick(WokXMLTag *tag)
 {
 	if( tag->GetAttr("session") == session )
 		tag->AddAttr("nick", username);
-		
+
 	return true;
 }
 
@@ -111,7 +116,7 @@ Connection::GetUserVariables(WokXMLTag *tag)
 {
 	std::stringstream buf;
 	std::list <WokXMLTag *>::iterator iter;
-	
+
 	for( iter = tag->GetTagList("item").begin() ; iter != tag->GetTagList("item").end() ; iter++)
 	{
 		if( (*iter)->GetAttr("session") == session )
@@ -124,9 +129,9 @@ Connection::GetUserVariables(WokXMLTag *tag)
 			(*iter)->AddTag("type").AddText(buf.str());
 			(*iter)->AddTag("jid").AddText(username + "@" + server + "/" + resource);
 			(*iter)->AddTag("ip").AddText(ip);
-		}		
+		}
 	}
-	
+
 	return 1;
 }
 
@@ -135,20 +140,23 @@ Connection::openconnection()
 {
 	struct sockaddr_in sa;
 	struct hostent *hp;
-	
+
 	if ((hp = gethostbyname (server.c_str())) == NULL)
 	{
+#ifdef __WIN32
+#else
 		errno = ECONNREFUSED;
+#endif
 		return (-1);
 	}
 
-	
+
 	memset (&sa, 0, sizeof (sa));
 	memcpy ((char *) &sa.sin_addr, hp->h_addr, hp->h_length);
 
 	sa.sin_family = hp->h_addrtype;
 	sa.sin_port = htons ((u_short) port);
-		
+
 	if ((socket_nr = socket (hp->h_addrtype, SOCK_STREAM, 0)) < 0)
 		return (-1);
 	if (connect (socket_nr, (struct sockaddr *) &sa, sizeof sa) < 0)
@@ -158,21 +166,26 @@ Connection::openconnection()
 	}
 
 	struct sockaddr myip;
-	socklen_t len = sizeof( struct sockaddr_in );
+#ifdef __WIN32
+    int len;
+#else
+	socklen_t len;
+#endif
+    len = sizeof( struct sockaddr_in );
 	if ( !getsockname(socket_nr, (sockaddr*)&sa, &len))
 		ip = inet_ntoa(sa.sin_addr);
 	else
 		ip = "";
-	
+
 	xmloutput->set_socket(socket_nr);
-		
+
 	return (1);
 }
 
 void Connection::sendinit()
 {
 	std::string init;
-	
+
 	init = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><stream:stream to=\"";
 	init += server;
 	init += "\" xmlns=\"jabber:";
@@ -185,7 +198,7 @@ void Connection::sendinit()
 			init+= "client";
 	}
 	init += "\" xmlns:stream=\"http://etherx.jabber.org/streams\" version='1.0'>";
-	
+
 	xmloutput->sendxml(init.c_str());
 }
 
@@ -196,7 +209,7 @@ int Connection::get_socket()
 
 int Connection::GetSocket(WokXMLTag *tag)
 {
-	if( tag->GetAttr("session") == session) 
+	if( tag->GetAttr("session") == session)
 	{
 		std::stringstream buf;
 		buf << socket_nr;
@@ -204,7 +217,7 @@ int Connection::GetSocket(WokXMLTag *tag)
 		std::cout << "Sent socknr " << socket_nr << std::endl;
 		std::cout << "XML : " << *tag << std::endl;
 	}
-	
+
 	return true;
 }
 

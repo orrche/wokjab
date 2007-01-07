@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -32,18 +32,19 @@
 
 #include <sys/types.h>
 
+/*
 #include <gdk/gdkx.h>
 #include <X11/Xmd.h>
 #include <X11/SM/SMlib.h>
 #include <X11/Xatom.h>
+*/
 
-
-class GUIWindow : public WLSignalInstance 
+class GUIWindow : public WLSignalInstance
 {
 	public:
 		GUIWindow(WLSignal *wls);
 		 ~GUIWindow();
-		
+
 		static void Destroy( GtkWidget *widget,
                      gpointer   data );
 		static gboolean Delete( GtkWidget *widget, GdkEvent *event, gpointer user_data);
@@ -54,7 +55,7 @@ class GUIWindow : public WLSignalInstance
 		static gboolean SetPresence(GUIWindow * c);
 		static void EntryStatusActivate(GtkEntry *entry, GUIWindow *c);
 		static gboolean EntryStatusLeft(GtkWidget *widget, GdkEventFocus *event, GUIWindow *c);
-	
+
 		int AddWidget(WokXMLTag *tag);
 		int Connect (WLSignalData *wlsd);
 		int PluginWin (WLSignalData *wlsd);
@@ -66,15 +67,15 @@ class GUIWindow : public WLSignalInstance
 		int GetMainMenu(WokXMLTag *menu_tag);
 		int QuitRequest(WLSignalData *wlsd);
 		int SendingPresence(WokXMLTag *tag);
-		
+
 		void UpdateStruts();
-		
+
 	protected:
 		GladeXML *xml;
 
 		gulong connected;
 		guint priotimeid;
-		
+
 		int ReadConfig(WokXMLTag *tag);
 		void SaveConfig ();
 		void SetStatusTo(const std::string &status);
@@ -82,12 +83,12 @@ class GUIWindow : public WLSignalInstance
 		std::map <GtkWidget *, std::string> MainMenuSignals;
 		std::list <std::string> ActiveSessions;
 		std::string current_status;
-		
+
 		GUIMessageHandler *gmsghandler;
 		int connect_win_open;
 		int plugin_win_open;
 		bool visible;
-	
+
 		GUIRoster *roster;
 		GtkListStore *showmenu;
 

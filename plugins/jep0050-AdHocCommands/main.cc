@@ -16,11 +16,19 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "AdHoc.h"
 
-extern "C" WoklibPlugin *maker(WLSignal *wls) {
+extern "C"
+#ifdef __WIN32
+__declspec(dllexport)
+#endif
+WoklibPlugin *maker(WLSignal *wls) {
 	return reinterpret_cast <WoklibPlugin *> (new AdHoc(wls));
 }
 
-extern "C" void destroyer(WoklibPlugin *plugin) {
+extern "C"
+#ifdef __WIN32
+__declspec(dllexport)
+#endif
+void destroyer(WoklibPlugin *plugin) {
         delete plugin;
 }
 

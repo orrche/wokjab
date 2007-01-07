@@ -39,22 +39,22 @@ using std::string;
 GUIMessageWidget::GUIMessageWidget(WLSignal *wls, std::string session, std::string from, int id) : WLSignalInstance(wls),
 session(session),
 from(from)
-{	
+{
 	GtkTooltips *tooltip;
 	GtkWidget *eventbox;
 	GtkWidget *label_eventbox;
-	
+
 	eventbox = gtk_event_box_new();
 	vbox = gtk_vbox_new( false, 0 );
 	fontsize = 1;
-	
+
 	gtk_container_add (GTK_CONTAINER(eventbox), vbox);
 	GTK_WIDGET_SET_FLAGS (eventbox, GTK_CAN_FOCUS);
 	tophbox = gtk_hbox_new( false, 0);
 	vpaned = gtk_vpaned_new();
 	label_image = gtk_image_new();
 	image = gtk_image_new();
-	
+
 	gtk_container_set_border_width (GTK_CONTAINER (vpaned), 5);
 	gtk_box_pack_start( GTK_BOX(vbox), tophbox, false, false, 0 );
 
@@ -64,12 +64,12 @@ from(from)
 	itemtag.AddAttr("jid", from);
 	wls->SendSignal("Jabber Roster GetResource", &querytag);
 	wls->SendSignal("Jabber GUI GetIcon", &querytag);
-	
+
 	if ( itemtag.GetAttr("nick") != "" )
 		nick = itemtag.GetAttr("nick");
 	else
 		nick = from;
-		
+
 	/* Whatever to show the JID line at the top of the message window */
 	gtk_box_pack_start( GTK_BOX(tophbox), image, false, false, 5 );
 	jid_label = gtk_label_new("");
@@ -80,7 +80,7 @@ from(from)
 	/* Reading and writing area */
 	gtk_box_pack_start( GTK_BOX( vbox) , vpaned, true, true, 0 );
 
-	
+
 	/* Reading Area */
 	textview1 = gtk_text_view_new();
 	scroll1 = gtk_scrolled_window_new(NULL, NULL);
@@ -104,7 +104,7 @@ from(from)
 			    this);
 	textview2 = gtk_text_view_new();
 	scroll2 = gtk_scrolled_window_new(NULL, NULL);
-	
+
 	gtk_box_pack_start(GTK_BOX(hbox_writing), expander, false, false, 1);
 	gtk_box_pack_start(GTK_BOX(hbox_writing), scroll2, true, true, 1);
 	gtk_paned_pack2( GTK_PANED( vpaned ) , hbox_writing, false, true);
@@ -115,18 +115,18 @@ from(from)
 	gtk_text_view_set_cursor_visible (GTK_TEXT_VIEW (textview1), FALSE);
 	GTK_WIDGET_UNSET_FLAGS (textview1, GTK_CAN_FOCUS);
 	buffer2 = gtk_text_view_get_buffer (GTK_TEXT_VIEW(textview2));
-	
+
 	gtk_text_buffer_get_start_iter (buffer1, &iter);
 	gtk_text_buffer_insert(buffer1, &iter, " ", 1);
 	gtk_text_buffer_get_start_iter (buffer1, &iter);
 	end_mark = gtk_text_buffer_create_mark (buffer1,"EndMark", &iter, FALSE);
 
-	
+
 	/* Message Icon */
 	std::string datadir = PACKAGE_DATA_DIR;
 	msgicon = datadir + "/wokjab/msg.png";
 	pix_msg = gdk_pixbuf_new_from_file(msgicon.c_str(),NULL);
-	
+
 	gtk_widget_show_all( vbox );
 
 	gtk_signal_connect (GTK_OBJECT (textview2), "key_press_event",
@@ -137,7 +137,7 @@ from(from)
 
 	focus = false;
 	msg_waiting = false;
-	
+
 	// Label for the notepad
 	tooltip = gtk_tooltips_new();
 	label_eventbox = gtk_event_box_new();
@@ -150,26 +150,26 @@ from(from)
 	//
 	gtk_signal_connect (GTK_OBJECT (label_eventbox), "button_press_event",
                       GTK_SIGNAL_FUNC (GUIMessageWidget::Menu), this);
-	
-	// Initiating the icon ... 
+
+	// Initiating the icon ...
 
 	gtk_image_set_from_file(GTK_IMAGE(image), itemtag.GetAttr("icon").c_str());
 	gtk_image_set_from_pixbuf(GTK_IMAGE(label_image), gtk_image_get_pixbuf(GTK_IMAGE(image)));
-			
+
 	// Assigning a color for the tab
 	// Should make this a configurable color
 	color_red.red = 66536;
   color_red.green = 0;
   color_red.blue = 0;
-	
+
 	gdk_color_parse ("red", &color_red);
-	
+
 	gtk_widget_show_all(vbox);
-	
+
 	secondmessageme = secondmessageother = false;
 	GTK_WIDGET_SET_FLAGS (textview2, GTK_CAN_DEFAULT);
-	
-	
+
+
 	g_signal_connect ((gpointer) textview2, "focus-in-event",
                     G_CALLBACK (GUIMessageWidget::focus_event),this);
 	g_signal_connect ((gpointer) textview2, "focus-out-event",
@@ -180,14 +180,14 @@ from(from)
                     G_CALLBACK (GUIMessageWidget::focus_event_view),this);
 	g_signal_connect ((gpointer) textview1, "scroll-event",
 										G_CALLBACK (GUIMessageWidget::Scroll), this);
-										
+
 	expander_activate (GTK_EXPANDER(expander), (void*)this);
 	gtk_widget_grab_focus(textview1);
-	
-	
+
+
 	/* Drag and drop .... */
 	GtkTargetEntry target_entry[3];
-	
+
 	target_entry[0].target = "text/plain";
 	target_entry[0].flags = 0;
 	target_entry[0].info = 0;
@@ -197,14 +197,14 @@ from(from)
 	target_entry[2].target = "STRING";
 	target_entry[2].flags = 0;
 	target_entry[2].info = 2;
-	
+
 	gtk_drag_dest_set(eventbox, (GtkDestDefaults)(GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_HIGHLIGHT |GTK_DEST_DEFAULT_DROP), target_entry, 3, (GdkDragAction) (GDK_ACTION_MOVE | GDK_ACTION_COPY));
-			
+
 	g_signal_connect(eventbox, "drag_data_received",G_CALLBACK (GUIMessageWidget::DragDest),this);
-	
+
 	mainwindowplug = gtk_plug_new(0);
 	labelplug = gtk_plug_new(0);
-	
+
 	gtk_container_add(GTK_CONTAINER(mainwindowplug), eventbox);
 	gtk_container_add(GTK_CONTAINER(labelplug), label_eventbox);
 
@@ -216,9 +216,9 @@ from(from)
 	WokXMLTag conftag(NULL, "config");
 	conftag.AddAttr("path", "/chat/window");
 	wls->SendSignal("Config XML Trigger", &conftag);
-	
+
 	focus = true;
-	
+
 	WokXMLTag spooltag(NULL, "spool");
 	spooltag.AddAttr("jid", from);
 	wls->SendSignal("Jabber GUI Message GetSpool", &spooltag);
@@ -231,18 +231,18 @@ from(from)
 		if( (*titer)->GetName() == "message" )
 			NewMessage(*titer);
 		else if ((*titer)->GetName() == "precense")
-			NewPresence(*titer);	
-	}	
+			NewPresence(*titer);
+	}
 	focus = false;
-	
-	
+
+
 	if( from.find("/") == std::string::npos )
 		hasresource = false;
 	else
 		hasresource = true;
-		
-		
-		
+
+
+
 	char buf[20];
 	WokXMLTag contag(NULL, "connect");
 	contag.AddAttr("identifier", from);
@@ -251,17 +251,17 @@ from(from)
 	contag.AddAttr("mainwidget", buf);
 	sprintf(buf, "%d", gtk_plug_get_id(GTK_PLUG(labelplug)));
 	contag.AddAttr("labelwidget", buf);
-	
+
 	wls->SendSignal("GUI WindowDock AddWidget",&contag);
-		
+
 	g_signal_connect ((gpointer) mainwindowplug, "destroy",
                    G_CALLBACK (GUIMessageWidget::Destroy),
                    this);
 	std::stringstream sig;
 	sig << "GUI WindowDock Close " << gtk_plug_get_id(GTK_PLUG(mainwindowplug));
 	EXP_SIGHOOK(sig.str(), &GUIMessageWidget::Close, 500);
-	
-	
+
+
 	HookSignals();
 }
 
@@ -272,21 +272,21 @@ GUIMessageWidget::~GUIMessageWidget()
 	char buf[20];
 	sprintf(buf,"%d", vpos);
 	config->GetFirstTag("window_spec").AddAttr("input_area_height", buf);
-	
+
 	WokXMLTag conftag(NULL, "config");
 	conftag.AddAttr("path", "/chat/window");
 	conftag.AddTag(config);
-	
+
 	EXP_SIGUNHOOK("Config XML Change /chat/window", &GUIMessageWidget::Config, 500);
-	
+
 	wls->SendSignal("Config XML Store", &conftag);
 	wls->SendSignal("Config XML Save", &conftag);
-	
+
 	if( labelplug )
 		gtk_widget_destroy(labelplug);
 	if( mainwindowplug )
 		gtk_widget_destroy(mainwindowplug);
-	
+
 	delete config;
 }
 
@@ -324,11 +324,11 @@ GUIMessageWidget::UnHookSignals()
 int
 GUIMessageWidget::NewMessage(WokXMLTag *tag)
 {
-	if( tag->GetAttr("displayed") == "true") 
+	if( tag->GetAttr("displayed") == "true")
 		return true;
-	
+
 	WokXMLTag &msgtag = tag->GetFirstTag("message");
-	
+
 	if(!hasresource && tag->GetFirstTag("message").GetAttr("from").find("/") != std::string::npos)
 	{
 		UnHookSignals();
@@ -336,49 +336,52 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 		HookSignals();
 
 		hasresource = true;
-	
+
 		gtk_label_set_text(GTK_LABEL(jid_label), std::string(from + " (" + nick + ")").c_str());
 	}
-	
+
 #warning should check for delay thingy
 	std::list<WokXMLTag *>::iterator iter;
 	std::string stamp = "";
 	WokXMLTag tag_body = tag->GetFirstTag("message");
-	
+
 	for( iter = tag_body.GetTagList("x").begin() ; iter != tag_body.GetTagList("x").end() ; iter++)
 	{
 		if( (*iter)->GetAttr("xmlns") == "jabber:x:delay")
 			stamp = (*iter)->GetAttr("stamp");
 	}
-	
+
 	if( stamp.size() )
 	{
 		struct tm tp;
+#if __WIN32
+#else
 		strptime (stamp.c_str(), "%Y%m%dT%T", &tp);
+#endif
 		Message(msgtag.GetFirstTag("body").GetBody(), msgtag.GetAttr("from"), mktime(&tp));
 	}
 	else
 		Message(msgtag.GetFirstTag("body").GetBody(), msgtag.GetAttr("from"));
-		
+
 	tag->AddAttr("displayed", "true");
-	
+
 	if( ! focus )
 	{
 		WokXMLTag eventtag(NULL, "event");
 		WokXMLTag &itemtag = eventtag.AddTag("item");
-		
+
 		itemtag.AddAttr("jid", tag->GetFirstTag("message").GetAttr("from"));
 		itemtag.AddAttr("session", tag->GetAttr("session"));
 		itemtag.AddAttr("icon", msgicon);
 		itemtag.AddAttr("signal", "Jabber GUI MessageDialog Open");
-		
+
 		WokXMLTag &desc = itemtag.AddTag("description");
 		desc.AddText(tag->GetFirstTag("message").GetAttr("from"));
 		desc.AddText("\n\t");
 		desc.AddText(tag->GetFirstTag("message").GetFirstTag("body").GetBody().substr(0, 30));
 		if( tag->GetFirstTag("message").GetFirstTag("body").GetBody().size() > 30 )
 			desc.AddText("...");
-			
+
 		wls->SendSignal("Jabber Event Add", &eventtag);
 
 	}
@@ -390,20 +393,20 @@ GUIMessageWidget::NewPresence(WokXMLTag *tag)
 	WokXMLTag &tag_presence = tag->GetFirstTag("presence");
 	WokXMLTag querytag(NULL,"query");
 	WokXMLTag &itemtag = querytag.AddTag("item");
-	
+
 	itemtag.AddAttr("session", session);
 	itemtag.AddAttr("jid", from);
-	
+
 	wls->SendSignal("Jabber GUI GetIcon", &querytag);
-	
+
 	gtk_image_set_from_file(GTK_IMAGE(image), querytag.GetFirstTag("item").GetAttr("icon").c_str());
 
 	if(!msg_waiting)
 		gtk_image_set_from_pixbuf(GTK_IMAGE(label_image), gtk_image_get_pixbuf(GTK_IMAGE(image)));
-	
+
 // To damned annoying...
 //	Message( tag_presence.GetAttr("from") + " sends presence " + tag_presence.GetFirstTag("status").GetBody());
-	
+
 	return true;
 }
 
@@ -434,7 +437,7 @@ GUIMessageWidget::Scroll (GtkWidget *widget, GdkEventScroll *event, GUIMessageWi
 			default:
 				return FALSE;
 		}
-		
+
 		GtkTextIter startiter;
 		GtkTextIter enditer;
 		gtk_text_buffer_get_start_iter(c->buffer1, &startiter);
@@ -443,7 +446,7 @@ GUIMessageWidget::Scroll (GtkWidget *widget, GdkEventScroll *event, GUIMessageWi
 		GtkTextTag *oldtag = gtk_text_tag_table_lookup(tag_table, "fontsize");
 		if ( oldtag )
 			gtk_text_tag_table_remove(tag_table, oldtag);
-		
+
 		GtkTextTag *tag = gtk_text_buffer_create_tag (c->buffer1, "fontsize","scale", c->fontsize, NULL);
 		gtk_text_buffer_remove_tag_by_name (c->buffer1, "fontsize", &startiter, &enditer);
 		gtk_text_buffer_apply_tag (c->buffer1, tag, &startiter, &enditer);
@@ -458,10 +461,10 @@ GUIMessageWidget::DragDest(GtkWidget *widget, GdkDragContext *dc,gint x, gint y,
 	WokXMLTag FileTransfearTag(NULL, "ProgramEXECTag");
 	FileTransfearTag.AddTag("program").AddAttr("exec", "file_transfer_script");
 	FileTransfearTag.GetFirstTag("program").AddTag("attribute").AddText((const char *)selection_data->data);
-	
+
 	std::cout << FileTransfearTag << std::endl;
 	data->wls->SendSignal("Run Program", FileTransfearTag);
-	
+
 	std::cout << "I got some shit !! info: " << info << " x: " << x << " y: " << y << std::endl;
 	std::cout << "S Data: " << selection_data->data << std::endl;
 }
@@ -485,7 +488,7 @@ GUIMessageWidget::Menu(GtkButton *button, GdkEventButton *event, GUIMessageWidge
 		data.AddAttr("jid", c->from);
 		data.AddAttr("session", c->session);
 		c->wls->SendSignal("Jabber GUI JIDMenu", &MenuXML);
-		
+
 		return true;
 	}
 	return false;
@@ -496,10 +499,10 @@ GUIMessageWidget::SizeAllocate (GtkWidget *widget,GtkRequisition *requisition,gp
 {
 	GUIMessageWidget *data;
 	data = static_cast <GUIMessageWidget *> (user_data);
-	
+
 	gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (data->textview1),
 				data->end_mark, .4, TRUE, 1, 1);
-	
+
 }
 
 gboolean
@@ -509,7 +512,7 @@ GUIMessageWidget::focus_event_view           (GtkWidget       *widget,
 {
 	GUIMessageWidget *data;
 	data = static_cast <GUIMessageWidget *> (user_data);
-			
+
 	gtk_widget_grab_focus(data->textview2);
 	return TRUE;
 }
@@ -521,19 +524,19 @@ GUIMessageWidget::focus_event           (GtkWidget       *widget,
 {
 	GUIMessageWidget *data;
 	data = static_cast <GUIMessageWidget *> (user_data);
-	
+
 	if(event->in)
 	{
 		data->focus = true;
 		if(data->msg_waiting)
 		{
 			data->msg_waiting = false;
-	
+
 			gtk_widget_modify_fg(GTK_WIDGET(data->label_label), GTK_STATE_ACTIVE, NULL);
 			gtk_widget_modify_fg(GTK_WIDGET(data->label_label), GTK_STATE_NORMAL, NULL);
-	
+
 			gtk_image_set_from_pixbuf(GTK_IMAGE(data->label_image), gtk_image_get_pixbuf(GTK_IMAGE(data->image)));
-			
+
 			WokXMLTag eventtag(NULL, "event");
 			WokXMLTag &itemtag = eventtag.AddTag("item");
 			itemtag.AddAttr("jid", data->from);
@@ -541,10 +544,10 @@ GUIMessageWidget::focus_event           (GtkWidget       *widget,
 			itemtag.AddAttr("icon", data->msgicon);
 			itemtag.AddAttr("signal", "Jabber GUI MessageDialog Open");
 			data->wls->SendSignal("Jabber Event Remove", &eventtag);
-		
+
 			gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (data->textview1),
 				data->end_mark, .4, TRUE, 1, 1);
-			
+
 			gtk_widget_grab_focus(data->textview1);
 		}
 	}
@@ -553,12 +556,12 @@ GUIMessageWidget::focus_event           (GtkWidget       *widget,
 	return FALSE;
 }
 
-gboolean 
+gboolean
 GUIMessageWidget::expander_activate (GtkExpander *expander, gpointer user_data)
 {
 	GUIMessageWidget *data;
 	data = static_cast <GUIMessageWidget*> (user_data);
-	
+
 	if(gtk_expander_get_expanded(expander))
 	{
 		gtk_paned_set_position(GTK_PANED(data->vpaned), data->vpaned->allocation.height - 40);
@@ -567,7 +570,7 @@ GUIMessageWidget::expander_activate (GtkExpander *expander, gpointer user_data)
 	{
 		gtk_paned_set_position(GTK_PANED(data->vpaned), data->vpaned->allocation.height - 40 - 70);
 	}
-		
+
 }
 
 int
@@ -578,7 +581,7 @@ GUIMessageWidget::Config(WokXMLTag *tag)
 
 	std::list <WokXMLTag *>::iterator iter;
 	std::list <WokXMLTag *> *list;
-	
+
 	list = &config->GetFirstTag("color").GetTags();
 	for( iter = list->begin() ; iter != list->end(); iter++)
 	{
@@ -590,7 +593,7 @@ GUIMessageWidget::Config(WokXMLTag *tag)
 	if(vpos)
 		gtk_widget_set_size_request(textview2, -1,vpos);
 
-		
+
 	if( config->GetFirstTag("jidbar").GetFirstTag("show").GetAttr("data") != "false" )
 		gtk_widget_show(tophbox);
 	else
@@ -607,7 +610,7 @@ GUIMessageWidget::Message(std::string str, time_t t)
 	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(textview1));
 	gtk_text_buffer_get_iter_at_mark(buffer, &iter, end_mark);
 	str += '\n';
-	
+
 	gtk_text_buffer_insert_with_tags (
 					buffer, &iter,
 					GetTimeStamp(t).c_str(), -1,
@@ -618,7 +621,7 @@ GUIMessageWidget::Message(std::string str, time_t t)
 					str.c_str(), str.length(),
 					tags["notice"],
 					NULL);
-	
+
 	gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (textview1),
 				      end_mark, .4, TRUE, 1, 1);
 	return 1;
@@ -630,9 +633,9 @@ GUIMessageWidget::Message(std::string str, std::string jid, time_t t)
 	int i = 0;
 	if( str == "" )
 		return 1;
-		
+
 	secondmessageme = false;
-	
+
 	if(!focus)
 	{
 		gtk_widget_modify_fg(GTK_WIDGET(label_label), GTK_STATE_ACTIVE, &color_red);
@@ -643,50 +646,50 @@ GUIMessageWidget::Message(std::string str, std::string jid, time_t t)
 
 	std::string nick;
 	std::string msg;
-	
+
 	if( str.substr(0,4) == "/me " )
 	{
 		nick += config->GetFirstTag("display").GetFirstTag("forreignname").GetFirstTag("pre_me").GetBody();
 		nick += this->nick;
 		nick += config->GetFirstTag("display").GetFirstTag("forreignname").GetFirstTag("post_me").GetBody();
-	
+
 		msg = str.substr(3) + '\n';
 	}
 	else
-	{	
+	{
 		nick += config->GetFirstTag("display").GetFirstTag("forreignname").GetFirstTag("pre").GetBody();
 		nick += this->nick;
 		nick += config->GetFirstTag("display").GetFirstTag("forreignname").GetFirstTag("post").GetBody();
-		
+
 		if(secondmessageother)
 			nick += config->GetFirstTag("display").GetFirstTag("forreignname").GetFirstTag("continuing").GetBody();
-		
+
 		msg = str + '\n';
 	}
-	
+
 	GtkTextBuffer *buffer;
 	GtkTextIter iter;
 
 	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(textview1));
 	gtk_text_buffer_get_iter_at_mark(buffer, &iter, end_mark);
-		
-	
+
+
 	gtk_text_buffer_insert_with_tags (
 					buffer, &iter,
 					GetTimeStamp(t).c_str(), -1,
 					tags["timestamp"],
 					NULL);
-	
+
 	gtk_text_buffer_insert_with_tags (
 					buffer, &iter,
 					nick.c_str(), nick.length(),
 					tags["forreign_name"],
 					NULL);
-	
+
 	gtk_text_buffer_insert_with_tags (buffer, &iter, msg.c_str(), msg.length(), tags["forreign_text"], NULL);
 	gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (textview1),
 				      end_mark, .4, TRUE, 1, 1);
-	
+
 	secondmessageother = true;
 	return 1;
 }
@@ -695,12 +698,12 @@ void
 GUIMessageWidget::own_message(std::string str, time_t t)
 {
 	secondmessageother = false;
-		
+
 	WokXMLTag querytag(NULL, "nick");
 	querytag.AddAttr("session", session);
 	wls->SendSignal("Jabber GetMyNick", &querytag);
 	string myname = querytag.GetAttr("nick");
-	
+
 	WokXMLTag msgtag(NULL,"message");
 	msgtag.AddAttr("session", session);
 	WokXMLTag &mtag = msgtag.AddTag("message");
@@ -710,7 +713,7 @@ GUIMessageWidget::own_message(std::string str, time_t t)
 
 	wls->SendSignal("Jabber XML Message Send", &msgtag);
 	str = msgtag.GetFirstTag("message").GetFirstTag("body").GetBody();
-		
+
 	std::string nick;
 	std::string msg;
 	if( str.substr(0,4) == "/me " )
@@ -718,7 +721,7 @@ GUIMessageWidget::own_message(std::string str, time_t t)
 		nick += config->GetFirstTag("display").GetFirstTag("myname").GetFirstTag("pre_me").GetBody();
 		nick += myname;
 		nick += config->GetFirstTag("display").GetFirstTag("myname").GetFirstTag("post_me").GetBody();
-		
+
 		msg = str.substr(3) + '\n';
 	}
 	else
@@ -727,41 +730,41 @@ GUIMessageWidget::own_message(std::string str, time_t t)
 
 		if(config->GetFirstTag("display").GetFirstTag("myname").GetFirstTag("show").GetAttr("data") != "false")
 			nick += myname;
-		
+
 		nick += config->GetFirstTag("display").GetFirstTag("myname").GetFirstTag("post").GetBody();
-		
+
 		if(secondmessageme)
 			nick += config->GetFirstTag("display").GetFirstTag("myname").GetFirstTag("continuing").GetBody();
-		
+
 		msg = str + '\n';
 	}
-	
+
 	GtkTextBuffer *buffer;
 	GtkTextIter iter;
 
 	MessageWithEmotions(str);
-	
+
 	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(textview1));
 	gtk_text_buffer_get_iter_at_mark(buffer, &iter, end_mark);
-		
+
 	gtk_text_buffer_insert_with_tags (
 					buffer, &iter,
 					GetTimeStamp(t).c_str(), -1,
 					tags["timestamp"],
 					NULL);
-	
+
 	gtk_text_buffer_insert_with_tags (
 					buffer, &iter,
 					nick.c_str(), nick.length(),
 					tags["my_name"],
 					NULL);
-	
+
 	msg = DeXMLisize(msg);
 	gtk_text_buffer_insert_with_tags (buffer, &iter, msg.c_str(), msg.length(),tags["my_text"],NULL);
 	gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (textview1),
 				      end_mark, .4, TRUE, 1, 1);
-	
-	secondmessageme = true;	
+
+	secondmessageme = true;
 }
 
 
@@ -770,7 +773,7 @@ GUIMessageWidget::MessageWithEmotions(std::string msg)
 {
 	std::string::size_type spos, epos;
 	spos = 0;
-	
+
 	while( ( spos = msg.find("::",spos) ) != std::string::npos )
 	{
 		spos+=2;
@@ -788,7 +791,7 @@ GUIMessageWidget::MessageWithEmotions(std::string msg)
 			std::cout << "Should see if finding msn emotion " << msg.substr( spos, epos-spos ) << std::endl;
 		}
 	}
-	
+
 }
 
 
@@ -806,16 +809,16 @@ GUIMessageWidget::key_press_handler(GtkWidget * widget, GdkEventKey * event,
 	{
 		std::string str;
 		GtkTextIter start_iter, end_iter;
-		
+
 		gtk_text_buffer_get_start_iter(obj->buffer2, &start_iter);
 		gtk_text_buffer_get_end_iter(obj->buffer2, &end_iter);
-		
+
 		str = gtk_text_buffer_get_text(obj->buffer2,&start_iter, &end_iter, false);
 		gtk_text_buffer_set_text(obj->buffer2, "", 0 );
 		obj->own_message(str);
 		return true;
 	}
-	
+
 	return false;
 }
 
@@ -826,7 +829,7 @@ GUIMessageWidget::GetTimeStamp(time_t t)
 	char      buf[128];
 
 	tm = localtime (&t);
-	
+
 	buf[0] = 0;
 
 	strftime (buf, sizeof (buf), config->GetFirstTag("timestamp").GetFirstTag("format").GetBody().c_str(), tm);

@@ -33,6 +33,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fstream>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <io.h>
 
 Config::Config(WLSignal *wls):
 WoklibPlugin(wls)
@@ -46,28 +49,32 @@ Config::~Config()
 	delete truebasetag;
 }
 
-/** 
- * Initiates the config so diffrent config files can be read for diffrent programs 
+/**
+ * Initiates the config so diffrent config files can be read for diffrent programs
  */
-int 
+int
 Config::Init(WokXMLTag *tag)
 {
 	EXP_SIGHOOK("Config XML Store", &Config::Store, 999);
 	EXP_SIGHOOK("Config XML Trigger", &Config::Trigger, 999);
 	EXP_SIGHOOK("Config XML Save", &Config::Save, 999);
 	EXP_SIGHOOK("Config XML GetTree", &Config::GetTree, 999);
-	
+
 	filename = tag->GetFirstTag("filename").GetAttr("data");
-	
+
 	std::string::size_type pos = filename.find("/");
 	while( pos != std::string::npos )
 	{
+#ifdef __WIN32
+            mkdir(filename.substr(0, pos).c_str());
+#else
 			mkdir(filename.substr(0, pos).c_str(), 0700);
+#endif
 			pos = filename.find("/", pos + 1);
 	}
-	
+
 //	mkdir((std::string(std::getenv("HOME")) + "/.wokjab").c_str(), 0700);
-	
+
 	truebasetag = new WokXMLTag(NULL, "config");
 	std::ifstream file;
 	file.open(filename.c_str(),std::ios::in);
@@ -78,11 +85,11 @@ Config::Init(WokXMLTag *tag)
 		datadir += "/wokjab/defaultconfig.xml";
 		file.open(datadir.c_str() ,std::ios::in);
 	}
-	
+
 	file >> *truebasetag;
 	file.close();
 	basetag = &truebasetag->GetFirstTag("config");
-	
+
 	return true;
 }
 
@@ -91,17 +98,17 @@ Config::GetPosition(std::string path)
 {
 	WokXMLTag *place = basetag;
 	path = path.substr(1, path.size()-1);
-	
+
 	while( path.size() )
 	{
 		std::string substr = path.substr(0, path.find("/"));
 		place = &place->GetFirstTag(substr);
 		if( path.size() == substr.size() )
 			break;
-		
+
 		path = path.substr(substr.size() + 1, path.size());
 	}
-	
+
 	return place;
 }
 
@@ -109,7 +116,7 @@ int
 Config::GetTree(WokXMLTag *tag)
 {
 	tag->AddTag(basetag);
-	
+
 	return 1;
 }
 
@@ -130,22 +137,22 @@ Config::Store(WokXMLTag *tag)
 		return true;
 	WokXMLTag *place = GetPosition(path);
 	WokXMLTag *parant;
-	
-	// Need to think throw if an xmltag is always the parant ... 
+
+	// Need to think throw if an xmltag is always the parant ...
 	parant = static_cast <WokXMLTag *> (place->GetParant());
-	if( !parant ) 
+	if( !parant )
 		return 1;
-		
+
 	std::string name = place->GetName();
 	parant->RemoveTag(place);
-	
+
 	delete place;
-	
+
 	place = &parant->GetFirstTag(name); // Works for adding tags to.
 	place->AddTag(tag);
-	
+
 	wls->SendSignal("Config XML Change " + path, tag);
-	
+
 	Save(NULL);
 	return 1;
 }
@@ -157,8 +164,8 @@ Config::Trigger(WokXMLTag *tag)
 	std::string path = tag->GetAttr("path");
 	WokXMLTag *place = GetPosition(path);
 	wls->SendSignal("Config XML Change " + path, place->GetFirstTag("config"));
-	
-	
+
+
 	return 1;
 }
 
