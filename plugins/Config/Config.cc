@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2005-2006  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2005-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
@@ -35,8 +35,10 @@
 #include <fstream>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <io.h>
 
+#ifdef __WIN32
+#include <io.h>
+#endif
 Config::Config(WLSignal *wls):
 WoklibPlugin(wls)
 {
