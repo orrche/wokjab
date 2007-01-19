@@ -44,7 +44,9 @@ session(tag->GetAttr("session"))
 
 JabberSession::~JabberSession()
 {
-
+		WokXMLTag tag(NULL, "item");
+		tag.AddAttr("id", id);
+		wls->SendSignal("GUIRoster RemoveItem", tag);
 }
 
 int

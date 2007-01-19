@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2006  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
@@ -18,40 +18,46 @@
  */
 
 
-#ifndef _JABBER_H_
-#define _JABBER_H_
+//
+// Class: Idle
+//
+// Created by: Kent Gustavsson <nedo80@gmail.com>
+// Created on: Tue Jan 16 17:31:52 2007
+//
 
-class Jabber;
+#include "Idle.h"
 
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
 
-#include "Connection.h"
-#include "IQAuthManager.h"
-
-using namespace Woklib;
-
-class Jabber : public WoklibPlugin
+Idle::Idle(WLSignal *wls) : WoklibPlugin(wls)
 {
-	public:
-		Jabber(WLSignal *wls);
-		 ~Jabber();
+	EXP_SIGHOOK("Jabber Connection Lost", &Idle::LoggedOut, 1);
+	EXP_SIGHOOK("Jabber Connection Connect" , &Idle::SignIn, 1000);
+}
+
+
+Idle::~Idle()
+{
+
+
+}
+
+int
+Idle::LoggedOut(WokXMLTag *tag)
+{
+	if ( sessions.find(tag->GetAttr("session")) != sessions.end() )
+	{
+		delete sessions[tag->GetAttr("session")];
+		sessions.erase(tag->GetAttr("session"));
 	
-		std::string connect(std::string server, std::string host, std::string sername, std::string password, std::string resource, int port, int type);
-		int SignalDisconnect(WokXMLTag *tag);
+	}
 
-		int SignalConnect(WokXMLTag *tag);
-		int SendXML(WokXMLTag *tag);
-		int GetSessions(WokXMLTag *tag);
-		int ConnectionLost(WokXMLTag *tag);
+	return 1;
+}
 
-	protected:
-		int session_nr;
-		std::map<std::string, Connection *> connections;
-		IQAuthManager *authmanager;
-};
+int
+Idle::SignIn(WokXMLTag *tag)
+{
+	sessions[tag->GetAttr("session")] = new IdleSession(wls, tag->GetAttr("session"));
 
-
-#endif	//_JABBER_H_
-
+	return 1;
+}

@@ -1,3 +1,6 @@
+/***************************************************************************
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
+ ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,43 +19,36 @@
 
 
 //
-// Class: SSL
+// Class: IdleSession
 // Created by: Kent Gustavsson <nedo80@gmail.com>
-// Created on: Fri Aug 26 00:13:27 2005
+// Created on: Tue Jan 16 17:34:15 2007
 //
 
-#ifndef _WLSSL_H_
-#define _WLSSL_H_
+#ifndef _IDLESESSION_H_
+#define _IDLESESSION_H_
 
-namespace Woklib
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
+
+using namespace Woklib;
+
+class IdleSession : public WLSignalInstance
 {
-	class SSL;
-}
-
-#include "Connection.h"
-
-#include <openssl/ssl.h>
-namespace Woklib
-{
-	class SSL : public WLSignalInstance
-	{
-		public:
-			SSL(WLSignal *wls, Connection *conn);
-			 ~SSL();
+	public:
+		IdleSession(WLSignal *wls, std::string session);
+		 ~IdleSession();
+	
+	
+		int Tick(WokXMLTag *tag);
+		int Active(WokXMLTag *tag);
 		
-			
-			int StartSession(WokXMLTag *tag);
-			int Proceed(WokXMLTag *tag);
-			int SocketAvailibule(WokXMLTag *tag);
-			
-			::SSL *ssl;
-		protected:
-			std::map <std::string, SSL_CTX *> sslsession;
-			Connection *conn;
-			bool initiated;
-			std::string signal_out;
-	};
-}
+	protected:
+		std::string session;
+		int t;
+	
+};
 
-#endif	//_WLSSL_H_
+
+#endif	//_IDLESESSION_H_
 

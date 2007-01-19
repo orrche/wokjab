@@ -26,17 +26,20 @@
 #include <arpa/inet.h>
 #endif
 
+#include <fcntl.h> 
+
 #include <unistd.h>
 
 #include <iostream>
 #include <sstream>
 #include <string.h>
 
-Connection::Connection (WLSignal *wls,std::string in_username, std::string in_password, std::string in_server, std::string resource,  int in_port, int type, std::string session)
+Connection::Connection (WLSignal *wls,std::string in_username, std::string in_password, std::string in_server, std::string in_host, std::string resource,  int in_port, int type, std::string session)
 : WLSignalInstance(wls),
 username(in_username),
 password(in_password),
 server(in_server),
+host(in_host),
 resource(resource),
 port(in_port),
 type(type),
@@ -51,7 +54,7 @@ session(session)
 	ssl = NULL;
 
 	xmlinput = new XML_Input(this, wls, session);
-	xmloutput = new XML_Output(wls);
+	xmloutput = new XML_Output(wls, session);
 
 	openconnection();
 
@@ -141,7 +144,7 @@ Connection::openconnection()
 	struct sockaddr_in sa;
 	struct hostent *hp;
 
-	if ((hp = gethostbyname (server.c_str())) == NULL)
+	if ((hp = gethostbyname (host.c_str())) == NULL)
 	{
 #ifdef __WIN32
 #else
@@ -167,15 +170,29 @@ Connection::openconnection()
 
 	struct sockaddr myip;
 #ifdef __WIN32
-    int len;
+ int len;
 #else
 	socklen_t len;
 #endif
-    len = sizeof( struct sockaddr_in );
+ 
+	len = sizeof( struct sockaddr_in );
 	if ( !getsockname(socket_nr, (sockaddr*)&sa, &len))
 		ip = inet_ntoa(sa.sin_addr);
 	else
 		ip = "";
+
+		
+	int flags;
+	if ((flags = fcntl(socket_nr, F_GETFL, 0)) < 0)
+	{
+		woklib_error(wls, "Socks5 Connection couldn't get socket flags");
+	}
+
+
+	if (fcntl(socket_nr, F_SETFL, flags | O_NONBLOCK) < 0)
+	{
+		woklib_error(wls, "Socks5 Connection couldn't set non blocking socket");
+	} 
 
 	xmloutput->set_socket(socket_nr);
 

@@ -79,55 +79,55 @@ namespace Woklib
 		sbio=BIO_new_socket(atoi(socktag.GetAttr("socket").c_str()),BIO_NOCLOSE);
 		SSL_set_bio(ssl,sbio,sbio);
 
-		/* Wow really super code here */
 		int err;
 		bool retry = true;
 
 		while ( retry )
 		{
-		    retry = false;
-            if((err = SSL_connect(ssl))<=0)
-            {
-                switch ( SSL_get_error(ssl, err))
-                {
-                    case SSL_ERROR_NONE:
-                        woklib_error(wls, "No error but error with ssl.. wierd");
-                        break;
-                    case SSL_ERROR_ZERO_RETURN:
-                        woklib_error(wls, "SSL connection has been closed");
-                        break;
-                    case SSL_ERROR_WANT_READ:
-                    case SSL_ERROR_WANT_WRITE:
-                        woklib_error(wls, "SSL connection has problems reading or writing data");
-                        retry = true;
-                        break;
-                    case SSL_ERROR_WANT_CONNECT:
-                    case SSL_ERROR_WANT_ACCEPT:
-                        woklib_error(wls, "SSL connection has problems accepting a connection or connecting");
-                        break;
-                    case SSL_ERROR_WANT_X509_LOOKUP:
-                        woklib_error(wls, "SSL_ERROR_WANT_X509_LOOKUP");
-                        break;
-                    case SSL_ERROR_SYSCALL:
-                        woklib_error(wls, "SSL_ERROR_SYSCALL");
-                        break;
-                    case SSL_ERROR_SSL:
-                        woklib_error(wls, "SSL_ERROR_SSL");
-                        break;
-                    default:
-                        woklib_error(wls, "Unknown SSL error");
-                }
+			retry = false;
+			if((err = SSL_connect(ssl))<=0)
+			{
+				switch ( SSL_get_error(ssl, err))
+				{
+					case SSL_ERROR_NONE:
+						woklib_error(wls, "No error but error with ssl.. wierd");
+						break;
+					case SSL_ERROR_ZERO_RETURN:
+						woklib_error(wls, "SSL connection has been closed");
+						break;
+					case SSL_ERROR_WANT_READ:
+					case SSL_ERROR_WANT_WRITE:
+						//woklib_error(wls, "SSL connection has problems reading or writing data");
+						retry = true;
+						break;
+					case SSL_ERROR_WANT_CONNECT:
+					case SSL_ERROR_WANT_ACCEPT:
+						woklib_error(wls, "SSL connection has problems accepting a connection or connecting");
+						break;
+					case SSL_ERROR_WANT_X509_LOOKUP:
+						woklib_error(wls, "SSL_ERROR_WANT_X509_LOOKUP");
+						break;
+					case SSL_ERROR_SYSCALL:
+						woklib_error(wls, "SSL_ERROR_SYSCALL");
+						break;
+					case SSL_ERROR_SSL:
+						woklib_error(wls, "SSL_ERROR_SSL");
+						break;
+					default:
+						woklib_error(wls, "Unknown SSL error");
+				}
 
-                woklib_error(wls, "SSL couldn't be started on this socket");
-            }
-            else
-            {
-                conn->SetSSL(ssl);
-                conn->sendinit();
-            }
+				//woklib_error(wls, "SSL couldn't be started on this socket");
+			}
+			else
+			{
+				conn->SetSSL(ssl);
+				conn->sendinit();
+				
+				initiated = true;
+			}
 		}
-		initiated = true;
-		return true;
+		return 0;
 	}
 
 };

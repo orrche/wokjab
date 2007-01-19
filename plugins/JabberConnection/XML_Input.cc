@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ session(session),
 conn(conn),
 wls(wls)
 {
-	p = XML_ParserCreate (NULL); // FIX shouldnt this be cleared ?
+	p = XML_ParserCreate (NULL);
 
 	XML_SetUserData (p, this);
 	XML_SetElementHandler (p, xml_start, xml_end);
@@ -68,14 +68,14 @@ XML_Input::read_data (int source)
 		len = SSL_read(ssl, buffer, BUFFSIZE);
 		if ( len < 0 )
 		{
-            switch ( SSL_get_error(ssl, len) )
-            {
-                case SSL_ERROR_WANT_READ:
-                case SSL_ERROR_WANT_WRITE:
-                case SSL_ERROR_WANT_CONNECT:
-                case SSL_ERROR_WANT_ACCEPT:
-                    return 2;
-            }
+			switch ( SSL_get_error(ssl, len) )
+			{
+				case SSL_ERROR_WANT_READ:
+				case SSL_ERROR_WANT_WRITE:
+				case SSL_ERROR_WANT_CONNECT:
+				case SSL_ERROR_WANT_ACCEPT:
+					return 2;
+			}
 		}
 	}
 	else
@@ -83,7 +83,7 @@ XML_Input::read_data (int source)
 		len = recv (source, buffer, BUFFSIZE, 0);
 	}
 
-	if (len == -1 || len == -1)  // wounder what this really could result in
+	if (len == 0 || len == -1)  // wounder what this really could result in
 	{/* Connection closed */
         std::stringstream sstr;
         sstr << len << " ssl: " << ssl;
@@ -102,7 +102,11 @@ XML_Input::read_data (int source)
 		wls->SendSignal("Display Socket", sigtag);
 	}
 #endif // DEBUG
-
+	WokXMLTag activetag (NULL, "active");
+	activetag.AddAttr("session", session);
+	wls->SendSignal("Jabber Session IO Active", activetag);
+	wls->SendSignal("Jabber Session IO Active " + session, activetag);
+	
 	if (!XML_Parse (p, buffer, len, 0))
 	{
 		std::string msg;

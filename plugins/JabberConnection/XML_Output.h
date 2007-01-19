@@ -28,10 +28,10 @@ class XML_Output;
 
 using namespace Woklib;
 
-class XML_Output
+class XML_Output : public WLSignalInstance
 {
 	public:
-	XML_Output(WLSignal *wls);
+	XML_Output(WLSignal *wls, std::string session);
 	~XML_Output();
 
 	void set_socket(int socket_nr);
@@ -40,9 +40,13 @@ class XML_Output
 
 	int sendxml(std::string data);
 	int sendxml(const char *data);
+	int SocketAvailibule(WokXMLTag *tag);
 	void code_msg(std::string data);
 	private:
-	WLSignal *wls;
+		std::string buffer;
+		std::string signal_out;
+		std::string session;
+		bool transmitting;
 		int socket_nr;
 		::SSL *ssl;
 };

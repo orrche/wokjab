@@ -34,6 +34,7 @@ session(session)
 {
 	EXP_SIGHOOK("Jabber XML Object challenge", &IQauth::SD_Challange, 1000);
 	EXP_SIGHOOK("Jabber XML Object success", &IQauth::SD_Success, 1000);
+	EXP_SIGHOOK("Jabber XML Object failure", &IQauth::SD_Failure, 1000);
 	
 	WokXMLTag querytag(NULL,"variables");
 	WokXMLTag &itemtag = querytag.AddTag("item");
@@ -237,6 +238,19 @@ IQauth::SD_Challange(WokXMLTag *tag)
 	
 	wls->SendSignal("Jabber XML Send", message);
 	
+	return 1;
+}
+
+int
+IQauth::SD_Failure(WokXMLTag *tag)
+{
+	WokXMLTag message(NULL, "message");
+	message.AddAttr("session", session);
+	
+	wls->SendSignal("Jabber Connection Disconnect", message);
+	woklib_error(wls, "Could not authenticate with the server");
+	
+	delete this;
 	return 1;
 }
 

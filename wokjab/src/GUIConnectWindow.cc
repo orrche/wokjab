@@ -236,9 +236,16 @@ GUIConnectWindow::Connect_Button (GtkWidget * widget, gpointer sig_data)
 	sprintf(buf, "%d", gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON(data->prio_entry)));
 	prio = buf;
 
+	int at_position = 0;
+	if ( nick.find("@") == std::string::npos )
+		nick += "@" + server;
+	
+	at_position = nick.find("@");
+		
 	WokXMLTag consig(NULL, "connect");
-	consig.AddAttr("server", server);
-	consig.AddAttr("username", nick);
+	consig.AddAttr("host", server);
+	consig.AddAttr("server", nick.substr(at_position+1, nick.size()-at_position-1));
+	consig.AddAttr("username", nick.substr(0,at_position));
 	consig.AddAttr("password", password);
 	consig.AddAttr("resource", resource);
 	consig.AddAttr("port", port);

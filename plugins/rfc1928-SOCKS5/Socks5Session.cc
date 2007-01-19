@@ -47,18 +47,16 @@ id(id)
 		return;
 	}
 
-	
-std::cout << "Ohhh nooo we are in the shit here" << std::endl;
 	int flags;
 	if ((flags = fcntl(socket_nr, F_GETFL, 0)) < 0)
 	{
-		std::cout << "Ohhh shit" << std::endl;
+		woklib_error(wls, "Socks5 Connection couldn't get socket flags");
 	}
 
 
 	if (fcntl(socket_nr, F_SETFL, flags | O_NONBLOCK) < 0)
 	{
-		std::cout << "For fucks sake !!" << std::endl;
+		woklib_error(wls, "Socks5 Connection couldn't set non blocking socket");
 	} 
 	
 	

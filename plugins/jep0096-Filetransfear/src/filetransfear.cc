@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -300,11 +300,13 @@ int
 jep96::Finnished(WokXMLTag *fintag)
 {
 	GtkTreeIter iter;
-	if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[fintag->GetAttr("sid")])))
+	if ( rows.find(fintag->GetAttr("sid")) != rows.end() )
 	{
-		gtk_list_store_set (file_store, &iter, 2, "Finished" , -1);
+		if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[fintag->GetAttr("sid")])))
+		{
+			gtk_list_store_set (file_store, &iter, 2, "Finished" , -1);
+		}
 	}
-
 
 	return true;
 }
@@ -315,14 +317,17 @@ jep96::Accepted(WokXMLTag *acctag)
 	GtkTreeIter iter;
 	GtkTreePath* path;
 	
-	if( ( path = gtk_tree_row_reference_get_path(rows[acctag->GetAttr("sid")]) ) != NULL )
+	if ( rows.find(acctag->GetAttr("sid")) != rows.end() )
 	{
-		if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, path ))
+		if( ( path = gtk_tree_row_reference_get_path(rows[acctag->GetAttr("sid")]) ) != NULL )
 		{
-			gtk_list_store_set (file_store, &iter, 2, "Accepted" , -1);
+			if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, path ))
+			{
+				gtk_list_store_set (file_store, &iter, 2, "Accepted" , -1);
+			}
 		}
 	}
-
+	
 	return true;
 }
 
@@ -330,11 +335,15 @@ int
 jep96::Terminated(WokXMLTag *termtag)
 {
 	GtkTreeIter iter;
-	if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[termtag->GetAttr("sid")])))
+	
+	if ( rows.find(termtag->GetAttr("sid")) != rows.end() )
 	{
-		gtk_list_store_set (file_store, &iter, 2, "Connected" , -1);
+		if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[termtag->GetAttr("sid")])))
+		{
+			gtk_list_store_set (file_store, &iter, 2, "Connected" , -1);
+		}
 	}
-
+	
 	return true;
 }
 
@@ -386,12 +395,15 @@ jep96::Position(WokXMLTag *postag)
 	if ( sessions.find(sid) != sessions.end() )
 		msg << "/" << sessions[sid]->GetAttr("strsize");
 	
-	GtkTreeIter iter;
-	if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[sid])))
+	if ( rows.find(sid) != rows.end() )
 	{
-		gtk_list_store_set (file_store, &iter, 1, msg.str().c_str() , -1);
+		GtkTreeIter iter;
+		if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[sid])))
+		{
+			gtk_list_store_set (file_store, &iter, 1, msg.str().c_str() , -1);
+		}
 	}
-
+	
 	return true;
 }
 
@@ -399,11 +411,15 @@ int
 jep96::Connected(WokXMLTag *contag)
 {
 	GtkTreeIter iter;
-	if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[contag->GetAttr("sid")])))
+	
+	if( rows.find(contag->GetAttr("sid")) != rows.end() )
 	{
-		gtk_list_store_set (file_store, &iter, 2, "Connected" , -1);
+		if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[contag->GetAttr("sid")])))
+		{
+			gtk_list_store_set (file_store, &iter, 2, "Connected" , -1);
+		}
 	}
-
+	
 	return true;
 }
 
@@ -411,11 +427,14 @@ int
 jep96::Rejected(WokXMLTag *rejtag)
 {
 	GtkTreeIter iter;
-	if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[rejtag->GetAttr("sid")])))
+	if ( rows.find(rejtag->GetAttr("sid")) != rows.end() )
 	{
-		gtk_list_store_set (file_store, &iter, 2, "Rejected" , -1);
+		if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[rejtag->GetAttr("sid")])))
+		{
+			gtk_list_store_set (file_store, &iter, 2, "Rejected" , -1);
+		}
 	}
-
+	
 	return true;
 }
 

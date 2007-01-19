@@ -33,7 +33,9 @@ class IQauth : public WLSignalInstance
 		int xmlClearTextUser (WokXMLTag *tag);
 		int SD_Challange(WokXMLTag *tag);
 		int SD_Success(WokXMLTag *tag);
+		int SD_Failure(WokXMLTag *tag);
 		
+
 		enum ConnectionType
 		{
 			ClearTextUser,

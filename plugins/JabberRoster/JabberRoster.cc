@@ -75,7 +75,11 @@ JabberRoster::RemoveItemEvent(WokXMLTag *tag)
 int
 JabberRoster::LoggedOut(WokXMLTag *tag)
 {
-
+	if ( session.find(tag->GetAttr("session") ) != session.end() )
+	{
+		delete session[tag->GetAttr("session")];
+		session.erase(tag->GetAttr("session"));
+	}
 
 	return 1;
 }

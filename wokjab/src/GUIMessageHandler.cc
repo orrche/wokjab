@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -34,7 +34,10 @@ using std::string;
 #include <sstream>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#ifdef __WIN32
 #include <io.h>
+#endif
 
 GUIMessageHandler::GUIMessageHandler(WLSignal *wls) : WLSignalInstance(wls)
 {

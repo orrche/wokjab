@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -22,8 +22,6 @@
 #include <sstream>
 #include <gtk/gtkprivate.h>
 using std::list;
-using std::cout;
-using std::endl;
 using std::string;
 
 GUIWindowDock::GUIWindowDock(WLSignal *wls) : WLSignalInstance(wls)
@@ -46,8 +44,6 @@ GUIWindowDock::GUIWindowDock(WLSignal *wls) : WLSignalInstance(wls)
 	
 	gtk_widget_realize(hiddenwindow);
 	gtk_widget_realize(hiddenvbox);
-	
-//	gtk_widget_show_all(hiddenwindow);
 }
 
 
@@ -181,7 +177,6 @@ GUIWindowDock::Config(WokXMLTag *tag)
 int
 GUIWindowDock::HidePage(WokXMLTag *tag)
 {	
-	std::cout << ":::" << *tag << std::endl;
 	int mainid = atoi(tag->GetAttr("widget").c_str());
 	if ( find(Widgets.begin(), Widgets.end() , mainid) == Widgets.end() )
 		return 1;
@@ -203,10 +198,6 @@ GUIWindowDock::HidePage(WokXMLTag *tag)
 int
 GUIWindowDock::ShowPage(WokXMLTag *tag)
 {
-	std::cout << ":::" << *tag << std::endl;
-	int i = 0; 
-	
-	std::cout << ++i << std::endl;
 	int mainid = atoi(tag->GetAttr("widget").c_str());
 	
 	if ( find(HiddenWidgets.begin(), HiddenWidgets.end() , mainid) == HiddenWidgets.end() )
@@ -214,7 +205,6 @@ GUIWindowDock::ShowPage(WokXMLTag *tag)
 	
 	HiddenWidgets.erase(find(HiddenWidgets.begin(), HiddenWidgets.end(), mainid));
 	
-	std::cout << ++i << std::endl;
 	if(Widgets.empty())
 		CreateWidget();
 	Widgets.push_back(mainid);
@@ -222,39 +212,31 @@ GUIWindowDock::ShowPage(WokXMLTag *tag)
 	GtkWidget *mainsock;
 	GtkWidget *labelsock;
 	
-	std::cout << ++i << std::endl;
 	mainsock = sockets[mainid];
 	labelsock = labelsockets[mainid];
 	
-	std::cout << ++i << std::endl;
 	GtkWidget *box = gtk_hbox_new(FALSE, 2);
 	GtkWidget *close_button = gtk_button_new_with_label("x");
 	GtkTooltips *tooltips = gtk_tooltips_new();
 	gtk_tooltips_set_tip(tooltips, close_button, "Closes this tab", "Closes this tab");
 	gtk_signal_connect( GTK_OBJECT(close_button), "clicked",
 		GTK_SIGNAL_FUNC (GUIWindowDock::page_delete), this);
-	std::cout << ++i << std::endl;
 	
 	GtkWidget *bin = gtk_event_box_new();
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), bin, box);
-	
-	std::cout << ++i << std::endl;
-	
+		
 	gtk_widget_show_all(box);
 	gtk_widget_show_all(window);
 	
 	gtk_widget_reparent(mainsock, bin);
 	gtk_widget_reparent(labelsock, box);
-	std::cout << ++i << std::endl;
 	gtk_box_pack_end(GTK_BOX(box), close_button, FALSE, FALSE, 0);
 
 		
-	std::cout << ++i << std::endl;
 	gtk_widget_show_all(mainsock);
 	gtk_widget_show_all(labelsock);
 	gtk_widget_show_all(box);
 	
-	std::cout << ++i << std::endl;
 	gtk_window_present (GTK_WINDOW(window));
 	return 1;
 }
@@ -317,7 +299,6 @@ GUIWindowDock::RemovePage(WokXMLTag *tag)
 	GtkWidget *parent = gtk_widget_get_parent(sockets[atoi(tag->GetAttr("widget").c_str())]);
 	
 	buf << "GUI WindowDock Close " << tag->GetAttr("widget");
-	std::cout << buf.str() << std::endl;
 	wls->SendSignal(buf.str(), &closetag);
 	
 	Widgets.erase(find(Widgets.begin(), Widgets.end(), atoi(tag->GetAttr("widget").c_str())));

@@ -48,7 +48,7 @@ using namespace Woklib;
 class Connection : public WLSignalInstance
 {
       public:
-	Connection (WLSignal *wls, std::string in_username, std::string in_password, std::string in_server, std::string resource, int in_port, int type, std::string session);
+	Connection (WLSignal *wls, std::string in_username, std::string in_password, std::string in_server, std::string in_host, std::string resource, int in_port, int type, std::string session);
 	~Connection();
 	int get_socket();
 
@@ -71,6 +71,7 @@ class Connection : public WLSignalInstance
 	std::string username;
 	std::string password;
 	std::string server;
+	std::string host;
 	std::string resource;
 	std::string session;
 	std::string ip;

@@ -84,6 +84,7 @@ AC_OUTPUT(Makefile \
 	plugins/ScriptLoader/Makefile  \
         plugins/Jabber/Makefile  \
         plugins/JabberConnection/Makefile  \
+        plugins/JabberConnection/Idle/Makefile  \
         plugins/JabberRoster/Makefile  \
 	plugins/jep0004-xdata/Makefile  \
 	plugins/jep0004-xdata/src/Makefile  \
@@ -97,6 +98,7 @@ AC_OUTPUT(Makefile \
 	plugins/jep0096-Filetransfear/src/Makefile \
 	plugins/jep0115-EntCap/Makefile  \
         plugins/jep0153-VCardAvatar/Makefile  \
+        plugins/Idle/Makefile  \
 	wokjab/Makefile \
 	wokjab/src/Makefile \
 	wokjab/include/Makefile \

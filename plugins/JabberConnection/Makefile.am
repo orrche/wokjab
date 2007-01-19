@@ -22,6 +22,9 @@ libjabberconnection_la_SOURCES = \
 	IQAuthManager.cc       \
 	IQAuthManager.h 
 
+SUBDIRS = \
+	Idle 
+
 ## File created by the gnome-build tools
 
 

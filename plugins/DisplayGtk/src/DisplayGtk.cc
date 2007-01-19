@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2005-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 /*
  * This program is free software; you can redistribute it and/or
@@ -113,6 +113,8 @@ int
 DisplayGtk::DispSig(WokXMLTag *tag)
 {
 #ifdef STDOUT_DEBUG
+	for ( int i = atoi(tag->GetAttr("level").c_str()); i ; i-- )
+		std::cout << "  ";
 	std::cout << "\033[22;35mSig: " << tag->GetAttr("name") << "\033[22;37m" << std::endl;
 #endif
 	widget->Signal(tag);

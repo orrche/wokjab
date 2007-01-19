@@ -41,14 +41,15 @@ Jabber::~Jabber()
 
 
 std::string
-Jabber::connect (std::string server, std::string username,
+Jabber::connect (std::string server, std::string host, std::string username,
 		 std::string password, std::string resource, int port, int type)
 {
 	Connection *conn;
 	char buf[20];
 	sprintf(buf, "jabber%d", session_nr++);
-	
-	conn = new Connection (wls, username, password, server,resource, port, type, buf);
+	if( host == "" )
+		host = server;
+	conn = new Connection (wls, username, password, server, host, resource, port, type, buf);
 	connections[buf] = conn;
 	
 	return buf;
@@ -78,6 +79,7 @@ int
 Jabber::SignalConnect(WokXMLTag *tag)
 {
 	tag->AddAttr("session", connect( tag->GetAttr("server"),
+					tag->GetAttr("host"),
 					tag->GetAttr("username"),
 					tag->GetAttr("password"),
 					tag->GetAttr("resource"),

@@ -31,10 +31,12 @@ typedef unsigned int uint;
 #endif
 #include <errno.h>
 #include <unistd.h>  // close
+#include <sstream>
 
-XML_Output::XML_Output(WLSignal *wls):
-wls(wls)
+XML_Output::XML_Output(WLSignal *wls, std::string session): WLSignalInstance(wls),
+session(session)
 {
+	transmitting = false;
 	this->socket_nr = 0;
 	ssl = NULL;
 }
@@ -58,55 +60,88 @@ XML_Output::sendxml(std::string data)
 		WokXMLTag sigtag(NULL, "message");
 		sigtag.AddTag("body").AddText("Session not connected");
 		wls->SendSignal("Display Error", sigtag);
-
+		
 		return(-1);
 	}
 
+	buffer += data;
+	
+	if ( !transmitting )
+	{
+		transmitting = true;
+		
+		std::stringstream sstr_socket;
+		std::string str_socket;
+		
+		sstr_socket << socket_nr;
+		str_socket = sstr_socket.str();
+		
+		WokXMLTag sigtag(NULL, "socket");
+		sigtag.AddAttr("socket", str_socket);
+
+		wls->SendSignal("Woklib Socket Out Add", sigtag);
+		signal_out = sigtag.GetAttr("signal");
+		EXP_SIGHOOK(signal_out, &XML_Output::SocketAvailibule, 1000);
+	}
+}
+
+
+int
+XML_Output::SocketAvailibule(WokXMLTag *tag)
+{
 	uint bcount;
 	uint br;
 	char *str;
-	std::string msg;
 
+	WokXMLTag activetag (NULL, "active");
+	activetag.AddAttr("session", session);
+	wls->SendSignal("Jabber Session IO Active", activetag);
+	wls->SendSignal("Jabber Session IO Active " + session, activetag);
+	
+	
 #ifdef DEBUG
 	{
 		WokXMLTag sigtag(NULL, "message");
 		sigtag.AddAttr("type", "out");
-		sigtag.AddTag("body").AddText(data);
+		sigtag.AddTag("body").AddText(buffer);
 		wls->SendSignal("Display Socket", sigtag);
 	}
 #endif // DEBUG
 
 	bcount = br = 0;
 
-	str =(char *) data.c_str();
-	while (bcount < data.size())
+	str =(char *) buffer.c_str();
+
+	if ( ssl )
+		br = SSL_write(ssl, str, buffer.size());
+	else
+		br = send(socket_nr, str, buffer.size() , 0);
+
+	if (br > 0)
 	{
-
-		if ( ssl )
-			br = SSL_write(ssl, str, data.size() - bcount);
-		else
-			br = send(socket_nr, str, data.size() - bcount , 0);
-
-		if (br > 0)
-		{
-			bcount += br;
-			str += br;
-		}
-		else if (br < 0)
-		{
+		buffer = buffer.substr(br);
+	}
+	else if (br < 0)
+	{
 #ifdef __WIN32
 #else
-			char buf[50];
-			strerror_r(br, buf, 50);
-			WokXMLTag sigtag(NULL, "message");
-			sigtag.AddTag("body").AddText(std::string("Error Socket Send: ") + buf);
-			wls->SendSignal("Display Error", sigtag);
+		char buf[50];
+		strerror_r(br, buf, 50);
+		WokXMLTag sigtag(NULL, "message");
+		sigtag.AddTag("body").AddText(std::string("Error Socket Send: ") + buf);
+		wls->SendSignal("Display Error", sigtag);
 #endif
-			return (-1);
-		}
+		socket_nr = 0;
 	}
-
-	return(0);
+	
+	if ( buffer.size() == 0 )
+	{
+	
+		EXP_SIGUNHOOK(signal_out, &XML_Output::SocketAvailibule, 1000);
+		transmitting = false;
+		tag->AddAttr("stop","no more data");
+	}
+	return(1);
 }
 
 int

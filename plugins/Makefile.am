@@ -50,6 +50,7 @@ SUBDIRS= \
 	Tooltip \
 	wokjab-jid-info \
 	woklib-groupchat \
-	rfc1928-SOCKS5 
+	rfc1928-SOCKS5 \
+	Idle 
 
 
