@@ -84,7 +84,6 @@ AC_OUTPUT(Makefile \
 	plugins/ScriptLoader/Makefile  \
         plugins/Jabber/Makefile  \
         plugins/JabberConnection/Makefile  \
-        plugins/JabberConnection/Idle/Makefile  \
         plugins/JabberRoster/Makefile  \
 	plugins/jep0004-xdata/Makefile  \
 	plugins/jep0004-xdata/src/Makefile  \
