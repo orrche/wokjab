@@ -1,7 +1,7 @@
 libdir = $(prefix)/lib/woklib-plugins/normal
 
 lib_LTLIBRARIES = \
-	libjabberconnection.la 
+	libjabberconnection.la
 
 libjabberconnection_la_SOURCES = \
 	main.cc       \
@@ -20,10 +20,7 @@ libjabberconnection_la_SOURCES = \
 	staticfunctions.cc       \
 	staticfunctions.h       \
 	IQAuthManager.cc       \
-	IQAuthManager.h 
-
-SUBDIRS = \
-	Idle 
+	IQAuthManager.h
 
 ## File created by the gnome-build tools
 
