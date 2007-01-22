@@ -38,7 +38,7 @@ class GUIRoster:public WLSignalInstance
 	int GetIcon(WokXMLTag *xml);
 	int DeleteMenu(WokXMLTag *xml);
 	int DeleteAction(WokXMLTag *xml);
-	
+	int Close(WokXMLTag *xml);
 
 	static void ToggleButton(GtkWidget *widget, GUIRoster *c);
 	
@@ -50,6 +50,7 @@ class GUIRoster:public WLSignalInstance
 	std::map <GtkWidget *, int> bstate;
 	std::map <std::string, std::string> icons;
 	  
+	GtkWidget *plugwid;
 	GtkWidget *hbb;
 	GtkWidget *togg1;
 	GtkWidget *togg2;

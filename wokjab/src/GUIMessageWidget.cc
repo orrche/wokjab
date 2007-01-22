@@ -294,7 +294,7 @@ int
 GUIMessageWidget::Close(WokXMLTag *tag)
 {
 	delete this;
-	return true;
+	return 1;
 }
 
 void

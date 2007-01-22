@@ -56,7 +56,6 @@ class GUIRoster : public WoklibPlugin
 		void SetHover (gchar *hid);
 		void CleanHover ();
 	protected:
-		std::string closesig;
 		gchar *hoverid;
 		std::map <std::string, RosterItem*> item;
 		GladeXML *xml;

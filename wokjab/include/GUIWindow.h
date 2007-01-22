@@ -26,7 +26,6 @@
 #include <Woklib/WLSignalInstance.h>
 
 #include "include/GUIMessageHandler.h"
-#include "include/GUIRoster.h"
 #include "include/GUIConnectWindow.h"
 #include "include/GUIPluginWindow.h"
 
@@ -46,8 +45,8 @@ class GUIWindow : public WLSignalInstance
 		 ~GUIWindow();
 
 		static void Destroy( GtkWidget *widget,
-                     gpointer   data );
-		static gboolean Delete( GtkWidget *widget, GdkEvent *event, gpointer user_data);
+                     GUIWindow * c );
+		static gboolean Delete( GtkWidget *widget, GdkEvent *event, GUIWindow *c);
 		static void MenuActivate (GtkComboBox *widget, GUIWindow *c);
 		static gboolean MainMenu (GtkButton *button, GdkEventButton *event, GUIWindow *data);
 		static gboolean WindowMove(GtkWidget *widget, GdkEventMotion *event, GUIWindow *c);
@@ -82,6 +81,7 @@ class GUIWindow : public WLSignalInstance
 
 		std::map <GtkWidget *, std::string> MainMenuSignals;
 		std::list <std::string> ActiveSessions;
+		std::vector <int> Widgets;
 		std::string current_status;
 
 		GUIMessageHandler *gmsghandler;
@@ -89,7 +89,6 @@ class GUIWindow : public WLSignalInstance
 		int plugin_win_open;
 		bool visible;
 
-		GUIRoster *roster;
 		GtkListStore *showmenu;
 
 		WokXMLTag *config;

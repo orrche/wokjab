@@ -74,11 +74,10 @@ GUIRoster::GUIRoster (WLSignal * wls):WLSignalInstance (wls)
 	wls->SendSignal("Config XML Trigger", &conftag);
 	
 	// Initiating add ins .. maybe should be plugins..
+	
 	new GUIAddJIDWidget(wls);
 	new GUIPresentReqWidget(wls);
 	
-	
-	GtkWidget *plugwid;
 	plugwid = gtk_plug_new(0);
 	gtk_container_add(GTK_CONTAINER(plugwid), hbb);	
 	gtk_widget_show_all(plugwid);
@@ -92,13 +91,30 @@ GUIRoster::GUIRoster (WLSignal * wls):WLSignalInstance (wls)
 	widtag.AddAttr("expand", "false");
 	
 	wls->SendSignal("GUI Window AddWidget",&contag);
+	
+	std::stringstream sig;
+	sig << "GUI Window Close " << gtk_plug_get_id(GTK_PLUG(plugwid));
+	EXP_SIGHOOK(sig.str(), &GUIRoster::Close, 500);
+
 }
 
 GUIRoster::~GUIRoster ()
-{
+{	
+		
 	EXP_SIGUNHOOK("Config XML Change /main/window", &GUIRoster::ReadConfig, 500);
 	
 	SaveConfig(false);
+
+	if( plugwid )
+		gtk_widget_destroy(plugwid);
+
+}
+
+int
+GUIRoster::Close(WokXMLTag *tag)
+{
+	delete this;
+	return 1;
 }
 
 void

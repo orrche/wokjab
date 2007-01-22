@@ -27,6 +27,8 @@
 #  include <config.h>
 #endif
 
+#include <sstream>
+
 GUIRoster::GUIRoster(WLSignal *wls) : WoklibPlugin(wls)
 {
 	EXP_SIGHOOK("GUIRoster AddItem", &GUIRoster::AddItem, 500);
@@ -41,8 +43,7 @@ GUIRoster::GUIRoster(WLSignal *wls) : WoklibPlugin(wls)
 
 GUIRoster::~GUIRoster()
 {
-	WokXMLTag tag(NULL, "close");
-	wls->SendSignal(closesig, tag);
+
 }
 
 void
@@ -118,11 +119,15 @@ GUIRoster::CreateWid()
 	widtag.AddAttr("expand", "true");
 	widtag.AddAttr("fill", "true");
 	
-	closesig = std::string("GUI Window Close ") + contag.GetAttr("mainwidget");
-	EXP_SIGHOOK(closesig, &GUIRoster::Close, 500);
 	if ( !wls->SendSignal("GUI Window AddWidget",&contag) )
 	{
 		inittag = new WokXMLTag (contag);
+	}
+	else
+	{
+		std::stringstream sig;
+		sig << "GUI Window Close " << gtk_plug_get_id(GTK_PLUG(mainwindowplug));
+		EXP_SIGHOOK(sig.str(), &GUIRoster::Close, 500);
 	}
 }
 
@@ -329,6 +334,11 @@ GUIRoster::GUIWindowInit(WokXMLTag *tag)
 		wls->SendSignal("GUI Window AddWidget",inittag);
 		delete inittag;
 		inittag = NULL;
+		
+			
+	std::stringstream sig;
+	sig << "GUI Window Close " << gtk_plug_get_id(GTK_PLUG(mainwindowplug));
+	EXP_SIGHOOK(sig.str(), &GUIRoster::Close, 500);
 	}
 	return 1;
 }

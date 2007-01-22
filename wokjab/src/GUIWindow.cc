@@ -37,8 +37,6 @@ WLSignalInstance(wls)
 
 	gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(xml,"showentry")), 4);
 
-	//gtk_box_pack_start(GTK_BOX(glade_xml_get_widget(xml,"mainvbox")), roster->GetWidget(), TRUE, TRUE, 0 );
-
 	g_signal_connect ((gpointer) glade_xml_get_widget(xml,"prioentry"), "value-changed",
 										G_CALLBACK (GUIWindow::SpinBtnPrio), this);
 	g_signal_connect ((gpointer) glade_xml_get_widget(xml,"statusentry"), "activate",
@@ -74,7 +72,7 @@ WLSignalInstance(wls)
 	EXP_SIGHOOK("Jabber XML Presence Send", &GUIWindow::SendingPresence, 10);
 
 	gmsghandler = new GUIMessageHandler(wls);
-	roster = new GUIRoster(wls);
+	new GUIRoster(wls);
 
 	WokXMLTag empty(NULL, "empty");
 	wls->SendSignal("GUI Window Init", empty);
@@ -84,21 +82,30 @@ GUIWindow::~GUIWindow()
 {
 	EXP_SIGUNHOOK("Config XML Change /main/window", &GUIWindow::ReadConfig, 500);
 	delete gmsghandler;
-	delete roster;
+	
 }
 
 gboolean
-GUIWindow::Delete( GtkWidget *widget, GdkEvent *event, gpointer user_data)
+GUIWindow::Delete( GtkWidget *widget, GdkEvent *event, GUIWindow *c)
 {
-	GUIWindow *data;
-	data = static_cast <GUIWindow *> ( user_data);
 
-	data->SaveConfig();
+	c->SaveConfig();
 
-	if(data->config->GetFirstTag("exit_on_delete_event").GetAttr("data") != "false")
+	if(c->config->GetFirstTag("exit_on_delete_event").GetAttr("data") != "false")
+	{
+		while( !c->Widgets.empty() )
+		{
+			WokXMLTag closetag(NULL, "close");
+			std::stringstream buf;
+			buf << "GUI Window Close " << *(c->Widgets.begin());
+			c->Widgets.erase(c->Widgets.begin());
+			
+			closetag.AddAttr("id", buf.str().substr(21));
+			c->wls->SendSignal(buf.str(), &closetag);
+		}
 		return false;
-
-	data->hide(NULL);
+	}
+	c->hide(NULL);
 	return true;
 }
 
@@ -125,7 +132,7 @@ GUIWindow::AddWidget(WokXMLTag *tag)
 	gtk_socket_add_id(GTK_SOCKET(sockwid), atoi(tag->GetFirstTag("widget").GetAttr("id").c_str()));
 	gtk_widget_show_all(sockwid);
 
-//	Widgets.push_back(atoi(tag->GetFirstTag("widget").GetAttr("id").c_str()));
+	Widgets.push_back(atoi(tag->GetFirstTag("widget").GetAttr("id").c_str()));
 
 	return true;
 }
@@ -286,11 +293,9 @@ GUIWindow::MenuActivate (GtkComboBox *widget, GUIWindow *c)
 
 void
 GUIWindow::Destroy( GtkWidget *widget,
-                     gpointer   user_data )
+                     GUIWindow *c)
 {
-	GUIWindow *data;
-	data = static_cast <GUIWindow *> ( user_data);
-	if(data->visible)
+	if(c->visible)
 		gtk_main_quit ();
 }
 
