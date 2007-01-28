@@ -45,7 +45,7 @@ xdatasinglelist::xdatasinglelist(WLSignal *wls, WLSignalData* wlsd, GtkWidget *v
 		
 		
 		GtkWidget *menu_item;
-		menu_item = gtk_menu_item_new_with_mnemonic (menu_label.c_str());
+		menu_item = gtk_menu_item_new (menu_label.c_str());
 		gtk_container_add (GTK_CONTAINER (menu), menu_item);
 			
 		
