@@ -51,6 +51,7 @@ SUBDIRS= \
 	wokjab-jid-info \
 	woklib-groupchat \
 	rfc1928-SOCKS5 \
-	Idle 
+	Idle \
+	GroupChatBookmark 
 
 

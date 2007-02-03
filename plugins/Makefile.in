@@ -216,7 +216,8 @@ SUBDIRS = \
 	wokjab-jid-info \
 	woklib-groupchat \
 	rfc1928-SOCKS5 \
-	Idle 
+	Idle \
+	GroupChatBookmark 
 
 all: all-recursive
 

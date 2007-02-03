@@ -42,10 +42,12 @@ class IdleSession : public WLSignalInstance
 	
 		int Tick(WokXMLTag *tag);
 		int Active(WokXMLTag *tag);
+		int DeathWatch(WokXMLTag *tag);
 		
 	protected:
 		std::string session;
 		int t;
+		bool death;
 	
 };
 

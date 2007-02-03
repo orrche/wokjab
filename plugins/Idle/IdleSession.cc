@@ -32,13 +32,9 @@ IdleSession::IdleSession(WLSignal *wls, std::string session) : WLSignalInstance(
 session(session)
 {
 	EXP_SIGHOOK("Jabber Session IO Active " + session, &IdleSession::Active, 1000);
-	EXP_SIGHOOK("Jabber Idle Tick " + session, &IdleSession::Tick, 1000);
-	
-	WokXMLTag timmertag(NULL, "timer");
-	timmertag.AddAttr("time", "1000");
-	timmertag.AddAttr("signal", "Jabber Idle Tick " + session);
+	EXP_SIGHOOK("Jabber Idle Tick Normal " + session, &IdleSession::Tick, 1000);
+	EXP_SIGHOOK("Jabber Idle Tick DeathWatch " + session, &IdleSession::DeathWatch, 1000);
 
-	wls->SendSignal("Woklib Timmer Add",timmertag);
 	t = 0;
 }
 
@@ -50,32 +46,57 @@ IdleSession::~IdleSession()
 }
 
 int
+IdleSession::DeathWatch(WokXMLTag *tag)
+{
+	if ( death )
+	{
+		woklib_error(wls, "Connection " + session + " seams to have timedout");
+		WokXMLTag mtag(NULL, "message");
+		mtag.AddAttr("session", session);
+		wls->SendSignal("Jabber Connection Lost", mtag);
+	
+	}
+	
+	tag->AddAttr("stop", "stop");
+	return 1;
+}
+
+int
 IdleSession::Tick(WokXMLTag *tag)
 {
-	t++;
-	if ( t > 180 )
+	std::cout << "T: " << t << std::endl;
+	if ( t>=0)
+		t--;
+	if ( t == 0 )
 	{
 		WokXMLTag mtag(NULL, "message");
 		mtag.AddAttr("session", session);
 		mtag.AddText(" ");
 		
 		wls->SendSignal("Jabber XML Send", mtag);
+		
+		death = true;
+		WokXMLTag timmertag(NULL, "timer");
+		timmertag.AddAttr("time", "120000");
+		timmertag.AddAttr("signal", "Jabber Idle Tick DeathWatch " + session);
+
+		wls->SendSignal("Woklib Timmer Add",timmertag);
 	}
-	if ( t > 180*2 )
-	{
-		woklib_error(wls, "Connection " + session + " seams to have timedout");
-		WokXMLTag mtag(NULL, "message");
-		mtag.AddAttr("session", session);
-		wls->SendSignal("Jabber Connection Lost", mtag);
-	}
+	
+	tag->AddAttr("stop", "stop");
 	return 1;
 }
 
 int
 IdleSession::Active(WokXMLTag *tag)
 {
-	t = 0;
+	death = false;
+	t++;
+	WokXMLTag timmertag(NULL, "timer");
+	timmertag.AddAttr("time", "60000");
+	timmertag.AddAttr("signal", "Jabber Idle Tick Normal " + session);
 
+	wls->SendSignal("Woklib Timmer Add",timmertag);
 
 	return 1;
 }

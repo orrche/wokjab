@@ -51,6 +51,7 @@ AC_OUTPUT(Makefile \
 	plugins/GtkPreference/Makefile  \
 	plugins/GtkMenu/Makefile  \
         plugins/GUIRoster/Makefile  \
+        plugins/GroupChatBookmark/Makefile  \
 	plugins/OpenDialogTo/Makefile  \
 	plugins/wokjab-jid-info/Makefile  \
 	plugins/wokjab-jid-info/src/Makefile  \

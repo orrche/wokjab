@@ -87,18 +87,18 @@ AdHocWid::CloseButton(GtkButton *button, AdHocWid *c)
 }
 
 void
-AdHocWid::Exec()
+AdHocWid::ExecButton(GtkButton *button, AdHocWid *c)
 {
 	GtkTreeIter       iter;
-	GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(glade_xml_get_widget(xml, "command_view")));
+	GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(glade_xml_get_widget(c->xml, "command_view")));
 	
 	if(gtk_tree_selection_get_selected(selection,  NULL, &iter) != FALSE)
 	{
 		gchar *command, *jid;
-		gtk_tree_model_get(GTK_TREE_MODEL(model), &iter, COMMAND_COLUMN, &command, JID_COLUMN, &jid, -1);
+		gtk_tree_model_get(GTK_TREE_MODEL(c->model), &iter, COMMAND_COLUMN, &command, JID_COLUMN, &jid, -1);
 		
 		WokXMLTag msgtag(NULL,"message");
-		msgtag.AddAttr("session", session);
+		msgtag.AddAttr("session", c->session);
 		WokXMLTag &tag = msgtag.AddTag("iq");
 		tag.AddAttr("to", jid );
 		tag.AddAttr("type", "set");
@@ -108,19 +108,11 @@ AdHocWid::Exec()
 		query->AddAttr("node", command);
 		query->AddAttr("action", "execute");
 
-		wls->SendSignal("Jabber XML IQ Send", &msgtag);
-		EXP_SIGHOOK("Jabber XML IQ ID " + tag.GetAttr("id"), &AdHocWid::ExecResponse, 1000);
+		c->wls->SendSignal("Jabber AdHoc Execute", &msgtag);
 	
 		g_free(jid);
 		g_free(command);
 	}
-}
-
-void
-AdHocWid::ExecButton(GtkButton *button, AdHocWid *c)
-{
-	c->Exec();
-
 }
   
 int
@@ -145,9 +137,3 @@ AdHocWid::Set(WokXMLTag *tag)
 	return 1;
 }
 
-int
-AdHocWid::ExecResponse(WokXMLTag *tag)
-{
-	new AdHocSession(wls,tag);
-	return 1;
-}

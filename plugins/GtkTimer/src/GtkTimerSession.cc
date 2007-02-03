@@ -55,7 +55,7 @@ GtkTimerSession::Exec (GtkTimerSession * c)
 		return FALSE;
 	}
 	
-	if(tag.GetAttr("stop") != "")
+	if(!tag.GetAttr("stop").empty())
 	{
 		delete c;
 		return FALSE;

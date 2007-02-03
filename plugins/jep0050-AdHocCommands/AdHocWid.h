@@ -44,7 +44,6 @@ class AdHocWid : public WLSignalInstance
 		 ~AdHocWid();
 	
 		int Set(WokXMLTag *tag);
-		int ExecResponse(WokXMLTag *tag);
 		
 		void Exec();
 		

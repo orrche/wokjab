@@ -40,7 +40,8 @@ class GUIMessageWidget : public WLSignalInstance
 						 gpointer user_data);
 		void own_message(std::string msg, time_t t = time (NULL));
 		void MessageWithEmotions(std::string msg);
-	
+		int InsertCommand(WokXMLTag &tag);
+
 		int Config(WokXMLTag *tag);
 		int NewPresence(WokXMLTag *tag);
 		int Activate(WokXMLTag *tag);
@@ -56,6 +57,7 @@ class GUIMessageWidget : public WLSignalInstance
 		static void Destroy(GtkWidget *widget, GUIMessageWidget *c);
 		static void LDestroy(GtkWidget *widget, GUIMessageWidget *c);
 		static gboolean Scroll (GtkWidget *widget, GdkEventScroll *event, GUIMessageWidget *c);
+		static gboolean tw1_event_after (GtkWidget *text_view, GdkEvent  *ev, GUIMessageWidget *c);
 		
 		void HookSignals();
 		void UnHookSignals();
@@ -104,7 +106,10 @@ class GUIMessageWidget : public WLSignalInstance
 		bool hasresource;
 		
 		double fontsize;
+		
 		std::map<std::string, GtkTextTag*> tags;
+		int cmd_count;
+		std::map<int, WokXMLTag *> commands;
 };
 
 

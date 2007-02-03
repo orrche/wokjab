@@ -181,8 +181,10 @@ GUIMessageHandler::new_message(WokXMLTag *tag)
 	WokXMLTag *message_tag;
 	message_tag = &tag->GetFirstTag("message");
 
-	if( message_tag->GetFirstTag("body").GetBody() == "" )
+	
+	if( message_tag->GetFirstTag("body").GetBody() == "" && tag->GetTagList("command").empty() )
 		return 1;
+
 
 	string::size_type pos = message_tag->GetAttr("from").find("/");
 	if( pos != std::string::npos )

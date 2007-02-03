@@ -50,6 +50,9 @@ class AdHoc : public WoklibPlugin
 		int Menu(WokXMLTag *tag);
 		int Start(WokXMLTag *tag);
 		int CommandExec(WokXMLTag *tag);
+		int Message(WokXMLTag *tag);
+		int Exec(WokXMLTag *tag);
+		int ExecResponse(WokXMLTag *tag);
 	protected:
 	
 	
