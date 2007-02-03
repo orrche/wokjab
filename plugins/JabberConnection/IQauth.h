@@ -27,7 +27,7 @@ using namespace Woklib;
 class IQauth : public WLSignalInstance
 {
 	public:
-		IQauth (WLSignal *wls, std::string session);
+		IQauth (WLSignal *wls, std::string session, int con_type);
 		~IQauth ();
 
 		int xmlClearTextUser (WokXMLTag *tag);
@@ -41,7 +41,8 @@ class IQauth : public WLSignalInstance
 			ClearTextUser,
 			SHA1User,
 			HandshakeComponent,
-			SASLDIGESTMD5
+			SASLDIGESTMD5,
+			SASLPLAIN
 		};
 	
 		
@@ -51,6 +52,7 @@ class IQauth : public WLSignalInstance
 			void InitClearTextUser();
 			void InitHandshakeComponent();
 			void InitSASLDIGESTMD5();
+			void InitSASLPLAIN();
 			std::string SD_A2(std::string digest_uri_value);
 			std::string SD_A1(std::string username, std::string realm, std::string passwd, std::string nonce, std::string cnonce, std::string authzid);
 			std::string HEX(std::string data);

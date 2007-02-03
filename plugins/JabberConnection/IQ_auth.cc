@@ -28,9 +28,10 @@
 using std::cout;
 using std::endl;
 
-IQauth::IQauth (WLSignal *wls, std::string session):
+IQauth::IQauth (WLSignal *wls, std::string session, int in_con_type):
 WLSignalInstance ( wls ),
-session(session)
+session(session),
+con_type(in_con_type)
 {
 	EXP_SIGHOOK("Jabber XML Object challenge", &IQauth::SD_Challange, 1000);
 	EXP_SIGHOOK("Jabber XML Object success", &IQauth::SD_Success, 1000);
@@ -46,10 +47,9 @@ session(session)
 	username = itemtag.GetFirstTag("username").GetBody();
 	resource = itemtag.GetFirstTag("resource").GetBody();
 	password = itemtag.GetFirstTag("password").GetBody();
-	con_type = atoi(itemtag.GetFirstTag("type").GetBody().c_str());
+	server = itemtag.GetFirstTag("server").GetBody();
 	
-	//switch (con_type)
-	switch(SASLDIGESTMD5)
+	switch (con_type)
 	{
 		case ClearTextUser:
 			InitClearTextUser();
@@ -62,6 +62,9 @@ session(session)
 			break;
 		case SASLDIGESTMD5:
 			InitSASLDIGESTMD5();
+			break;
+		case SASLPLAIN:
+			InitSASLPLAIN();
 			break;
 		default:
 			InitSHA1UserStage1();
@@ -277,6 +280,25 @@ IQauth::InitSASLDIGESTMD5()
 	authtag.AddAttr("mechanism", "DIGEST-MD5");
 	
 	wls->SendSignal("Jabber XML Send", &message);
+}
+
+void
+IQauth::InitSASLPLAIN()
+{
+	WokXMLTag message(NULL, "message");
+	message.AddAttr("session", session);
+	WokXMLTag &authtag = message.AddTag("auth");
+	authtag.AddAttr("xmlns", "urn:ietf:params:xml:ns:xmpp-sasl");
+	authtag.AddAttr("mechanism", "PLAIN");
+	
+	std::string authstr = username + "@" + server + std::string("",1) + username;
+	authstr += std::string("",1);
+	authstr += password;
+	
+	authtag.AddData(authstr);
+	
+	wls->SendSignal("Jabber XML Send", &message);
+
 }
 
 void

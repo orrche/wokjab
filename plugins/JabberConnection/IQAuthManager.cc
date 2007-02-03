@@ -60,9 +60,39 @@ IQAuthManager::Feature(WokXMLTag *tag)
 		EXP_SIGHOOK("Jabber XML IQ ID " + iqtag.GetAttr("id"), &IQAuthManager::BindResp, 500);
 		
 	}
-	else if ( tag->GetFirstTag("stream:features").GetTagList("mechanisms").size() )
+	else if ( !tag->GetFirstTag("stream:features").GetTagList("mechanisms").empty() )
 	{
-		new IQauth(wls, tag->GetAttr("session"));
+		std::list <WokXMLTag *> &list = tag->GetFirstTag("stream:features").GetFirstTag("mechanisms").GetTagList("mechanism");
+		std::list <WokXMLTag *>::iterator iter;
+		bool plain_possibule = false;
+		
+		for ( iter = list.begin() ; iter != list.end() ; iter++ )
+		{
+			std::cout << "XML: " << **iter << std::endl;
+			
+			if ( (*iter)->GetBody() == "PLAIN" )
+				plain_possibule = true;
+			else if ( (*iter)->GetBody() == "DIGEST-MD5" )
+			{
+				new IQauth(wls, tag->GetAttr("session"), IQauth::SASLDIGESTMD5);
+				break;
+			}
+		}
+		if ( iter == list.end() )
+		{
+			if ( plain_possibule )
+			{
+				new IQauth(wls, tag->GetAttr("session"), IQauth::SASLPLAIN);
+			}
+			else
+			{
+				woklib_error(wls, "No known loginmethods found");
+				// doing a long shot
+				new IQauth(wls, tag->GetAttr("session"), IQauth::ClearTextUser);
+			}
+		}
+		
+		
 	}
 
 }
