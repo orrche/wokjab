@@ -202,12 +202,12 @@ GUIRoster::View(WokXMLTag *tag)
 			}
 			else if ( (*riter)->GetFirstTag("show").GetBody() == "xa")
 			{
-				if( bstate[togg2] )
+				if( bstate[togg3] )
 					(*riter)->AddAttr("view", "true");
 			}
 			else if ( (*riter)->GetFirstTag("show").GetBody() == "dnd")
 			{
-				if( bstate[togg3] )
+				if( bstate[togg2] )
 					(*riter)->AddAttr("view", "true");
 			}
 			else
