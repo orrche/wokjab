@@ -76,7 +76,7 @@ GUIConnectWindow::GUIConnectWindow (int *feedback, WLSignal * wls) : WLSignalIns
 	g_signal_connect (G_OBJECT (glade_xml_get_widget(xml, "login_button")), "clicked",
 				G_CALLBACK (GUIConnectWindow::Connect_Button), this);
 	g_signal_connect (G_OBJECT (glade_xml_get_widget(xml, "cancel_button")), "clicked",
-				G_CALLBACK (GUIConnectWindow::Connect_Button), this);
+				G_CALLBACK (GUIConnectWindow::Cancel_Button), this);
 	g_signal_connect (G_OBJECT (glade_xml_get_widget(xml, "add_button")), "clicked",
 				G_CALLBACK (GUIConnectWindow::Add_Button), this);
 	g_signal_connect (G_OBJECT (glade_xml_get_widget(xml, "remove_button")), "clicked",

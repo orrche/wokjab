@@ -58,7 +58,7 @@ GroupChat::GetMainMenu(WLSignalData *wlsd)
 	menu_tag = static_cast<WokXMLTag *> (wlsd);
 	
 	menu_item = &menu_tag->AddTag("item");
-	menu_item->AddAttr("name", "Joing a groupchat");
+	menu_item->AddAttr("name", "Join a groupchat");
 	menu_item->AddAttr("signal", "GroupChat Join Activate");
 	
 	return 1;

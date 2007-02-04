@@ -171,7 +171,7 @@ jep96::MainMenu(WokXMLTag *tag)
 	WokXMLTag *menu_item;
 	
 	menu_item = &tag->AddTag("item");
-	menu_item->AddAttr("name", "Transfear");
+	menu_item->AddAttr("name", "Transfer");
 	menu_item->AddAttr("signal", "Jabber Stream File Show");
 	
 	return 1;

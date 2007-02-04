@@ -91,7 +91,7 @@ GUIWindow::Delete( GtkWidget *widget, GdkEvent *event, GUIWindow *c)
 
 	c->SaveConfig();
 
-	if(c->config->GetFirstTag("exit_on_delete_event").GetAttr("data") != "false")
+	if(c->config->GetFirstTag("exit_on_delete_event").GetAttr("data") == "false")
 	{
 		while( !c->Widgets.empty() )
 		{
@@ -376,7 +376,7 @@ GUIWindow::ReadConfig(WokXMLTag *tag)
 		delete config;
 		config = new WokXMLTag(tag->GetFirstTag("config"));
 		tag->GetFirstTag("config").GetFirstTag("exit_on_delete_event").AddAttr("type", "bool");
-		tag->GetFirstTag("config").GetFirstTag("exit_on_delete_event").AddAttr("label", "Turn off program on window exit");
+		tag->GetFirstTag("config").GetFirstTag("exit_on_delete_event").AddAttr("label", "Minimize to systray on window exit");
 		tag->GetFirstTag("config").GetFirstTag("dock").AddAttr("type", "bool");
 		tag->GetFirstTag("config").GetFirstTag("dock").AddAttr("label", "Set window type to be a dock or panel");
 	}
