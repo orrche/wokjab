@@ -31,11 +31,14 @@
 ToasterWindow::ToasterWindow(WLSignal *wls, WokXMLTag *xml, int x, int y) : WLSignalInstance(wls)
 {
 	window = gtk_window_new(GTK_WINDOW_POPUP);
-	GtkWidget *port = gtk_viewport_new(NULL, NULL);
+	port = gtk_viewport_new(NULL, NULL);
 	GtkWidget *vbox = gtk_vbox_new(FALSE, 2);
 	GtkWidget *label = gtk_label_new(xml->GetFirstTag("body").GetBody().c_str());
 	
-	
+	gdk_color_parse ("red", &noticable_color);
+	gtk_widget_modify_bg (port, GTK_STATE_NORMAL, &noticable_color);
+																																																									
+																																																									
 	gtk_viewport_set_shadow_type (GTK_VIEWPORT (port), GTK_SHADOW_OUT);
 	
 	gtk_container_add(GTK_CONTAINER(window), port);
@@ -48,6 +51,8 @@ ToasterWindow::ToasterWindow(WLSignal *wls, WokXMLTag *xml, int x, int y) : WLSi
 	gtk_window_get_size(GTK_WINDOW(window), &width, &height);
 	gtk_window_move(GTK_WINDOW(window), x - width, y - height);
 
+	t = 10;
+	g_timeout_add (200, (gboolean (*)(void *)) (ToasterWindow::Timeout), this);
 }
 
 
@@ -75,3 +80,26 @@ ToasterWindow::MoveTo(int x, int y)
 	gtk_window_move(GTK_WINDOW(window), x-width, y-height);
 }
 
+gboolean
+ToasterWindow::Timeout(ToasterWindow *c)
+{
+	if ( c->t--%2)
+	{
+		gdk_color_parse ("red", &c->noticable_color);
+	}
+	else
+	{
+		gdk_color_parse ("blue", &c->noticable_color);
+	}
+	
+
+	
+	if ( !c->t )
+	{
+		gtk_widget_modify_bg (c->port, GTK_STATE_NORMAL, NULL);
+		return FALSE;
+	}
+	
+	gtk_widget_modify_bg (c->port, GTK_STATE_NORMAL, &c->noticable_color);
+	return TRUE;
+}

@@ -45,10 +45,13 @@ class ToasterWindow : public WLSignalInstance
 	
 		int GetHeight();
 		void MoveTo(int x, int y);
+		static gboolean Timeout(ToasterWindow *c);
 	protected:
 	
+		GdkColor noticable_color;
 		GtkWidget *window;
-	
+		GtkWidget *port;
+		int t;
 };
 
 

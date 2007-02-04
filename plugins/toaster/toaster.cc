@@ -233,7 +233,7 @@ Toaster::DisplayMSG(WokXMLTag *tag)
 	twlist.push_back(tw);
 	
 	
-	g_timeout_add (5000, (gboolean (*)(void *)) (Toaster::Timeout), this);
+	g_timeout_add (15000, (gboolean (*)(void *)) (Toaster::Timeout), this);
 	
 	return true;
 }
