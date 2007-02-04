@@ -114,7 +114,7 @@ from(from)
 	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scroll2), GTK_SHADOW_IN);
 	gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (textview2), GTK_WRAP_WORD);
 	gtk_text_view_set_cursor_visible (GTK_TEXT_VIEW (textview1), FALSE);
-	GTK_WIDGET_UNSET_FLAGS (textview1, GTK_CAN_FOCUS);
+	//GTK_WIDGET_UNSET_FLAGS (textview1, GTK_CAN_FOCUS);
 	buffer2 = gtk_text_view_get_buffer (GTK_TEXT_VIEW(textview2));
 
 	gtk_text_buffer_get_start_iter (buffer1, &iter);
