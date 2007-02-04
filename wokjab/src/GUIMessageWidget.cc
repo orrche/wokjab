@@ -907,10 +907,10 @@ GUIMessageWidget::key_press_handler(GtkWidget * widget, GdkEventKey * event,
 		str = gtk_text_buffer_get_text(obj->buffer2,&start_iter, &end_iter, false);
 		gtk_text_buffer_set_text(obj->buffer2, "", 0 );
 		obj->own_message(str);
-		return true;
+		return TRUE;
 	}
 
-	return false;
+	return FALSE;
 }
 
 std::string

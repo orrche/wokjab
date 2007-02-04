@@ -68,7 +68,7 @@ AdHoc::Message(WokXMLTag *tag)
 				{
 					if ( (*msg_iter)->GetAttr("from") != (*item_iter)->GetAttr("jid") )
 					{
-						woklib_message(wls, (*msg_iter)->GetAttr("from") + " is sending you adhoc messages with a diffrent return address");
+						woklib_message(wls, (*msg_iter)->GetAttr("from") + " is sending you adhoc messages with a different return address");
 						continue;
 					}
 					
