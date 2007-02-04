@@ -79,4 +79,22 @@
 						<server data='' type='string'></server>
 					</account>
 				</config></config></window></connect>
+				
+	<dock>
+-
+	<config>
+<config/>
+</config>
+-
+	<window>
+-
+	<config path="/dock/window">
+-
+	<config>
+<width data="670"/>
+<height data="500"/>
+</config>
+</config>
+</window>
+</dock>
 </config>
