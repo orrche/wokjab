@@ -446,11 +446,14 @@ int
 GUIWindow::show(WLSignalData *wlsd)
 {
 	if(visible)
+	{
+		gtk_window_present(GTK_WINDOW(glade_xml_get_widget(xml, "window")));
 		return true;
-
-	gtk_widget_show_all (glade_xml_get_widget(xml,"window"));
+	}
+	
+	gtk_window_move (GTK_WINDOW(glade_xml_get_widget(xml, "window")), window_x, window_y);
 	gtk_window_present(GTK_WINDOW(glade_xml_get_widget(xml, "window")));
-
+	
 	visible = true;
 	ReadConfig(NULL);
 
@@ -463,11 +466,15 @@ GUIWindow::hide(WLSignalData *wlsd)
 	if(!visible)
 		return true;
 
+		
+	gtk_window_get_position(GTK_WINDOW(glade_xml_get_widget(xml,"window")), &window_x, &window_y);
 	SaveConfig();
-	gtk_widget_hide_all(glade_xml_get_widget(xml,"window"));
+	gtk_widget_hide(glade_xml_get_widget(xml,"window"));
 
 	visible = false;
 	connected = 0;
+	
+	
 	return true;
 }
 

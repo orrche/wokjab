@@ -75,7 +75,7 @@ from(from)
 	gtk_box_pack_start( GTK_BOX(tophbox), image, false, false, 5 );
 	jid_label = gtk_label_new("");
 	gtk_box_pack_start( GTK_BOX(tophbox), jid_label, TRUE, TRUE, 0);
-	gtk_label_set_text(GTK_LABEL(jid_label), std::string(from + " (" + nick + ")").c_str());
+	SetLabel();
 	gtk_label_set_ellipsize(GTK_LABEL(jid_label), PANGO_ELLIPSIZE_END);
 	gtk_misc_set_alignment (GTK_MISC (jid_label), 0, 0);
 	/* Reading and writing area */
@@ -158,10 +158,6 @@ from(from)
 
 	// Assigning a color for the tab
 	// Should make this a configurable color
-	color_red.red = 66536;
- color_red.green = 0;
- color_red.blue = 0;
-
 	gdk_color_parse ("red", &color_red);
 
 	gtk_widget_show_all(vbox);
@@ -402,7 +398,7 @@ GUIMessageWidget::InsertCommand(WokXMLTag &tag)
 	gtk_text_buffer_insert_with_tags (buffer1, &treeiter, "\n", 1, tags["forreign_text"], NULL);
 	
 }
-	
+
 int
 GUIMessageWidget::NewMessage(WokXMLTag *tag)
 {
@@ -424,7 +420,7 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 
 			hasresource = true;
 
-			gtk_label_set_text(GTK_LABEL(jid_label), std::string(from + " (" + nick + ")").c_str());
+			SetLabel();
 		}
 
 		std::string stamp = "";
@@ -480,6 +476,8 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 int
 GUIMessageWidget::NewPresence(WokXMLTag *tag)
 {
+	std::cout << "XML: " << *tag << std::endl;
+	
 	WokXMLTag &tag_presence = tag->GetFirstTag("presence");
 	WokXMLTag querytag(NULL,"query");
 	WokXMLTag &itemtag = querytag.AddTag("item");
@@ -494,6 +492,17 @@ GUIMessageWidget::NewPresence(WokXMLTag *tag)
 	if(!msg_waiting)
 		gtk_image_set_from_pixbuf(GTK_IMAGE(label_image), gtk_image_get_pixbuf(GTK_IMAGE(image)));
 
+		if ( tag_presence.GetAttr("type") == "unavailable" && hasresource)
+		{
+			UnHookSignals();
+			if ( from.find("/") != std::string::npos )
+				from = from.substr(0,from.find("/"));
+			hasresource = false;
+
+			HookSignals();
+
+			SetLabel();
+		}
 // To damned annoying...
 //	Message( tag_presence.GetAttr("from") + " sends presence " + tag_presence.GetFirstTag("status").GetBody());
 
@@ -509,6 +518,12 @@ GUIMessageWidget::Activate(WokXMLTag *tag)
 	acttag.AddAttr("id", str.str());
 	wls->SendSignal("GUI WindowDock Activate", &acttag);
 	return true;
+}
+
+void
+GUIMessageWidget::SetLabel()
+{
+	gtk_label_set_text(GTK_LABEL(jid_label), std::string(from + " (" + nick + ")").c_str());
 }
 
 gboolean

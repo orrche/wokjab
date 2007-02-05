@@ -46,6 +46,8 @@ class GUIMessageWidget : public WLSignalInstance
 		int NewPresence(WokXMLTag *tag);
 		int Activate(WokXMLTag *tag);
 		int Close(WokXMLTag *tag);
+		
+		void SetLabel();
 	protected:
 		static gboolean focus_event (GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
 		static gboolean focus_event_view (GtkWidget *widget, GdkEventFocus *event, gpointer user_data);

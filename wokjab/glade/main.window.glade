@@ -3,17 +3,18 @@
 <!--*- mode: xml -*-->
 <glade-interface>
   <widget class="GtkWindow" id="window">
-    <property name="width_request">200</property>
-    <property name="height_request">500</property>
     <property name="visible">True</property>
     <property name="title" translatable="yes">Wokjab</property>
+    <property name="role">WokjabMainWindow</property>
+    <property name="default_width">205</property>
+    <property name="default_height">526</property>
+    <property name="gravity">GDK_GRAVITY_STATIC</property>
     <child>
       <widget class="GtkVBox" id="mainvbox">
-        <property name="width_request">10</property>
         <property name="visible">True</property>
         <child>
           <widget class="GtkButton" id="wokjabmenu">
-            <property name="width_request">10</property>
+            <property name="width_request">1</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="label" translatable="yes">Wokjab</property>
@@ -59,6 +60,7 @@
         </child>
         <child>
           <widget class="GtkComboBox" id="showentry">
+            <property name="width_request">1</property>
             <property name="visible">True</property>
             <property name="items" translatable="yes">Online
 Away

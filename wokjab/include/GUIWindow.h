@@ -87,6 +87,7 @@ class GUIWindow : public WLSignalInstance
 		GUIMessageHandler *gmsghandler;
 		int connect_win_open;
 		int plugin_win_open;
+		int window_x, window_y;
 		bool visible;
 
 		GtkListStore *showmenu;

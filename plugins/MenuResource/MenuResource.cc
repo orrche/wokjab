@@ -64,7 +64,7 @@ MenuResource::Menu(WokXMLTag *xml)
 		WokXMLTag &resreq = ritem.AddTag("item");
 		resreq.AddAttr("jid", xml->GetAttr("jid") + "/" + (*liter)->GetAttr("name"));
 		resreq.AddAttr("session", xml->GetAttr("session"));
-		resreq.AddAttr("name", (*liter)->GetAttr("name"));
+		resreq.AddAttr("name", (*liter)->GetAttr("name") + " (" + (*liter)->GetAttr("priority") + ")" );
 		WokXMLTag &datatag = resreq.AddTag("data");
 		datatag.AddAttr("jid", xml->GetAttr("jid") + "/" + (*liter)->GetAttr("name"));
 		datatag.AddAttr("session", xml->GetAttr("session"));
