@@ -416,10 +416,6 @@ GUIWindow::ReadConfig(WokXMLTag *tag)
 #endif
 		gtk_window_set_default_size(GTK_WINDOW(glade_xml_get_widget(xml,"window")), width, height);
 	}
-
-
-	//SaveConfig();
-
 }
 
 void
@@ -447,8 +443,6 @@ GUIWindow::SaveConfig()
 	EXP_SIGUNHOOK("Config XML Change /main/window", &GUIWindow::ReadConfig, 500);
 	wls->SendSignal("Config XML Store", &conftag);
 	EXP_SIGHOOK("Config XML Change /main/window", &GUIWindow::ReadConfig, 500);
-	//roster->SaveConfig();
-
 }
 
 

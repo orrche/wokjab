@@ -161,9 +161,9 @@ GUIMessageHandler::TriggerEvent(WokXMLTag *tag)
 	WokXMLTag &desc = itemtag.AddTag("description");
 	desc.AddText(tag->GetFirstTag("message").GetAttr("from"));
 	desc.AddText("\n\t");
-	desc.AddText(tag->GetFirstTag("message").GetFirstTag("body").GetBody().substr(0, 30));
-	if( tag->GetFirstTag("message").GetFirstTag("body").GetBody().size() > 30 )
-		desc.AddText("...");
+	desc.AddText(tag->GetFirstTag("message").GetFirstTag("body").GetBody());
+
+	
 	itemtag.AddAttr("signal", "Jabber GUI MessageDialog Open");
 	wls->SendSignal("Jabber Event Add", &eventtag);
 }

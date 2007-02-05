@@ -459,9 +459,9 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 			WokXMLTag &desc = itemtag.AddTag("description");
 			desc.AddText(tag->GetFirstTag("message").GetAttr("from"));
 			desc.AddText("\n\t");
-			desc.AddText(tag->GetFirstTag("message").GetFirstTag("body").GetBody().substr(0, 30));
-			if( tag->GetFirstTag("message").GetFirstTag("body").GetBody().size() > 30 )
-				desc.AddText("...");
+			
+			
+			desc.AddText(tag->GetFirstTag("message").GetFirstTag("body").GetBody());
 
 			wls->SendSignal("Jabber Event Add", &eventtag);
 
@@ -692,7 +692,7 @@ GUIMessageWidget::Config(WokXMLTag *tag)
 	{
 		tags[(*iter)->GetName()] = gtk_text_buffer_create_tag( buffer1, NULL, "foreground", (*iter)->GetAttr("data").c_str(), NULL);
 	}
-
+	
 	// Setting paned position
 	int vpos = atoi(config->GetFirstTag("window_spec").GetAttr("input_area_height").c_str());
 	if(vpos)
