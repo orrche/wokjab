@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2006  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -382,11 +382,16 @@ GUIWindow::ReadConfig(WokXMLTag *tag)
 	}
 
 	// Getting size from the config
-	int width, height;
+	int width, height, pos_y, pos_x;
 	bool dock;
 
 	width = atoi( config->GetFirstTag("width").GetAttr("data").c_str());
 	height = atoi( config->GetFirstTag("height").GetAttr("data").c_str());
+	pos_x = atoi( config->GetFirstTag("pos_x").GetAttr("data").c_str());
+	pos_y = atoi( config->GetFirstTag("pos_y").GetAttr("data").c_str());
+		
+	gtk_window_move (GTK_WINDOW(glade_xml_get_widget(xml, "window")), pos_x, pos_y);
+		
 	if ( config->GetFirstTag("dock").GetAttr("data") != "false" )
 		dock = true;
 	else
@@ -420,15 +425,20 @@ GUIWindow::ReadConfig(WokXMLTag *tag)
 void
 GUIWindow::SaveConfig()
 {
-	int width, height;
-	std::stringstream sheight, swidth;
+	int width, height, pos_x, pos_y;
+	std::stringstream sheight, swidth, spos_x, spos_y;
 
 	gtk_window_get_size(GTK_WINDOW(glade_xml_get_widget(xml,"window")), &width, &height);
+	gtk_window_get_position(GTK_WINDOW(glade_xml_get_widget(xml,"window")), &pos_x, &pos_y);
 	sheight << height;
 	swidth << width;
+	spos_x << pos_x;
+	spos_y << pos_y;
 
 	config->GetFirstTag("width").AddAttr("data", swidth.str());
 	config->GetFirstTag("height").AddAttr("data", sheight.str());
+		config->GetFirstTag("pos_x").AddAttr("data", spos_x.str());
+	config->GetFirstTag("pos_y").AddAttr("data", spos_y.str());
 
 	WokXMLTag conftag(NULL, "config");
 	conftag.AddAttr("path", "/main/window");
@@ -451,11 +461,10 @@ GUIWindow::show(WLSignalData *wlsd)
 		return true;
 	}
 	
-	gtk_window_move (GTK_WINDOW(glade_xml_get_widget(xml, "window")), window_x, window_y);
-	gtk_window_present(GTK_WINDOW(glade_xml_get_widget(xml, "window")));
-	
 	visible = true;
 	ReadConfig(NULL);
+	gtk_window_present(GTK_WINDOW(glade_xml_get_widget(xml, "window")));
+	
 
 	return true;
 }
@@ -466,8 +475,6 @@ GUIWindow::hide(WLSignalData *wlsd)
 	if(!visible)
 		return true;
 
-		
-	gtk_window_get_position(GTK_WINDOW(glade_xml_get_widget(xml,"window")), &window_x, &window_y);
 	SaveConfig();
 	gtk_widget_hide(glade_xml_get_widget(xml,"window"));
 
