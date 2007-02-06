@@ -176,6 +176,8 @@ from(from)
           G_CALLBACK (GUIMessageWidget::focus_event_view),this);
 	g_signal_connect ((gpointer) eventbox, "key-press-event",
           G_CALLBACK (GUIMessageWidget::key_press_event),this);
+	g_signal_connect ((gpointer) textview1, "key-press-event",
+          G_CALLBACK (GUIMessageWidget::key_press_event),this);
 	g_signal_connect ((gpointer) textview1, "scroll-event",
 										G_CALLBACK (GUIMessageWidget::Scroll), this);
 	g_signal_connect (textview1, "event-after", 
@@ -904,13 +906,16 @@ GUIMessageWidget::MessageWithEmotions(std::string msg)
 gboolean
 GUIMessageWidget::key_press_event(GtkWidget * widget, GdkEventKey * event, GUIMessageWidget *c)
 {
-	std::cout << "KEY:::" << std::endl;
-	if (event->keyval == GDK_Control_L || event->keyval == GDK_Control_R )
+	if (event->keyval == GDK_v && (event->state & GDK_CONTROL_MASK))
+		;
+	else if ( event->state & GDK_CONTROL_MASK )
 		return FALSE;
-	
+	else if (event->keyval == GDK_Control_L || event->keyval == GDK_Control_R )
+		return FALSE;
 	gtk_widget_grab_focus(c->textview2);
-
-	return FALSE;
+	gint ret;
+	g_signal_emit_by_name(G_OBJECT(c->textview2), "key-press-event", event, ret, -1);
+	return TRUE;
 }
 
 gboolean
