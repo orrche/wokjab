@@ -147,7 +147,7 @@ from(from)
 	gtk_box_pack_start(GTK_BOX(label_hbox), label_image, true, true, 0);
 	gtk_box_pack_start(GTK_BOX(label_hbox), label_label, true, true, 0);
 	gtk_container_add(GTK_CONTAINER(label_eventbox), label_hbox);
-	//
+	
 	gtk_signal_connect (GTK_OBJECT (label_eventbox), "button_press_event",
                       GTK_SIGNAL_FUNC (GUIMessageWidget::Menu), this);
 
@@ -163,28 +163,15 @@ from(from)
 	gtk_widget_show_all(vbox);
 
 	secondmessageme = secondmessageother = false;
-	GTK_WIDGET_SET_FLAGS (textview2, GTK_CAN_DEFAULT);
-
-
-	g_signal_connect ((gpointer) textview2, "focus-in-event",
-          G_CALLBACK (GUIMessageWidget::focus_event),this);
-	g_signal_connect ((gpointer) textview2, "focus-out-event",
-          G_CALLBACK (GUIMessageWidget::focus_event),this);
-	g_signal_connect ((gpointer) textview2, "size-allocate",
-          G_CALLBACK (GUIMessageWidget::SizeAllocate),this);
-	g_signal_connect ((gpointer) eventbox, "focus-in-event",
-          G_CALLBACK (GUIMessageWidget::focus_event_view),this);
-	g_signal_connect ((gpointer) eventbox, "key-press-event",
-          G_CALLBACK (GUIMessageWidget::key_press_event),this);
-	g_signal_connect ((gpointer) textview1, "key-press-event",
-          G_CALLBACK (GUIMessageWidget::key_press_event),this);
-	g_signal_connect ((gpointer) textview1, "scroll-event",
-										G_CALLBACK (GUIMessageWidget::Scroll), this);
-	g_signal_connect (textview1, "event-after", 
-										G_CALLBACK (GUIMessageWidget::tw1_event_after), this);
+	
+	g_signal_connect (textview2, "focus-in-event", 	G_CALLBACK (GUIMessageWidget::focus_event),this);
+	g_signal_connect (textview2, "focus-out-event", G_CALLBACK (GUIMessageWidget::focus_event),this);
+	g_signal_connect (eventbox , "key-press-event",	G_CALLBACK (GUIMessageWidget::key_press_event),this);
+	g_signal_connect (textview1, "size-allocate", 		G_CALLBACK (GUIMessageWidget::SizeAllocate),this);
+	g_signal_connect (textview1, "key-press-event", G_CALLBACK (GUIMessageWidget::key_press_event),this);
+	g_signal_connect (textview1, "scroll-event", 			G_CALLBACK (GUIMessageWidget::Scroll), this);      				// Zooming
+	g_signal_connect (textview1, "event-after", 				G_CALLBACK (GUIMessageWidget::tw1_event_after), this); // Command press
 	expander_activate (GTK_EXPANDER(expander), (void*)this);
-	gtk_widget_grab_focus(textview1);
-
 
 	/* Drag and drop .... */
 	GtkTargetEntry target_entry[3];
@@ -262,7 +249,7 @@ from(from)
 	sig << "GUI WindowDock Close " << gtk_plug_get_id(GTK_PLUG(mainwindowplug));
 	EXP_SIGHOOK(sig.str(), &GUIMessageWidget::Close, 500);
 
-
+	gtk_widget_grab_focus(textview2);
 	HookSignals();
 }
 
@@ -325,8 +312,7 @@ GUIMessageWidget::tw1_event_after (GtkWidget *text_view, GdkEvent  *ev, GUIMessa
  if (gtk_text_iter_get_offset (&start) != gtk_text_iter_get_offset (&end))
    return FALSE;
 			
-	gtk_text_view_window_to_buffer_coords (GTK_TEXT_VIEW (text_view), 
-																																								GTK_TEXT_WINDOW_WIDGET,
+	gtk_text_view_window_to_buffer_coords (GTK_TEXT_VIEW (text_view), GTK_TEXT_WINDOW_WIDGET,
 																																								event->x, event->y, &x, &y);
 
 	gtk_text_view_get_iter_at_location (GTK_TEXT_VIEW (text_view), &iter, x, y);
@@ -615,53 +601,35 @@ GUIMessageWidget::SizeAllocate (GtkWidget *widget,GtkRequisition *requisition,gp
 }
 
 gboolean
-GUIMessageWidget::focus_event_view           (GtkWidget       *widget,
-                                        GdkEventFocus *event,
-                                        gpointer         user_data)
+GUIMessageWidget::focus_event(GtkWidget *widget, GdkEventFocus *event, GUIMessageWidget *c)
 {
-	GUIMessageWidget *data;
-	data = static_cast <GUIMessageWidget *> (user_data);
-
-	gtk_widget_grab_focus(data->textview2);
-	return TRUE;
-}
-
-gboolean
-GUIMessageWidget::focus_event(GtkWidget       *widget,
-                             GdkEventFocus *event,
-                             gpointer         user_data)
-{
-	GUIMessageWidget *data;
-	data = static_cast <GUIMessageWidget *> (user_data);
 
 	if(event->in)
 	{
-		data->focus = true;
-		if(data->msg_waiting)
+		c->focus = true;
+		if(c->msg_waiting)
 		{
-			data->msg_waiting = false;
+			c->msg_waiting = false;
 
-			gtk_widget_modify_fg(GTK_WIDGET(data->label_label), GTK_STATE_ACTIVE, NULL);
-			gtk_widget_modify_fg(GTK_WIDGET(data->label_label), GTK_STATE_NORMAL, NULL);
+			gtk_widget_modify_fg(GTK_WIDGET(c->label_label), GTK_STATE_ACTIVE, NULL);
+			gtk_widget_modify_fg(GTK_WIDGET(c->label_label), GTK_STATE_NORMAL, NULL);
 
-			gtk_image_set_from_pixbuf(GTK_IMAGE(data->label_image), gtk_image_get_pixbuf(GTK_IMAGE(data->image)));
+			gtk_image_set_from_pixbuf(GTK_IMAGE(c->label_image), gtk_image_get_pixbuf(GTK_IMAGE(c->image)));
 
 			WokXMLTag eventtag(NULL, "event");
 			WokXMLTag &itemtag = eventtag.AddTag("item");
-			itemtag.AddAttr("jid", data->from);
-			itemtag.AddAttr("session", data->session);
-			itemtag.AddAttr("icon", data->msgicon);
+			itemtag.AddAttr("jid", c->from);
+			itemtag.AddAttr("session", c->session);
+			itemtag.AddAttr("icon", c->msgicon);
 			itemtag.AddAttr("signal", "Jabber GUI MessageDialog Open");
-			data->wls->SendSignal("Jabber Event Remove", &eventtag);
+			c->wls->SendSignal("Jabber Event Remove", &eventtag);
 
-			gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (data->textview1),
-				data->end_mark, .4, TRUE, 1, 1);
-
-			gtk_widget_grab_focus(data->textview1);
+			gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (c->textview1),
+				c->end_mark, .4, TRUE, 1, 1);
 		}
 	}
 	else
-		data->focus = false;
+		c->focus = false;
 	return FALSE;
 }
 

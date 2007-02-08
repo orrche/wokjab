@@ -147,7 +147,6 @@ GUIWindowDock::CreateWidget()
 			    this);
 	
 	gtk_window_set_title(GTK_WINDOW(window), std::string ("Message Dock").c_str());
-	
 	Config(NULL);
 	gtk_widget_show_all(window);
 }
@@ -268,7 +267,7 @@ GUIWindowDock::AppendPlugPage(WokXMLTag *tag)
 	gtk_box_pack_end(GTK_BOX(box), close_button, FALSE, FALSE, 0);
 	
 	GtkWidget *bin = gtk_event_box_new();
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), bin, box);
+	gint index = gtk_notebook_append_page(GTK_NOTEBOOK(notebook), bin, box);
 	gtk_container_add(GTK_CONTAINER(bin), mainsock);
 	
 	gtk_widget_show_all(box);
@@ -283,6 +282,9 @@ GUIWindowDock::AppendPlugPage(WokXMLTag *tag)
 	testwid = mainsock;
 	
 	gtk_window_present (GTK_WINDOW(window));
+	gtk_notebook_set_current_page (GTK_NOTEBOOK(notebook), index);
+	std::cout << "Index: " << index << std::endl;
+	
 	return true;
 
 }
