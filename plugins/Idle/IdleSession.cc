@@ -50,10 +50,13 @@ IdleSession::DeathWatch(WokXMLTag *tag)
 {
 	if ( death )
 	{
-		woklib_error(wls, "Connection " + session + " seams to have timedout");
+		woklib_error(wls, "Connection " + session + " seams to have timedout\"+
+																				"But for now we are ignoring that");
+		/*
 		WokXMLTag mtag(NULL, "message");
 		mtag.AddAttr("session", session);
 		wls->SendSignal("Jabber Connection Lost", mtag);
+		*/
 	
 	}
 	

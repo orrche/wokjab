@@ -42,9 +42,7 @@ File::~File()
 int 
 File::FileResponse(WokXMLTag *tag)
 {
-	std::cout << "XML: " << *tag << std::endl;
 	sid = tag->GetFirstTag("iq").GetFirstTag("fileshare").GetAttr("sid");
-	std::cout << "Sid: " << sid << std::endl;
 	
 	EXP_SIGHOOK("Jabber Stream File Incomming " + sid, &File::Incomming, 100);
 	EXP_SIGHOOK("Jabber Stream RequestAuthorisation", &File::Auth, 1000);
@@ -68,15 +66,13 @@ File::Auth(WokXMLTag *tag)
 int
 File::Finished(WokXMLTag *tag)
 {
-
+	std::cout << "Tada... " << std::endl;
 	return 1;
 }
 
 int
 File::Incomming(WokXMLTag *tag)
 {
-	std::cout << "What the fuck.. " <<std::endl;
-	
 	WokXMLTag msg(NULL, "message");
 	msg.AddAttr("session", tag->GetAttr("session"));
 	WokXMLTag &iq = msg.AddTag("iq");
@@ -96,7 +92,6 @@ File::Incomming(WokXMLTag *tag)
 	value.AddText("http://jabber.org/protocol/bytestreams");
 	
 	wls->SendSignal("Jabber XML Send", msg);
-	std::cout << "hum" << std::endl;
-
+	
 	return 1;
 }
