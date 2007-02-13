@@ -50,7 +50,7 @@ IdleSession::DeathWatch(WokXMLTag *tag)
 {
 	if ( death )
 	{
-		woklib_error(wls, "Connection " + session + " seams to have timedout\"+
+		woklib_error(wls, "Connection " + session + " seams to have timedout\n"+
 																				"But for now we are ignoring that");
 		/*
 		WokXMLTag mtag(NULL, "message");
