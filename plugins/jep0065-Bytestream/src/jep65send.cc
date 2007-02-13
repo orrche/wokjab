@@ -413,8 +413,7 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 		maxsize = baserate;
 	else
 		maxsize = SHUNKSIZE;
-	
-	std::cout << "Size: " << size << " fbpos: " << fbpos << " fbend: " << fbend << std::endl;
+
 	
 	if(size > 0 )
 	{
@@ -449,7 +448,6 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 	
 	WokXMLTag postag(NULL, "position");
 	std::stringstream pos;
-#warning "This gets a bit wrong just register per chunk"
 	pos << fsize - size;
 	postag.AddAttr("sid", sid);
 	postag.AddAttr("pos", pos.str());

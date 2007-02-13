@@ -105,6 +105,9 @@ jep65::Session(WokXMLTag *xml)
 	return 1;
 }
 
+/**
+ * Used for transmitting files 
+	*/
 int
 jep65::Send(WokXMLTag *xml)
 {

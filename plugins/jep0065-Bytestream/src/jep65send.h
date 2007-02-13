@@ -29,6 +29,10 @@
 
 using namespace Woklib;
 
+/**
+ * Used for transmitting files 
+	*/
+	
 class jep65send : public WLSignalInstance
 {
 	public:

@@ -98,6 +98,7 @@ AC_OUTPUT(Makefile \
 	plugins/jep0115-EntCap/Makefile  \
         plugins/jep0153-VCardAvatar/Makefile  \
         plugins/Idle/Makefile  \
+        plugins/Fileshare/Makefile  \
 	wokjab/Makefile \
 	wokjab/src/Makefile \
 	wokjab/include/Makefile \

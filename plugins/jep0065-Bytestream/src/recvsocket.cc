@@ -24,6 +24,8 @@
 #include <unistd.h>
 #include <netinet/in.h>
 
+#include <fcntl.h> 
+
 #include "recvsocket.h"
 #include <sstream>
 #define BUFFERSIZE 300
@@ -33,6 +35,17 @@ WLSignalInstance ( wls ),
 socket(socket)
 {
 	char buf[20];
+	int flags;
+	
+	if ((flags = fcntl(socket, F_GETFL, 0)) < 0)
+	{
+		woklib_error(wls, "Socks5 Connection couldn't get socket flags");
+	}
+
+	if (fcntl(socket, F_SETFL, flags | O_NONBLOCK) < 0)
+	{
+		woklib_error(wls, "Socks5 Connection couldn't set non blocking socket");
+	} 
 	
 	sprintf(buf, "%d", socket);
 	WokXMLTag sigtag(NULL, "socket");

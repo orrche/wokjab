@@ -34,6 +34,7 @@ ToasterWindow::ToasterWindow(WLSignal *wls, WokXMLTag *xml, int x, int y) : WLSi
 	port = gtk_viewport_new(NULL, NULL);
 	GtkWidget *vbox = gtk_vbox_new(FALSE, 2);
 	GtkWidget *label = gtk_label_new(xml->GetFirstTag("body").GetBody().c_str());
+	gtk_label_set_line_wrap (GTK_LABEL(label), TRUE);
 	
 	gdk_color_parse ("red", &noticable_color);
 	gtk_widget_modify_bg (port, GTK_STATE_NORMAL, &noticable_color);

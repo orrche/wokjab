@@ -149,6 +149,11 @@ jep65Session::SOCKS_Data(WokXMLTag *tag)
 	file.flush();
 	if ( len == 0 )
 	{
+		WokXMLTag fintag(NULL, "finished");
+		fintag.AddAttr("sid", lsid);
+		wls->SendSignal("Jabber Stream File Status", &fintag);
+		wls->SendSignal("Jabber Stream File Status Finished", &fintag);
+	
 		close(socket_nr);
 		file.close();
 		tag->AddAttr("error", "closed");

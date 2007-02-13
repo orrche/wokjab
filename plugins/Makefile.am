@@ -52,6 +52,7 @@ SUBDIRS= \
 	woklib-groupchat \
 	rfc1928-SOCKS5 \
 	Idle \
-	GroupChatBookmark 
+	GroupChatBookmark \
+	Fileshare 
 
 

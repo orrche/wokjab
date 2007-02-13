@@ -40,6 +40,8 @@ PySig::~PySig()
 int
 PySig::Exec(WokXMLTag *tag)
 {
+	int ret = 1;
+	
 	PyEval_AcquireLock();
 	PyEval_AcquireThread(thread_state);
 
@@ -54,11 +56,14 @@ PySig::Exec(WokXMLTag *tag)
     fprintf(stderr,"Call failed\n");
 	}
 	else
+	{
+		ret = PyInt_AsLong(pValue);
 		Py_DECREF(pValue);
+	}
 	Py_DECREF(pArgs);
 	
 	PyEval_ReleaseThread(thread_state);
 	PyEval_ReleaseLock();
-	return 1;
+	return ret;
 }
 

@@ -72,7 +72,6 @@ filepicker::ButtonPress (GtkButton *button, filepicker *c)
 	if ( atoi(rate.c_str()) > 0 )
 		tag.AddAttr("rate", rate + "000");
 	tag.AddAttr("proxy", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget (c->gxml, "proxyentry"))));
-	std::cout << tag << std::endl;
 	
 	c->wls->SendSignal("Jabber Stream File Send", &tag);
 	gtk_widget_destroy(glade_xml_get_widget (c->gxml, "window"));

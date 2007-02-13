@@ -136,6 +136,7 @@ jep96::RemoveStream(GtkButton *button, jep96 *c)
 int
 jep96::Wid(WokXMLTag *xml)
 {
+
 	std::stringstream sslsid;
 	sslsid << "jep96-" << sidnum++;
 	
@@ -150,8 +151,12 @@ jep96::Wid(WokXMLTag *xml)
 	gtk_window_present (GTK_WINDOW(filewindow));
 	rows[sslsid.str()] = gtk_tree_row_reference_new(GTK_TREE_MODEL(file_store),gtk_tree_model_get_path(GTK_TREE_MODEL(file_store), &iter));
 
-	
-	new jep96Widget(wls, xml, sslsid.str());
+	std::stringstream signal;
+	signal << "Jabber Stream File Incomming " << xml->GetFirstTag("iq").GetFirstTag("si").GetAttr("id");
+	if ( ! wls->SendSignal(signal.str(), xml) )
+	{	
+		new jep96Widget(wls, xml, sslsid.str());
+	}
 	return 1;
 }
 
@@ -218,14 +223,23 @@ jep96::SendFile(WokXMLTag *xml)
 	
 	std::string to = xml->GetAttr("to");
 	std::string file = xml->GetAttr("name");
-	sprintf(buff,"%d", sidnum++);
-	std::string sid = std::string("jep96-") + buff + "-";
-	
-	for(int i = 0; i < 10; i++)
+	std::string sid;
+	if ( xml->GetAttr("sid").empty() )
 	{
-		sid+= rand() % 20 + 'a';
+		sprintf(buff,"%d", sidnum++);
+		sid = std::string("jep96-") + buff + "-";
+		
+		
+		for(int i = 0; i < 10; i++)
+		{
+			sid+= rand() % 20 + 'a';
+		}
+		
+		xml->AddAttr("sid", sid);
 	}
-	
+	else
+		sid = xml->GetAttr("sid");
+		
 	if (stat(file.c_str(), &results) == 0)
 		size = results.st_size;
 	else
