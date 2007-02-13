@@ -49,8 +49,7 @@ class GUIMessageWidget : public WLSignalInstance
 		
 		void SetLabel();
 	protected:
-		static gboolean focus_event (GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
-		static gboolean focus_event_view (GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+		static gboolean focus_event (GtkWidget *widget, GdkEventFocus *event, GUIMessageWidget *c);
 		static gboolean expander_activate (GtkExpander *expander, gpointer user_data);
 		static void SizeAllocate (GtkWidget *widget, GtkRequisition *requisition,gpointer user_data);
 		static gboolean widget_destroy(GtkWidget *widget, GdkEvent *event, gpointer user_data);
@@ -60,7 +59,7 @@ class GUIMessageWidget : public WLSignalInstance
 		static void LDestroy(GtkWidget *widget, GUIMessageWidget *c);
 		static gboolean Scroll (GtkWidget *widget, GdkEventScroll *event, GUIMessageWidget *c);
 		static gboolean tw1_event_after (GtkWidget *text_view, GdkEvent  *ev, GUIMessageWidget *c);
-		
+		static gboolean key_press_event(GtkWidget * widget, GdkEventKey * event, GUIMessageWidget *c);
 		void HookSignals();
 		void UnHookSignals();
 

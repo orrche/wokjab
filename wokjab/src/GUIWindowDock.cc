@@ -283,7 +283,6 @@ GUIWindowDock::AppendPlugPage(WokXMLTag *tag)
 	
 	gtk_window_present (GTK_WINDOW(window));
 	gtk_notebook_set_current_page (GTK_NOTEBOOK(notebook), index);
-	std::cout << "Index: " << index << std::endl;
 	
 	return true;
 
