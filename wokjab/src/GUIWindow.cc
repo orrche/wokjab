@@ -452,14 +452,14 @@ GUIWindow::show(WLSignalData *wlsd)
 	if(visible)
 	{
 		gtk_window_present(GTK_WINDOW(glade_xml_get_widget(xml, "window")));
+		gtk_window_deiconify (GTK_WINDOW(glade_xml_get_widget(xml, "window")));
 		return true;
 	}
 	
 	visible = true;
 	ReadConfig(NULL);
 	gtk_window_present(GTK_WINDOW(glade_xml_get_widget(xml, "window")));
-	
-
+	gtk_window_deiconify (GTK_WINDOW(glade_xml_get_widget(xml, "window")));
 	return true;
 }
 

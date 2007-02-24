@@ -38,7 +38,6 @@ Idle::Idle(WLSignal *wls) : WoklibPlugin(wls)
 Idle::~Idle()
 {
 
-
 }
 
 int
@@ -48,7 +47,6 @@ Idle::LoggedOut(WokXMLTag *tag)
 	{
 		delete sessions[tag->GetAttr("session")];
 		sessions.erase(tag->GetAttr("session"));
-	
 	}
 
 	return 1;

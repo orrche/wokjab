@@ -24,6 +24,7 @@
 
 #include "FileListWid.h"
 #include "File.h"
+#include "Download.h"
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
@@ -31,7 +32,8 @@
 
 #include "zlib.h"
 
-FileListWid::FileListWid(WLSignal *wls, WokXMLTag *tag) : WLSignalInstance(wls)
+FileListWid::FileListWid(WLSignal *wls, WokXMLTag *tag, WokXMLTag *config) : WLSignalInstance(wls),
+config ( new WokXMLTag (*config))
 {
 	std::cout << "XML: " << *tag << std::endl;
 	sid = tag->GetFirstTag("iq").GetFirstTag("si").GetAttr("id");
@@ -83,6 +85,7 @@ FileListWid::~FileListWid()
 		xml = NULL;
 	}
 
+	delete config;
 	delete filelist;
 }
 
@@ -97,22 +100,53 @@ FileListWid::Download(GtkButton *button, FileListWid *c)
 	if(gtk_tree_selection_get_selected(selection,  NULL, &iter) != FALSE)
 	{
 		gchar *id;
-		gtk_tree_model_get(GTK_TREE_MODEL(c->folder_store), &iter, 2, &id, -1);
-		
-		WokXMLTag msg(NULL, "message");
-		msg.AddAttr("session", c->session);
-		WokXMLTag &iq = msg.AddTag("iq");
-		iq.AddAttr("to", c->jid);
-		iq.AddAttr("type", "get");
-		WokXMLTag &fileshare = iq.AddTag("fileshare");
-		fileshare.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
-		WokXMLTag &file = fileshare.AddTag("file");
-		file.AddAttr("id", id);
-		
-		c->wls->SendSignal("Jabber XML IQ Send", msg);
-		
-		new File(c->wls, msg);
+		gchar *name;
+		gchar *size;
+		gtk_tree_model_get(GTK_TREE_MODEL(c->folder_store), &iter, 0, &name, 1, &size, 2, &id, -1);
+		if ( strlen(id) == 0 ) 
+			return;
+		if ( strcpy(size, "<folder>" ) )
+		{
+			GtkTreeSelection *selection;
+			GtkTreeIter iter;
+			
+			selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (glade_xml_get_widget(c->xml,"tree")));
+
+			if(gtk_tree_selection_get_selected(selection,  NULL, &iter) != FALSE)
+			{
+				WokXMLTag *tag;
+				gtk_tree_model_get(GTK_TREE_MODEL(c->path_store), &iter, 1, &tag, -1);
+				
+				std::list <WokXMLTag *>::iterator titer;
+				
+				for( titer = tag->GetTagList("item").begin(); titer != tag->GetTagList("item").end() ; titer++)
+				{
+					if ( (*titer)->GetAttr("id") == id )
+					{
+						new DownloadFolder(c->wls, *titer, c->config->GetFirstTag("download_path").GetAttr("data"));
+					}
+				}
+			}
+		}
+		else
+		{
+			WokXMLTag msg(NULL, "message");
+			msg.AddAttr("session", c->session);
+			WokXMLTag &iq = msg.AddTag("iq");
+			iq.AddAttr("to", c->jid);
+			iq.AddAttr("type", "get");
+			WokXMLTag &fileshare = iq.AddTag("fileshare");
+			fileshare.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
+			WokXMLTag &file = fileshare.AddTag("file");
+			file.AddAttr("id", id);
+			
+			c->wls->SendSignal("Jabber XML IQ Send", msg);
+			
+			new File(c->wls, msg, name, c->config->GetFirstTag("download_path").GetAttr("data"));
+		}
 		g_free(id);
+		g_free(name);
+		g_free(size);
 	}
 }
 
@@ -183,14 +217,13 @@ FileListWid::Finished(WokXMLTag *tag)
  int err;
 	
 	char buf[2000];
-	std::stringstream sxml;
 		
 	gzFile file;
 	file = gzopen ("/tmp/filelist.xml.gz", "rb");
 	while ( ( err = gzread (file, buf, 2000) ) > 0 )
 	{
 		buf[err] = 0;
-		sxml << buf;
+		filelist->Add(buf);
 	}
 	gzclose(file);
 	
@@ -198,8 +231,8 @@ FileListWid::Finished(WokXMLTag *tag)
 	{
 		woklib_error(wls, "Somekinda problem reading the filelist");
 		delete this;
-	}
-	sxml >> *filelist;
+		return 1;
+	}	
 	
 	GtkTreeIter titer;
 	

@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
@@ -46,8 +46,9 @@ class ToasterWindow : public WLSignalInstance
 		int GetHeight();
 		void MoveTo(int x, int y);
 		static gboolean Timeout(ToasterWindow *c);
+		static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event, ToasterWindow *c);
 	protected:
-	
+		WokXMLTag *orig;
 		GdkColor noticable_color;
 		GtkWidget *window;
 		GtkWidget *port;

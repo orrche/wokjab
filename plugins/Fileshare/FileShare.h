@@ -51,13 +51,19 @@ class FileShare : public WoklibPlugin
 		int IncommingFilelist(WokXMLTag *tag);
 		int Rebuild(WokXMLTag *tag);
 		int IncommingFile(WokXMLTag *tag);
+		int Config(WokXMLTag *tag);
+		
+		void PopulateTree(WokXMLTag *tag, std::string dir);
+		WokXMLTag * AddFolder(WokXMLTag *point, std::string name);
 		
 		static int sql_callback(FileShare *c, int argc, char **argv, char **azColName);
 	protected:
+			WokXMLTag *config;
 			int fileshareid;
 			std::string path;
 			std::string filetosend;
 			sqlite3 *db;
+			std::map <std::string, std::string> sharepoints;
 
 };
 

@@ -24,18 +24,20 @@
 
 #include "File.h"
 
-File::File(WLSignal *wls, WokXMLTag &msg) : WLSignalInstance(wls),
-xml(msg)
+File::File(WLSignal *wls, WokXMLTag &msg, std::string name, std::string d_path) : WLSignalInstance(wls),
+name(name),
+d_path(d_path)
 {
+	if ( (!d_path.empty()) && (d_path[d_path.size()-1] != '/') )
+		this->d_path += "/";
+	
+	xml = new WokXMLTag(msg);
 	EXP_SIGHOOK("Jabber XML IQ ID " + msg.GetFirstTag("iq").GetAttr("id"), &File::FileResponse, 1000);
-	/*
-
-	*/
 }
 
 File::~File()
 {
-
+	delete xml;
 
 }
 
@@ -53,12 +55,16 @@ File::FileResponse(WokXMLTag *tag)
 int
 File::Auth(WokXMLTag *tag)
 {
+	std::cout << "File: " << *tag << std::endl;
+	std::cout << ":: " << *xml << std::endl;
+	
 	if ( tag->GetAttr("sid") == sid )
 	{
 		lsid = "local:" + sid;
 		WokXMLTag &file = tag->AddTag("file");
 		file.AddAttr("lsid", lsid);
-		file.AddAttr("name", "/tmp/filelist.xml.gz");	
+		file.AddAttr("name", d_path + name);	
+		std::cout << "File path: " << file.GetAttr("name") << std::endl;
 	}
 	return 1;
 }

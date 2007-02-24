@@ -4,7 +4,7 @@ pkgdata_DATA = \
         FileListWid.glade
 
 AM_CXXFLAGS =\
-	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -O3 -Wall -lsqlite3
+	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -O3 -Wall -lsqlite3 -g -pg
 	
 
 lib_LTLIBRARIES = \
@@ -17,7 +17,9 @@ libfileshare_la_SOURCES = \
 	FileListWid.cc \
 	FileListWid.h \
 	File.cc \
-	File.h
+	File.h \
+	Download.cc \
+	Download.h 
 	
 ## File created by the gnome-build tools
 

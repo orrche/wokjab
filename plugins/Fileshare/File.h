@@ -38,7 +38,7 @@ using namespace Woklib;
 class File : public WLSignalInstance
 {
 	public:
-		File(WLSignal *wls, WokXMLTag &msg);
+		File(WLSignal *wls, WokXMLTag &msg, std::string name, std::string d_path);
 		~File();
 	
 		int Incomming(WokXMLTag *tag);
@@ -48,7 +48,9 @@ class File : public WLSignalInstance
 	protected:
 	 std::string sid;
 		std::string lsid;
-		WokXMLTag &xml;
+		std::string name;
+		std::string d_path;
+		WokXMLTag *xml;
 };
 
 

@@ -53,6 +53,11 @@ Toaster::AddJIDEvent(WokXMLTag *tag)
 	WokXMLTag toastertag(NULL, "toaster");
 	WokXMLTag &bodytag = toastertag.AddTag("body");
 	bodytag.AddText(tag->GetFirstTag("item").GetFirstTag("description").GetBody());
+	WokXMLTag &command = toastertag.GetFirstTag("commands").AddTag("command");
+	command.AddAttr("name", "Open Dialog");
+	WokXMLTag &sigtag = command.AddTag("signal");
+	sigtag.AddAttr("name", tag->GetFirstTag("item").GetAttr("signal"));
+	sigtag.AddTag(&tag->GetFirstTag("item"));
 	
 	wls->SendSignal("Toaster Display", &toastertag);
 

@@ -30,6 +30,7 @@
 
 ToasterWindow::ToasterWindow(WLSignal *wls, WokXMLTag *xml, int x, int y) : WLSignalInstance(wls)
 {
+	orig = new WokXMLTag(*xml);
 	window = gtk_window_new(GTK_WINDOW_POPUP);
 	port = gtk_viewport_new(NULL, NULL);
 	GtkWidget *vbox = gtk_vbox_new(FALSE, 2);
@@ -54,13 +55,30 @@ ToasterWindow::ToasterWindow(WLSignal *wls, WokXMLTag *xml, int x, int y) : WLSi
 
 	t = 10;
 	g_timeout_add (200, (gboolean (*)(void *)) (ToasterWindow::Timeout), this);
+	
+	g_signal_connect (window , "button-press-event",	G_CALLBACK (ToasterWindow::button_press_event),this);
 }
 
 
 ToasterWindow::~ToasterWindow()
 {
+	delete orig;
 	gtk_widget_destroy(window);
 }
+
+gboolean
+ToasterWindow::button_press_event(GtkWidget *widget, GdkEventButton *event, ToasterWindow *c)
+{
+	std::cout << "Good this thing to work actually..." << std::endl;
+	if ( c->orig->GetTagList("commands").empty() || c->orig->GetFirstTag("commands").GetTagList("command").empty() )
+		return FALSE;
+		
+	c->wls->SendSignal(c->orig->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetAttr("name"), 
+								**c->orig->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetTags().begin());
+	
+	return FALSE;
+}
+
 
 int
 ToasterWindow::GetHeight()

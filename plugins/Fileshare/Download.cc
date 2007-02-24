@@ -16,51 +16,24 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-	
-	
-//
-// Class: FileListWid
-// Created by: Kent Gustavsson <nedo80@gmail.com>
-//
 
-#ifndef _FILE_LIST_WID_H_
-#define _FILE_LIST_WID_H_
-
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
-#include <gtk/gtk.h>
-#include <glade/glade.h>
-
-using namespace Woklib;
-
-class FileListWid : public WLSignalInstance
-{
-	public:
-		FileListWid(WLSignal *wls, WokXMLTag *xml, WokXMLTag *config);
-		~FileListWid();
-
-		int Auth(WokXMLTag *tag);
-		int Finished(WokXMLTag *tag);
-		void PopulateTree(WokXMLTag *tag, GtkTreeIter *iter);
-		
-		static void OpenFolder (GtkTreeView *tree_view, FileListWid *c);
-		static void Download(GtkButton *button, FileListWid *c);
-		
-	protected:
-		WokXMLTag *filelist;
-		WokXMLTag *config;
-		GladeXML *xml;
-		std::string sid;
-		std::string lsid;
-		std::string session;
-		std::string jid;
-		
-		GtkTreeStore *path_store;
-		GtkListStore *folder_store;
-};
-
-
-
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
 #endif
+
+
+#include "Download.h"
+
+DownloadFolder::DownloadFolder(WLSignal *wls, WokXMLTag *tag, std::string d_path) : WLSignalInstance(wls)
+{
+
+
+
+}
+
+DownloadFolder::~DownloadFolder()
+{
+
+
+
+}

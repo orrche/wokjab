@@ -40,6 +40,12 @@ FileShare::FileShare(WLSignal *wls) : WoklibPlugin(wls)
 	EXP_SIGHOOK("Jabber FileShare Rebuild", &FileShare::Rebuild, 1000);
 	fileshareid = 0;
 	
+	config = new WokXMLTag(NULL, "NULL");
+	EXP_SIGHOOK("Config XML Change /fileshare", &FileShare::Config, 500);
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/fileshare");
+	wls->SendSignal("Config XML Trigger", &conftag);
+	
 	path = "/home/nedo/wokjabmess";
 	
 	int rc = sqlite3_open((std::string(g_get_home_dir()) + "/.wokjab/fileshare/filelist.db").c_str(), &db);
@@ -51,7 +57,7 @@ FileShare::FileShare(WLSignal *wls) : WoklibPlugin(wls)
 
 FileShare::~FileShare()
 {
-
+	delete config;
 
 }
 
@@ -69,6 +75,42 @@ FileShare::sql_callback(FileShare *c, int argc, char **argv, char **azColName)
 }
 
 int
+FileShare::Config(WokXMLTag *tag)
+{
+	delete config;
+	config = new WokXMLTag(tag->GetFirstTag("config"));
+	sharepoints.clear();
+	
+	tag->GetFirstTag("config").GetFirstTag("download_path").AddAttr("type", "string");
+	tag->GetFirstTag("config").GetFirstTag("download_path").AddAttr("label", "Path to download to");
+	
+	std::list <WokXMLTag*>::iterator iter;
+	std::list <WokXMLTag*> *list = new std::list <WokXMLTag*> (tag->GetFirstTag("config").GetFirstTag("share_path").GetTagList("path"));
+	for( iter = list->begin() ; iter != list->end() ; iter++)
+	{
+		if ( (*iter)->GetFirstTag("name").GetAttr("data") == "" )
+		{
+			tag->GetFirstTag("config").GetFirstTag("share_path").RemoveTag(*iter);
+		}
+		else
+		{
+			sharepoints[(*iter)->GetFirstTag("path").GetAttr("data")] = (*iter)->GetFirstTag("name").GetAttr("data");
+		}
+	}
+	
+	WokXMLTag &path = tag->GetFirstTag("config").GetFirstTag("share_path").AddTag("path");
+	path.GetFirstTag("name").AddAttr("type", "string");
+	path.GetFirstTag("name").AddAttr("label", "Mount point");
+	path.GetFirstTag("path").AddAttr("type", "string");
+	path.GetFirstTag("path").AddAttr("label", "Folder");
+	
+	path.AddAttr("label", "Path");
+
+	
+	return 1;
+}
+
+int
 FileShare::MainMenu(WokXMLTag *xml)
 {
 	WokXMLTag *tag;
@@ -80,28 +122,18 @@ FileShare::MainMenu(WokXMLTag *xml)
 	return 1;
 }
 
-int
-FileShare::Rebuild(WokXMLTag *tag)
+void
+FileShare::PopulateTree(WokXMLTag *tag, std::string dir)
 {
 	DIR             *dip;
 	struct dirent   *dit;
 	char *zErrMsg = 0;
 
-	std::string filename = path;
-
-	if ((dip = opendir(filename.c_str())) == NULL)
+	if ((dip = opendir(dir.c_str())) == NULL)
 	{
   perror("opendir");
-		return 1;
+		return;
 	}
-	std::string query = "DELETE FROM filelist;";
-	int rc = sqlite3_exec(db, query.c_str(), (int(*)(void *,int,char**,char**)) FileShare::sql_callback, this, &zErrMsg);
-	if( rc!=SQLITE_OK ){
-			fprintf(stderr, "SQL error: %s\n", zErrMsg);
-			sqlite3_free(zErrMsg);
-	}
-	WokXMLTag filelist (NULL, "filelist");
-	
 	
 	while ((dit = readdir(dip)) != NULL)
 	{
@@ -111,26 +143,48 @@ FileShare::Rebuild(WokXMLTag *tag)
 			continue;
 			
 		struct	stat	sbuf;
-		stat((filename + '/' + file).c_str(),&sbuf);
+		stat((dir + '/' + file).c_str(),&sbuf);
 
 		if ( sbuf.st_mode & S_IFDIR )
 		{
-			WokXMLTag &item = filelist.AddTag("item");
+			WokXMLTag &item = tag->AddTag("item");
 			item.AddAttr("type", "folder");
 			item.AddAttr("name", file);
+			PopulateTree(&item, dir + '/' + file);
 		}
 		else if ( sbuf.st_mode & S_IFREG )
 		{
-			WokXMLTag &item = filelist.AddTag("item");
-			item.AddAttr("id", filename + '/' + file);
+			WokXMLTag &item = tag->AddTag("item");
+			item.AddAttr("id", dir + '/' + file);
 			item.AddAttr("name", file);
 			item.AddAttr("type", "file");
 		}
 		
-		std::string query = "INSERT INTO filelist (id, file) values ('" + filename + '/' + file + "', '" + filename + '/' + file + "');";
+		std::string qdir = dir;
+		std::string qfile = file;
+		for ( unsigned int pos = 0 ; qdir.find("'", pos) != std::string::npos ; )
+		{
+			pos = qdir.find("'", pos );
+			qdir.replace(pos, 1, "''");
+			pos+=2;
+			if ( pos >= qdir.size() )
+				break;
+		}
+		
+		for ( unsigned int pos = 0 ; qfile.find("'", pos) != std::string::npos ; )
+		{
+			pos = qfile.find("'", pos );
+			qfile.replace(pos, 1, "''");
+			pos+=2;
+			
+			if ( pos >= qfile.size() )
+				break;
+		}
+		std::string query = "INSERT INTO filelist (id, file) values ('" + qdir + '/' + qfile + "', '" + qdir + '/' + qfile + "');";
 		int rc = sqlite3_exec(db, query.c_str(), (int(*)(void *,int,char**,char**)) FileShare::sql_callback, this, &zErrMsg);
   if( rc!=SQLITE_OK ){
     fprintf(stderr, "SQL error: %s\n", zErrMsg);
+				std::cout << "Query: " << query << std::endl;
     sqlite3_free(zErrMsg);
   }
 	}
@@ -138,8 +192,71 @@ FileShare::Rebuild(WokXMLTag *tag)
 	if (closedir(dip) == -1)
 	{
 		perror("closedir");
-		return 1;
+		return;
 	}
+}
+
+WokXMLTag *
+FileShare::AddFolder(WokXMLTag *point, std::string name)
+{
+	std::list <WokXMLTag *>::iterator titer;
+	
+	for ( titer = point->GetTagList("item").begin() ; titer != point->GetTagList("item").end() ; titer++)
+	{
+		if ( (*titer)->GetAttr("name") == name)
+		{
+			point = *titer;
+			return point;
+		}
+	}
+	
+	point = &point->AddTag("item");
+	point->AddAttr("name", name);
+	point->AddAttr("type", "folder");
+	
+	return point;
+}
+
+int
+FileShare::Rebuild(WokXMLTag *tag)
+{
+	char *zErrMsg = 0;
+
+	std::string filename = path;
+
+	std::string query = "DELETE FROM filelist;";
+	int rc = sqlite3_exec(db, query.c_str(), (int(*)(void *,int,char**,char**)) FileShare::sql_callback, this, &zErrMsg);
+	if( rc!=SQLITE_OK ){
+			fprintf(stderr, "SQL error: %s\n", zErrMsg);
+			sqlite3_free(zErrMsg);
+	}
+	
+	
+	
+	WokXMLTag filelist (NULL, "filelist");
+	std::map <std::string, std::string>::iterator iter;
+	for ( iter = sharepoints.begin() ; iter != sharepoints.end() ; iter++)
+	{
+		WokXMLTag *point;
+		point = &filelist;
+		for(unsigned int pos = 0; pos < iter->first.size() ;)
+		{
+			if( iter->first.find("/", pos) != std::string::npos )
+			{
+				point = AddFolder(point, iter->first.substr(pos, iter->first.find("/", pos)));
+				
+				pos = iter->first.find("/", pos) + 1;
+			}
+			else
+			{
+				point = AddFolder(point, iter->first.substr(pos));
+				break;
+			}
+		}
+		std::cout << ":" << iter->second << filelist << std::endl;
+		PopulateTree(point, iter->second);
+	}
+	
 
 	gzFile gfile;
 	gfile = gzopen ((std::string(g_get_home_dir()) + "/.wokjab/fileshare/filelist.xml.gz").c_str(), "wb");
@@ -263,7 +380,7 @@ FileShare::IncommingFilelist(WokXMLTag *tag)
 	value.AddText("http://jabber.org/protocol/bytestreams");
 	
 	wls->SendSignal("Jabber XML Send", msg);
-	new FileListWid(wls, tag);
+	new FileListWid(wls, tag, config);
 	
 	return 1;
 }

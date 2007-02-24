@@ -19,12 +19,12 @@
 	
 	
 //
-// Class: FileListWid
+// Class: Download
 // Created by: Kent Gustavsson <nedo80@gmail.com>
 //
 
-#ifndef _FILE_LIST_WID_H_
-#define _FILE_LIST_WID_H_
+#ifndef _DOWNLOAD_H_
+#define _DOWNLOAD_H_
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
@@ -35,32 +35,16 @@
 
 using namespace Woklib;
 
-class FileListWid : public WLSignalInstance
+class DownloadFolder : public WLSignalInstance
 {
 	public:
-		FileListWid(WLSignal *wls, WokXMLTag *xml, WokXMLTag *config);
-		~FileListWid();
+		DownloadFolder(WLSignal *wls, WokXMLTag *folder, std::string d_path);
+		~DownloadFolder();
 
-		int Auth(WokXMLTag *tag);
-		int Finished(WokXMLTag *tag);
-		void PopulateTree(WokXMLTag *tag, GtkTreeIter *iter);
-		
-		static void OpenFolder (GtkTreeView *tree_view, FileListWid *c);
-		static void Download(GtkButton *button, FileListWid *c);
-		
 	protected:
-		WokXMLTag *filelist;
-		WokXMLTag *config;
-		GladeXML *xml;
-		std::string sid;
-		std::string lsid;
-		std::string session;
-		std::string jid;
-		
-		GtkTreeStore *path_store;
-		GtkListStore *folder_store;
+		std::string d_path;
+		WokXMLTag *folder;
 };
 
 
-
-#endif
+#endif // _FILE_H
