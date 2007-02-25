@@ -60,9 +60,11 @@ class DisplayWidget : public WLSignalInstance
 		void Message(WokXMLTag *tag);
 		
 		static gboolean Delete( GtkWidget *widget, GdkEvent *event, DisplayWidget *c);
+		static void DebugClear(GtkButton *button, DisplayWidget *c);
 		static gboolean ShowDataButton (GtkButton *button, DisplayWidget *c);
-		static gboolean InputButton (GtkButton *button, DisplayWidget *c);
-		static gboolean SignalButton (GtkButton *button, DisplayWidget *c);
+		static void InputButton (GtkButton *button, DisplayWidget *c);
+		static void SignalButton (GtkButton *button, DisplayWidget *c);
+		static void SignalClear (GtkButton *button, DisplayWidget *c);
 	protected:
 		GladeXML *xml;
 		GtkWidget *message_treeview;

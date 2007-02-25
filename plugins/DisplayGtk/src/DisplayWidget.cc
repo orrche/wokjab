@@ -100,6 +100,10 @@ DisplayWidget::Create()
 			G_CALLBACK (DisplayWidget::InputButton), this);
 	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "signalbutton")), "clicked",
 			G_CALLBACK (DisplayWidget::SignalButton), this);
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "SignalsClear")), "clicked",
+			G_CALLBACK (DisplayWidget::SignalClear), this);
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "DebugClear")), "clicked",
+			G_CALLBACK (DisplayWidget::DebugClear), this);
 }
 
 void
@@ -109,20 +113,30 @@ DisplayWidget::Show()
 	gtk_window_present (GTK_WINDOW(glade_xml_get_widget (xml, "messagewindow")));
 }
 
-gboolean
+void
 DisplayWidget::InputButton (GtkButton *button, DisplayWidget *c)
 {
 	new InputDialog(c->wls);
-	
-	return false;
 }
 
-gboolean
+void
 DisplayWidget::SignalButton (GtkButton *button, DisplayWidget *c)
 {
 	new SignalGenDialog(c->wls);
+}
+
+void
+DisplayWidget::SignalClear (GtkButton *button, DisplayWidget *c)
+{
+	std::list <WokXMLTag *>::iterator iter;
+	for ( iter = c->signal_data.begin() ; iter != c->signal_data.end() ; iter++)
+	{
+		delete *iter;
+	}
+	c->signal_data.clear();
 	
-	return false;
+	gtk_list_store_clear(c->signal_store);
+
 }
 
 gboolean
@@ -213,6 +227,12 @@ DisplayWidget::Debug(WokXMLTag *tag)
 		gtk_list_store_remove(debug_store, &iter);
 	}
 
+}
+
+void
+DisplayWidget::DebugClear(GtkButton *button, DisplayWidget *c)
+{
+	gtk_list_store_clear(c->debug_store);
 }
 
 void

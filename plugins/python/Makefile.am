@@ -1,6 +1,6 @@
 libdir = $(prefix)/lib/woklib-plugins/secondary
-INCLUDES = -I/usr/include/python2.4
-AM_LDFLAGS = `python-config` -ldl -lpthread -lm -lutil
+INCLUDES = $(PY_CFLAGS)
+AM_LDFLAGS = $(PY_LIBS) -ldl -lpthread -lm -lutil
 AM_CXXFLAGS =\
 	-O3 -Wall
 lib_LTLIBRARIES = \
