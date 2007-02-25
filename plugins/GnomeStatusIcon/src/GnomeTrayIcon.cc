@@ -35,8 +35,7 @@ using std::endl;
 
 GnomeTrayIcon::GnomeTrayIcon(WLSignal *wls) : WoklibPlugin (wls)
 {
-
-	EXP_SIGHOOK("Jabber Event Add", &GnomeTrayIcon::AddJIDEvent, 2);
+	EXP_SIGHOOK("Jabber Event Add", &GnomeTrayIcon::AddJIDEvent, 1000);
 	EXP_SIGHOOK("Jabber Event Remove", &GnomeTrayIcon::RemoveJIDEvent, 2);
 	
 
@@ -64,7 +63,6 @@ GnomeTrayIcon::GnomeTrayIcon(WLSignal *wls) : WoklibPlugin (wls)
 
 GnomeTrayIcon::~GnomeTrayIcon()
 {
-
 	g_source_remove(to);
 	
 	
@@ -74,7 +72,6 @@ GnomeTrayIcon::~GnomeTrayIcon()
 		
 	EventList.clear(); // Not stricly nessesary now
 
-	//gtk_widget_destroy(GTK_WIDGET(tray_icon));
 }
 
 
@@ -94,7 +91,10 @@ GnomeTrayIcon::tray_icon_pressed (GtkWidget * widget, GdkEventButton *event, gpo
 			return;		
 		}
 		
-		gti->wls->SendSignal((*gti->EventList.front()).GetAttr("signal"), gti->EventList.front());
+		if (!(gti->EventList.front())->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetTags().empty() )
+			gti->wls->SendSignal((gti->EventList.front())->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetAttr("name"), 
+									*(gti->EventList.front())->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetTags().begin());
+		
 		if( gti->EventList.empty() )
 			return;
 
@@ -185,6 +185,7 @@ GnomeTrayIcon::UpdateList()
 int
 GnomeTrayIcon::AddJIDEvent(WokXMLTag *tag)
 {
+	std::cout << "Event: " << *tag << std::endl;
 	std::list<WokXMLTag *>::iterator itemiter;
 	for(itemiter = tag->GetTagList("item").begin() ; itemiter != tag->GetTagList("item").end(); itemiter++)
 	{

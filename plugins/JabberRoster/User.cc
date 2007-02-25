@@ -272,7 +272,10 @@ User::Activate(WokXMLTag *tag)
 		WokXMLTag eventtag(NULL, "event");
 		eventtag.AddTag(Events.front());
 		
-		wls->SendSignal((*Events.begin())->GetAttr("signal"), *Events.begin());
+		
+		if(!(*Events.begin())->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetTags().empty())
+			wls->SendSignal((*Events.begin())->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetAttr("name"), 
+									*(*Events.begin())->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetTags().begin());
 		
 		wls->SendSignal("Jabber Event Remove", &eventtag);
 	}

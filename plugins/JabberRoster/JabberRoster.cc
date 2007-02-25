@@ -27,7 +27,7 @@
 
 JabberRoster::JabberRoster(WLSignal *wls) : WoklibPlugin(wls)
 {
-	EXP_SIGHOOK("Jabber Event Add", &JabberRoster::AddItemEvent, 1);
+	EXP_SIGHOOK("Jabber Event Add", &JabberRoster::AddItemEvent, 1000);
 	EXP_SIGHOOK("Jabber Event Remove", &JabberRoster::RemoveItemEvent, 1);
 	EXP_SIGHOOK("Jabber Connection Lost", &JabberRoster::LoggedOut, 1);
 	EXP_SIGHOOK("Jabber Connection Connect" , &JabberRoster::SignIn, 1000);
@@ -54,7 +54,8 @@ JabberRoster::AddItemEvent(WokXMLTag *tag)
 	
 	for ( iter = tag->GetTagList("item").begin() ; iter != tag->GetTagList("item").end() ; iter++)
 	{
-		session[(*iter)->GetAttr("session")]->AddEvent(*iter);
+		if ( session.find((*iter)->GetAttr("session")) != session.end() )
+			session[(*iter)->GetAttr("session")]->AddEvent(*iter);
 	}
 
 	return 1;

@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
@@ -36,8 +36,8 @@
 
 Toaster::Toaster(WLSignal *wls) : WoklibPlugin(wls)
 {
-	EXP_SIGHOOK("Jabber Event Add", &Toaster::AddJIDEvent, 2);
-	EXP_SIGHOOK("Toaster Display", &Toaster::DisplayMSG, 2);
+	EXP_SIGHOOK("Jabber Event Add", &Toaster::AddJIDEvent, 1000);
+	EXP_SIGHOOK("Toaster Display", &Toaster::DisplayMSG, 1000);
 }
 
 
@@ -50,15 +50,14 @@ int
 Toaster::AddJIDEvent(WokXMLTag *tag)
 {
 #warning should be moved somewhere I think....
+	std::cout << "TTTag: " << *tag << std::endl;
+
 	WokXMLTag toastertag(NULL, "toaster");
 	WokXMLTag &bodytag = toastertag.AddTag("body");
 	bodytag.AddText(tag->GetFirstTag("item").GetFirstTag("description").GetBody());
-	WokXMLTag &command = toastertag.GetFirstTag("commands").AddTag("command");
-	command.AddAttr("name", "Open Dialog");
-	WokXMLTag &sigtag = command.AddTag("signal");
-	sigtag.AddAttr("name", tag->GetFirstTag("item").GetAttr("signal"));
-	sigtag.AddTag(&tag->GetFirstTag("item"));
+	toastertag.AddTag(&tag->GetFirstTag("item").GetFirstTag("commands"));
 	
+	std::cout << "TTag: " << toastertag << std::endl;
 	wls->SendSignal("Toaster Display", &toastertag);
 
 	return true;
@@ -219,10 +218,6 @@ Toaster::DisplayMSG(WokXMLTag *tag)
 		rect_workspace.width = m_geo.width;
 		rect_workspace.height = m_geo.height;
 	}
-
-
-//	std::cout << "X: " << geo.x << " Y: " << geo.y << " width: " << geo.width << " height: " << geo.height << std::endl;
-
 
 	ToasterWindow *tw;
 	std::list<ToasterWindow *>::iterator iter;

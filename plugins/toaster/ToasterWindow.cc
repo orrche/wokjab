@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
@@ -45,8 +45,38 @@ ToasterWindow::ToasterWindow(WLSignal *wls, WokXMLTag *xml, int x, int y) : WLSi
 	
 	gtk_container_add(GTK_CONTAINER(window), port);
 	gtk_container_add(GTK_CONTAINER(port), vbox);
+	
+	
 	gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 2);
+	std::list <WokXMLTag *> *com_list;
+	std::list <WokXMLTag *>::iterator c_iter;
+	
+	com_list = &orig->GetTagList("commands");
+	for( c_iter = com_list->begin() ; c_iter != com_list->end() ; c_iter++ )
+	{
+		GtkWidget *bbox;
+		GtkWidget *label;
+		bbox = gtk_hbox_new(FALSE, 2);
+		label = gtk_label_new((*c_iter)->GetAttr("name").c_str());
 		
+		gtk_box_pack_start(GTK_BOX(vbox), bbox, FALSE, FALSE, 0);
+		gtk_box_pack_start(GTK_BOX(bbox), label, FALSE, FALSE, 0);
+		
+		std::list <WokXMLTag *> *list = &(*c_iter)->GetTagList("command");
+		std::list <WokXMLTag *>::iterator iter;
+		for ( iter = list->begin(); iter != list->end(); iter++)
+		{
+			GtkWidget *button = gtk_event_box_new();
+			GtkWidget *label = gtk_label_new((*iter)->GetAttr("name").c_str());
+			gtk_container_add(GTK_CONTAINER(button), label);
+			
+			gtk_box_pack_start(GTK_BOX(bbox), button, FALSE, FALSE, 0);
+			g_object_set_data(G_OBJECT(button), "xml", *iter);
+			
+			g_signal_connect (button , "button-press-event",	G_CALLBACK (ToasterWindow::CommandExec),this);
+		}
+		
+	}
 	gtk_widget_show_all(window);
 
 	int height,width;
@@ -69,17 +99,33 @@ ToasterWindow::~ToasterWindow()
 gboolean
 ToasterWindow::button_press_event(GtkWidget *widget, GdkEventButton *event, ToasterWindow *c)
 {
-	std::cout << "Good this thing to work actually..." << std::endl;
 	if ( c->orig->GetTagList("commands").empty() || c->orig->GetFirstTag("commands").GetTagList("command").empty() )
 		return FALSE;
 		
-	c->wls->SendSignal(c->orig->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetAttr("name"), 
+	if (! c->orig->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetTags().empty() )
+	{
+		c->wls->SendSignal(c->orig->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetAttr("name"), 
 								**c->orig->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetTags().begin());
+								
+		return TRUE;
+	}
 	
 	return FALSE;
 }
 
+gboolean
+ToasterWindow::CommandExec(GtkWidget *button, GdkEventButton *event, ToasterWindow *c)
+{
+	WokXMLTag *tag = static_cast <WokXMLTag *> (g_object_get_data(G_OBJECT(button), "xml"));
+	if ( tag && !tag->GetFirstTag("signal").GetTags().empty() )
+	{
+		c->wls->SendSignal(tag->GetFirstTag("signal").GetAttr("name"), **tag->GetFirstTag("signal").GetTags().begin());
+		return TRUE;
+	}
 
+	return FALSE;
+}
+  
 int
 ToasterWindow::GetHeight()
 {

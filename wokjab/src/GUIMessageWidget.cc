@@ -444,7 +444,6 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 			itemtag.AddAttr("jid", tag->GetFirstTag("message").GetAttr("from"));
 			itemtag.AddAttr("session", tag->GetAttr("session"));
 			itemtag.AddAttr("icon", msgicon);
-			itemtag.AddAttr("signal", "Jabber GUI MessageDialog Open");
 
 			WokXMLTag &desc = itemtag.AddTag("description");
 			desc.AddText(tag->GetFirstTag("message").GetAttr("from"));
@@ -453,6 +452,14 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 			
 			desc.AddText(tag->GetFirstTag("message").GetFirstTag("body").GetBody());
 
+			WokXMLTag &command = itemtag.AddTag("commands").AddTag("command");
+			command.AddAttr("name", "Open Dialog");
+			WokXMLTag &sig = command.AddTag("signal");
+			sig.AddAttr("name", "Jabber GUI MessageDialog Open");
+			WokXMLTag &item = sig.AddTag("item");
+			item.AddAttr("jid", tag->GetFirstTag("message").GetAttr("from"));
+			item.AddAttr("session", tag->GetAttr("session"));
+			
 			wls->SendSignal("Jabber Event Add", &eventtag);
 
 		}

@@ -47,6 +47,7 @@ class ToasterWindow : public WLSignalInstance
 		void MoveTo(int x, int y);
 		static gboolean Timeout(ToasterWindow *c);
 		static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event, ToasterWindow *c);
+		static gboolean CommandExec(GtkWidget *button, GdkEventButton *event, ToasterWindow *c);
 	protected:
 		WokXMLTag *orig;
 		GdkColor noticable_color;
