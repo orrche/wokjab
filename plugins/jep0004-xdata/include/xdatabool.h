@@ -25,7 +25,7 @@ class xdatabool : public xdatabase
 		xdatabool(WLSignal *wls, WLSignalData* wlsd, GtkWidget *vbox);
 		 ~xdatabool();
 	
-		std::string GetData();
+		void GetData(WokXMLTag &tag);
 	protected:
 		GtkWidget *checkbutton;
 

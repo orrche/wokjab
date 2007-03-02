@@ -70,7 +70,15 @@ RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = $(SUBDIRS)
+DIST_SUBDIRS = Authorization AutoPresence Config DisplayGtk EventSound \
+	Fileshare GnomeStatusIcon groupchat-plugin GtkTimer \
+	GtkPreference GtkMenu guibrowser GUIRoster Jabber \
+	JabberConnection JabberRoster jep0004-xdata jep0030-Disco \
+	jep0050-AdHocCommands jep0065-Bytestream jep0096-Filetransfear \
+	jep0115-EntCap jep0153-VCardAvatar MenuResource MenuRoster \
+	OpenDialogTo python registerservice Reversi roster-rename \
+	ScriptLoader toaster Tooltip wokjab-jid-info woklib-groupchat \
+	rfc1928-SOCKS5 Idle GroupChatBookmark
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
@@ -184,6 +192,7 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+@DO_PYTHON_TRUE@pythondir = python
 SUBDIRS = \
 	Authorization \
 	AutoPresence \
@@ -211,7 +220,7 @@ SUBDIRS = \
 	MenuResource \
 	MenuRoster \
 	OpenDialogTo \
-	python \
+	$(pythondir) \
 	registerservice \
 	Reversi \
 	roster-rename \

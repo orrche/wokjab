@@ -26,7 +26,7 @@ class xdatahidden : public xdatabase
 	public:
 		xdatahidden(WLSignal *wls, WLSignalData* wlsd, GtkWidget *vbox);
 		 ~xdatahidden();
-		std::string GetData();
+		void GetData(WokXMLTag &tag);
 	protected:
 		std::string value;
 	

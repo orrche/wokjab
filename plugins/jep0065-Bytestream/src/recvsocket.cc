@@ -124,6 +124,7 @@ RecvSocket::ReadData(WokXMLTag *xml)
 		if( wls->SendSignal("Jabber Stream File Send Method http://jabber.org/protocol/bytestreams push hash:" + hash,sockettag) )
 			socket = 0;
 		
+		xml->AddAttr("stop", "Not needed anymore");
 		delete this;
 	}
 	

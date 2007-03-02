@@ -71,7 +71,8 @@ libjep0004_xdata_la_DEPENDENCIES =
 am_libjep0004_xdata_la_OBJECTS = main.lo WokJabxdatahandler.lo \
 	WokJabxdataWidget.lo xdatabase.lo xdatasingletext.lo \
 	xdatasingleprivate.lo xdatamultitext.lo xdatafixed.lo \
-	xdataunknown.lo xdatabool.lo xdatahidden.lo xdatasinglelist.lo
+	xdataunknown.lo xdatabool.lo xdatahidden.lo xdatasinglelist.lo \
+	xdatamultilist.lo
 libjep0004_xdata_la_OBJECTS = $(am_libjep0004_xdata_la_OBJECTS)
 libjep0004_xdata_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
@@ -230,7 +231,8 @@ libjep0004_xdata_la_SOURCES = \
 	xdataunknown.cc\
 	xdatabool.cc\
 	xdatahidden.cc\
-	xdatasinglelist.cc
+	xdatasinglelist.cc\
+	xdatamultilist.cc
 
 libjep0004_xdata_la_LDFLAGS = 
 libjep0004_xdata_la_LIBADD = 
@@ -310,6 +312,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xdatabool.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xdatafixed.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xdatahidden.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xdatamultilist.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xdatamultitext.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xdatasinglelist.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xdatasingleprivate.Plo@am__quote@

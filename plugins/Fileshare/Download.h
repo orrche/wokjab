@@ -33,17 +33,26 @@
 #include <gtk/gtk.h>
 #include <glade/glade.h>
 
+#include "File.h"
+
 using namespace Woklib;
 
 class DownloadFolder : public WLSignalInstance
 {
 	public:
-		DownloadFolder(WLSignal *wls, WokXMLTag *folder, std::string d_path);
+		DownloadFolder(WLSignal *wls, WokXMLTag *folder, std::string jid, std::string session, std::string d_path);
 		~DownloadFolder();
 
+		void DownloadFile(std::string id, std::string path);
+		void GetFiles(std::string path, WokXMLTag *tag);
 	protected:
 		std::string d_path;
 		WokXMLTag *folder;
+		File *file;
+		std::string jid;
+		std::string session;
+		
+		std::map<std::string, std::string> list;
 };
 
 

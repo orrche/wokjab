@@ -29,7 +29,7 @@ class xdatasingletext : public xdatabase
 		 ~xdatasingletext();
 	
 		bool Ready();
-		std::string GetData();
+		void GetData(WokXMLTag &tag);
 	protected:
 		GtkWidget *entry;
 };

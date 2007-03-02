@@ -26,7 +26,7 @@ class xdatasinglelist : public xdatabase
 		xdatasinglelist(WLSignal *wls, WLSignalData* wlsd, GtkWidget *vbox);
 		 ~xdatasinglelist();
 	
-		std::string GetData();
+		void GetData(WokXMLTag &tag);
 	
 	protected:
 		std::map <int, std::string> menu_map;

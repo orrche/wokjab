@@ -50,14 +50,12 @@ int
 Toaster::AddJIDEvent(WokXMLTag *tag)
 {
 #warning should be moved somewhere I think....
-	std::cout << "TTTag: " << *tag << std::endl;
 
 	WokXMLTag toastertag(NULL, "toaster");
 	WokXMLTag &bodytag = toastertag.AddTag("body");
 	bodytag.AddText(tag->GetFirstTag("item").GetFirstTag("description").GetBody());
 	toastertag.AddTag(&tag->GetFirstTag("item").GetFirstTag("commands"));
 	
-	std::cout << "TTag: " << toastertag << std::endl;
 	wls->SendSignal("Toaster Display", &toastertag);
 
 	return true;

@@ -35,6 +35,8 @@ sid(msgtag->GetAttr("sid")),
 to(msgtag->GetAttr("to")),
 sport(sport)
 {
+	EXP_SIGHOOK("Jabber Stream File Send Abort " + sid, &jep65send::Abort, 1000);
+	listening = false;
 	WokXMLTag querytag(NULL, "query");
 	WokXMLTag &itemtag = querytag.AddTag("item");
 	itemtag.AddAttr("session", session);
@@ -53,6 +55,12 @@ sport(sport)
 	{
 		throttled = true;
 		rate = baserate;
+		
+		
+		WokXMLTag time(NULL, "timer");
+		time.AddAttr("time","1000");
+		time.AddAttr("signal", "Jabber Stream File Send Method http://jabber.org/protocol/bytestreams TimeOut "+sid);
+		wls->SendSignal("Woklib Timmer Add", &time);
 		
 		EXP_SIGHOOK("Jabber Stream File Send Method http://jabber.org/protocol/bytestreams TimeOut " + sid, &jep65send::Timeout, 1000);
 	}
@@ -121,6 +129,14 @@ jep65send::InitProxy()
   <query xmlns='http://jabber.org/protocol/bytestreams'/>
 </iq>
 */
+}
+
+int
+jep65send::Abort(WokXMLTag *tag)
+{
+	close(socket);
+	delete this;
+	return 1;
 }
 
 int
@@ -245,10 +261,6 @@ jep65send::ProxyReply(WokXMLTag *tag)
 {
 	if ( tag->GetFirstTag("iq").GetAttr("type") == "result" )
 	{
-		WokXMLTag time(NULL, "timer");
-		time.AddAttr("time","1000");
-		time.AddAttr("signal", "Jabber Stream File Send Method http://jabber.org/protocol/bytestreams TimeOut "+sid);
-		wls->SendSignal("Woklib Timmer Add", &time);
 		
 			
 		WokXMLTag contag(NULL, "connected");
@@ -256,14 +268,16 @@ jep65send::ProxyReply(WokXMLTag *tag)
 		wls->SendSignal("Jabber Stream File Status", &contag);
 		wls->SendSignal("Jabber Stream File Status Connected", &contag);
 		
-		
-		std::stringstream sstr_socket;
-		sstr_socket << socket;
-		WokXMLTag sigtag(NULL, "socket");
-		sigtag.AddAttr("socket", sstr_socket.str());
-		wls->SendSignal("Woklib Socket Out Add", sigtag);
-		EXP_SIGHOOK(sigtag.GetAttr("signal"), &jep65send::SocketAvailibule, 1000);
-		
+		if (  ! listening ) 
+		{
+			std::stringstream sstr_socket;
+			sstr_socket << socket;
+			WokXMLTag sigtag(NULL, "socket");
+			sigtag.AddAttr("socket", sstr_socket.str());
+			listening = true;
+			wls->SendSignal("Woklib Socket Out Add", sigtag);
+			EXP_SIGHOOK(sigtag.GetAttr("signal"), &jep65send::SocketAvailibule, 1000);
+		}
 		ffile.open(file.c_str(), std::ios::in);
 	}
 	else
@@ -318,11 +332,14 @@ jep65send::TransfearStart(WokXMLTag *tag)
 	EXP_SIGUNHOOK("Jabber Stream File Send Method http://jabber.org/protocol/bytestreams push hash:" + hash, &jep65send::FileTransfear, 1000);
 	if ( socket ) 
 	{
-		WokXMLTag sigtag(NULL, "socket");
-		sigtag.AddAttr("socket", tag->GetAttr("socket"));
-		wls->SendSignal("Woklib Socket Out Add", sigtag);
-		EXP_SIGHOOK(sigtag.GetAttr("signal"), &jep65send::SocketAvailibule, 1000);
-		
+		if ( ! listening ) 
+		{
+			WokXMLTag sigtag(NULL, "socket");
+			sigtag.AddAttr("socket", tag->GetAttr("socket"));
+			listening = true;
+			wls->SendSignal("Woklib Socket Out Add", sigtag);
+			EXP_SIGHOOK(sigtag.GetAttr("signal"), &jep65send::SocketAvailibule, 1000);
+		}
 		ffile.open(file.c_str(), std::ios::in);
 	}	
 	return 1;
@@ -384,9 +401,10 @@ jep65send::Timeout(WokXMLTag *tag)
 		std::stringstream sock;
 		rate += baserate;
 		
-		if(rate >= 0)
+		if(!listening && rate >= 0)
 		{
 			sock << socket;
+			listening = true;
 			
 			WokXMLTag sigtag(NULL, "socket");
 			sigtag.AddAttr("socket", sock.str());
@@ -394,9 +412,10 @@ jep65send::Timeout(WokXMLTag *tag)
 			EXP_SIGHOOK(sigtag.GetAttr("signal"), &jep65send::SocketAvailibule, 1000);
 		}
 	}
+	/*
 	else
 		rate = baserate;
-
+	*/
 	return true;
 }
 
@@ -408,6 +427,17 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 {
 	int sent = 0;
 	int maxsize;
+	std::cout << "Availibule" << std::endl;
+	if ( tag->GetAttr("error").size() )
+	{
+		WokXMLTag termtag(NULL, "terminated");
+		termtag.AddAttr("sid", sid);
+		wls->SendSignal("Jabber Stream File Status", &termtag);
+		wls->SendSignal("Jabber Stream File Status Terminated", &termtag);
+		delete this;
+		return 1;	
+	}
+	
 	
 	if( SHUNKSIZE > baserate && throttled )
 		maxsize = baserate;
@@ -419,7 +449,10 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 	{
 		if( fbpos != fbend )
 		{
-			fbpos += (sent = send ( socket, filebuf + fbpos, fbend - fbpos, MSG_DONTWAIT));
+			sent = send ( socket, filebuf + fbpos, fbend - fbpos, MSG_DONTWAIT);
+			if ( sent == -1 )
+				return 1;
+			fbpos += sent;
 		}
 		else
 		{
@@ -427,9 +460,17 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 				fbend = maxsize;
 			else
 				fbend = ffile.gcount();
-			fbpos = sent = send ( socket, filebuf, fbend, 0);
+			sent = send ( socket, filebuf, fbend, 0 );
+			if ( sent == -1 )
+			{
+				fbpos = 0;
+				return 1;
+			}
+			fbpos = sent;
 		}
 	}
+	
+	std::cout << "Sent: " << sent << std::endl;
 	
 	if( fbpos == fbend)
 	{
@@ -441,6 +482,7 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 		rate-= sent;
 		if(rate < 0)
 		{
+			listening = false;
 			tag->AddAttr("stop", "finished");
 		}
 	}
@@ -462,6 +504,7 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 		wls->SendSignal("Jabber Stream File Status", &fintag);
 		wls->SendSignal("Jabber Stream File Status Finished", &fintag);
 	
+		listening = false;
 		tag->AddAttr("stop", "finished");
 		delete this;
 	}

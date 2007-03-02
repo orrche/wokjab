@@ -54,6 +54,7 @@ class GUIMessageWidget : public WLSignalInstance
 		static void SizeAllocate (GtkWidget *widget, GtkRequisition *requisition,gpointer user_data);
 		static gboolean widget_destroy(GtkWidget *widget, GdkEvent *event, gpointer user_data);
 		static gboolean DragDest(GtkWidget *widget, GdkDragContext *dc,gint x, gint y, GtkSelectionData *selection_data, guint info, guint t, GUIMessageWidget *data);
+		static gboolean DragDrop(GtkWidget *widget, GdkDragContext *dc, gint x, gint y, guint time, GUIMessageWidget *c);
 		static gboolean Menu(GtkButton *button, GdkEventButton *event, GUIMessageWidget *data);
 		static void Destroy(GtkWidget *widget, GUIMessageWidget *c);
 		static void LDestroy(GtkWidget *widget, GUIMessageWidget *c);

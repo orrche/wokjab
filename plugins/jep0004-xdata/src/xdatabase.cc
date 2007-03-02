@@ -44,10 +44,10 @@ xdatabase::~xdatabase()
 	
 }
 
-std::string
-xdatabase::GetData()
+void
+xdatabase::GetData(WokXMLTag &tag)
 {
-	return "";
+	return;
 }
 
 std::string

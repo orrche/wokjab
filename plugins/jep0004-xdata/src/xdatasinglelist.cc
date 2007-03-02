@@ -68,8 +68,9 @@ xdatasinglelist::~xdatasinglelist()
 
 }
 
-std::string
-xdatasinglelist::GetData()
+void
+xdatasinglelist::GetData(WokXMLTag &tag)
 {
-	return(menu_map[gtk_option_menu_get_history(GTK_OPTION_MENU(singlist))]);	
+	tag.AddTag("value").AddText(menu_map[gtk_option_menu_get_history(GTK_OPTION_MENU(singlist))]);	
+	return;
 }

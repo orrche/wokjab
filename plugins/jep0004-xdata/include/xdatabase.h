@@ -30,7 +30,7 @@ class xdatabase : public WLSignalInstance
 		xdatabase(WLSignal *wls, WLSignalData* wlsd);
 		virtual ~xdatabase();
 	
-		virtual std::string GetData();
+		virtual void GetData(WokXMLTag &tag);
 		virtual bool Ready();
 		std::string GetVar();
 		virtual int xml(WLSignalData *wlsd);

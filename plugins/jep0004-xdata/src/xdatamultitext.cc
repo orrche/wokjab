@@ -45,15 +45,16 @@ xdatamultitext::~xdatamultitext()
 	
 }
 
-std::string
-xdatamultitext::GetData()
+void
+xdatamultitext::GetData(WokXMLTag &tag)
 {
 	GtkTextIter start_iter, end_iter;
 		
 	gtk_text_buffer_get_start_iter(buffer, &start_iter);
 	gtk_text_buffer_get_end_iter(buffer, &end_iter);
 		
-	return (gtk_text_buffer_get_text(buffer,&start_iter, &end_iter, false));
+	tag.AddTag("value").AddText(gtk_text_buffer_get_text(buffer,&start_iter, &end_iter, false));
+	return;
 }
 
 bool

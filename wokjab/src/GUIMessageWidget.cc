@@ -179,16 +179,19 @@ from(from)
 	target_entry[0].target = "text/plain";
 	target_entry[0].flags = 0;
 	target_entry[0].info = 0;
-	target_entry[1].target = "test/uri-list";
+	target_entry[1].target = "text/uri-list";
 	target_entry[1].flags = 0;
 	target_entry[1].info = 1;
 	target_entry[2].target = "STRING";
 	target_entry[2].flags = 0;
 	target_entry[2].info = 2;
 
-	gtk_drag_dest_set(eventbox, (GtkDestDefaults)(GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_HIGHLIGHT |GTK_DEST_DEFAULT_DROP), target_entry, 3, (GdkDragAction) (GDK_ACTION_MOVE | GDK_ACTION_COPY));
-
-	g_signal_connect(eventbox, "drag_data_received",G_CALLBACK (GUIMessageWidget::DragDest),this);
+//	gtk_drag_dest_set(textview1, (GtkDestDefaults)(GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_DROP), target_entry, 3, (GdkDragAction) (GDK_ACTION_COPY));
+	gtk_drag_dest_set(textview2, (GtkDestDefaults)(GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_DROP), target_entry, 3, (GdkDragAction) (GDK_ACTION_COPY));
+	
+//	g_signal_connect(textview1, "drag_data_received",G_CALLBACK (GUIMessageWidget::DragDest),this);
+	g_signal_connect(textview2, "drag_data_received",G_CALLBACK (GUIMessageWidget::DragDest),this);
+	g_signal_connect(textview2, "drag_drop",G_CALLBACK (GUIMessageWidget::DragDrop),this);
 
 	mainwindowplug = gtk_plug_new(0);
 	labelplug = gtk_plug_new(0);
@@ -472,9 +475,7 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 
 int
 GUIMessageWidget::NewPresence(WokXMLTag *tag)
-{
-	std::cout << "XML: " << *tag << std::endl;
-	
+{	
 	WokXMLTag &tag_presence = tag->GetFirstTag("presence");
 	WokXMLTag querytag(NULL,"query");
 	WokXMLTag &itemtag = querytag.AddTag("item");
@@ -558,18 +559,64 @@ GUIMessageWidget::Scroll (GtkWidget *widget, GdkEventScroll *event, GUIMessageWi
 }
 
 gboolean
-GUIMessageWidget::DragDest(GtkWidget *widget, GdkDragContext *dc,gint x, gint y, GtkSelectionData *selection_data, guint info, guint t, GUIMessageWidget *data)
+GUIMessageWidget::DragDrop(GtkWidget *widget, GdkDragContext *dc, gint x, gint y, guint time, GUIMessageWidget *c)
 {
+	std::cout << "Drop" << std::endl;
+	return TRUE;
+}
+
+gboolean
+GUIMessageWidget::DragDest(GtkWidget *widget, GdkDragContext *dc,gint x, gint y, GtkSelectionData *selection_data, guint info, guint t, GUIMessageWidget *c)
+{
+/*
 	WokXMLTag FileTransfearTag(NULL, "ProgramEXECTag");
 	FileTransfearTag.AddTag("program").AddAttr("exec", "file_transfer_script");
 	FileTransfearTag.GetFirstTag("program").AddTag("attribute").AddText((const char *)selection_data->data);
 
 	std::cout << FileTransfearTag << std::endl;
 	data->wls->SendSignal("Run Program", FileTransfearTag);
-
+*/
+/*
 	std::cout << "I got some shit !! info: " << info << " x: " << x << " y: " << y << std::endl;
 	std::cout << "S Data: " << selection_data->data << std::endl;
+	*/
+	
+	if ( info == 1 )
+	{
+		std::string data((char*)selection_data->data);
+		while (!data.empty())
+		{
+			std::string line;
+			if ( data.find("\n") != std::string::npos )
+			{
+				line = data.substr(0, data.find("\r"));
+				data = data.substr(data.find("\r")+2);
+			}
+			else
+			{
+				line = data;
+				data = "";
+			}
+			
+			gchar *file;
+			file = g_filename_from_uri (line.c_str(), NULL, NULL);
+			
+			WokXMLTag send(NULL, "send");
+			send.AddAttr("to", c->from);
+			send.AddAttr("session", c->session);
+			send.AddAttr("name", file);
+			
+			c->wls->SendSignal("Jabber Stream File Send", send);
+			g_free(file);
+
+		}
+		gtk_drag_finish(dc, TRUE, FALSE, t);
+		return TRUE;
+	}
+	
+	return FALSE;
 }
+
 
 gboolean
 GUIMessageWidget::Menu(GtkButton *button, GdkEventButton *event, GUIMessageWidget *c)
@@ -628,7 +675,8 @@ GUIMessageWidget::focus_event(GtkWidget *widget, GdkEventFocus *event, GUIMessag
 			itemtag.AddAttr("jid", c->from);
 			itemtag.AddAttr("session", c->session);
 			itemtag.AddAttr("icon", c->msgicon);
-			itemtag.AddAttr("signal", "Jabber GUI MessageDialog Open");
+			itemtag.GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").AddAttr("name", "Jabber GUI MessageDialog Open");
+
 			c->wls->SendSignal("Jabber Event Remove", &eventtag);
 
 			gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (c->textview1),

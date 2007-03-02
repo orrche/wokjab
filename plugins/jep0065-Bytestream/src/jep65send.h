@@ -57,7 +57,8 @@ class jep65send : public WLSignalInstance
 		int SOCKS_Data(WokXMLTag *tag);
 		int TransfearStart(WokXMLTag *tag);
 		int Timeout(WokXMLTag *tag);
-			
+		int Abort(WokXMLTag *tag);
+		
 		int SendData(char *data, uint len);
 	private:
 		WokXMLTag *data;
@@ -82,7 +83,8 @@ class jep65send : public WLSignalInstance
 		unsigned long long size, fsize;
 		int fbend;
 		int fbpos;
-	
+		bool listening;
+		
 		char filebuf[SHUNKSIZE];
 	
 		bool throttled;

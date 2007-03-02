@@ -39,10 +39,10 @@ xdatasingletext::~xdatasingletext()
 	
 }
 
-std::string
-xdatasingletext::GetData()
+void
+xdatasingletext::GetData(WokXMLTag &tag)
 {
-	return (gtk_entry_get_text(GTK_ENTRY(entry)));
+	tag.AddTag("value").AddText(gtk_entry_get_text(GTK_ENTRY(entry)));
 }
 
 bool

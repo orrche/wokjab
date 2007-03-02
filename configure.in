@@ -83,6 +83,8 @@ dnl make these visible to all Makefiles
 AC_SUBST(PY_CFLAGS)
 AC_SUBST(PY_LIBS)
 
+AM_CONDITIONAL(DO_PYTHON, test "x$python" = "xyes")
+
 AC_DEFINE_UNQUOTED([PACKAGE_DATA_DIR], ["${prefix}/share"], ["Due to growing insanity I dont do this the proper way I think, Anyways the pixmap dir"])
 AC_DEFINE_UNQUOTED([PACKAGE_PLUGIN_DIR], ["${prefix}/lib/woklib-plugins"], ["Where the system plugins gets stored"])
 AC_DEFINE_UNQUOTED([PACKAGE_GLADE_DIR], ["${prefix}/lib/woklib/glade"], ["Where the system UI gets stored"])

@@ -23,6 +23,7 @@
 #include "../include/xdatabool.h"
 #include "../include/xdatahidden.h"
 #include "../include/xdatasinglelist.h"
+#include "../include/xdatamultilist.h"
 
 #include <iostream>
 #include <sstream>
@@ -36,9 +37,6 @@ using std::cout;
 WokJabxdataWidget::WokJabxdataWidget(WLSignal *wls, WokXMLTag *tag_iq) : WLSignalInstance(wls),
 replsig(tag_iq->GetAttr("signal"))
 {
-
-std::cout << "Signal: " << replsig << std::endl;
-	
 	WokXMLTag* tag_title;
 	WokXMLTag* tag_instructions;
 	WokXMLTag *tag_x = &tag_iq->GetFirstTag("x");
@@ -46,7 +44,7 @@ std::cout << "Signal: " << replsig << std::endl;
 	
 	tag_title = &tag_x->GetFirstTag("title");
 	tag_instructions = &tag_x->GetFirstTag("instructions");
-	main_hbox = gtk_vbox_new(false, false);
+	main_hbox = gtk_vbox_new(FALSE, FALSE);
 	
 	if ( tag_iq->GetTagList("plug").empty())
 	{
@@ -55,11 +53,11 @@ std::cout << "Signal: " << replsig << std::endl;
 		window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 		ok_button = gtk_button_new_with_label("Ok");
 		cancel_button = gtk_button_new_with_label("Cancel");
-		hbox = gtk_hbox_new(true, 0);
+		hbox = gtk_hbox_new(TRUE, 0);
 		
-		gtk_box_pack_start(GTK_BOX(hbox), ok_button, false , false , 0);
-		gtk_box_pack_start(GTK_BOX(hbox), cancel_button, false , false , 0);
-		gtk_box_pack_end(GTK_BOX(main_hbox), hbox, false, false ,0);
+		gtk_box_pack_start(GTK_BOX(hbox), ok_button, FALSE , FALSE , 0);
+		gtk_box_pack_start(GTK_BOX(hbox), cancel_button, FALSE , FALSE , 0);
+		gtk_box_pack_end(GTK_BOX(main_hbox), hbox, FALSE, FALSE ,0);
 		
 		g_signal_connect (G_OBJECT (ok_button), "clicked",
 			  G_CALLBACK (WokJabxdataWidget::OkButton),
@@ -97,8 +95,8 @@ std::cout << "Signal: " << replsig << std::endl;
 		GtkWidget *box;
 		
 		type = (*iter)->GetAttr("type");
-		box = gtk_vbox_new(false, false);
-		gtk_box_pack_start(GTK_BOX(main_hbox), box, false, false, 2);
+		box = gtk_vbox_new(FALSE, FALSE);
+		gtk_box_pack_start(GTK_BOX(main_hbox), box, TRUE, TRUE, 2);
 		
 		if(type == "text-multi")
 			current_widget = new xdatamultitext(wls, *iter , box);
@@ -114,6 +112,8 @@ std::cout << "Signal: " << replsig << std::endl;
 			current_widget = new xdatahidden(wls, *iter, box);
 		else if(type == "list-single")
 			current_widget = new xdatasinglelist(wls, *iter, box);
+		else if(type == "list-multi")
+			current_widget = new xdatamultilist(wls, *iter, box);
 		else 
 			current_widget = new xdataunknown(wls, *iter, box);
 		
@@ -184,7 +184,9 @@ WokJabxdataWidget::GetData(WokXMLTag *repltag)
 		{
 			WokXMLTag &fieldtag = xtag.AddTag("field");
 			fieldtag.AddAttr("var", (*iter)->GetVar());
-			fieldtag.AddTag("value").AddText((*iter)->GetData());
+			
+			(*iter)->GetData(fieldtag);
+//			fieldtag.AddTag("value").AddText((*iter)->GetData());
 		}
 	}
 	

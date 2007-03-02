@@ -354,7 +354,7 @@ jep96::Terminated(WokXMLTag *termtag)
 	{
 		if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[termtag->GetAttr("sid")])))
 		{
-			gtk_list_store_set (file_store, &iter, 2, "Connected" , -1);
+			gtk_list_store_set (file_store, &iter, 2, "Terminated" , -1);
 		}
 	}
 	

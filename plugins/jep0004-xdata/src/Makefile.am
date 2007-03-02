@@ -46,8 +46,9 @@ libjep0004_xdata_la_SOURCES = \
 	xdataunknown.cc\
 	xdatabool.cc\
 	xdatahidden.cc\
-	xdatasinglelist.cc
-
+	xdatasinglelist.cc\
+	xdatamultilist.cc
+	
 libjep0004_xdata_la_LDFLAGS = 
 
 libjep0004_xdata_la_LIBADD =

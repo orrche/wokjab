@@ -30,8 +30,8 @@ xdatahidden::~xdatahidden()
 }
 
 
-std::string
-xdatahidden::GetData()
+void
+xdatahidden::GetData(WokXMLTag &tag)
 {
-	return value;
+	tag.AddTag("value").AddText(value);
 }

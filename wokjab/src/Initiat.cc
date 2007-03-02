@@ -86,7 +86,7 @@ Initiat::AddWatcher(WokXMLTag *xml)
 	xml->AddAttr("signal", freebuf);
 
 	GIOChannel *source = g_io_channel_unix_new (socket);
-	errorsockets[socket].push_back( g_io_add_watch(source, (GIOCondition)(G_IO_OUT | G_IO_NVAL), (GIOFunc) &Initiat::input_callback, this));
+	errorsockets[socket].push_back( g_io_add_watch(source, (GIOCondition)(G_IO_OUT | G_IO_NVAL | G_IO_ERR ), (GIOFunc) &Initiat::input_callback, this));
 
 	return 0;
 }
@@ -104,7 +104,7 @@ Initiat::AddListener(WokXMLTag *xml)
 	xml->AddAttr("signal", buf);
 
 	GIOChannel *source = g_io_channel_unix_new (socket);
-	errorsockets[socket].push_back( g_io_add_watch(source, (GIOCondition)(G_IO_IN | G_IO_NVAL), (GIOFunc) &Initiat::input_callback, this));
+	errorsockets[socket].push_back( g_io_add_watch(source, (GIOCondition)(G_IO_IN | G_IO_NVAL | G_IO_ERR ), (GIOFunc) &Initiat::input_callback, this));
 
 	return 0;
 }
@@ -129,10 +129,23 @@ Initiat::input_callback(GIOChannel *source, GIOCondition condition, Initiat *c)
 	{
 		ret = c->wls->SendSignal(c->freesockets[socket], sigdata);
 	}
-	if( condition & G_IO_NVAL )
+	if( condition & G_IO_NVAL || condition & G_IO_ERR )
 	{
 		std::vector<uint>::iterator iter;
 
+		if ( c->freesockets.find(socket) != c->freesockets.end() )
+		{
+			sigdata.AddAttr("error", "closed");
+			c->wls->SendSignal(c->freesockets[socket], sigdata);
+			c->freesockets.erase(socket);
+		}
+		if ( c->sockets.find(socket) != c->sockets.end() )
+		{
+			sigdata.AddAttr("error", "closed");
+			c->wls->SendSignal(c->sockets[socket], sigdata);
+			c->sockets.erase(socket);
+		}
+		
 		for( iter = c->errorsockets[socket].begin() ; iter != c->errorsockets[socket].end() ; iter++)
 			g_source_remove(*iter);
 

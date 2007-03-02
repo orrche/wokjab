@@ -33,10 +33,11 @@ xdatabool::~xdatabool()
 {
 }
 
-std::string
-xdatabool::GetData()
+void
+xdatabool::GetData(WokXMLTag &tag)
 {
 	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkbutton)))
-		return "1";
-	return "0";
+		tag.AddTag("value").AddText("1");
+	else
+		tag.AddTag("value").AddText("0");
 }

@@ -105,7 +105,7 @@ FileListWid::Download(GtkButton *button, FileListWid *c)
 		gtk_tree_model_get(GTK_TREE_MODEL(c->folder_store), &iter, 0, &name, 1, &size, 2, &id, -1);
 		if ( strlen(id) == 0 ) 
 			return;
-		if ( strcpy(size, "<folder>" ) )
+		if ( !strcpy(size, "<folder>" ) )
 		{
 			GtkTreeSelection *selection;
 			GtkTreeIter iter;
@@ -123,7 +123,7 @@ FileListWid::Download(GtkButton *button, FileListWid *c)
 				{
 					if ( (*titer)->GetAttr("id") == id )
 					{
-						new DownloadFolder(c->wls, *titer, c->config->GetFirstTag("download_path").GetAttr("data"));
+						new DownloadFolder(c->wls, *titer, c->jid, c->session, c->config->GetFirstTag("download_path").GetAttr("data"));
 					}
 				}
 			}

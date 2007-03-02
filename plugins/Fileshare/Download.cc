@@ -24,16 +24,64 @@
 
 #include "Download.h"
 
-DownloadFolder::DownloadFolder(WLSignal *wls, WokXMLTag *tag, std::string d_path) : WLSignalInstance(wls)
+DownloadFolder::DownloadFolder(WLSignal *wls, WokXMLTag *tag, std::string jid, std::string session, std::string d_path) : WLSignalInstance(wls),
+d_path(d_path),
+folder(folder),
+jid(jid),
+session(session)
 {
+	GetFiles(d_path, tag);
 
-
-
+	std::map <std::string, std::string>::iterator iter;
+	
+	for( iter = list.begin() ; iter != list.end() ; iter++)
+	{
+		std::cout << iter->first << " = " << iter->second << std::endl;
+	}
 }
 
 DownloadFolder::~DownloadFolder()
 {
-
+	
 
 
 }
+
+void
+DownloadFolder::GetFiles(std::string path, WokXMLTag *tag)
+{
+	std::list <WokXMLTag *>::iterator iter;
+	std::list <WokXMLTag *> *flist;
+	
+	flist = &tag->GetTagList("item");
+	for( iter = flist->begin() ; iter != flist->end() ; iter++)
+	{
+		if ( (*iter)->GetAttr("type") == "folder")
+		{
+				GetFiles(path + "/" + (*iter)->GetAttr("name"), (*iter));
+		}
+		else if ( (*iter)->GetAttr("type") == "file")
+		{
+				list[(*iter)->GetAttr("id")] = path + "/" + (*iter)->GetAttr("name");
+		}
+	}
+}
+
+void
+DownloadFolder::DownloadFile(std::string id, std::string path)
+{
+			WokXMLTag msg(NULL, "message");
+			msg.AddAttr("session", session);
+			WokXMLTag &iq = msg.AddTag("iq");
+			iq.AddAttr("to", jid);
+			iq.AddAttr("type", "get");
+			WokXMLTag &fileshare = iq.AddTag("fileshare");
+			fileshare.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
+			WokXMLTag &file = fileshare.AddTag("file");
+			file.AddAttr("id", id);
+			
+			wls->SendSignal("Jabber XML IQ Send", msg);
+			
+			file = File(wls, msg, list[id], path);
+}
+

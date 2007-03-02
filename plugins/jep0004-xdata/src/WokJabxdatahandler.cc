@@ -25,7 +25,7 @@ WokJabxdatahandler::WokJabxdatahandler(WLSignal *wls) : WoklibPlugin(wls)
 
 WokJabxdatahandler::~WokJabxdatahandler()
 {	
-	EXP_SIGUNHOOK("Jabber jabber:x:data Init", &WokJabxdatahandler::init, 1000);
+
 }
 
 void 
