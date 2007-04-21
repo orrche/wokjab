@@ -103,7 +103,7 @@ main (int argc, char **argv)
 	WokLib sj;
 	wls = &sj.wls_main;
 
-	Initiat client_init(&sj.wls_main, &sj);
+	Initiat client_init(&sj.wls_main, &sj, argc, argv);
 
 	bool sysplug = true;
 	bool normplug = true;

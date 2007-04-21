@@ -29,14 +29,43 @@ typedef unsigned int uint;
 #  include <config.h>
 #endif
 
-Initiat::Initiat (WLSignal *wls, WokLib *sj):WLSignalInstance (wls),
+Initiat::Initiat (WLSignal *wls, WokLib *sj, int argc, char **argv):WLSignalInstance (wls),
 sj(sj)
 {
+	args = new WokXMLTag (NULL, "args");
+	std::string singlearg;
+	for( int i = 0; i < argc ; i++)
+	{
+		std::string arg = argv[i];
+		if ( !arg.empty() )
+		{
+			if ( arg[0] == '-'		)
+			{
+				if ( arg.size() > 1 && arg[1] == '-' )
+				{
+					WokXMLTag &argtag = args->GetFirstTag("fullsize").AddTag("arg");
+					argtag.AddAttr("name", arg.substr(2));
+				}
+				else
+				{
+					for( int n = 0 ; n < arg.substr(1).size() ; n++ )
+					{
+						if ( singlearg.find(arg[1+n]) == std::string::npos)
+							singlearg += arg[1+n];
+					}
+				}
+			}
+		}
+	}
+	args->GetFirstTag("singlearg").AddAttr("data", singlearg);
+	
 	EXP_SIGHOOK("Woklib Socket In Add", &Initiat::AddListener, 800);
 	EXP_SIGHOOK("Woklib Socket Out Add", &Initiat::AddWatcher, 800);
 	EXP_SIGHOOK("Jabber Connection Authenticated", &Initiat::Connected, 200);
 	EXP_SIGHOOK("Config XML Change /", &Initiat::Plugins, 200);
 	EXP_SIGHOOK("Jabber XML IQ New query get xmlns:jabber:iq:version", &Initiat::Version, 500);
+	EXP_SIGHOOK("Wokjab GetArgs", &Initiat::GetArgs, 500);
+	
 	logged_in = false;
 
 #ifdef __WIN32
@@ -61,9 +90,17 @@ sj(sj)
 
 Initiat::~Initiat ()
 {
+	delete args;
 #ifdef __WIN32
     WSACleanup();
 #endif
+}
+
+int
+Initiat::GetArgs(WokXMLTag *xml)
+{
+	xml->AddTag(args);
+	return 1;
 }
 
 int

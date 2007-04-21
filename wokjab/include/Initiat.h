@@ -32,7 +32,7 @@ using namespace Woklib;
 class Initiat : public WLSignalInstance
 {
 	public:
-		Initiat(WLSignal *wls, WokLib *sj);
+		Initiat(WLSignal *wls, WokLib *sj, int argc, char **argv);
 		 ~Initiat();
 	
 		int Connected(WokXMLTag *xml);
@@ -41,6 +41,7 @@ class Initiat : public WLSignalInstance
 		int AddErrorsock(GIOChannel *source, int socket);
 		int Plugins(WokXMLTag *xml);
 		int Version(WokXMLTag *xml);
+		int GetArgs(WokXMLTag *xml);
 		
 		static gboolean input_callback(GIOChannel *source, GIOCondition condition, Initiat *c);
 
@@ -52,6 +53,7 @@ class Initiat : public WLSignalInstance
 		std::map<int, std::string> freesockets;
 		std::map<int, std::vector <guint> > errorsockets;
 	
+		WokXMLTag *args;
 };
 
 
