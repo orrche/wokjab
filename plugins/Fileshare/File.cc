@@ -21,6 +21,7 @@
 #  include <config.h>
 #endif
 
+#include <sstream>
 
 #include "File.h"
 
@@ -31,6 +32,9 @@ d_path(d_path)
 	if ( (!d_path.empty()) && (d_path[d_path.size()-1] != '/') )
 		this->d_path += "/";
 	
+	std::stringstream str;
+	str << "local:" << this;
+	lsid = str.str();
 	xml = new WokXMLTag(msg);
 	EXP_SIGHOOK("Jabber XML IQ ID " + msg.GetFirstTag("iq").GetAttr("id"), &File::FileResponse, 1000);
 }
@@ -38,7 +42,6 @@ d_path(d_path)
 File::~File()
 {
 	delete xml;
-
 }
 
 int 
@@ -60,7 +63,6 @@ File::Auth(WokXMLTag *tag)
 	
 	if ( tag->GetAttr("sid") == sid )
 	{
-		lsid = "local:" + sid;
 		WokXMLTag &file = tag->AddTag("file");
 		file.AddAttr("lsid", lsid);
 		file.AddAttr("name", d_path + name);	
@@ -72,7 +74,8 @@ File::Auth(WokXMLTag *tag)
 int
 File::Finished(WokXMLTag *tag)
 {
-	std::cout << "Tada... " << std::endl;
+	if ( tag->GetAttr("sid") == lsid )
+		delete this;
 	return 1;
 }
 

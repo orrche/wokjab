@@ -30,14 +30,22 @@ folder(folder),
 jid(jid),
 session(session)
 {
-	GetFiles(d_path, tag);
+	if ( tag->GetAttr("name").find("/") != std::string::npos )
+		GetFiles(d_path + "/" + tag->GetAttr("name").substr(tag->GetAttr("name").rfind("/") + 1 ), tag);
+	else
+		GetFiles(d_path + "/" + tag->GetAttr("name"), tag);
 
 	std::map <std::string, std::string>::iterator iter;
 	
-	for( iter = list.begin() ; iter != list.end() ; iter++)
+	if( !list.empty() )
 	{
-		std::cout << iter->first << " = " << iter->second << std::endl;
+	DownloadFile( *list.begin());
 	}
+	
+	
+	EXP_SIGHOOK("Jabber Stream File Status Finished", &DownloadFolder::Finished, 1000);
+	EXP_SIGHOOK("Jabber Stream File Status Terminated", &DownloadFolder::Finished, 1000);
+	EXP_SIGHOOK("Jabber Stream File Status Rejected", &DownloadFolder::Finished, 1000);
 }
 
 DownloadFolder::~DownloadFolder()
@@ -62,14 +70,35 @@ DownloadFolder::GetFiles(std::string path, WokXMLTag *tag)
 		}
 		else if ( (*iter)->GetAttr("type") == "file")
 		{
-				list[(*iter)->GetAttr("id")] = path + "/" + (*iter)->GetAttr("name");
+			std::vector <std::string> vect;
+			vect.push_back((*iter)->GetAttr("id"));
+			vect.push_back(path + '/' + (*iter)->GetAttr("name"));
+			
+			list.push_back(vect);
 		}
 	}
 }
 
+int
+DownloadFolder::Finished(WokXMLTag *tag)
+{	
+	std::cout << "Sid: " << sid << std::endl;
+	
+	if ( tag->GetAttr("sid") == sid)
+	{
+		list.pop_front();
+		if( list.begin() == list.end() )
+			delete this;
+		else
+			DownloadFile( *list.begin() );
+	}
+	return 1;
+}
+
 void
-DownloadFolder::DownloadFile(std::string id, std::string path)
+DownloadFolder::DownloadFile(std::vector<std::string> vect)
 {
+
 			WokXMLTag msg(NULL, "message");
 			msg.AddAttr("session", session);
 			WokXMLTag &iq = msg.AddTag("iq");
@@ -78,10 +107,21 @@ DownloadFolder::DownloadFile(std::string id, std::string path)
 			WokXMLTag &fileshare = iq.AddTag("fileshare");
 			fileshare.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
 			WokXMLTag &file = fileshare.AddTag("file");
-			file.AddAttr("id", id);
+			file.AddAttr("id", vect[0]);
 			
 			wls->SendSignal("Jabber XML IQ Send", msg);
 			
-			file = File(wls, msg, list[id], path);
+			if ( vect[1].find("/") != std::string::npos )
+			{
+				File *f;
+				f = new File(wls, msg, vect[1].substr(vect[1].rfind("/") + 1), vect[1].substr(0,vect[1].rfind("/")));
+				sid = f->lsid;
+			}
+			else
+			{
+				File *f;
+				f = new File(wls, msg, vect[1].substr(vect[1].rfind("/") + 1),"");
+				sid = f->lsid;
+			}
 }
 

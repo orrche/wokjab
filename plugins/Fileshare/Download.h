@@ -34,6 +34,8 @@
 #include <glade/glade.h>
 
 #include "File.h"
+#include <vector>
+#include <list>
 
 using namespace Woklib;
 
@@ -43,16 +45,18 @@ class DownloadFolder : public WLSignalInstance
 		DownloadFolder(WLSignal *wls, WokXMLTag *folder, std::string jid, std::string session, std::string d_path);
 		~DownloadFolder();
 
-		void DownloadFile(std::string id, std::string path);
+		void DownloadFile(std::vector<std::string> vect);
 		void GetFiles(std::string path, WokXMLTag *tag);
+		
+		int Finished(WokXMLTag *tag);
 	protected:
 		std::string d_path;
 		WokXMLTag *folder;
-		File *file;
 		std::string jid;
 		std::string session;
+		std::string sid;
 		
-		std::map<std::string, std::string> list;
+		std::list<std::vector<std::string> > list;
 };
 
 

@@ -126,7 +126,25 @@ jep65Session::SOCKS_Data(WokXMLTag *tag)
 {
 	if( pos == 0 )
 	{
+		if ( filename.find("/") != std::string::npos )	
+		{
+			if (g_mkdir_with_parents(filename.substr(0, filename.rfind("/")).c_str(), 0777) == -1 )
+			{
+				woklib_error(wls, "Couldn't create directory " + filename.substr(0, filename.rfind("/") + 1));
+				close ( socket_nr );
+				delete this;
+				return 1;
+			}
+		}
+
 		file.open(filename.c_str(), std::ios::out);
+		if ( !file )
+		{
+			woklib_error(wls, "Coldn't open file " + filename);
+			close ( socket_nr );
+			delete this;
+			return 1;
+		}
 	}
 	
 		

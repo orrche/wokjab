@@ -35,7 +35,6 @@
 FileListWid::FileListWid(WLSignal *wls, WokXMLTag *tag, WokXMLTag *config) : WLSignalInstance(wls),
 config ( new WokXMLTag (*config))
 {
-	std::cout << "XML: " << *tag << std::endl;
 	sid = tag->GetFirstTag("iq").GetFirstTag("si").GetAttr("id");
 	filelist = new WokXMLTag (NULL, "filelist");
 	session = tag->GetAttr("session");
@@ -103,9 +102,8 @@ FileListWid::Download(GtkButton *button, FileListWid *c)
 		gchar *name;
 		gchar *size;
 		gtk_tree_model_get(GTK_TREE_MODEL(c->folder_store), &iter, 0, &name, 1, &size, 2, &id, -1);
-		if ( strlen(id) == 0 ) 
-			return;
-		if ( !strcpy(size, "<folder>" ) )
+
+		if ( !strcmp(size, "<folder>" ) )
 		{
 			GtkTreeSelection *selection;
 			GtkTreeIter iter;
@@ -121,7 +119,7 @@ FileListWid::Download(GtkButton *button, FileListWid *c)
 				
 				for( titer = tag->GetTagList("item").begin(); titer != tag->GetTagList("item").end() ; titer++)
 				{
-					if ( (*titer)->GetAttr("id") == id )
+					if ( (*titer)->GetAttr("name").substr((*titer)->GetAttr("name").rfind("/")+1) == name )
 					{
 						new DownloadFolder(c->wls, *titer, c->jid, c->session, c->config->GetFirstTag("download_path").GetAttr("data"));
 					}
@@ -130,6 +128,9 @@ FileListWid::Download(GtkButton *button, FileListWid *c)
 		}
 		else
 		{
+			if ( strlen(id) == 0 ) 
+				return;
+		
 			WokXMLTag msg(NULL, "message");
 			msg.AddAttr("session", c->session);
 			WokXMLTag &iq = msg.AddTag("iq");
@@ -202,9 +203,7 @@ FileListWid::PopulateTree(WokXMLTag *tag, GtkTreeIter *piter)
 		for( iter = tag->GetTagList("item").begin() ; iter != tag->GetTagList("item").end() ; iter++)
 		{
 			PopulateTree(*iter, &titer);
-		
 		}
-	
 	}
 }
 

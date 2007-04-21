@@ -147,8 +147,8 @@ jep96::Wid(WokXMLTag *xml)
 											1, "--",
 											2, "Negotiating" , 
 											3, sslsid.str().c_str(), -1);
-	gtk_widget_show(filewindow);
-	gtk_window_present (GTK_WINDOW(filewindow));
+//	gtk_widget_show(filewindow);
+//	gtk_window_present (GTK_WINDOW(filewindow));
 	rows[sslsid.str()] = gtk_tree_row_reference_new(GTK_TREE_MODEL(file_store),gtk_tree_model_get_path(GTK_TREE_MODEL(file_store), &iter));
 
 	std::stringstream signal;
@@ -258,8 +258,8 @@ jep96::SendFile(WokXMLTag *xml)
 											1, "--",
 											2, "Negotiating" , 
 											3, sid.c_str(), -1);
-	gtk_widget_show(filewindow);
-	gtk_window_present (GTK_WINDOW(filewindow));
+//	gtk_widget_show(filewindow);
+//	gtk_window_present (GTK_WINDOW(filewindow));
 	rows[sid] = gtk_tree_row_reference_new(GTK_TREE_MODEL(file_store),gtk_tree_model_get_path(GTK_TREE_MODEL(file_store), &iter));
 	
 	WokXMLTag msgtag(NULL, "message");
@@ -394,7 +394,7 @@ jep96::PrettySize(unsigned long long size)
 	}
 	
 	std::stringstream msg;
-	msg << size/divider << ending;
+	msg << double(size)/divider << ending;
 	
 	return msg.str();
 }

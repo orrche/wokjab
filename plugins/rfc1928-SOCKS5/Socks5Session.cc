@@ -149,7 +149,7 @@ Socks5Session::Authentication(std::string data)
 		
 		wls->SendSignal("SOCKS5 Connection Failed " + str_id, contag);
 		
-		
+		delete this;
 		return 0;
 	}
 	
@@ -160,6 +160,18 @@ Socks5Session::Authentication(std::string data)
 int
 Socks5Session::Read(WokXMLTag *tag)
 {
+	if ( ! tag->GetAttr("error").empty() )
+	{		
+	
+		WokXMLTag contag ( NULL, "connection");
+		contag.AddAttr("id", str_id);
+		
+		wls->SendSignal("SOCKS5 Connection Failed " + str_id, contag);
+		close(socket_nr);
+		delete this;
+		return 1;
+	}
+	
 	if ( stage < 2 )
 	{
 		if( !buffer )

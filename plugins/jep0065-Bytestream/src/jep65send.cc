@@ -490,7 +490,7 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 	
 	WokXMLTag postag(NULL, "position");
 	std::stringstream pos;
-	pos << fsize - size;
+	pos << fsize - size + fbpos;
 	postag.AddAttr("sid", sid);
 	postag.AddAttr("pos", pos.str());
 	wls->SendSignal("Jabber Stream File Status", &postag);
@@ -515,8 +515,6 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 int
 jep65send::SendData(char *data, uint len)
 {
-	std::cout << "We are sending data this way ... that wasn't the point..." << std::endl;
-
 	uint bcount;
 	uint br;
 	char *str;

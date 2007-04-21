@@ -21,6 +21,7 @@
 
 #include "FileShare.h"
 #include "FileListWid.h"
+#include "SearchWid.h"
 #include "File.h"
 
 #include <dirent.h>
@@ -35,9 +36,11 @@ FileShare::FileShare(WLSignal *wls) : WoklibPlugin(wls)
 	EXP_SIGHOOK("Jabber GUI GetJIDMenu", &FileShare::Menu, 1000);
 	EXP_SIGHOOK("Jabber FileShare FileList View", &FileShare::View, 1000);
 	EXP_SIGHOOK("Jabber XML IQ New fileshare get xmlns:http://sf.wokjab.net/fileshare", &FileShare::ListRequest, 1000);
-	
+	EXP_SIGHOOK("Jabber FileShare SearchWid", &FileShare::OpenSearchWid, 1000);
+	EXP_SIGHOOK("Jabber FileShare Search", &FileShare::Search, 1000);
 	EXP_SIGHOOK("Get Main Menu", &FileShare::MainMenu, 1000);
 	EXP_SIGHOOK("Jabber FileShare Rebuild", &FileShare::Rebuild, 1000);
+	EXP_SIGHOOK("Jabber XML Message xmlns http://sf.wokjab.net/fileshare", &FileShare::IncommingSearch, 1000);
 	fileshareid = 0;
 	
 	config = new WokXMLTag(NULL, "NULL");
@@ -62,16 +65,33 @@ FileShare::~FileShare()
 }
 
 int 
+FileShare::sql_callback_search(FileShare *c, int argc, char **argv, char **azColName)
+{
+  int i;
+  for(i=0; i<argc; i++){
+				if ( azColName[i] == std::string("id") )
+					c->filetosend = argv[i] ? argv[i] : "NULL";
+  }
+  return 0;
+}
+
+int 
 FileShare::sql_callback(FileShare *c, int argc, char **argv, char **azColName)
 {
   int i;
   for(i=0; i<argc; i++){
-    printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
 				if ( azColName[i] == std::string("id") )
 					c->filetosend = argv[i] ? argv[i] : "NULL";
   }
-  printf("\n");
   return 0;
+}
+
+int
+FileShare::OpenSearchWid(WokXMLTag *tag)
+{
+	new SearchWid(wls);
+
+	return 1;
 }
 
 int
@@ -110,6 +130,55 @@ FileShare::Config(WokXMLTag *tag)
 	return 1;
 }
 
+/**
+ * Now how to select witch jid's to search thats a good question 
+ */
+int
+FileShare::Search(WokXMLTag *xml)
+{
+	WokXMLTag group(NULL, "group");
+	group.AddAttr("group", "p2p");
+#warning Seriously bad !
+	group.AddAttr("session", "jabber0");
+	
+	wls->SendSignal("Roster Get Members", group);
+	std::list <WokXMLTag *>::iterator jiditer;
+	for( jiditer = group.GetTagList("jid").begin() ; jiditer != group.GetTagList("jid").end() ; jiditer++)
+	{	
+		WokXMLTag res(NULL, "resource");
+		WokXMLTag &itemtag = res.AddTag("item");
+		itemtag.AddAttr("jid", (*jiditer)->GetBody());
+		itemtag.AddAttr("session", "jabber0");
+		
+		wls->SendSignal("Jabber Roster GetResource", res);
+		
+		std::list <WokXMLTag *>::iterator resiter;
+		for ( resiter = itemtag.GetTagList("resource").begin() ; resiter != itemtag.GetTagList("resource").end() ; resiter++ )
+		{
+			std::string jid = (*jiditer)->GetBody();
+			if ( !(*resiter)->GetAttr("name").empty() )
+				jid += "/" + (*resiter)->GetAttr("name");
+		
+				WokXMLTag msg(NULL, "message");
+				msg.AddAttr("session", "jabber0");
+				WokXMLTag &message = msg.AddTag("message");
+				message.AddAttr("to", jid);
+				WokXMLTag &x = message.AddTag("x");
+				x.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
+				
+				std::list <WokXMLTag *>::iterator condition;
+				for ( condition = xml->GetTagList("condition").begin() ; condition != xml->GetTagList("condition").end() ; condition++)
+				{
+					x.AddTag(*condition);				
+				}
+				
+				wls->SendSignal("Jabber XML Send", msg);
+		}
+	}
+
+	return 1;
+}
+
 int
 FileShare::MainMenu(WokXMLTag *xml)
 {
@@ -118,7 +187,10 @@ FileShare::MainMenu(WokXMLTag *xml)
 	tag->AddAttr("name", "Rebuild Filelist");
 	tag->AddAttr("signal", "Jabber FileShare Rebuild");
 	
-
+	tag = &xml->AddTag("item");
+	tag->AddAttr("name", "P2P Search");
+	tag->AddAttr("signal", "Jabber FileShare SearchWid");
+	
 	return 1;
 }
 
@@ -327,7 +399,20 @@ FileShare::ListRequest(WokXMLTag *tag)
 		
 		char *zErrMsg = 0;
 		filetosend = "";
-		std::string query = "SELECT * FROM filelist WHERE id='" + (*iter)->GetAttr("id") + "';";
+		
+		std::string id = (*iter)->GetAttr("id");
+		for ( unsigned int pos = 0 ; id.find("'", pos) != std::string::npos ; )
+		{
+			pos = id.find("'", pos );
+			id.replace(pos, 1, "''");
+			pos+=2;
+			
+			if ( pos >= id.size() )
+				break;
+		}
+		
+		filetosend = "";
+		std::string query = "SELECT * FROM filelist WHERE id='" + id + "';";
 		/* The callback is changing the filetosend variable */
 		int rc = sqlite3_exec(db, query.c_str(), (int(*)(void *,int,char**,char**)) FileShare::sql_callback, this, &zErrMsg);
 
@@ -347,6 +432,37 @@ FileShare::ListRequest(WokXMLTag *tag)
 //		EXP_SIGHOOK("Jabber Stream File Incomming " + sid.str(), &FileShare::IncommingFilelist, 1000);
 	}
 	
+	return 1;
+}
+
+int
+FileShare::IncommingSearch(WokXMLTag *tag)
+{
+	std::string query = "SELECT * FROM filelist WHERE id LIKE '" + tag->GetFirstTag("message").GetFirstTag("x").GetFirstTag("condition").GetBody() + "';";
+		/* The callback is changing the filetosend variable */
+	int rc = sqlite3_exec(db, query.c_str(), (int(*)(void *,int,char**,char**)) FileShare::sql_callback_search, this, &zErrMsg);
+ 
+ if( rc!=SQLITE_OK ){
+    fprintf(stderr, "SQL error: %s\n", zErrMsg);
+    sqlite3_free(zErrMsg);
+	}
+
+	std::list <WokXMLTag *>::iterator res_iter;
+	
+	WokXMLTag msg(NULL, "message");
+	msg.AddAttr("session", tag->GetAttr("session"));
+	WokXMLTag &message = msg.AddTag("message");
+	message.AddAttr("to", tag->GetFirstTag("message").GetAttr("from"));
+	message.AddAttr("type", tag->GetFirstTag("message").GetAttr("type"));
+	WokXMLTag &x = message.AddTag("x");
+	x.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
+	x.AddAttr("type", "set");
+	for( res_iter = search_result->GetTagList("result").begin() ; res_iter != search_result->GetTagList("result").end() ; res_iter++)
+	{
+		
+	
+	}
+
 	return 1;
 }
 

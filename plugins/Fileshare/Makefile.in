@@ -53,7 +53,7 @@ libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libfileshare_la_LIBADD =
 am_libfileshare_la_OBJECTS = main.lo FileShare.lo FileListWid.lo \
-	File.lo Download.lo
+	File.lo Download.lo SearchWid.lo
 libfileshare_la_OBJECTS = $(am_libfileshare_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(top_builddir)@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -196,7 +196,8 @@ target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 pkgdata_DATA = \
-        FileListWid.glade
+        FileListWid.glade \
+								SearchWid.glade
 
 AM_CXXFLAGS = \
 	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -O3 -Wall -lsqlite3 -g -pg
@@ -213,7 +214,9 @@ libfileshare_la_SOURCES = \
 	File.cc \
 	File.h \
 	Download.cc \
-	Download.h 
+	Download.h \
+	SearchWid.cc \
+	SearchWid.h
 
 all: all-am
 
@@ -288,6 +291,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/File.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FileListWid.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FileShare.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SearchWid.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Plo@am__quote@
 
 .cc.o:

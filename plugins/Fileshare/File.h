@@ -45,9 +45,10 @@ class File : public WLSignalInstance
 		int Auth(WokXMLTag *tag);
 		int Finished(WokXMLTag *tag);
 		int FileResponse(WokXMLTag *tag);
+		
+		std::string lsid;
 	protected:
 	 std::string sid;
-		std::string lsid;
 		std::string name;
 		std::string d_path;
 		WokXMLTag *xml;

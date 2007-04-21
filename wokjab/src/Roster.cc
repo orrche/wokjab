@@ -362,11 +362,15 @@ Roster::SignalXMLGetMembers(WokXMLTag *tag)
 	std::map <std::string, User* > usr;
 	std::string session = tag->GetAttr("session");
 	
-	usr = FindGroup(session, tag->GetAttr("group"))->GetMembers();
-	
-	for( iter = usr.begin() ; iter != usr.end() ; iter++)
+	Group *grp;
+	grp = FindGroup(session, tag->GetAttr("group"));
+	if ( grp )
 	{
-		tag->AddTag("jid").AddText(iter->first);
+		usr = grp->GetMembers();
+		for( iter = usr.begin() ; iter != usr.end() ; iter++)
+		{
+			tag->AddTag("jid").AddText(iter->first);
+		}
 	}
 }
 

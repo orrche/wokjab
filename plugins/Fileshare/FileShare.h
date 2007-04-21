@@ -52,13 +52,18 @@ class FileShare : public WoklibPlugin
 		int Rebuild(WokXMLTag *tag);
 		int IncommingFile(WokXMLTag *tag);
 		int Config(WokXMLTag *tag);
+		int OpenSearchWid(WokXMLTag *tag);
+		int Search(WokXMLTag *xml);
+		int IncommingSearch(WokXMLTag *tag);
 		
 		void PopulateTree(WokXMLTag *tag, std::string dir);
 		WokXMLTag * AddFolder(WokXMLTag *point, std::string name);
 		
 		static int sql_callback(FileShare *c, int argc, char **argv, char **azColName);
+		static int sql_callback(FileShare *c, int argc, char **argv, char **azColName);
 	protected:
 			WokXMLTag *config;
+			WokXMLTag *search_result;
 			int fileshareid;
 			std::string path;
 			std::string filetosend;

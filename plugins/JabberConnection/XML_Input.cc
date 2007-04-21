@@ -88,7 +88,11 @@ XML_Input::read_data (int source)
         std::stringstream sstr;
         sstr << len << " ssl: " << ssl;
 
-        woklib_message(wls,"Assuming that the connection is closed..." + sstr.str());
+        woklib_message(wls,"Assuming that the connection is closed, shutting down this connection" + sstr.str());
+								
+								WokXMLTag msg(NULL, "message");
+								msg.AddAttr("session", session);
+								wls->SendSignal("Jabber Connection Lost", &msg);
 		return 0;
 	}
 
