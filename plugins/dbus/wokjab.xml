@@ -1,0 +1,22 @@
+<node name="/net/sourceforge/Wokjab">
+<interface name="net.sourceforge.Wokjab">
+<annotation name="org.freedesktop.DBus.GLib.CSymbol" value="wokjab"/>
+
+	<method name="SendSignal">
+<annotation name="org.freedesktop.DBus.GLib.CSymbol" value="WLDbus_SendSignal" />
+<arg type="s" name="name" direction="in"/>
+<arg type="s" name="data" direction="in"/>
+<arg type="s" name="return" direction="out"/>
+</method>
+
+	<method name="HookSignal">
+<annotation name="org.freedesktop.DBus.GLib.CSymbol" value="WLDbus_HookSignal" />
+<arg type="s" name="name" direction="in"/>
+</method>
+
+	<method name="UnHookSignal">
+<annotation name="org.freedesktop.DBus.GLib.CSymbol" value="WLDbus_UnHookSignal" />
+<arg type="s" name="name" direction="in"/>
+</method>
+</interface>
+</node>
