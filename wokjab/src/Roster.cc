@@ -71,18 +71,52 @@ Roster::SignalGetResource(WokXMLTag *tag)
 			}
 			else
 			{
-#warning "Should fix this for getting them in priority order.."
-				for( riter = usr->GetResource().begin() ; riter != usr->GetResource().end() ; riter++)
+				if ( (*tagiter)->GetAttr("jid").find("/") == std::string::npos )
 				{
-					char buf[20];
-					WokXMLTag &rtag = (*tagiter)->AddTag("resource");
-					rtag.AddAttr("name", riter->second.GetResource());
+					/* This is the way you shouldn't use std::map right ? 
+					*/
+					std::map <int, Resource*> toorder;
 					
-					sprintf(buf, "%d", riter->second.GetPriority());
-					rtag.AddAttr("priority", buf);
-					rtag.AddTag("show").AddText(riter->second.GetShow());
-					rtag.AddTag("status").AddText(riter->second.GetStatus());
+					for( riter = usr->GetResource().begin() ; riter != usr->GetResource().end() ; riter++)
+					{
+						toorder[riter->second.GetPriority()] = &riter->second;
+					}
 					
+					
+					std::map <int, Resource*>::iterator rrunner;
+					for( rrunner = toorder.end() ; rrunner != toorder.begin() ; )
+					{	
+						--rrunner;
+							
+						char buf[20];
+						WokXMLTag &rtag = (*tagiter)->AddTag("resource");
+						rtag.AddAttr("name", rrunner->second->GetResource());
+						
+						sprintf(buf, "%d", rrunner->second->GetPriority());
+						rtag.AddAttr("priority", buf);
+						rtag.AddTag("show").AddText(rrunner->second->GetShow());
+						rtag.AddTag("status").AddText(rrunner->second->GetStatus());
+						
+					}
+				}
+				else
+				{
+					std::string res = (*tagiter)->GetAttr("jid").substr((*tagiter)->GetAttr("jid").find("/")+1);
+					
+					for( riter = usr->GetResource().begin() ; riter != usr->GetResource().end() ; riter++)
+					{
+						if ( res != riter->second.GetResource() )
+							continue;
+						char buf[20];
+						WokXMLTag &rtag = (*tagiter)->AddTag("resource");
+						rtag.AddAttr("name", riter->second.GetResource());
+						
+						sprintf(buf, "%d", riter->second.GetPriority());
+						rtag.AddAttr("priority", buf);
+						rtag.AddTag("show").AddText(riter->second.GetShow());
+						rtag.AddTag("status").AddText(riter->second.GetStatus());
+						
+					}					
 				}
 			}
 		}

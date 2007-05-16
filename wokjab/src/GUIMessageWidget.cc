@@ -476,6 +476,7 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 int
 GUIMessageWidget::NewPresence(WokXMLTag *tag)
 {	
+	
 	WokXMLTag &tag_presence = tag->GetFirstTag("presence");
 	WokXMLTag querytag(NULL,"query");
 	WokXMLTag &itemtag = querytag.AddTag("item");
@@ -499,11 +500,12 @@ GUIMessageWidget::NewPresence(WokXMLTag *tag)
 
 			HookSignals();
 
-			SetLabel();
+
 		}
 // To damned annoying...
 //	Message( tag_presence.GetAttr("from") + " sends presence " + tag_presence.GetFirstTag("status").GetBody());
-
+	
+	SetLabel();
 	return true;
 }
 
@@ -521,7 +523,16 @@ GUIMessageWidget::Activate(WokXMLTag *tag)
 void
 GUIMessageWidget::SetLabel()
 {
-	gtk_label_set_text(GTK_LABEL(jid_label), std::string(from + " (" + nick + ")").c_str());
+	WokXMLTag querytag(NULL, "query");
+	WokXMLTag &itemtag = querytag.AddTag("item");
+	itemtag.AddAttr("session", session);
+	itemtag.AddAttr("jid", from);
+	wls->SendSignal("Jabber Roster GetResource", &querytag);
+	wls->SendSignal("Jabber GUI GetIcon", &querytag);
+	
+	std::cout << "This is the item tag" << itemtag << std::endl;
+	
+	gtk_label_set_text(GTK_LABEL(jid_label), std::string(from + " (" + nick + ") [" + itemtag.GetFirstTag("resource").GetAttr("priority") + "]").c_str());
 }
 
 gboolean
