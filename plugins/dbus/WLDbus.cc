@@ -17,7 +17,7 @@
 
 
 #include "WLDbus.h"
-
+/*
 gboolean WLDbus_SendSignal(WLDbus_obj *obj, gchar **apple, GError **error);
 gboolean WLDbus_HookSignal(WLDbus_obj *obj, gchar **apple, GError **error);
 gboolean WLDbus_UnHookSignal(WLDbus_obj *obj, gchar **apple, GError **error);
@@ -25,11 +25,11 @@ gboolean WLDbus_UnHookSignal(WLDbus_obj *obj, gchar **apple, GError **error);
 #include "wokjab-dbus-glue.h"
 
 G_DEFINE_TYPE(WLDbus_obj, wokjab, G_TYPE_OBJECT);
-
+*/
 
 WLDbus::WLDbus(WLSignal *wls): WoklibPlugin(wls)
 {
-	server = static_cast<WLDbus_obj*>(g_object_new(wokjab_get_type(), NULL));
+//	server = static_cast<WLDbus_obj*>(g_object_new(wokjab_get_type(), NULL));
 
 }
 
@@ -38,14 +38,14 @@ WLDbus::~WLDbus()
 
 
 }
-#if 1
+#if 0
 void 
 wokjab_class_init(WLDbus_objClass *cl) {
 	// Nothing here
 }
 #endif
 
-#if 1
+#if 0
 void
 wokjab_init((WLDbus_obj *server) {
 	GError *error = NULL;
@@ -76,7 +76,7 @@ wokjab_init((WLDbus_obj *server) {
 	g_object_unref(driver_proxy);
 }
 #endif
-
+/*
 gboolean WLDbus_SendSignal(WLDbus_obj *obj, gchar **apple, GError **error)
 {
 	std::cout << "Sending signal" << std::endl;
@@ -94,3 +94,5 @@ gboolean WLDbus_UnHookSignal(WLDbus_obj *obj, gchar **apple, GError **error)
 	std::cout << "Unhooking" << std::endl;
 	return TRUE;
 }
+
+*/

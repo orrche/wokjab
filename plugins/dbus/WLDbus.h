@@ -27,8 +27,9 @@
 
 using namespace Woklib;
 
-#include <dbus/dbus-glib-bindings.h>
+// #include <dbus/dbus-glib-bindings.h>
 
+/*
 typedef struct
 {
 	GObject parent;
@@ -39,7 +40,7 @@ typedef struct
 {
 	GObjectClass parent_class;
 } WLDbus_objClass;
-
+*/
 
 class WLDbus : public WoklibPlugin
 {
@@ -48,7 +49,7 @@ class WLDbus : public WoklibPlugin
 		 ~WLDbus();
 	
 	protected:
-		WLDbus_obj *server;
+//		WLDbus_obj *server;
 };
 
 
