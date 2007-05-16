@@ -38,10 +38,13 @@ FileShare::FileShare(WLSignal *wls) : WoklibPlugin(wls)
 	EXP_SIGHOOK("Jabber XML IQ New fileshare get xmlns:http://sf.wokjab.net/fileshare", &FileShare::ListRequest, 1000);
 	EXP_SIGHOOK("Jabber FileShare SearchWid", &FileShare::OpenSearchWid, 1000);
 	EXP_SIGHOOK("Jabber FileShare Search", &FileShare::Search, 1000);
+	EXP_SIGHOOK("Jabber FileShare MenuDownload", &FileShare::MenuDownload, 1000);
 	EXP_SIGHOOK("Get Main Menu", &FileShare::MainMenu, 1000);
 	EXP_SIGHOOK("Jabber FileShare Rebuild", &FileShare::Rebuild, 1000);
 	EXP_SIGHOOK("Jabber XML Message xmlns http://sf.wokjab.net/fileshare", &FileShare::IncommingSearch, 1000);
 	fileshareid = 0;
+	search_result = NULL;
+	n_id = 0;
 	
 	config = new WokXMLTag(NULL, "NULL");
 	EXP_SIGHOOK("Config XML Change /fileshare", &FileShare::Config, 500);
@@ -49,7 +52,7 @@ FileShare::FileShare(WLSignal *wls) : WoklibPlugin(wls)
 	conftag.AddAttr("path", "/fileshare");
 	wls->SendSignal("Config XML Trigger", &conftag);
 	
-	path = "/home/nedo/wokjabmess";
+	path = "";
 	
 	int rc = sqlite3_open((std::string(g_get_home_dir()) + "/.wokjab/fileshare/filelist.db").c_str(), &db);
 	if( rc ){
@@ -64,15 +67,42 @@ FileShare::~FileShare()
 
 }
 
+int
+FileShare::MenuDownload(WokXMLTag *tag)
+{
+	std::string name = tag->GetAttr("filename");
+	if ( name.find("/") != std::string::npos )
+	{
+		name = name.substr(name.rfind("/")+1);
+	}
+	
+	std::cout << "XML: " << *tag << std::endl;
+	WokXMLTag msg(NULL, "message");
+	msg.AddAttr("session", tag->GetAttr("session"));
+	WokXMLTag &iq = msg.AddTag("iq");
+	iq.AddAttr("to", tag->GetAttr("jid"));
+	iq.AddAttr("type", "get");
+	WokXMLTag &fileshare = iq.AddTag("fileshare");
+	fileshare.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
+	WokXMLTag &file = fileshare.AddTag("file");
+	file.AddAttr("id", tag->GetAttr("file_id"));
+	
+	wls->SendSignal("Jabber XML IQ Send", msg);
+	
+	new File(wls, msg, name, config->GetFirstTag("download_path").GetAttr("data"));
+
+	return 1;
+}
+
 int 
 FileShare::sql_callback_search(FileShare *c, int argc, char **argv, char **azColName)
 {
-  int i;
-  for(i=0; i<argc; i++){
-				if ( azColName[i] == std::string("id") )
-					c->filetosend = argv[i] ? argv[i] : "NULL";
-  }
-  return 0;
+	int i;
+	
+	WokXMLTag &restag = c->search_result->AddTag("result");
+	for(i=0; i<argc; i++)
+		restag.AddAttr(azColName[i], argv[i] ? argv[i] : "NULL");
+	return 0;
 }
 
 int 
@@ -162,6 +192,12 @@ FileShare::Search(WokXMLTag *xml)
 				WokXMLTag msg(NULL, "message");
 				msg.AddAttr("session", "jabber0");
 				WokXMLTag &message = msg.AddTag("message");
+				
+				std::stringstream str;
+				str << "FileShare_" << n_id;
+				message.AddTag("thread").AddText(str.str());
+				xml->AddAttr("thread", str.str());
+				
 				message.AddAttr("to", jid);
 				WokXMLTag &x = message.AddTag("x");
 				x.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
@@ -195,7 +231,7 @@ FileShare::MainMenu(WokXMLTag *xml)
 }
 
 void
-FileShare::PopulateTree(WokXMLTag *tag, std::string dir)
+FileShare::PopulateTree(WokXMLTag *tag, std::string dir, std::string virt_dir)
 {
 	DIR             *dip;
 	struct dirent   *dit;
@@ -210,7 +246,7 @@ FileShare::PopulateTree(WokXMLTag *tag, std::string dir)
 	while ((dit = readdir(dip)) != NULL)
 	{
 		std::string file = dit->d_name;
-		
+		std::stringstream sizestr;
 		if ( file[0] == '.' )
 			continue;
 			
@@ -222,7 +258,8 @@ FileShare::PopulateTree(WokXMLTag *tag, std::string dir)
 			WokXMLTag &item = tag->AddTag("item");
 			item.AddAttr("type", "folder");
 			item.AddAttr("name", file);
-			PopulateTree(&item, dir + '/' + file);
+			sizestr << "0";
+			PopulateTree(&item, dir + '/' + file, virt_dir+'/'+file);
 		}
 		else if ( sbuf.st_mode & S_IFREG )
 		{
@@ -230,6 +267,7 @@ FileShare::PopulateTree(WokXMLTag *tag, std::string dir)
 			item.AddAttr("id", dir + '/' + file);
 			item.AddAttr("name", file);
 			item.AddAttr("type", "file");
+			sizestr << sbuf.st_size;
 		}
 		
 		std::string qdir = dir;
@@ -252,7 +290,7 @@ FileShare::PopulateTree(WokXMLTag *tag, std::string dir)
 			if ( pos >= qfile.size() )
 				break;
 		}
-		std::string query = "INSERT INTO filelist (id, file) values ('" + qdir + '/' + qfile + "', '" + qdir + '/' + qfile + "');";
+		std::string query = "INSERT INTO filelist (id, file, path, size) values ('" + qdir + '/' + qfile + "', '" + qdir + '/' + qfile + "', '"+virt_dir + '/' + qfile +"','"+sizestr.str()+"');";
 		int rc = sqlite3_exec(db, query.c_str(), (int(*)(void *,int,char**,char**)) FileShare::sql_callback, this, &zErrMsg);
   if( rc!=SQLITE_OK ){
     fprintf(stderr, "SQL error: %s\n", zErrMsg);
@@ -326,7 +364,7 @@ FileShare::Rebuild(WokXMLTag *tag)
 			}
 		}
 		std::cout << ":" << iter->second << filelist << std::endl;
-		PopulateTree(point, iter->second);
+		PopulateTree(point, iter->second, "/" + iter->first);
 	}
 	
 
@@ -438,15 +476,30 @@ FileShare::ListRequest(WokXMLTag *tag)
 int
 FileShare::IncommingSearch(WokXMLTag *tag)
 {
-	std::string query = "SELECT * FROM filelist WHERE id LIKE '" + tag->GetFirstTag("message").GetFirstTag("x").GetFirstTag("condition").GetBody() + "';";
-		/* The callback is changing the filetosend variable */
-	int rc = sqlite3_exec(db, query.c_str(), (int(*)(void *,int,char**,char**)) FileShare::sql_callback_search, this, &zErrMsg);
- 
- if( rc!=SQLITE_OK ){
-    fprintf(stderr, "SQL error: %s\n", zErrMsg);
-    sqlite3_free(zErrMsg);
+	char *zErrMsg = 0;
+	if ( tag->GetFirstTag("message").GetFirstTag("x").GetAttr("type") == "set" )
+	{
+		std::string thread = tag->GetFirstTag("message").GetFirstTag("thread").GetBody();
+		wls->SendSignal("Jabber FileShare SearchResult " + thread, tag);
+		
+		return 1;
 	}
-
+	if ( tag->GetFirstTag("message").GetFirstTag("x").GetFirstTag("condition").GetBody().empty() )
+		return 1;
+		
+	std::string query = "SELECT * FROM filelist WHERE id LIKE '%" + tag->GetFirstTag("message").GetFirstTag("x").GetFirstTag("condition").GetBody() + "%' LIMIT 10;";
+	/* The callback is changing the filetosend variable */
+	
+	delete search_result;
+	search_result = new WokXMLTag (NULL, "search");
+	int rc = sqlite3_exec(db, query.c_str(), (int(*)(void *,int,char**,char**)) FileShare::sql_callback_search, this, &zErrMsg);
+	
+ if( rc!=SQLITE_OK )
+	{
+		fprintf(stderr, "SQL error: %s\n", zErrMsg);
+		sqlite3_free(zErrMsg);
+	}
+	
 	std::list <WokXMLTag *>::iterator res_iter;
 	
 	WokXMLTag msg(NULL, "message");
@@ -454,15 +507,39 @@ FileShare::IncommingSearch(WokXMLTag *tag)
 	WokXMLTag &message = msg.AddTag("message");
 	message.AddAttr("to", tag->GetFirstTag("message").GetAttr("from"));
 	message.AddAttr("type", tag->GetFirstTag("message").GetAttr("type"));
+	message.AddTag("thread").AddText(tag->GetFirstTag("message").GetFirstTag("thread").GetBody());
 	WokXMLTag &x = message.AddTag("x");
 	x.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
 	x.AddAttr("type", "set");
-	for( res_iter = search_result->GetTagList("result").begin() ; res_iter != search_result->GetTagList("result").end() ; res_iter++)
+	WokXMLTag &result = x.AddTag("result");
+	int res_count=0;
+	if ( search_result )
 	{
+		for( res_iter = search_result->GetTagList("result").begin() ; res_iter != search_result->GetTagList("result").end() ; res_iter++)
+		{
+			std::cout << (*res_iter)->GetAttr("id") << std::endl;
+			WokXMLTag &itemtag = result.AddTag("item");
+			itemtag.AddAttr("id", (*res_iter)->GetAttr("id"));
+			itemtag.AddAttr("name", (*res_iter)->GetAttr("path"));
+			itemtag.AddAttr("size", (*res_iter)->GetAttr("size"));
+			itemtag.AddAttr("hash", (*res_iter)->GetAttr("hash"));
+			res_count++;
+			/* 
+				* Here there should be more fields
+				*
+				* path, hash, size
+				*
+				*/
+		}
 		
-	
+		if( res_count )
+		{
+			wls->SendSignal("Jabber XML Send", msg);		
+		}
+		
+		delete search_result;
+		search_result = NULL;
 	}
-
 	return 1;
 }
 
@@ -543,8 +620,6 @@ FileShare::View(WokXMLTag *tag)
 int
 FileShare::FileListResponse(WokXMLTag *tag)
 {
-	std::cout << "XML: " << tag << std::endl;
-	
 	EXP_SIGHOOK("Jabber Stream File Incomming " + tag->GetFirstTag("iq").GetFirstTag("fileshare").GetAttr("sid"), &FileShare::IncommingFilelist, 100);
 	return 1;
 }

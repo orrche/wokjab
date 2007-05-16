@@ -58,6 +58,8 @@ SUBDIRS= \
 	rfc1928-SOCKS5 \
 	Idle \
 	GroupChatBookmark \
-	Fileshare 
+	Fileshare \
+	AutoJoinGroupChat \
+	dbus 
 
 

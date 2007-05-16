@@ -119,6 +119,7 @@ AC_OUTPUT(Makefile \
 	plugins/Config/Makefile  \
 	plugins/Authorization/Makefile  \
 	plugins/AutoPresence/Makefile  \
+        plugins/AutoJoinGroupChat/Makefile  \
 	plugins/woklib-groupchat/Makefile  \
 	plugins/woklib-groupchat/src/Makefile  \
 	plugins/woklib-groupchat/include/Makefile  \
@@ -150,6 +151,7 @@ AC_OUTPUT(Makefile \
         plugins/jep0153-VCardAvatar/Makefile  \
         plugins/Idle/Makefile  \
         plugins/Fileshare/Makefile  \
+        plugins/dbus/Makefile  \
 	wokjab/Makefile \
 	wokjab/src/Makefile \
 	wokjab/include/Makefile \

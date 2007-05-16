@@ -46,7 +46,7 @@ GtkJabberMenu::MenuActivate(GtkMenuItem *menuitem,GtkJabberMenu *c)
 	if ( c->MenuSignals[GTK_WIDGET(menuitem)] != "" )
 		c->wls->SendSignal(c->MenuSignals[GTK_WIDGET(menuitem)], c->MenuData[GTK_WIDGET(menuitem)]);
 	
-	c->CleanDataStore();
+//	c->CleanDataStore();
 	
 	return true;
 }
@@ -81,7 +81,7 @@ GtkJabberMenu::AddItem(GtkWidget *menu, WokXMLTag *tag, WokXMLTag *olddata)
 		MenuData[menu_item] = curdata;
 		
 		gtk_container_add (GTK_CONTAINER (menu), menu_item);
-		if ( (*listiter)->GetTagList("item").size() == 0 )
+		if ( (*listiter)->GetTagList("item").empty() )
 		{
 			gtk_signal_connect (GTK_OBJECT (menu_item), "activate",
 											 GTK_SIGNAL_FUNC (GtkJabberMenu::MenuActivate),
@@ -91,6 +91,18 @@ GtkJabberMenu::AddItem(GtkWidget *menu, WokXMLTag *tag, WokXMLTag *olddata)
 		}
 		else
 		{
+			// This doesn't seam to be the right way to go about doing it
+			/*
+			if ( !((*listiter)->GetAttr("signal").empty() ) )
+			{
+				gtk_signal_connect (GTK_OBJECT (menu_item), "activate",
+										GTK_SIGNAL_FUNC (GtkJabberMenu::MenuActivate),
+										this);
+			
+				MenuSignals[menu_item] = (*listiter)->GetAttr("signal");
+			}
+			*/
+			
 			GtkWidget *new_menu = gtk_menu_new();
 			AddItem(new_menu, *listiter, curdata);
 			gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), new_menu);

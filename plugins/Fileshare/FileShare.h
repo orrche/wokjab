@@ -55,12 +55,13 @@ class FileShare : public WoklibPlugin
 		int OpenSearchWid(WokXMLTag *tag);
 		int Search(WokXMLTag *xml);
 		int IncommingSearch(WokXMLTag *tag);
+		int MenuDownload(WokXMLTag *tag);
 		
-		void PopulateTree(WokXMLTag *tag, std::string dir);
+		void PopulateTree(WokXMLTag *tag, std::string dir, std::string virt_dir);
 		WokXMLTag * AddFolder(WokXMLTag *point, std::string name);
 		
 		static int sql_callback(FileShare *c, int argc, char **argv, char **azColName);
-		static int sql_callback(FileShare *c, int argc, char **argv, char **azColName);
+		static int sql_callback_search(FileShare *c, int argc, char **argv, char **azColName);
 	protected:
 			WokXMLTag *config;
 			WokXMLTag *search_result;
@@ -69,6 +70,7 @@ class FileShare : public WoklibPlugin
 			std::string filetosend;
 			sqlite3 *db;
 			std::map <std::string, std::string> sharepoints;
+			int n_id;
 
 };
 

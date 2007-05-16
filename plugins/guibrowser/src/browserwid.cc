@@ -209,6 +209,10 @@ BrowserWidget::popup_menu(GtkTreeView *tree_view, GdkEventButton *event, Browser
 		c->menu_node = node;
 		c->menu_session = session;
 		
+		g_free(jid);
+		g_free(node);
+		g_free(session);
+		
 		WokXMLTag msgtag(NULL,"message");
 		msgtag.AddAttr("session", session);
 		WokXMLTag &tag = msgtag.AddTag("iq");
@@ -227,7 +231,7 @@ BrowserWidget::popup_menu(GtkTreeView *tree_view, GdkEventButton *event, Browser
 		
 		menu_item = gtk_menu_item_new_with_mnemonic ("Features");
 		gtk_widget_show (menu_item);
-  	gtk_container_add (GTK_CONTAINER (c->pop_menu), menu_item);
+  gtk_container_add (GTK_CONTAINER (c->pop_menu), menu_item);
 		
 		gtk_menu_popup (GTK_MENU(c->pop_menu), NULL, NULL, NULL, NULL,
         		event->button, event->time);

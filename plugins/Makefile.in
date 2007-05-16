@@ -78,7 +78,7 @@ DIST_SUBDIRS = Authorization AutoPresence Config DisplayGtk EventSound \
 	jep0115-EntCap jep0153-VCardAvatar MenuResource MenuRoster \
 	OpenDialogTo python registerservice Reversi roster-rename \
 	ScriptLoader toaster Tooltip wokjab-jid-info woklib-groupchat \
-	rfc1928-SOCKS5 Idle GroupChatBookmark
+	rfc1928-SOCKS5 Idle GroupChatBookmark AutoJoinGroupChat dbus
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
@@ -232,7 +232,9 @@ SUBDIRS = \
 	rfc1928-SOCKS5 \
 	Idle \
 	GroupChatBookmark \
-	Fileshare 
+	Fileshare \
+	AutoJoinGroupChat \
+	dbus 
 
 all: all-recursive
 
