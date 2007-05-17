@@ -47,15 +47,20 @@ class GtkPreference : public WoklibPlugin
 		virtual std::string GetVersion() {return VERSION;};
 	
 		void CreateWid();
-		void AddTreeItem(GtkTreeIter *parant, WokXMLTag &tag, std::string path);
-		void CreateConfig(GtkWidget *parant, WokXMLTag *tag);
+		int AddTreeItem(GtkTreeIter *parant, WokXMLTag &tag, std::string path);
+		int CreateConfig(GtkWidget *parant, WokXMLTag *tag);
 		void LocalActivate(std::string strpath);
 		void CleanWidgetList();
-		
+		void SaveConfig();
+		void InClassDestroy();
+		bool FindSanity(WokXMLTag &tag);
+	
 		int SigCreateWid(WokXMLTag *tag);
 		int SigMenu(WokXMLTag *tag);
 		int CreateWindow(WokXMLTag *tag);
-
+		int  ReadConfig(WokXMLTag *tag);
+	
+		static gboolean Delete( GtkWidget *widget, GdkEvent *event, GtkPreference *c);
 		static void SaveButton (GtkWidget * widget, GtkPreference *c);
 		static gboolean Activate(GtkTreeView *tree_view, GdkEventButton *event, GtkPreference *c);
 		static void Destroy(GtkWidget *widget, GtkPreference *c);
@@ -65,6 +70,7 @@ class GtkPreference : public WoklibPlugin
 		GtkWidget *configview;
 		GtkTreeStore *treestore;
 		WokXMLTag *config;
+		WokXMLTag *myconfig;
 		std::string conf_path;
 		std::list <GtkPCommon *> widgets;
 };

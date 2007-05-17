@@ -31,11 +31,15 @@
 #include "GtkPBool.h"
 #include "GtkPPassword.h"
 
+#include <sstream>
+
 GtkPreference::GtkPreference(WLSignal *wls) : WoklibPlugin(wls)
 {
 	EXP_SIGHOOK("GUI Preference", &GtkPreference::SigCreateWid, 1000);
 	EXP_SIGHOOK("GetMenu", &GtkPreference::SigMenu , 1000);
 	
+	config = new WokXMLTag(NULL, "NULL");
+
 	window = NULL;
 	config = NULL;
 }
@@ -44,8 +48,9 @@ GtkPreference::GtkPreference(WLSignal *wls) : WoklibPlugin(wls)
 GtkPreference::~GtkPreference()
 {
 	CleanWidgetList();
-	if( config )
-		delete config;
+	
+	delete config;
+	config = NULL;
 	
 	if ( window ) 
 	{
@@ -53,14 +58,90 @@ GtkPreference::~GtkPreference()
 	}
 }
 
+
+void
+GtkPreference::SaveConfig()
+{	
+	
+	int width, height, pos_x, pos_y;
+	std::stringstream sheight, swidth, spos_x, spos_y;
+
+	gtk_window_get_size(GTK_WINDOW(window), &width, &height);
+	gtk_window_get_position(GTK_WINDOW(window), &pos_x, &pos_y);
+	sheight << height;
+	swidth << width;
+	spos_x << pos_x;
+	spos_y << pos_y;
+
+	config->GetFirstTag("width").AddAttr("data", swidth.str());
+	config->GetFirstTag("height").AddAttr("data", sheight.str());
+	config->GetFirstTag("pos_x").AddAttr("data", spos_x.str());
+	config->GetFirstTag("pos_y").AddAttr("data", spos_y.str());
+
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/preference");
+	conftag.AddTag(config);
+
+	EXP_SIGUNHOOK("Config XML Change /preference", &GtkPreference::ReadConfig, 500);
+	wls->SendSignal("Config XML Store", &conftag);
+	EXP_SIGHOOK("Config XML Change /preference", &GtkPreference::ReadConfig, 500);
+	
+}
+
+int 
+GtkPreference::ReadConfig(WokXMLTag *tag)
+{
+	if( tag )
+	{
+		delete config;
+		config = new WokXMLTag(tag->GetFirstTag("config"));
+	}
+		
+	int pos_x, pos_y,width,height;
+
+	width = atoi( config->GetFirstTag("width").GetAttr("data").c_str());
+	height = atoi( config->GetFirstTag("height").GetAttr("data").c_str());
+	pos_x = atoi( config->GetFirstTag("pos_x").GetAttr("data").c_str());
+	pos_y = atoi( config->GetFirstTag("pos_y").GetAttr("data").c_str());
+		
+	gtk_window_move (GTK_WINDOW(window), pos_x, pos_y);
+	
+	if(width == 0)
+		width = 120;
+
+	if(height == 0)
+		height = 500;
+		
+	gtk_window_set_default_size(GTK_WINDOW(window), width, height);
+	
+	return 1;
+}
+
 void
 GtkPreference::Destroy(GtkWidget *widget, GtkPreference *c)
 {
-	c->window = NULL;
-	c->CleanWidgetList();
-	if( c->config )
-		delete c->config;
-	c->config = NULL;
+}
+
+gboolean
+GtkPreference::Delete( GtkWidget *widget, GdkEvent *event, GtkPreference *c)
+{
+	c->InClassDestroy();
+	
+	return FALSE;
+	
+}
+
+void
+GtkPreference::InClassDestroy()
+{
+	SaveConfig();
+	EXP_SIGUNHOOK("Config XML Change /preference", &GtkPreference::ReadConfig, 500);
+	
+	window = NULL;
+	CleanWidgetList();
+	
+	delete config;
+	config = NULL;
 }
 
 void
@@ -124,10 +205,26 @@ GtkPreference::Activate(GtkTreeView *tree_view, GdkEventButton *event, GtkPrefer
 	return false;	
 }
 
-void
+bool
+GtkPreference::FindSanity(WokXMLTag &tag)
+{
+	std::list <WokXMLTag *>::iterator searcher;
+	for ( searcher = tag.GetTags().begin() ; searcher != tag.GetTags().end() ; searcher++)
+	{
+		if (! (*searcher)->GetAttr("type").empty() )
+			return true;
+		else if ( FindSanity(**searcher) )
+			return true;
+	}
+	
+	return false;
+}
+
+int
 GtkPreference::AddTreeItem(GtkTreeIter *parant, WokXMLTag &tag, std::string path)
 {
 	std::list <WokXMLTag*>::iterator tagiter;
+	int m = 0;
 	
 	for( tagiter = tag.GetTags().begin(); tagiter != tag.GetTags().end(); tagiter++)
 	{
@@ -141,9 +238,22 @@ GtkPreference::AddTreeItem(GtkTreeIter *parant, WokXMLTag &tag, std::string path
 				    0, (*tagiter)->GetName().c_str(),
 				    -1);
 						
-			AddTreeItem(&iter, **tagiter, path + "/" + (*tagiter)->GetName());
+			if ( AddTreeItem(&iter, **tagiter, path + "/" + (*tagiter)->GetName()) == 0 )
+				gtk_tree_store_remove(treestore, &iter);
+			else
+			{
+				m++;
+				
+			}
+		}
+		else
+		{
+			if ( FindSanity(**tagiter) )
+				m++;
 		}
 	}
+	
+	return m;
 }
 
 void
@@ -152,13 +262,14 @@ GtkPreference::CreateWid()
 	GtkWidget *vbox = gtk_vbox_new(FALSE, 2);
 	
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_default_size (GTK_WINDOW(window), 400,400);
 	gtk_window_set_title (GTK_WINDOW(window), "Preference");
 																						 
 	g_signal_connect ((gpointer) window, "destroy",
                     G_CALLBACK (GtkPreference::Destroy),
                     this);
-	
+	g_signal_connect ((gpointer) window, "delete_event",
+					G_CALLBACK (GtkPreference::Delete), 
+					this);
 	
 	GtkTreeIter iter;
 	treeview = gtk_tree_view_new();
@@ -215,12 +326,21 @@ GtkPreference::CreateWid()
 	
 	AddTreeItem(&iter, pathtag.GetFirstTag("config"), "");
 	gtk_tree_view_expand_all(GTK_TREE_VIEW(treeview));
+	
+	EXP_SIGHOOK("Config XML Change /preference", &GtkPreference::ReadConfig, 500);
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/preference");
+	wls->SendSignal("Config XML Trigger", &conftag);	
+	
+	
 	gtk_widget_show_all(window);
+	
 }
 
-void
+int
 GtkPreference::CreateConfig(GtkWidget *parant, WokXMLTag *tag)
 {
+	int m = 0;
 	GtkWidget *vbox = gtk_vbox_new(FALSE, 2);
 	
 	std::list <WokXMLTag *>::iterator iter;
@@ -234,36 +354,48 @@ GtkPreference::CreateConfig(GtkWidget *parant, WokXMLTag *tag)
 			GtkPString *str = new GtkPString((*iter));
 			gtk_box_pack_start(GTK_BOX(vbox), str->GetWidget(), FALSE, FALSE, 2);
 			widgets.push_back(str);
+			m++;
 		}
 		else if((*iter)->GetAttr("type") == "password")
 		{
 			GtkPPassword *pwd = new GtkPPassword((*iter));
 			gtk_box_pack_start(GTK_BOX(vbox), pwd->GetWidget(), FALSE, FALSE, 2);
 			widgets.push_back(pwd);
+			m++;
 		}
 		else if((*iter)->GetAttr("type") == "text")
 		{
 			GtkPText *txt = new GtkPText((*iter));
 			gtk_box_pack_start(GTK_BOX(vbox), txt->GetWidget(), FALSE, FALSE, 2);
 			widgets.push_back(txt);
+			m++;
 		}
 		else if((*iter)->GetAttr("type") == "bool")
 		{
 			GtkPBool *b = new GtkPBool((*iter));
 			gtk_box_pack_start(GTK_BOX(vbox), b->GetWidget(), FALSE, FALSE, 2);
 			widgets.push_back(b);
+			m++;
 		}
 		
 		if( (*iter)->GetTags().size() )
 		{
 			GtkWidget *frame = gtk_frame_new((*iter)->GetName().c_str());
-			CreateConfig(frame, (*iter));
+			int n = CreateConfig(frame, (*iter));
+			if ( n ) 
+			{
+				m += n;
+				gtk_box_pack_start(GTK_BOX(vbox), frame, FALSE, FALSE, 2);
+			}
+			else
+				gtk_widget_destroy(frame);
+				
 			
-			gtk_box_pack_start(GTK_BOX(vbox), frame, FALSE, FALSE, 2);
 		}
 	}
 	
 	gtk_container_add(GTK_CONTAINER(parant), vbox);
+	return m;
 }
 
 int
