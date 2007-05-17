@@ -38,7 +38,7 @@ GtkPreference::GtkPreference(WLSignal *wls) : WoklibPlugin(wls)
 	EXP_SIGHOOK("GUI Preference", &GtkPreference::SigCreateWid, 1000);
 	EXP_SIGHOOK("GetMenu", &GtkPreference::SigMenu , 1000);
 	
-	config = new WokXMLTag(NULL, "NULL");
+	myconfig = new WokXMLTag(NULL, "NULL");
 
 	window = NULL;
 	config = NULL;
@@ -51,6 +51,8 @@ GtkPreference::~GtkPreference()
 	
 	delete config;
 	config = NULL;
+	delete myconfig;
+	myconfig = NULL;
 	
 	if ( window ) 
 	{
@@ -73,14 +75,14 @@ GtkPreference::SaveConfig()
 	spos_x << pos_x;
 	spos_y << pos_y;
 
-	config->GetFirstTag("width").AddAttr("data", swidth.str());
-	config->GetFirstTag("height").AddAttr("data", sheight.str());
-	config->GetFirstTag("pos_x").AddAttr("data", spos_x.str());
-	config->GetFirstTag("pos_y").AddAttr("data", spos_y.str());
+	myconfig->GetFirstTag("width").AddAttr("data", swidth.str());
+	myconfig->GetFirstTag("height").AddAttr("data", sheight.str());
+	myconfig->GetFirstTag("pos_x").AddAttr("data", spos_x.str());
+	myconfig->GetFirstTag("pos_y").AddAttr("data", spos_y.str());
 
 	WokXMLTag conftag(NULL, "config");
 	conftag.AddAttr("path", "/preference");
-	conftag.AddTag(config);
+	conftag.AddTag(myconfig);
 
 	EXP_SIGUNHOOK("Config XML Change /preference", &GtkPreference::ReadConfig, 500);
 	wls->SendSignal("Config XML Store", &conftag);
@@ -93,16 +95,16 @@ GtkPreference::ReadConfig(WokXMLTag *tag)
 {
 	if( tag )
 	{
-		delete config;
-		config = new WokXMLTag(tag->GetFirstTag("config"));
+		delete myconfig;
+		myconfig = new WokXMLTag(tag->GetFirstTag("config"));
 	}
 		
 	int pos_x, pos_y,width,height;
 
-	width = atoi( config->GetFirstTag("width").GetAttr("data").c_str());
-	height = atoi( config->GetFirstTag("height").GetAttr("data").c_str());
-	pos_x = atoi( config->GetFirstTag("pos_x").GetAttr("data").c_str());
-	pos_y = atoi( config->GetFirstTag("pos_y").GetAttr("data").c_str());
+	width = atoi( myconfig->GetFirstTag("width").GetAttr("data").c_str());
+	height = atoi( myconfig->GetFirstTag("height").GetAttr("data").c_str());
+	pos_x = atoi( myconfig->GetFirstTag("pos_x").GetAttr("data").c_str());
+	pos_y = atoi( myconfig->GetFirstTag("pos_y").GetAttr("data").c_str());
 		
 	gtk_window_move (GTK_WINDOW(window), pos_x, pos_y);
 	
