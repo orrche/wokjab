@@ -45,6 +45,8 @@ class GUIWindowDock : public WLSignalInstance
 		static gboolean widget_destroy(GtkWidget *widget, GdkEvent *event, GUIWindowDock *c);
 		static void page_delete(GtkWidget *widget, GUIWindowDock *c);
 		static gboolean key_press_handler(GtkWidget * widget, GdkEventKey * event,gpointer data);
+		static void SwitchPage(GtkNotebook *notebook, GtkNotebookPage *page,  guint page_num, GUIWindowDock *c);
+	
 		void CreateWidget();
 	protected:
 		GtkWidget *hiddenwindow;
@@ -58,6 +60,7 @@ class GUIWindowDock : public WLSignalInstance
 		std::vector <int> HiddenWidgets;
 		std::map <int, GtkWidget *> sockets;
 		std::map <int, GtkWidget *> labelsockets;
+		std::map <int, std::string> identifier;
 };
 
 

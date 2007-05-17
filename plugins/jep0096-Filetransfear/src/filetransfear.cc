@@ -394,7 +394,7 @@ jep96::PrettySize(unsigned long long size)
 	}
 	
 	std::stringstream msg;
-	msg << double(size)/divider << ending;
+	msg << double(size)/double(divider) << ending;
 	
 	return msg.str();
 }

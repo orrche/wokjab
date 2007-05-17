@@ -42,7 +42,7 @@ class GUIRoster:public WLSignalInstance
 
 	static void ToggleButton(GtkWidget *widget, GUIRoster *c);
 	
-	void SaveConfig (bool connect_sig = true);
+	void SaveConfig ();
       protected:
 
 	int ReadConfig (WokXMLTag *tag);
