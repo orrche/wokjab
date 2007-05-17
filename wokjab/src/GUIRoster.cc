@@ -67,10 +67,17 @@ GUIRoster::GUIRoster (WLSignal * wls):WLSignalInstance (wls)
 	g_signal_connect (G_OBJECT (togg3), "toggled",
 		      G_CALLBACK (GUIRoster::ToggleButton), this);
 
+	GtkTooltips *tooltips = gtk_tooltips_new();
+	gtk_tooltips_set_tip(tooltips, togg1, "Show offline contacts in the roster", "Show offline contacts in the roster");
+	tooltips = gtk_tooltips_new();
+	gtk_tooltips_set_tip(tooltips, togg2, "Show DND contacts in the roster", "Show DND contacts in the roster");
+	tooltips = gtk_tooltips_new();
+	gtk_tooltips_set_tip(tooltips, togg3, "Show XA contacts in the roster", "Show XA contacts in the roster");
+	
 	config = new WokXMLTag(NULL, "NULL");
-	EXP_SIGHOOK("Config XML Change /main/window", &GUIRoster::ReadConfig, 500);
+	EXP_SIGHOOK("Config XML Change /main/window/roster", &GUIRoster::ReadConfig, 500);
 	WokXMLTag conftag(NULL, "config");
-	conftag.AddAttr("path", "/main/window");
+	conftag.AddAttr("path", "/main/window/roster");
 	wls->SendSignal("Config XML Trigger", &conftag);
 	
 	// Initiating add ins .. maybe should be plugins..
@@ -101,7 +108,7 @@ GUIRoster::GUIRoster (WLSignal * wls):WLSignalInstance (wls)
 GUIRoster::~GUIRoster ()
 {	
 		
-	EXP_SIGUNHOOK("Config XML Change /main/window", &GUIRoster::ReadConfig, 500);
+	EXP_SIGUNHOOK("Config XML Change /main/window/roster", &GUIRoster::ReadConfig, 500);
 	
 	SaveConfig();
 
@@ -177,7 +184,7 @@ GUIRoster::SaveConfig()
 		config->GetFirstTag("show").GetFirstTag("xa").AddAttr("data", "false");
 	
 	WokXMLTag conftag(NULL, "config");
-	conftag.AddAttr("path", "/main/window");
+	conftag.AddAttr("path", "/main/window/roster");
 	conftag.AddTag(config);
 	
 	wls->SendSignal("Config XML Store", &conftag);
