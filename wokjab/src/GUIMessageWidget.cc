@@ -530,8 +530,6 @@ GUIMessageWidget::SetLabel()
 	wls->SendSignal("Jabber Roster GetResource", &querytag);
 	wls->SendSignal("Jabber GUI GetIcon", &querytag);
 	
-	std::cout << "This is the item tag" << itemtag << std::endl;
-	
 	gtk_label_set_text(GTK_LABEL(jid_label), std::string(from + " (" + nick + ") [" + itemtag.GetFirstTag("resource").GetAttr("priority") + "]").c_str());
 }
 

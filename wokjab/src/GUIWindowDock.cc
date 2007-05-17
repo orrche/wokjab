@@ -146,9 +146,32 @@ GUIWindowDock::CreateWidget()
 		    GTK_SIGNAL_FUNC (GUIWindowDock::key_press_handler),
 			    this);
 	
-	gtk_window_set_title(GTK_WINDOW(window), std::string ("Message Dock").c_str());
+	gtk_window_set_title(GTK_WINDOW(window), std::string ("Message Dock ver2").c_str());
+	
+	g_signal_connect (G_OBJECT (notebook), "switch-page",
+				G_CALLBACK (GUIWindowDock::SwitchPage), this);
+	
 	Config(NULL);
 	gtk_widget_show_all(window);
+}
+
+void
+GUIWindowDock::SwitchPage(GtkNotebook *notebook, GtkNotebookPage *note_page,  guint page_num, GUIWindowDock *c)
+{
+	GtkWidget *page = gtk_notebook_get_nth_page (GTK_NOTEBOOK(c->notebook), page_num);
+	GtkWidget *bin = GTK_WIDGET(page);
+	GtkWidget *socket = gtk_bin_get_child(GTK_BIN(bin));
+	
+	std::map <int, GtkWidget *>::iterator socket_search;
+	
+	for ( socket_search = c->sockets.begin() ; socket_search != c->sockets.end() ; socket_search++)
+	{
+		if ( socket_search->second == socket )
+		{
+			gtk_window_set_title(GTK_WINDOW(c->window), (c->identifier[socket_search->first] + " - Wokjab").c_str());
+		}
+	}
+	
 }
 
 int
@@ -243,6 +266,8 @@ GUIWindowDock::ShowPage(WokXMLTag *tag)
 int
 GUIWindowDock::AppendPlugPage(WokXMLTag *tag)
 {
+	std::cout << "Tag: " << *tag << std::endl;
+	
 	GtkWidget *mainsock;
 	GtkWidget *labelsock;
 	
@@ -279,6 +304,8 @@ GUIWindowDock::AppendPlugPage(WokXMLTag *tag)
 	Widgets.push_back(atoi(tag->GetAttr("mainwidget").c_str()));
 	sockets[atoi(tag->GetAttr("mainwidget").c_str())] = mainsock;
 	labelsockets[atoi(tag->GetAttr("mainwidget").c_str())] = labelsock;
+	identifier[atoi(tag->GetAttr("mainwidget").c_str())] = tag->GetAttr("identifier");
+	
 	testwid = mainsock;
 	
 	gtk_window_present (GTK_WINDOW(window));

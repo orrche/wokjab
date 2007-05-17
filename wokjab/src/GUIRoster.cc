@@ -103,7 +103,7 @@ GUIRoster::~GUIRoster ()
 		
 	EXP_SIGUNHOOK("Config XML Change /main/window", &GUIRoster::ReadConfig, 500);
 	
-	SaveConfig(false);
+	SaveConfig();
 
 	if( plugwid )
 		gtk_widget_destroy(plugwid);
@@ -125,6 +125,7 @@ GUIRoster::ToggleButton(GtkWidget *widget, GUIRoster *c)
 	else 
 		c->bstate[widget] = FALSE;
 		
+	c->SaveConfig();
 	WokXMLTag empty(NULL, "empty");
 	c->wls->SendSignal("Jabber Roster Recheck", empty);
 }
@@ -160,7 +161,7 @@ GUIRoster::ReadConfig (WokXMLTag *tag)
 }
 
 void
-GUIRoster::SaveConfig(bool connect_sig)
+GUIRoster::SaveConfig()
 {
 	if(bstate[togg1])
 		config->GetFirstTag("show").GetFirstTag("offline").AddAttr("data", "true");
