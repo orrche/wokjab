@@ -103,10 +103,10 @@ GUIWindow::Delete( GtkWidget *widget, GdkEvent *event, GUIWindow *c)
 			closetag.AddAttr("id", buf.str().substr(21));
 			c->wls->SendSignal(buf.str(), &closetag);
 		}
-		return false;
+		return FALSE;
 	}
 	c->hide(NULL);
-	return true;
+	return TRUE;
 }
 
 /**

@@ -186,6 +186,7 @@ Initiat::input_callback(GIOChannel *source, GIOCondition condition, Initiat *c)
 		for( iter = c->errorsockets[socket].begin() ; iter != c->errorsockets[socket].end() ; iter++)
 			g_source_remove(*iter);
 
+		g_io_channel_unref (source);
 		return FALSE;
 	}
 
@@ -199,7 +200,8 @@ Initiat::input_callback(GIOChannel *source, GIOCondition condition, Initiat *c)
 		{
 			c->freesockets.erase(socket);
 		}
-
+		
+		g_io_channel_unref (source);
 		return FALSE;
 	}
 	return TRUE;
