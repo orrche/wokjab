@@ -98,24 +98,7 @@ GtkPreference::ReadConfig(WokXMLTag *tag)
 		delete myconfig;
 		myconfig = new WokXMLTag(tag->GetFirstTag("config"));
 	}
-		
-	int pos_x, pos_y,width,height;
-
-	width = atoi( myconfig->GetFirstTag("width").GetAttr("data").c_str());
-	height = atoi( myconfig->GetFirstTag("height").GetAttr("data").c_str());
-	pos_x = atoi( myconfig->GetFirstTag("pos_x").GetAttr("data").c_str());
-	pos_y = atoi( myconfig->GetFirstTag("pos_y").GetAttr("data").c_str());
-		
-	gtk_window_move (GTK_WINDOW(window), pos_x, pos_y);
-	
-	if(width == 0)
-		width = 120;
-
-	if(height == 0)
-		height = 500;
-		
-	gtk_window_set_default_size(GTK_WINDOW(window), width, height);
-	
+			
 	return 1;
 }
 
@@ -334,6 +317,22 @@ GtkPreference::CreateWid()
 	conftag.AddAttr("path", "/preference");
 	wls->SendSignal("Config XML Trigger", &conftag);	
 	
+	int pos_x, pos_y,width,height;
+
+	width = atoi( myconfig->GetFirstTag("width").GetAttr("data").c_str());
+	height = atoi( myconfig->GetFirstTag("height").GetAttr("data").c_str());
+	pos_x = atoi( myconfig->GetFirstTag("pos_x").GetAttr("data").c_str());
+	pos_y = atoi( myconfig->GetFirstTag("pos_y").GetAttr("data").c_str());
+		
+	gtk_window_move (GTK_WINDOW(window), pos_x, pos_y);
+	
+	if(width == 0)
+		width = 120;
+
+	if(height == 0)
+		height = 500;
+		
+	gtk_window_set_default_size(GTK_WINDOW(window), width, height);
 	
 	gtk_widget_show_all(window);
 	

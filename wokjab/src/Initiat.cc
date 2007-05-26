@@ -116,7 +116,7 @@ Initiat::AddWatcher(WokXMLTag *xml)
 {
 	static int id = 0;
 	int socket = atoi(xml->GetAttr("socket").c_str());
-	char freebuf[20];
+	char freebuf[40];
 	id++;
 	sprintf(freebuf, "Socket Availibule %d", id);
 	freesockets[atoi(xml->GetAttr("socket").c_str())] = freebuf;
@@ -133,7 +133,7 @@ int
 Initiat::AddListener(WokXMLTag *xml)
 {
 	static int id = 0;
-	char buf[20];
+	char buf[40];
 	int socket = atoi(xml->GetAttr("socket").c_str());
 	id++;
 	sprintf(buf, "Socket Activate %d", id);
