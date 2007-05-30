@@ -249,6 +249,17 @@ GUIMessageHandler::OpenDialog(WokXMLTag *tag)
 		GUIMessageWidget *widget;
 		string nick;
 		new GUIMessageWidget(wls, session, tag->GetAttr("jid"), id++);
+		
+		/*
+		WokXMLTag eventtag(NULL, "event");
+		WokXMLTag &itemtag = eventtag.AddTag("item");
+		itemtag.AddAttr("jid", tag->GetAttr("jid"));
+		itemtag.AddAttr("session", session);
+		itemtag.AddAttr("icon", msgicon);
+		itemtag.GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").AddAttr("name", "Jabber GUI MessageDialog Open");
+
+		wls->SendSignal("Jabber Event Remove", &eventtag);
+		*/
 	}
 	return 1;
 

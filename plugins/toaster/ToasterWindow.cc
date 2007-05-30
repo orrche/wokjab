@@ -28,7 +28,7 @@
 #include "ToasterWindow.h"
 
 
-ToasterWindow::ToasterWindow(WLSignal *wls, WokXMLTag *xml, int x, int y) : WLSignalInstance(wls)
+ToasterWindow::ToasterWindow(WLSignal *wls, WokXMLTag *config, WokXMLTag *xml, int x, int y) : WLSignalInstance(wls)
 {
 	orig = new WokXMLTag(*xml);
 	window = gtk_window_new(GTK_WINDOW_POPUP);
@@ -84,7 +84,13 @@ ToasterWindow::ToasterWindow(WLSignal *wls, WokXMLTag *xml, int x, int y) : WLSi
 	gtk_window_move(GTK_WINDOW(window), x - width, y - height);
 
 	t = 10;
-	g_timeout_add (200, (gboolean (*)(void *)) (ToasterWindow::Timeout), this);
+	timeoutid = g_timeout_add (200, (gboolean (*)(void *)) (ToasterWindow::Timeout), this);
+		
+	int delay = 0;
+	if ( ( delay = atoi(config->GetFirstTag("delay").GetAttr("data").c_str())) < 1 )
+		delay = 15;
+	timeoutremoveid = g_timeout_add (delay*1000, (gboolean (*)(void *)) (ToasterWindow::TimeoutRemove), this);
+	
 	
 	g_signal_connect (window , "button-press-event",	G_CALLBACK (ToasterWindow::button_press_event),this);
 }
@@ -93,7 +99,18 @@ ToasterWindow::ToasterWindow(WLSignal *wls, WokXMLTag *xml, int x, int y) : WLSi
 ToasterWindow::~ToasterWindow()
 {
 	delete orig;
+	if ( timeoutremoveid )
+		g_source_remove(timeoutremoveid);
+	if ( timeoutid ) 
+		g_source_remove(timeoutid);
+
 	gtk_widget_destroy(window);
+}
+
+std::string
+ToasterWindow::GetID()
+{
+	return orig->GetAttr("id");
 }
 
 gboolean
@@ -106,7 +123,10 @@ ToasterWindow::button_press_event(GtkWidget *widget, GdkEventButton *event, Toas
 	{
 		c->wls->SendSignal(c->orig->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetAttr("name"), 
 								**c->orig->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetTags().begin());
-								
+		
+		WokXMLTag removesig(NULL, "remove");
+		removesig.AddAttr("id", c->GetID() );
+		c->wls->SendSignal("Toaster Remove", removesig);
 		return TRUE;
 	}
 	
@@ -145,6 +165,18 @@ ToasterWindow::MoveTo(int x, int y)
 	gtk_window_move(GTK_WINDOW(window), x-width, y-height);
 }
 
+
+gboolean
+ToasterWindow::TimeoutRemove(ToasterWindow *c)
+{
+	WokXMLTag removesig(NULL, "remove");
+	removesig.AddAttr("id", c->GetID() );
+	c->wls->SendSignal("Toaster Remove", removesig);
+	
+	c->timeoutremoveid = 0;
+	return FALSE;
+}
+
 gboolean
 ToasterWindow::Timeout(ToasterWindow *c)
 {
@@ -162,6 +194,7 @@ ToasterWindow::Timeout(ToasterWindow *c)
 	if ( !c->t )
 	{
 		gtk_widget_modify_bg (c->port, GTK_STATE_NORMAL, NULL);
+		c->timeoutid = 0;
 		return FALSE;
 	}
 	

@@ -34,16 +34,38 @@
 #include <X11/Xatom.h>
 #include <gdk/gdkwindow.h>
 
+#include <sstream>
+
 Toaster::Toaster(WLSignal *wls) : WoklibPlugin(wls)
 {
 	EXP_SIGHOOK("Jabber Event Add", &Toaster::AddJIDEvent, 1000);
 	EXP_SIGHOOK("Toaster Display", &Toaster::DisplayMSG, 1000);
+	EXP_SIGHOOK("Toaster Remove", &Toaster::RemoveMSG, 1000);
+	
+	config = new WokXMLTag(NULL, "NULL");
+	EXP_SIGHOOK("Config XML Change /toaster", &Toaster::ReadConfig, 500);
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/toaster");
+	wls->SendSignal("Config XML Trigger", &conftag);
+	twid = 0;
 }
 
 
 Toaster::~Toaster()
 {
 
+}
+
+int
+Toaster::ReadConfig(WokXMLTag *tag)
+{
+	delete config;
+	config = new WokXMLTag(tag->GetFirstTag("config"));
+	
+	tag->GetFirstTag("config").GetFirstTag("delay").AddAttr("type", "string");
+
+	
+	return 1;	
 }
 
 int
@@ -59,24 +81,6 @@ Toaster::AddJIDEvent(WokXMLTag *tag)
 	wls->SendSignal("Toaster Display", &toastertag);
 
 	return true;
-}
-
-gboolean
-Toaster::Timeout(Toaster *c)
-{
-	delete *(c->twlist.begin());
-	c->twlist.pop_front();
-
-	std::list<ToasterWindow *>::iterator iter;
-	
-	int Height = c->rect_workspace.y + c->rect_workspace.height;
-	for ( iter = c->twlist.begin() ; iter != c->twlist.end() ; iter++)
-	{
-		(*iter)->MoveTo(c->rect_workspace.x + c->rect_workspace.width, Height);
-		Height -= (*iter)->GetHeight();	
-	}
-
-	return FALSE;
 }
 
 bool
@@ -194,6 +198,35 @@ Toaster::GetXWorkArea(GdkRectangle *rect)
 }
 
 int
+Toaster::RemoveMSG(WokXMLTag *tag)
+{
+	std::list<ToasterWindow *>::iterator iter;
+	
+	for( iter = twlist.begin() ; iter != twlist.end() ; iter++ )
+	{
+		if ( tag->GetAttr("id") == (*iter)->GetID() )
+		{
+			delete (*iter);
+			
+			twlist.erase(iter);
+			
+			int Height = rect_workspace.y + rect_workspace.height;
+			for ( iter = twlist.begin() ; iter != twlist.end() ; iter++)
+			{
+				(*iter)->MoveTo(rect_workspace.x + rect_workspace.width, Height);
+				Height -= (*iter)->GetHeight();	
+			}
+			
+			return 1;
+		}
+	}
+	
+	
+	
+	return 1;
+}
+
+int
 Toaster::DisplayMSG(WokXMLTag *tag)
 {
 	GdkDisplay *display;
@@ -223,15 +256,15 @@ Toaster::DisplayMSG(WokXMLTag *tag)
 	
 	for( iter = twlist.begin() ; iter != twlist.end() ; iter++ )
 	{
-			Height -= (*iter)->GetHeight(); 
+		Height -= (*iter)->GetHeight(); 
 	}
 	
+	std::stringstream twid_str;
+	twid_str << twid++;
+	tag->AddAttr("id", twid_str.str());
 	
-	tw = new ToasterWindow(wls, tag, rect_workspace.x+rect_workspace.width, Height);
+	tw = new ToasterWindow(wls, config, tag, rect_workspace.x+rect_workspace.width, Height);
 	twlist.push_back(tw);
-	
-	
-	g_timeout_add (15000, (gboolean (*)(void *)) (Toaster::Timeout), this);
 	
 	return true;
 }

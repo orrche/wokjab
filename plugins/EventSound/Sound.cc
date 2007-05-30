@@ -74,7 +74,7 @@ Sound::Event(WokXMLTag *tag)
 				waitpid(pid, &status, 0);
 		}
 	}
-	return true;
+	return 1;
 }
 
 int
@@ -86,5 +86,5 @@ Sound::Config(WokXMLTag *tag)
 	
 	tag->GetFirstTag("config").GetFirstTag("newmessage").AddAttr("type", "string");
 
-	return true;
+	return 1;
 }	

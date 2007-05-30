@@ -51,7 +51,9 @@ class Toaster : public WoklibPlugin
 	
 		int AddJIDEvent(WokXMLTag *tag);
 		int DisplayMSG(WokXMLTag *tag);
-		static gboolean Timeout(Toaster *c);
+		int ReadConfig(WokXMLTag *tag);
+		int RemoveMSG(WokXMLTag *tag);
+	
 		bool GetXWorkArea(GdkRectangle *rect);
 		
 			
@@ -60,6 +62,8 @@ class Toaster : public WoklibPlugin
 	protected:
 		GdkRectangle rect_workspace;
 		std::list <ToasterWindow*> twlist;
+		int twid;
+		WokXMLTag *config;
 };
 
 

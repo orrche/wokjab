@@ -40,12 +40,14 @@ using namespace Woklib;
 class ToasterWindow : public WLSignalInstance
 {
 	public:
-		ToasterWindow(WLSignal *wls, WokXMLTag *xml, int x, int y);
+		ToasterWindow(WLSignal *wls, WokXMLTag *config, WokXMLTag *xml, int x, int y);
 		 ~ToasterWindow();
 	
 		int GetHeight();
 		void MoveTo(int x, int y);
+		std::string GetID();
 		static gboolean Timeout(ToasterWindow *c);
+		static gboolean TimeoutRemove(ToasterWindow *c);
 		static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event, ToasterWindow *c);
 		static gboolean CommandExec(GtkWidget *button, GdkEventButton *event, ToasterWindow *c);
 	protected:
@@ -54,6 +56,8 @@ class ToasterWindow : public WLSignalInstance
 		GtkWidget *window;
 		GtkWidget *port;
 		int t;
+		guint timeoutid;
+		guint timeoutremoveid;
 };
 
 
