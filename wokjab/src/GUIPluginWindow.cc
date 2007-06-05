@@ -32,8 +32,6 @@ GUIPluginWindow::GUIPluginWindow(int *feedback, WLSignal *wls)
 	this->feedback = feedback;
 	this->wls = wls;
 
-	
-	
 	g_signal_connect (glade_xml_get_widget(xml, "close_button"), "clicked",
 		G_CALLBACK (GUIPluginWindow::Cancel_Button), this);
 	g_signal_connect (glade_xml_get_widget(xml, "delete_button"), "clicked",

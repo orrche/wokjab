@@ -17,40 +17,71 @@
 
 
 #include "WLDbus.h"
-/*
-gboolean WLDbus_SendSignal(WLDbus_obj *obj, gchar **apple, GError **error);
-gboolean WLDbus_HookSignal(WLDbus_obj *obj, gchar **apple, GError **error);
-gboolean WLDbus_UnHookSignal(WLDbus_obj *obj, gchar **apple, GError **error);
-
 #include "wokjab-dbus-glue.h"
 
 G_DEFINE_TYPE(WLDbus_obj, wokjab, G_TYPE_OBJECT);
-*/
 
 WLDbus::WLDbus(WLSignal *wls): WoklibPlugin(wls)
 {
-//	server = static_cast<WLDbus_obj*>(g_object_new(wokjab_get_type(), NULL));
-
+	server = static_cast<WLDbus_obj*>(g_object_new(wokjab_get_type(), NULL));
+	server->data = this;
 }
 
 WLDbus::~WLDbus()
 {
-
+	if ( ! hooklist.empty() )
+	{
+		std::list <WLDbushook*>::iterator iter;
+		for ( iter = hooklist.begin() ; iter != hooklist.end() ; iter++)
+		{
+			delete *iter;
+		}
+	}
 
 }
-#if 0
+
+void
+WLDbus::DeleteHook(WLDbushook *h)
+{
+	
+	hooklist.erase(std::find(hooklist.begin(), hooklist.end(), h));
+	delete h;
+}
+
+void
+WLDbus::Hook(std::string signal, std::string path, std::string interface, std::string method, int prio)
+{
+	hooklist.push_back(new WLDbushook(wls,this, signal, path, interface, method, prio));
+}
+
+void
+WLDbus::UnHook(std::string signal, std::string path, std::string interface, std::string method, int prio)
+{
+	if ( ! hooklist.empty() )
+	{
+		std::list <WLDbushook*>::iterator iter;
+		for ( iter = hooklist.begin() ; iter != hooklist.end() ; iter++)
+		{
+			if ( (*iter)->is(signal,path,interface,method,prio) )
+			{
+				hooklist.erase(iter);
+				delete *iter;
+				break;
+			}
+		}
+	}
+}
+
 void 
 wokjab_class_init(WLDbus_objClass *cl) {
 	// Nothing here
 }
-#endif
 
-#if 0
 void
-wokjab_init((WLDbus_obj *server) {
+wokjab_init(WLDbus_obj *server) {
 	GError *error = NULL;
 	DBusGProxy *driver_proxy;
-	int request_ret;
+	guint request_ret;
 	
 	// Initialise the DBus connection
 	server->connection = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
@@ -60,39 +91,45 @@ wokjab_init((WLDbus_obj *server) {
 		return;
 	}
 	
-	dbus_g_object_type_install_info(fruitd_get_type(), &dbus_glib_fruitd_object_info);
+	dbus_g_object_type_install_info(wokjab_get_type(), &dbus_glib_wokjab_object_info);
 	
 	// Register DBUS path
-	dbus_g_connection_register_g_object(server->connection, "/org/cornershop/FruitMaker", G_OBJECT(server));
+	dbus_g_connection_register_g_object(server->connection, "/net/sourceforge/wokjab", G_OBJECT(server));
 
 	// Register the service name, the constants here are defined in dbus-glib-bindings.h
 	driver_proxy = dbus_g_proxy_new_for_name(server->connection, DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, DBUS_INTERFACE_DBUS);
 
-	if (!org_freedesktop_DBus_request_name (driver_proxy, "org.cornershop.FruitMaker", 0, &request_ret, &error)) {
+	if (!org_freedesktop_DBus_request_name (driver_proxy, "net.sourceforge.wokjab", 0, &request_ret, &error)) {
 		g_warning("Unable to register service: %s", error->message);
 		g_error_free(error);
 	}
 	
 	g_object_unref(driver_proxy);
 }
-#endif
-/*
-gboolean WLDbus_SendSignal(WLDbus_obj *obj, gchar **apple, GError **error)
+
+gboolean WLDbus_SendSignal(WLDbus_obj *obj, gchar *name, gchar *data, gchar **apple, GError **error)
 {
-	std::cout << "Sending signal" << std::endl;
+	WokXMLTag dataxml(NULL, "data");
+	dataxml.Add(data);
+	if ( dataxml.GetTags().empty() )
+			return TRUE;
+
+	obj->data->wls->SendSignal(name, **dataxml.GetTags().begin());
+	
+	*apple = g_strdup((*dataxml.GetTags().begin())->GetStr().c_str());
 	return TRUE;
 }
 
-gboolean WLDbus_HookSignal(WLDbus_obj *obj, gchar **apple, GError **error)
+gboolean WLDbus_HookSignal(WLDbus_obj *obj, gchar *signal, gchar *path, gchar *interface, gchar *method, int prio, gchar **apple, GError **error)
 {
-	std::cout << "Hoooking" << std::endl;
+	obj->data->Hook(signal, path, interface, method, prio);
 	return TRUE;
 }
 
-gboolean WLDbus_UnHookSignal(WLDbus_obj *obj, gchar **apple, GError **error)
+gboolean WLDbus_UnHookSignal(WLDbus_obj *obj, gchar *signal, gchar *path, gchar *interface, gchar *method, int prio, gchar **apple, GError **error)
 {
-	std::cout << "Unhooking" << std::endl;
+	obj->data->UnHook(signal, path, interface, method, prio);
 	return TRUE;
 }
 
-*/
+

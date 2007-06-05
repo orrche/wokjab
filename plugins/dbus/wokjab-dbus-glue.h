@@ -53,7 +53,62 @@ G_BEGIN_DECLS
 #endif /* !G_ENABLE_DEBUG */
 
 
-/* BOOLEAN:STRING,STRING,POINTER,POINTER (/tmp/dbus-binding-tool-c-marshallers.UIAWRT:1) */
+/* BOOLEAN:STRING,STRING,STRING,STRING,INT,POINTER (/tmp/dbus-binding-tool-c-marshallers.CDICTT:1) */
+extern void dbus_glib_marshal_wokjab_BOOLEAN__STRING_STRING_STRING_STRING_INT_POINTER (GClosure     *closure,
+                                                                                       GValue       *return_value,
+                                                                                       guint         n_param_values,
+                                                                                       const GValue *param_values,
+                                                                                       gpointer      invocation_hint,
+                                                                                       gpointer      marshal_data);
+void
+dbus_glib_marshal_wokjab_BOOLEAN__STRING_STRING_STRING_STRING_INT_POINTER (GClosure     *closure,
+                                                                           GValue       *return_value,
+                                                                           guint         n_param_values,
+                                                                           const GValue *param_values,
+                                                                           gpointer      invocation_hint,
+                                                                           gpointer      marshal_data)
+{
+  typedef gboolean (*GMarshalFunc_BOOLEAN__STRING_STRING_STRING_STRING_INT_POINTER) (gpointer     data1,
+                                                                                     gpointer     arg_1,
+                                                                                     gpointer     arg_2,
+                                                                                     gpointer     arg_3,
+                                                                                     gpointer     arg_4,
+                                                                                     gint         arg_5,
+                                                                                     gpointer     arg_6,
+                                                                                     gpointer     data2);
+  register GMarshalFunc_BOOLEAN__STRING_STRING_STRING_STRING_INT_POINTER callback;
+  register GCClosure *cc = (GCClosure*) closure;
+  register gpointer data1, data2;
+  gboolean v_return;
+
+  g_return_if_fail (return_value != NULL);
+  g_return_if_fail (n_param_values == 7);
+
+  if (G_CCLOSURE_SWAP_DATA (closure))
+    {
+      data1 = closure->data;
+      data2 = g_value_peek_pointer (param_values + 0);
+    }
+  else
+    {
+      data1 = g_value_peek_pointer (param_values + 0);
+      data2 = closure->data;
+    }
+  callback = (GMarshalFunc_BOOLEAN__STRING_STRING_STRING_STRING_INT_POINTER) (marshal_data ? marshal_data : cc->callback);
+
+  v_return = callback (data1,
+                       g_marshal_value_peek_string (param_values + 1),
+                       g_marshal_value_peek_string (param_values + 2),
+                       g_marshal_value_peek_string (param_values + 3),
+                       g_marshal_value_peek_string (param_values + 4),
+                       g_marshal_value_peek_int (param_values + 5),
+                       g_marshal_value_peek_pointer (param_values + 6),
+                       data2);
+
+  g_value_set_boolean (return_value, v_return);
+}
+
+/* BOOLEAN:STRING,STRING,POINTER,POINTER (/tmp/dbus-binding-tool-c-marshallers.CDICTT:2) */
 extern void dbus_glib_marshal_wokjab_BOOLEAN__STRING_STRING_POINTER_POINTER (GClosure     *closure,
                                                                              GValue       *return_value,
                                                                              guint         n_param_values,
@@ -104,53 +159,6 @@ dbus_glib_marshal_wokjab_BOOLEAN__STRING_STRING_POINTER_POINTER (GClosure     *c
   g_value_set_boolean (return_value, v_return);
 }
 
-/* BOOLEAN:STRING,POINTER (/tmp/dbus-binding-tool-c-marshallers.UIAWRT:2) */
-extern void dbus_glib_marshal_wokjab_BOOLEAN__STRING_POINTER (GClosure     *closure,
-                                                              GValue       *return_value,
-                                                              guint         n_param_values,
-                                                              const GValue *param_values,
-                                                              gpointer      invocation_hint,
-                                                              gpointer      marshal_data);
-void
-dbus_glib_marshal_wokjab_BOOLEAN__STRING_POINTER (GClosure     *closure,
-                                                  GValue       *return_value,
-                                                  guint         n_param_values,
-                                                  const GValue *param_values,
-                                                  gpointer      invocation_hint,
-                                                  gpointer      marshal_data)
-{
-  typedef gboolean (*GMarshalFunc_BOOLEAN__STRING_POINTER) (gpointer     data1,
-                                                            gpointer     arg_1,
-                                                            gpointer     arg_2,
-                                                            gpointer     data2);
-  register GMarshalFunc_BOOLEAN__STRING_POINTER callback;
-  register GCClosure *cc = (GCClosure*) closure;
-  register gpointer data1, data2;
-  gboolean v_return;
-
-  g_return_if_fail (return_value != NULL);
-  g_return_if_fail (n_param_values == 3);
-
-  if (G_CCLOSURE_SWAP_DATA (closure))
-    {
-      data1 = closure->data;
-      data2 = g_value_peek_pointer (param_values + 0);
-    }
-  else
-    {
-      data1 = g_value_peek_pointer (param_values + 0);
-      data2 = closure->data;
-    }
-  callback = (GMarshalFunc_BOOLEAN__STRING_POINTER) (marshal_data ? marshal_data : cc->callback);
-
-  v_return = callback (data1,
-                       g_marshal_value_peek_string (param_values + 1),
-                       g_marshal_value_peek_pointer (param_values + 2),
-                       data2);
-
-  g_value_set_boolean (return_value, v_return);
-}
-
 G_END_DECLS
 
 #endif /* __dbus_glib_marshal_wokjab_MARSHAL_H__ */
@@ -158,15 +166,15 @@ G_END_DECLS
 #include <dbus/dbus-glib.h>
 static const DBusGMethodInfo dbus_glib_wokjab_methods[] = {
   { (GCallback) WLDbus_SendSignal, dbus_glib_marshal_wokjab_BOOLEAN__STRING_STRING_POINTER_POINTER, 0 },
-  { (GCallback) WLDbus_HookSignal, dbus_glib_marshal_wokjab_BOOLEAN__STRING_POINTER, 70 },
-  { (GCallback) WLDbus_UnHookSignal, dbus_glib_marshal_wokjab_BOOLEAN__STRING_POINTER, 116 },
+  { (GCallback) WLDbus_HookSignal, dbus_glib_marshal_wokjab_BOOLEAN__STRING_STRING_STRING_STRING_INT_POINTER, 70 },
+  { (GCallback) WLDbus_UnHookSignal, dbus_glib_marshal_wokjab_BOOLEAN__STRING_STRING_STRING_STRING_INT_POINTER, 165 },
 };
 
 const DBusGObjectInfo dbus_glib_wokjab_object_info = {
   0,
   dbus_glib_wokjab_methods,
   3,
-"net.sourceforge.Wokjab\0SendSignal\0S\0name\0I\0s\0data\0I\0s\0return\0O\0F\0N\0s\0\0net.sourceforge.Wokjab\0HookSignal\0S\0name\0I\0s\0\0net.sourceforge.Wokjab\0UnHookSignal\0S\0name\0I\0s\0\0\0",
+"net.sourceforge.Wokjab\0SendSignal\0S\0name\0I\0s\0data\0I\0s\0result\0O\0F\0N\0s\0\0net.sourceforge.Wokjab\0HookSignal\0S\0signal\0I\0s\0path\0I\0s\0interface\0I\0s\0method\0I\0s\0priority\0I\0i\0\0net.sourceforge.Wokjab\0UnHookSignal\0S\0signal\0I\0s\0path\0I\0s\0interface\0I\0s\0method\0I\0s\0priority\0I\0i\0\0\0",
 "\0",
 "\0"
 };

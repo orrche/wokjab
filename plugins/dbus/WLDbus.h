@@ -26,31 +26,48 @@
 
 
 using namespace Woklib;
+class WLDbus;
 
-// #include <dbus/dbus-glib-bindings.h>
+#include "w-l-dbushook.hpp"
 
-/*
+#include <dbus/dbus-glib-bindings.h>
+
+
+
+
 typedef struct
 {
 	GObject parent;
 	DBusGConnection *connection;
+	class WLDbus *data;
 } WLDbus_obj;
 
 typedef struct
 {
 	GObjectClass parent_class;
 } WLDbus_objClass;
-*/
+
+gboolean WLDbus_SendSignal(WLDbus_obj *obj, gchar *name, gchar *data, gchar **apple, GError **error);
+gboolean WLDbus_HookSignal(WLDbus_obj *obj, gchar *signal, gchar *path, gchar *interface, gchar *method, int prio, gchar **apple, GError **error);
+gboolean WLDbus_UnHookSignal(WLDbus_obj *obj, gchar *signal, gchar *path, gchar *interface, gchar *method, int prio, gchar **apple, GError **error);
+
 
 class WLDbus : public WoklibPlugin
 {
+	friend gboolean WLDbus_SendSignal(WLDbus_obj *obj, gchar *name, gchar *data, gchar **apple, GError **error);
+	friend gboolean WLDbus_HookSignal(WLDbus_obj *obj, gchar *signal, gchar *path, gchar *interface, gchar *method, int prio, gchar **apple, GError **error);
+	friend gboolean WLDbus_UnHookSignal(WLDbus_obj *obj, gchar *signal, gchar *path, gchar *interface, gchar *method, int prio, gchar **apple, GError **error);
+	
 	public:
 		WLDbus(WLSignal *wls);
 		 ~WLDbus();
-	
+		
+		void DeleteHook(WLDbushook *h);
+		void Hook(std::string signal, std::string path, std::string interface, std::string method, int prio);
+		void UnHook(std::string signal, std::string path, std::string interface, std::string method, int prio);
 	protected:
-//		WLDbus_obj *server;
+		WLDbus_obj *server;
+		std::list <WLDbushook*> hooklist;
 };
-
 
 #endif	//_WLD_BUS_H_

@@ -14,9 +14,15 @@ libdbus_la_SOURCES = \
 	WLDbus.cc \
 	WLDbus.h \
 	wokjab-dbus-glue.h \
-	wokjab.xml
+	wokjab.xml \
+	w-l-dbushook.hpp \
+	w-l-dbushook.cpp 
 	
-
+AM_LDFLAGS = \
+	`pkg-config dbus-glib-1 --libs`
+	
 ## File created by the gnome-build tools
+
+
 
 
