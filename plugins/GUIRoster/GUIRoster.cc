@@ -335,10 +335,9 @@ GUIRoster::GUIWindowInit(WokXMLTag *tag)
 		delete inittag;
 		inittag = NULL;
 		
-			
-	std::stringstream sig;
-	sig << "GUI Window Close " << gtk_plug_get_id(GTK_PLUG(mainwindowplug));
-	EXP_SIGHOOK(sig.str(), &GUIRoster::Close, 500);
+		std::stringstream sig;
+		sig << "GUI Window Close " << gtk_plug_get_id(GTK_PLUG(mainwindowplug));
+		EXP_SIGHOOK(sig.str(), &GUIRoster::Close, 500);
 	}
 	return 1;
 }
