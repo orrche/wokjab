@@ -60,6 +60,7 @@ SUBDIRS= \
 	GroupChatBookmark \
 	Fileshare \
 	AutoJoinGroupChat \
-	dbus 
+	dbus \
+	RosterEvent 
 
 

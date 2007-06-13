@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <oden@gmx.net>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -37,15 +37,16 @@ using std::endl;
 
 GUIRoster::GUIRoster (WLSignal * wls):WLSignalInstance (wls)
 {				
-	hbb = gtk_hbox_new(false, false );
-	
+	hbb = gtk_hbox_new(FALSE, FALSE );
+	saveconfig = true;
+
 	togg1 = gtk_toggle_button_new();
 	togg2 = gtk_toggle_button_new();
 	togg3 = gtk_toggle_button_new();
 	
-	gtk_box_pack_start( GTK_BOX(hbb), togg1, false, false, false);
-	gtk_box_pack_start( GTK_BOX(hbb), togg2, false, false, false);
-	gtk_box_pack_start( GTK_BOX(hbb), togg3, false, false, false);
+	gtk_box_pack_start( GTK_BOX(hbb), togg1, FALSE, FALSE, FALSE);
+	gtk_box_pack_start( GTK_BOX(hbb), togg2, FALSE, FALSE, FALSE);
+	gtk_box_pack_start( GTK_BOX(hbb), togg3, FALSE, FALSE, FALSE);
 	
 	EXP_SIGHOOK("Jabber GUI Roster View", &GUIRoster::View, 1);
 	EXP_SIGHOOK("Jabber GUI GetIcon", &GUIRoster::GetIcon, 1);
@@ -107,7 +108,6 @@ GUIRoster::GUIRoster (WLSignal * wls):WLSignalInstance (wls)
 
 GUIRoster::~GUIRoster ()
 {	
-		
 	EXP_SIGUNHOOK("Config XML Change /main/window/roster_visibility", &GUIRoster::ReadConfig, 500);
 	
 	SaveConfig();
@@ -132,7 +132,8 @@ GUIRoster::ToggleButton(GtkWidget *widget, GUIRoster *c)
 	else 
 		c->bstate[widget] = FALSE;
 		
-	c->SaveConfig();
+	if ( c->saveconfig ) 
+		c->SaveConfig();
 	WokXMLTag empty(NULL, "empty");
 	c->wls->SendSignal("Jabber Roster Recheck", empty);
 }
@@ -140,9 +141,10 @@ GUIRoster::ToggleButton(GtkWidget *widget, GUIRoster *c)
 int
 GUIRoster::ReadConfig (WokXMLTag *tag)
 {
+	saveconfig = false;
 	delete config;
 	config = new WokXMLTag(tag->GetFirstTag("config"));
-
+	
 	if( config->GetFirstTag("show").GetFirstTag("offline").GetAttr("data") != "false" )
 		bstate[togg1] = true;
 	else
@@ -163,7 +165,8 @@ GUIRoster::ReadConfig (WokXMLTag *tag)
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(togg1), bstate[togg1]);			
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(togg2), bstate[togg2]);			
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(togg3), bstate[togg3]);
-	
+
+	saveconfig = true;
 	return true;
 }
 

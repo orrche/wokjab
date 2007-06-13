@@ -137,21 +137,17 @@ Config::Store(WokXMLTag *tag)
 	std::string path = tag->GetAttr("path");
 	if(!path.size())
 		return true;
-	WokXMLTag *place = GetPosition(path);
-	WokXMLTag *parant;
+	WokXMLTag *place;
+	WokXMLTag *parant = GetPosition(path);
 
-	// Need to think throw if an xmltag is always the parant ...
-	parant = static_cast <WokXMLTag *> (place->GetParant());
-	if( !parant )
-		return 1;
+	place = &parant->GetFirstTag("config");
 
-	std::string name = place->GetName();
+	std::string name = parant->GetName();
 	parant->RemoveTag(place);
 
 	delete place;
 
-	place = &parant->GetFirstTag(name); // Works for adding tags to.
-	place->AddTag(tag);
+	parant->AddTag(tag);
 
 	wls->SendSignal("Config XML Change " + path, tag);
 

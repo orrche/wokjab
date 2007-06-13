@@ -58,19 +58,23 @@ class GUIWindow : public WLSignalInstance
 		int AddWidget(WokXMLTag *tag);
 		int Connect (WLSignalData *wlsd);
 		int PluginWin (WLSignalData *wlsd);
-		int	show(WLSignalData *wlsd);
-		int	hide(WLSignalData *wlsd);
-		int	toggle(WLSignalData *wlsd);
+		int show(WLSignalData *wlsd);
+		int hide(WLSignalData *wlsd);
+		int toggle(WLSignalData *wlsd);
 		int Loggedin(WokXMLTag *tag);
 		int Loggedout(WokXMLTag *tag);
 		int GetMainMenu(WokXMLTag *menu_tag);
 		int QuitRequest(WLSignalData *wlsd);
 		int SendingPresence(WokXMLTag *tag);
+		int  PresenceClose(WokXMLTag *tag);
+		int GUIWindowInit(WokXMLTag *tag);
 
 		void UpdateStruts();
 
 	protected:
 		GladeXML *xml;
+		GladeXML *preferencexml;
+		GtkWidget *mainwindowplug;
 
 		gulong connected;
 		guint priotimeid;

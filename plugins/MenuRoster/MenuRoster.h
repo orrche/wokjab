@@ -27,6 +27,10 @@
 #ifndef _MENUROSTER_H_
 #define _MENUROSTER_H_
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
@@ -41,7 +45,10 @@ class MenuRoster : public WoklibPlugin
 	public:
 		MenuRoster(WLSignal *wls);
 		 ~MenuRoster();
-	
+
+		virtual std::string GetInfo() {return "Menu Roster";};
+		virtual std::string GetVersion() {return VERSION;};
+
 		int CreateRoster(WokXMLTag *tag);
 		void AddUserEntry(WokXMLTag *pos, WokXMLTag *usertag, std::string session);
 	protected:

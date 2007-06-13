@@ -236,7 +236,10 @@ from(from)
 
 	char buf[20];
 	WokXMLTag contag(NULL, "connect");
-	contag.AddAttr("identifier", from);
+	if ( nick.empty() )
+		contag.AddAttr("identifier", from);
+	else
+		contag.AddAttr("identifier", nick);
 	contag.AddAttr("session", session);
 	sprintf(buf, "%d", gtk_plug_get_id(GTK_PLUG(mainwindowplug)));
 	contag.AddAttr("mainwidget", buf);
@@ -577,19 +580,6 @@ GUIMessageWidget::DragDrop(GtkWidget *widget, GdkDragContext *dc, gint x, gint y
 gboolean
 GUIMessageWidget::DragDest(GtkWidget *widget, GdkDragContext *dc,gint x, gint y, GtkSelectionData *selection_data, guint info, guint t, GUIMessageWidget *c)
 {
-/*
-	WokXMLTag FileTransfearTag(NULL, "ProgramEXECTag");
-	FileTransfearTag.AddTag("program").AddAttr("exec", "file_transfer_script");
-	FileTransfearTag.GetFirstTag("program").AddTag("attribute").AddText((const char *)selection_data->data);
-
-	std::cout << FileTransfearTag << std::endl;
-	data->wls->SendSignal("Run Program", FileTransfearTag);
-*/
-/*
-	std::cout << "I got some shit !! info: " << info << " x: " << x << " y: " << y << std::endl;
-	std::cout << "S Data: " << selection_data->data << std::endl;
-	*/
-	
 	if ( info == 1 )
 	{
 		std::string data((char*)selection_data->data);

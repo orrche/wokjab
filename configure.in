@@ -129,6 +129,7 @@ AC_OUTPUT(Makefile \
 	plugins/groupchat-plugin/images/Makefile  \
 	plugins/Reversi/Makefile  \
 	plugins/Reversi/pixmaps/Makefile  \
+        plugins/RosterEvent/Makefile  \
 	plugins/EventSound/Makefile  \
 	plugins/toaster/Makefile  \
 	plugins/Tooltip/Makefile  \

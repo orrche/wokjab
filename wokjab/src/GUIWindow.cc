@@ -30,19 +30,11 @@ using std::endl;
 GUIWindow::GUIWindow(WLSignal *wls) :
 WLSignalInstance(wls)
 {
-	xml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/main.window.glade", NULL, NULL);
+	xml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/main.window.glade", "window", NULL);
 	plugin_win_open = connect_win_open = false;
 	visible = true;
 	priotimeid = 0;
 
-	gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(xml,"showentry")), 4);
-
-	g_signal_connect ((gpointer) glade_xml_get_widget(xml,"prioentry"), "value-changed",
-										G_CALLBACK (GUIWindow::SpinBtnPrio), this);
-	g_signal_connect ((gpointer) glade_xml_get_widget(xml,"statusentry"), "activate",
-										G_CALLBACK (GUIWindow::EntryStatusActivate), this);
-	g_signal_connect ((gpointer) glade_xml_get_widget(xml,"statusentry"), "focus-out-event",
-										G_CALLBACK (GUIWindow::EntryStatusLeft), this);
 	g_signal_connect ((gpointer) glade_xml_get_widget(xml,"window"), "destroy",
 										G_CALLBACK (GUIWindow::Destroy), this);
 	g_signal_connect ((gpointer) glade_xml_get_widget(xml,"window"), "delete_event",
@@ -50,8 +42,6 @@ WLSignalInstance(wls)
 
 	g_signal_connect ((gpointer) glade_xml_get_widget(xml,"wokjabmenu"), "button_press_event",
                     G_CALLBACK (GUIWindow::MainMenu), this);
-	g_signal_connect ((gpointer) glade_xml_get_widget(xml,"showentry"), "changed",
-                    G_CALLBACK (GUIWindow::MenuActivate), this);
 
 	config = new WokXMLTag(NULL, "NULL");
 	EXP_SIGHOOK("Config XML Change /main/window", &GUIWindow::ReadConfig, 500);
@@ -70,6 +60,7 @@ WLSignalInstance(wls)
 	EXP_SIGHOOK("MainMenu Plugin", &GUIWindow::PluginWin, 1000);
 	EXP_SIGHOOK("Quit Request", &GUIWindow::QuitRequest, 1000);
 	EXP_SIGHOOK("Jabber XML Presence Send", &GUIWindow::SendingPresence, 10);
+	EXP_SIGHOOK("GUI Window Init", &GUIWindow::GUIWindowInit, 550);	
 
 	gmsghandler = new GUIMessageHandler(wls);
 	new GUIRoster(wls);
@@ -83,6 +74,55 @@ GUIWindow::~GUIWindow()
 	EXP_SIGUNHOOK("Config XML Change /main/window", &GUIWindow::ReadConfig, 500);
 	delete gmsghandler;
 	
+}
+
+int
+GUIWindow::GUIWindowInit(WokXMLTag *tag)
+{
+	preferencexml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/main.window.glade", "mainbox.presence", NULL);
+	GtkWidget *main_vbox = glade_xml_get_widget (preferencexml, "mainbox.presence");
+	char buf[40];
+
+	mainwindowplug = gtk_plug_new(0);
+	
+	gtk_container_add(GTK_CONTAINER(mainwindowplug), main_vbox);
+	
+	gtk_widget_show_all(mainwindowplug);
+
+	WokXMLTag contag(NULL, "connect");
+	sprintf(buf, "%d", gtk_plug_get_id(GTK_PLUG(mainwindowplug)));
+	WokXMLTag &widtag = contag.AddTag("widget");
+	widtag.AddAttr("id", buf);
+	widtag.AddAttr("expand", "false");
+	widtag.AddAttr("fill", "true");
+	
+	wls->SendSignal("GUI Window AddWidget",&contag);
+	std::stringstream sig;
+	sig << "GUI Window Close " << gtk_plug_get_id(GTK_PLUG(mainwindowplug));
+	EXP_SIGHOOK(sig.str(), &GUIWindow::PresenceClose, 500);
+	
+	gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(preferencexml,"showentry")), 4);
+
+	g_signal_connect ((gpointer) glade_xml_get_widget(preferencexml,"prioentry"), "value-changed",
+										G_CALLBACK (GUIWindow::SpinBtnPrio), this);
+	g_signal_connect ((gpointer) glade_xml_get_widget(preferencexml,"statusentry"), "activate",
+										G_CALLBACK (GUIWindow::EntryStatusActivate), this);
+	g_signal_connect ((gpointer) glade_xml_get_widget(preferencexml,"statusentry"), "focus-out-event",
+										G_CALLBACK (GUIWindow::EntryStatusLeft), this);
+	g_signal_connect ((gpointer) glade_xml_get_widget(preferencexml,"showentry"), "changed",
+                    G_CALLBACK (GUIWindow::MenuActivate), this);
+
+	return 1;
+}
+
+int 
+GUIWindow::PresenceClose(WokXMLTag *tag)
+{
+	gtk_widget_destroy(mainwindowplug);
+	g_object_unref(xml);
+	xml = NULL;
+
+	return 1;
 }
 
 gboolean
@@ -144,7 +184,7 @@ GUIWindow::SendingPresence(WokXMLTag *tag)
 	if ( ptag.GetTagList("show").begin() == ptag.GetTagList("show").end() )
 	{
 
-		switch ( gtk_combo_box_get_active(GTK_COMBO_BOX(glade_xml_get_widget(xml, "showentry"))) )
+		switch ( gtk_combo_box_get_active(GTK_COMBO_BOX(glade_xml_get_widget(preferencexml, "showentry"))) )
 		{
 			case 0:
 				ptag.AddTag("show");
@@ -163,30 +203,30 @@ GUIWindow::SendingPresence(WokXMLTag *tag)
 	else
 	{
 		if ( ptag.GetFirstTag("show").GetBody() == "" )
-			gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(xml,"showentry")), 0);
+			gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(preferencexml,"showentry")), 0);
 		else if ( ptag.GetFirstTag("show").GetBody() == "away")
-			gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(xml,"showentry")), 1);
+			gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(preferencexml,"showentry")), 1);
 		else if ( ptag.GetFirstTag("show").GetBody() == "xa")
-			gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(xml,"showentry")), 2);
+			gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(preferencexml,"showentry")), 2);
 		else if ( ptag.GetFirstTag("show").GetBody() == "dnd")
-			gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(xml,"showentry")), 3);
+			gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(preferencexml,"showentry")), 3);
 
 	}
 
 	if ( ptag.GetTagList("status").begin() == ptag.GetTagList("status").end() )
-		ptag.GetFirstTag("status").AddText(gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(xml,"statusentry"))));
+		ptag.GetFirstTag("status").AddText(gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(preferencexml,"statusentry"))));
 	else
-		gtk_entry_set_text(GTK_ENTRY(glade_xml_get_widget(xml,"statusentry")), ptag.GetFirstTag("status").GetBody().c_str());
+		gtk_entry_set_text(GTK_ENTRY(glade_xml_get_widget(preferencexml,"statusentry")), ptag.GetFirstTag("status").GetBody().c_str());
 
 	if ( ptag.GetTagList("priority").begin() == ptag.GetTagList("priority").end() )
 	{
 		std::stringstream prio;
-		prio << gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(glade_xml_get_widget(xml,"prioentry")));
+		prio << gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(glade_xml_get_widget(preferencexml,"prioentry")));
 		ptag.GetFirstTag("priority").AddText(prio.str());
 	}
 	else
 	{
-		gtk_spin_button_set_value(GTK_SPIN_BUTTON(glade_xml_get_widget(xml,"prioentry")), atoi(ptag.GetFirstTag("priority").GetBody().c_str()));
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(glade_xml_get_widget(preferencexml,"prioentry")), atoi(ptag.GetFirstTag("priority").GetBody().c_str()));
 	}
 
 	return true;
@@ -200,7 +240,7 @@ GUIWindow::SetPresence(GUIWindow * c)
 	WokXMLTag msgtag (NULL, "message");
 	WokXMLTag &ptag = msgtag.AddTag("presence");
 
-	prio << gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON(glade_xml_get_widget(c->xml,"prioentry")));
+	prio << gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON(glade_xml_get_widget(c->preferencexml,"prioentry")));
 
 	ptag.AddTag("priority").AddText(prio.str());
 
@@ -266,7 +306,7 @@ GUIWindow::MenuActivate (GtkComboBox *widget, GUIWindow *c)
 	WokXMLTag msgtag(NULL, "message");
 	WokXMLTag &ptag = msgtag.AddTag("presence");
 
-	switch ( gtk_combo_box_get_active(GTK_COMBO_BOX(glade_xml_get_widget(c->xml, "showentry"))) )
+	switch ( gtk_combo_box_get_active(GTK_COMBO_BOX(glade_xml_get_widget(c->preferencexml, "showentry"))) )
 	{
 		case 0:
 			ptag.AddTag("show");
@@ -483,7 +523,7 @@ int
 GUIWindow::Loggedin(WokXMLTag *tag)
 {
 	ActiveSessions.push_back(tag->GetAttr("session"));
-	gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(xml,"showentry")), 0);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(preferencexml,"showentry")), 0);
 }
 
 int
@@ -496,7 +536,7 @@ GUIWindow::Loggedout(WokXMLTag *tag)
 	ActiveSessions.erase(iter);
 
 	if(ActiveSessions.size() == 0)
-		gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(xml,"showentry")), 4);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(preferencexml,"showentry")), 4);
 
 	return true;
 }
@@ -523,7 +563,6 @@ GUIWindow::WindowMove(GtkWidget *widget, GdkEventMotion *event, GUIWindow *c)
 void
 GUIWindow::UpdateStruts()
 {
-	// Fucks up kde at the moment
 	return;
 #if 0
 	gulong	struts[12] = { 0, };

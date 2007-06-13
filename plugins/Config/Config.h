@@ -27,6 +27,10 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <iostream>
 
 #include <Woklib/WokLib.h>
@@ -44,7 +48,7 @@ class Config : public WoklibPlugin
 		 ~Config();
 	
 		virtual std::string GetInfo() {return "XML Config";};
-		virtual std::string GetVersion() {return "0.0.1";};
+		virtual std::string GetVersion() {return VERSION;};
 	
 		WokXMLTag *GetPosition(std::string path);
 		void Load();

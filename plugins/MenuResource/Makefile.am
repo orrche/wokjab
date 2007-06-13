@@ -6,7 +6,7 @@ lib_LTLIBRARIES = \
 libmenuresource_la_SOURCES = \
 	main.cc             \
 	MenuResource.h             \
-	MenuResource.cc 
+	MenuResource.cc             
 
 SUBDIRS = \
 	.

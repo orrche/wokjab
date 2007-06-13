@@ -64,7 +64,6 @@ GtkPreference::~GtkPreference()
 void
 GtkPreference::SaveConfig()
 {	
-	
 	int width, height, pos_x, pos_y;
 	std::stringstream sheight, swidth, spos_x, spos_y;
 
@@ -202,6 +201,7 @@ GtkPreference::FindSanity(WokXMLTag &tag)
 			return true;
 	}
 	
+	return true;
 	return false;
 }
 
