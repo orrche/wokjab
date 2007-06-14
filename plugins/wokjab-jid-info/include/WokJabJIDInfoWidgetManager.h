@@ -18,6 +18,11 @@
 #ifndef _WOKJABJIDINFOWIDGETMANAGER_H_
 #define _WOKJABJIDINFOWIDGETMANAGER_H_
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
@@ -35,14 +40,11 @@ class WokJabJIDInfoWidgetManager : public WoklibPlugin
 	
 		int NewWidget(WokXMLTag *tag);
 		int InfoMenu(WokXMLTag *tag);
-		// WokJabJIDInfoWidget interface
 	
-		// TODO: add member function declarations...
-	
+
+		virtual std::string GetInfo() {return "JID Info";};
+		virtual std::string GetVersion() {return VERSION;};	
 	protected:
-		// WokJabJIDInfoWidget variables
-	
-		// TODO: add member variables...
 	
 };
 

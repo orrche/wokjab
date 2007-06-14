@@ -27,6 +27,10 @@
 #ifndef _TOOLTIP_H_
 #define _TOOLTIP_H_
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
@@ -46,6 +50,9 @@ class Tooltip : public WoklibPlugin
 		int Set(WokXMLTag &tag);
 		static gboolean DispWindow (Tooltip * c);
 		static gboolean Expose(GtkWidget *widget, GdkEventExpose *event, Tooltip *c);
+
+		virtual std::string GetInfo() {return "Tooltip";};
+		virtual std::string GetVersion() {return VERSION;};
 	protected:
 		WokXMLTag *currenttag;
 		GladeXML *xml;

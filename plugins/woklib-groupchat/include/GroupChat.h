@@ -18,6 +18,11 @@
 
 #ifndef _GROUPCHAT_H_
 #define _GROUPCHAT_H_
+
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokLib.h>
 #include <Woklib/WLSignal.h>
@@ -33,6 +38,10 @@ class GroupChat : public WoklibPlugin
 		int Part(WokXMLTag *tag);
 		int Ban(WokXMLTag *tag);
 		int Presence(WokXMLTag *tag);
+
+
+		virtual std::string GetInfo() {return "MUC Groupchat";};
+		virtual std::string GetVersion() {return VERSION;};
 	protected:
 		std::map <std::string, std::map <std::string, MUCServer> > servers;
 };
