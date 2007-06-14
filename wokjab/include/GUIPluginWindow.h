@@ -42,6 +42,7 @@ class GUIPluginWindow
 	static void Add_Button( GtkWidget *widget, GUIPluginWindow *data );
 	static void Remove_Button( GtkWidget *widget, GUIPluginWindow *c );
 	static void Reload_Button( GtkWidget *widget, GUIPluginWindow *c );
+	static void Toggled (GtkCellRendererToggle *cell, gchar *path_str, GUIPluginWindow *c);
 	protected:
 		GladeXML *filexml;
 		GladeXML *xml;

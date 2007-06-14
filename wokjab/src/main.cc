@@ -30,6 +30,7 @@
 #include "include/GUIWindow.h"
 #include "include/main.h"
 #include "../include/Initiat.h"
+#include "plugin-loader.hpp"
 
 #include <gtk/gtk.h>
 #include <dirent.h>
@@ -50,8 +51,7 @@ pluginloader(WLSignal *wls, std::string path)
 {
 	DIR             *dip;
 	struct dirent   *dit;
-    std::cout << "Plugin loader " << path << std::endl;
-
+    
 	std::string filename = path;
 
 	if ((dip = opendir(filename.c_str())) == NULL)
@@ -126,8 +126,13 @@ main (int argc, char **argv)
 	confinit.AddTag("filename").AddAttr("data", std::string(g_get_home_dir()) + "/.wokjab/config.xml");
 	wls->SendSignal("Config XML Init", &confinit);
 
+	PluginLoader *pl;
+	if ( normplug )
+		pl = new PluginLoader(&sj.wls_main);
+/*
     if ( normplug )
 		pluginloader(&sj.wls_main, string(PACKAGE_PLUGIN_DIR) + "/normal");
+*/
 
     if( argc > 1 )
 	{

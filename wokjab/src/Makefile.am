@@ -20,6 +20,7 @@ AM_LDFLAGS = -lwoklib  `pkg-config gtk+-2.0 libglade-2.0 --libs`
 
 bin_PROGRAMS = wokjab
 
-wokjab_SOURCES = GUIAddJIDWidget.cc GUIConnectWindow.cc GUIMessageHandler.cc GUIMessageWidget.cc GUIPluginWindow.cc GUIPresentReqWidget.cc GUIRoster.cc GUIRosterItem.cc GUIWindow.cc GUIWindowDock.cc Group.cc Initiat.cc Resource.cc Roster.cc User.cc main.cc 
+wokjab_SOURCES = GUIAddJIDWidget.cc GUIConnectWindow.cc GUIMessageHandler.cc GUIMessageWidget.cc GUIPluginWindow.cc GUIPresentReqWidget.cc GUIRoster.cc GUIRosterItem.cc GUIWindow.cc GUIWindowDock.cc Group.cc Initiat.cc Resource.cc Roster.cc User.cc main.cc \
+	plugin-loader.hpp plugin-loader.cpp 
 AM_CFLAGS =
 AM_CXXFLAGS =
