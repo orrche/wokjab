@@ -27,6 +27,10 @@
 #ifndef _MENURESOURCE_H_
 #define _MENURESOURCE_H_
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
@@ -43,6 +47,9 @@ class MenuResource : public WoklibPlugin
 	public:
 		MenuResource(WLSignal *wls);
 		 ~MenuResource();
+		
+		virtual std::string GetInfo() {return "Resource menu";};
+		virtual std::string GetVersion() {return VERSION;};
 	
 		int Menu(WokXMLTag *xml); /// Signal handler
 	protected:

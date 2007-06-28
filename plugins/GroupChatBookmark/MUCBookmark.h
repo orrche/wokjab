@@ -24,6 +24,11 @@
 #ifndef _MUCBOOKMARK_H_
 #define _MUCBOOKMARK_H_
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
@@ -39,6 +44,9 @@ class MUCBookmark : public WoklibPlugin
 	public:
 		MUCBookmark(WLSignal *wls);
 		 ~MUCBookmark();
+	
+			virtual std::string GetInfo() {return "MUCBookmarks";};
+			virtual std::string GetVersion() {return VERSION;};
 
 			int SignIn(WokXMLTag *tag);
 			int BookmarkResponse(WokXMLTag *tag);

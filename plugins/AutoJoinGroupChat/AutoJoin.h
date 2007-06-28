@@ -19,6 +19,10 @@
 #ifndef _AUTO_JOIN_H_
 #define _AUTO_JOIN_H_
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
@@ -35,6 +39,9 @@ class AutoJoin : public WoklibPlugin
 	public:
 		AutoJoin(WLSignal *wls);
 		 ~AutoJoin();
+	
+		virtual std::string GetInfo() {return "Auto Join Groupchat";};
+		virtual std::string GetVersion() {return VERSION;};
 	
 		void RemoveWid(AutoJoinWid *wid);
 	

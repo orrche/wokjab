@@ -86,8 +86,8 @@ MUCBookmark::BookmarkResponse(WokXMLTag *tag)
 				{
 					jointag.AddAttr("password", password);
 				}
-				if ( (*iter)->GetAttr("minimized") == "true" ||  (*iter)->GetAttr("minimized") == "1" )
-					jointag.AddAttr("minimized", "true");
+				if ( (*iter)->GetAttr("minimize") == "true" ||  (*iter)->GetAttr("minimize") == "1" )
+					jointag.AddAttr("minimize", "true");
 					
 				wls->SendSignal("Jabber GroupChat Join", &jointag);
 				

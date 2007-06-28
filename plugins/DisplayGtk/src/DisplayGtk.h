@@ -29,6 +29,11 @@
 #ifndef _DISPLAYGTK_H_
 #define _DISPLAYGTK_H_
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>

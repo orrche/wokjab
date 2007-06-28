@@ -39,6 +39,7 @@ class GUIMessageHandler : public WLSignalInstance
 		int JIDMenu( WokXMLTag *tag);
 		int MenuOpenDialog( WokXMLTag *tag);
 		int GetSpool(WokXMLTag *tag);
+		int CopyBody(WokXMLTag *tag);
 
 		void WriteToSpool(WokXMLTag *tag);
 		void TriggerEvent(WokXMLTag *tag);

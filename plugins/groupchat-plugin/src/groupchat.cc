@@ -96,7 +96,8 @@ GroupChat::Join(WokXMLTag *tag)
 	sprintf(buf, "%d", wid->GetLabel());
 	contag.AddAttr("labelwidget", buf);
 	contag.AddAttr("close_signal", "close_muc_dialog");
-	
+	contag.AddAttr("minimize", tag->GetAttr("minimize"));
+
 	wls->SendSignal("GUI WindowDock AddWidget",&contag);
 
 	EXP_SIGHOOK(std::string("GUI WindowDock Close ") + contag.GetAttr("mainwidget"), &GroupChat::CloseDialog, 500);

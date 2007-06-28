@@ -22,6 +22,10 @@
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 using namespace Woklib;
 
 /**

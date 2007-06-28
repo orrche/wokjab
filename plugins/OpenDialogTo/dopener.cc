@@ -99,6 +99,8 @@ DOpener::Delete( GtkWidget *widget, DOpener *c)
 {	
 	if ( c->xml )
 		delete c;
+
+	return TRUE;
 }
 
 gboolean

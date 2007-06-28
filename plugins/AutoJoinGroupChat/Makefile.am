@@ -17,7 +17,10 @@
 
 
 libdir = $(prefix)/lib/woklib-plugins/normal
-
+datadir = $(prefix)/lib/woklib/glade
+pkgdata_DATA = \
+        AutoJoinWid.glade
+	
 AM_CFLAGS =\
 	`pkg-config libglade-2.0 gtk+-2.0 --cflags`
 

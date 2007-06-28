@@ -44,7 +44,7 @@ AutoJoin::RemoveWid(AutoJoinWid *wid)
 int
 AutoJoin::CreateWid(WokXMLTag *xml)
 {
-	new AutoJoinWid(wls, xml, this);
+	widlist.push_back(new AutoJoinWid(wls, xml, this));
 	
 }
 

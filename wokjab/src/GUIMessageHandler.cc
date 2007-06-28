@@ -42,6 +42,8 @@ using std::string;
 GUIMessageHandler::GUIMessageHandler(WLSignal *wls) : WLSignalInstance(wls)
 {
 	EXP_SIGHOOK("Jabber XML Message Normal", &GUIMessageHandler::new_message, 999);
+	EXP_SIGHOOK("Jabber XML Message Normal", &GUIMessageHandler::CopyBody, 0);
+
 	EXP_SIGHOOK("Jabber GUI MessageDialog Open", &GUIMessageHandler::OpenDialog, 1000);
 	EXP_SIGHOOK("Jabber XML Presence", &GUIMessageHandler::Presence, 1000);
 	EXP_SIGHOOK("Jabber GUI GetJIDMenu", &GUIMessageHandler::JIDMenu, 1000);
@@ -172,6 +174,14 @@ GUIMessageHandler::TriggerEvent(WokXMLTag *tag)
 	item.AddAttr("session", tag->GetAttr("session"));
 	
 	wls->SendSignal("Jabber Event Add", &eventtag);
+}
+
+int
+GUIMessageHandler::CopyBody(WokXMLTag *tag)
+{
+	tag->AddTag(&tag->GetFirstTag("message").GetFirstTag("body"));
+
+	return 1;
 }
 
 int

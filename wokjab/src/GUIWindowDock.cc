@@ -266,8 +266,6 @@ GUIWindowDock::ShowPage(WokXMLTag *tag)
 int
 GUIWindowDock::AppendPlugPage(WokXMLTag *tag)
 {
-	std::cout << "Tag: " << *tag << std::endl;
-	
 	GtkWidget *mainsock;
 	GtkWidget *labelsock;
 	
@@ -277,9 +275,6 @@ GUIWindowDock::AppendPlugPage(WokXMLTag *tag)
 	GtkWidget *box;
 	GtkWidget *close_button;
 	GtkTooltips *tooltips;
-	
-	if(Widgets.empty())
-		CreateWidget();
 
 	box = gtk_hbox_new(FALSE, 2);
 	close_button = gtk_button_new_with_label("x");
@@ -292,7 +287,8 @@ GUIWindowDock::AppendPlugPage(WokXMLTag *tag)
 	gtk_box_pack_end(GTK_BOX(box), close_button, FALSE, FALSE, 0);
 	
 	GtkWidget *bin = gtk_event_box_new();
-	gint index = gtk_notebook_append_page(GTK_NOTEBOOK(notebook), bin, box);
+	gtk_box_pack_start(GTK_BOX (hiddenvbox), bin, FALSE, FALSE,0);
+	gtk_box_pack_start(GTK_BOX (hiddenvbox), box, FALSE, FALSE,0);
 	gtk_container_add(GTK_CONTAINER(bin), mainsock);
 	
 	gtk_widget_show_all(box);
@@ -301,15 +297,21 @@ GUIWindowDock::AppendPlugPage(WokXMLTag *tag)
 	gtk_socket_add_id(GTK_SOCKET(mainsock), atoi(tag->GetAttr("mainwidget").c_str()));
 	gtk_socket_add_id(GTK_SOCKET(labelsock), atoi(tag->GetAttr("labelwidget").c_str()));
 	
-	Widgets.push_back(atoi(tag->GetAttr("mainwidget").c_str()));
+	HiddenWidgets.push_back(atoi(tag->GetAttr("mainwidget").c_str()));
 	sockets[atoi(tag->GetAttr("mainwidget").c_str())] = mainsock;
 	labelsockets[atoi(tag->GetAttr("mainwidget").c_str())] = labelsock;
 	identifier[atoi(tag->GetAttr("mainwidget").c_str())] = tag->GetAttr("identifier");
 	
-	testwid = mainsock;
-	
-	gtk_window_present (GTK_WINDOW(window));
-	gtk_notebook_set_current_page (GTK_NOTEBOOK(notebook), index);
+	if ( tag->GetAttr("minimize") == "true" )
+	{
+	}
+	else
+	{
+		WokXMLTag show_page(NULL, "hide");
+		show_page.AddAttr("widget", tag->GetAttr("mainwidget"));
+
+		ShowPage(&show_page);
+	}
 	
 	return true;
 

@@ -33,8 +33,14 @@ class GUIMessageWidget : public WLSignalInstance
 	
 		int NewMessage(WokXMLTag *tag);
 	
-		int Message(std::string str, time_t t = time (NULL));
+		/*int Message(std::string str, time_t t = time (NULL));
 		int Message(std::string str, std::string jid, time_t t = time (NULL));
+		*/
+
+		int PutText(GtkTextIter *iter, WokXMLTag &message);
+		int Message(WokXMLTag &message, time_t t = time(NULL));
+		int Message(WokXMLTag &message, std::string jid, time_t t = time(NULL));
+
 		int Presence(WLSignalData *pd);
 		static gboolean key_press_handler(GtkWidget * widget, GdkEventKey * event,
 						 gpointer user_data);

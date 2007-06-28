@@ -27,6 +27,10 @@
 #ifndef _AUTH_H_
 #define _AUTH_H_
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
@@ -41,7 +45,10 @@ class Auth : public WoklibPlugin
 	public:
 		Auth(WLSignal *wls);
 		 ~Auth();
-	
+
+		virtual std::string GetInfo() {return "Request Authentication";};
+		virtual std::string GetVersion() {return VERSION;};
+
 		int Menu(WokXMLTag *tag); 																	/// Menu creator
 		int ReqAuthAction(WokXMLTag *tag); 													/// Method that actually does something
 	protected:

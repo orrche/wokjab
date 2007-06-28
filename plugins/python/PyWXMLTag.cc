@@ -41,13 +41,13 @@ static PyMethodDef PyWXMLTag_methods[] = {
 		{"AddTagTag", 				(PyCFunction)PyWXMLTag_AddTagTag, 		METH_VARARGS, "Adding a new tag from another tag" },
 		{"GetTags", 					(PyCFunction)PyWXMLTag_GetTags, 			METH_NOARGS, "Get a list of all children tags" },
 		{"GetTagList",				(PyCFunction)PyWXMLTag_GetTagList,		METH_VARARGS, "Get a list of children tags with a specific name" },
+		{"GetObjects",				(PyCFunction)PyWXMLTag_GetObjects,	METH_VARARGS, "Get a list of text and tag children" },
 		{NULL}  /* Sentinel */
 };
 
 /* 
 
 Missing
-GetItemList()
 
 */
 
@@ -243,6 +243,33 @@ PyWXMLTag_GetTags(PyWXMLTagHolder* self, PyObject *args, PyObject *kwds)
 	for(iter = list.begin() ; iter != list.end() ; iter++ )
 	{
 		PyList_SetItem(	ret, i++, PyCWXMLTag_wrap(*iter));
+	}
+	return ret;
+}
+
+PyObject *
+PyWXMLTag_GetObjects(PyWXMLTagHolder* self, PyObject *args, PyObject *kwds)
+{
+	std::list<WokXMLObject *> &list = self->c->GetItemList();
+	std::list<WokXMLObject *>::iterator iter;
+	int i = 0;
+	
+	PyObject *ret;
+	ret = PyList_New(list.size());
+	
+	for(iter = list.begin() ; iter != list.end() ; iter++ )
+	{
+		switch ( (*iter)->GetType() )
+		{
+			case 1:
+				PyList_SetItem(	ret, i++, PyCWXMLTag_wrap((WokXMLTag *)*iter));
+				break;
+			case 2:
+				PyList_SetItem(	ret, i++, PyString_FromString((*iter)->GetStr().c_str()));
+
+				break;
+		}
+
 	}
 	return ret;
 }

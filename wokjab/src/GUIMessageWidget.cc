@@ -257,6 +257,7 @@ from(from)
 
 	gtk_widget_grab_focus(textview2);
 	HookSignals();
+
 }
 
 
@@ -435,10 +436,10 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 	#else
 			strptime (stamp.c_str(), "%Y%m%dT%T", &tp);
 	#endif
-			Message(msgtag.GetFirstTag("body").GetBody(), msgtag.GetAttr("from"), mktime(&tp));
+			Message(*tag, msgtag.GetAttr("from"), mktime(&tp));
 		}
 		else
-			Message(msgtag.GetFirstTag("body").GetBody(), msgtag.GetAttr("from"));
+			Message(*tag, msgtag.GetAttr("from"));
 
 		tag->AddAttr("displayed", "true");
 
@@ -733,6 +734,158 @@ GUIMessageWidget::Config(WokXMLTag *tag)
 }
 
 int
+GUIMessageWidget::PutText(GtkTextIter *iter, WokXMLTag &message)
+{
+	GtkTextBuffer *buffer;
+
+	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(textview1));
+
+	std::list <WokXMLObject *>::iterator oiter;
+	for ( oiter = message.GetItemList().begin() ; oiter != message.GetItemList().end() ; oiter++)
+	{
+		switch ( (*oiter)->GetType() )
+		{
+			case 1:
+				WokXMLTag *tag;
+				tag = (WokXMLTag *)(*oiter);
+
+				if ( tag->GetName() == "img")	
+				{					
+					GdkPixbuf *pic = gdk_pixbuf_new_from_file(tag->GetAttr("src").c_str(), NULL);
+					if ( pic ) 
+						gtk_text_buffer_insert_pixbuf (buffer, iter, pic);
+				}
+				else
+				{
+					GtkTextIter start_iter;
+
+					GtkTextMark *mark;
+					mark = gtk_text_buffer_create_mark(buffer, NULL, iter, TRUE);
+
+
+					PutText(iter, *((WokXMLTag *)(*oiter)));
+					gtk_text_buffer_get_iter_at_mark (buffer, &start_iter, mark);
+					gtk_text_buffer_apply_tag(buffer,
+	                                                         tags["timestamp"],
+	                                                         &start_iter,
+	                                                         iter);
+
+					gtk_text_buffer_delete_mark (buffer, mark);
+				}
+				break;
+				
+			case 2:
+				gtk_text_buffer_insert_with_tags (buffer, iter, (*oiter)->GetStr().c_str(), (*oiter)->GetStr().length(), tags["forreign_text"], NULL);
+				break;
+
+			default:
+				break;
+		}
+	}
+}
+
+
+int
+GUIMessageWidget::Message(WokXMLTag &message, time_t t)
+{
+	GtkTextBuffer *buffer;
+	GtkTextIter iter;
+
+	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(textview1));
+	gtk_text_buffer_get_iter_at_mark(buffer, &iter, end_mark);
+
+	gtk_text_buffer_insert_with_tags (
+					buffer, &iter,
+					GetTimeStamp(t).c_str(), -1,
+					tags["timestamp"],
+					NULL);
+	if ( ! message.GetTagList("body").empty() )
+		PutText(&iter, message.GetFirstTag("body"));
+	else
+		PutText(&iter, message.GetFirstTag("message").GetFirstTag("body"));
+
+	gtk_text_buffer_insert_with_tags (
+					buffer, &iter,
+					"\n", 1,
+					tags["notice"],
+					NULL);
+
+	gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (textview1),
+				      end_mark, .4, TRUE, 1, 1);
+
+
+	return 1;
+}
+
+int
+GUIMessageWidget::Message(WokXMLTag &message, std::string jid, time_t t)
+{
+	int i = 0;
+
+	secondmessageme = false;
+
+	if(!focus)
+	{
+		gtk_widget_modify_fg(GTK_WIDGET(label_label), GTK_STATE_ACTIVE, &color_red);
+		gtk_widget_modify_fg(GTK_WIDGET(label_label), GTK_STATE_NORMAL, &color_red);
+		gtk_image_set_from_pixbuf(GTK_IMAGE(label_image), pix_msg);
+		msg_waiting = true;
+	}
+
+	std::string nick;
+
+	if( message.GetFirstTag("message").GetFirstTag("body").GetBody().substr(0,4) == "/me " )
+	{
+		nick += config->GetFirstTag("display").GetFirstTag("forreignname").GetFirstTag("pre_me").GetBody();
+		nick += this->nick;
+		nick += config->GetFirstTag("display").GetFirstTag("forreignname").GetFirstTag("post_me").GetBody();
+	}
+	else
+	{
+		nick += config->GetFirstTag("display").GetFirstTag("forreignname").GetFirstTag("pre").GetBody();
+		nick += this->nick;
+		nick += config->GetFirstTag("display").GetFirstTag("forreignname").GetFirstTag("post").GetBody();
+
+		if(secondmessageother)
+			nick += config->GetFirstTag("display").GetFirstTag("forreignname").GetFirstTag("continuing").GetBody();
+	}
+
+	GtkTextBuffer *buffer;
+	GtkTextIter iter;
+
+	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(textview1));
+	gtk_text_buffer_get_iter_at_mark(buffer, &iter, end_mark);
+
+
+
+
+	gtk_text_buffer_insert_with_tags (
+					buffer, &iter,
+					GetTimeStamp(t).c_str(), -1,
+					tags["timestamp"],
+					NULL);
+
+	gtk_text_buffer_insert_with_tags (
+					buffer, &iter,
+					nick.c_str(), nick.length(),
+					tags["forreign_name"],
+					NULL);
+
+	if ( ! message.GetTagList("body").empty() )
+		PutText(&iter, message.GetFirstTag("body"));
+	else
+		PutText(&iter, message.GetFirstTag("message").GetFirstTag("body"));
+
+	gtk_text_buffer_insert_with_tags (buffer, &iter, "\n", 1, tags["forreign_text"], NULL);
+	gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (textview1),
+				      end_mark, .4, TRUE, 1, 1);
+
+	secondmessageother = true;
+	return 1;
+}
+
+#if 0
+int
 GUIMessageWidget::Message(std::string str, time_t t)
 {
 	GtkTextBuffer *buffer;
@@ -824,6 +977,7 @@ GUIMessageWidget::Message(std::string str, std::string jid, time_t t)
 	secondmessageother = true;
 	return 1;
 }
+#endif
 
 void
 GUIMessageWidget::own_message(std::string str, time_t t)

@@ -26,6 +26,10 @@
 #ifndef _FILE_SHARE_H_
 #define _FILE_SHARE_H_
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
@@ -42,7 +46,10 @@ class FileShare : public WoklibPlugin
 	public:
 		FileShare(WLSignal *wls);
 		~FileShare();
-
+	
+		virtual std::string GetInfo() {return "Fileshare";};
+		virtual std::string GetVersion() {return VERSION;};
+	
 		int FileListResponse(WokXMLTag *tag);
 		int ListRequest(WokXMLTag *tag);
 		int MainMenu(WokXMLTag *tag);
