@@ -129,10 +129,6 @@ main (int argc, char **argv)
 	PluginLoader *pl;
 	if ( normplug )
 		pl = new PluginLoader(&sj.wls_main);
-/*
-    if ( normplug )
-		pluginloader(&sj.wls_main, string(PACKAGE_PLUGIN_DIR) + "/normal");
-*/
 
     if( argc > 1 )
 	{
@@ -154,11 +150,14 @@ main (int argc, char **argv)
 			}
 		}
 	}
-	delete pl;
-	Roster roster(&sj.wls_main);
-	GUIWindow win(&sj.wls_main);
+	
+	{
+		Roster roster(&sj.wls_main);
+		GUIWindow win(&sj.wls_main);
 
-	gtk_main();
-
+		gtk_main();
+		delete pl;
+	}
+	
 	return (0);
 }

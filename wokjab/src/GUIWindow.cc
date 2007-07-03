@@ -71,6 +71,7 @@ WLSignalInstance(wls)
 
 GUIWindow::~GUIWindow()
 {
+	SaveConfig();
 	EXP_SIGUNHOOK("Config XML Change /main/window", &GUIWindow::ReadConfig, 500);
 	delete gmsghandler;
 	
