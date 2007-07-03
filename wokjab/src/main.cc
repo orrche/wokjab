@@ -154,7 +154,7 @@ main (int argc, char **argv)
 			}
 		}
 	}
-
+	delete pl;
 	Roster roster(&sj.wls_main);
 	GUIWindow win(&sj.wls_main);
 
