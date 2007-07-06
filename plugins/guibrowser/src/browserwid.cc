@@ -214,15 +214,15 @@ BrowserWidget::popup_menu(GtkTreeView *tree_view, GdkEventButton *event, Browser
 		g_free(session);
 		
 		WokXMLTag msgtag(NULL,"message");
-		msgtag.AddAttr("session", session);
+		msgtag.AddAttr("session", c->menu_session);
 		WokXMLTag &tag = msgtag.AddTag("iq");
-		tag.AddAttr("to", jid );
+		tag.AddAttr("to", c->menu_jid );
 		tag.AddAttr("type", "get");
 		WokXMLTag *query;
 		query = &tag.AddTag("query");
 		query->AddAttr("xmlns", "http://jabber.org/protocol/disco#info");
 		if( c->menu_node != "" )
-			query->AddAttr("node", node);
+			query->AddAttr("node", c->menu_node);
 	
 		c->wls->SendSignal("Jabber XML IQ Send", &msgtag);
 		c->InfoConnect("Jabber XML IQ ID " + tag.GetAttr("id"));
@@ -231,7 +231,7 @@ BrowserWidget::popup_menu(GtkTreeView *tree_view, GdkEventButton *event, Browser
 		
 		menu_item = gtk_menu_item_new_with_mnemonic ("Features");
 		gtk_widget_show (menu_item);
-  gtk_container_add (GTK_CONTAINER (c->pop_menu), menu_item);
+		gtk_container_add (GTK_CONTAINER (c->pop_menu), menu_item);
 		
 		gtk_menu_popup (GTK_MENU(c->pop_menu), NULL, NULL, NULL, NULL,
         		event->button, event->time);

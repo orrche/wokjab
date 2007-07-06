@@ -42,7 +42,7 @@ session(session)
 	tag.AddAttr("type", "get");
 	WokXMLTag *query;
 	query = &tag.AddTag("query");
-	query->AddAttr("xmlns", "http://jabber.org/protocol/disco#info");
+	query->AddAttr("xmlns", "http://jabber.org/protocol/disco#items");
 	query->AddAttr("node", "http://jabber.org/protocol/commands");
 
 	wls->SendSignal("Jabber XML IQ Send", &msgtag);

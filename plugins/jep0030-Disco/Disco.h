@@ -38,6 +38,7 @@ class Disco : public WoklibPlugin
 		 ~Disco();
 	
 		int RequestInfo(WokXMLTag *);
+		int RequestItem(WokXMLTag *);
 	protected:
 	
 };

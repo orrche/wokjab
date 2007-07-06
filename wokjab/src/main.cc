@@ -129,6 +129,8 @@ main (int argc, char **argv)
 	PluginLoader *pl;
 	if ( normplug )
 		pl = new PluginLoader(&sj.wls_main);
+	else
+		pl = NULL;
 
     if( argc > 1 )
 	{
@@ -158,6 +160,10 @@ main (int argc, char **argv)
 		gtk_main();
 		delete pl;
 	}
+	
+	WokXMLTag saveconfig(NULL, "save");
+	wls->SendSignal("Config XML Save", &saveconfig);
+	
 	
 	return (0);
 }

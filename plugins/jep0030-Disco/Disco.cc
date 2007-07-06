@@ -28,12 +28,48 @@
 Disco::Disco(WLSignal *wls) : WoklibPlugin(wls)
 {
 	EXP_SIGHOOK("Jabber XML IQ New query get xmlns:http://jabber.org/protocol/disco#info", &Disco::RequestInfo, 500);
+	EXP_SIGHOOK("Jabber XML IQ New query get xmlns:http://jabber.org/protocol/disco#items", &Disco::RequestItem, 500);
 }
 
 
 Disco::~Disco()
 {
 	// TODO: put destructor code here
+}
+
+int
+Disco::RequestItem(WokXMLTag *tag)
+{
+	WokXMLTag discoitems(NULL, "disco");
+	discoitems.AddAttr("jid", tag->GetFirstTag("iq").GetAttr("from"));
+	discoitems.AddAttr("session", tag->GetAttr("session"));
+	
+	std::string node = tag->GetFirstTag("iq").GetFirstTag("query").GetAttr("node");
+	if ( node.empty() )
+		wls->SendSignal("Jabber Disco Items Get", &discoitems);
+	else
+		wls->SendSignal("Jabber Disco Items Get Node " + node, &discoitems);
+	
+
+	WokXMLTag message(NULL, "message");
+	message.AddAttr("session", tag->GetAttr("session"));
+	WokXMLTag &iqtag= message.AddTag("iq");
+	WokXMLTag &querytag = iqtag.AddTag("query");
+	iqtag.AddAttr("type", "result");
+	iqtag.AddAttr("to", tag->GetFirstTag("iq").GetAttr("from"));
+	iqtag.AddAttr("id", tag->GetFirstTag("iq").GetAttr("id"));
+	querytag.AddAttr("xmlns", "http://jabber.org/protocol/disco#items");
+	
+	std::list < WokXMLTag * > ::iterator iter;
+	std::list < WokXMLTag * > *list;
+	
+	list = &discoitems.GetTags();
+	for( iter = list->begin(); iter != list->end() ; iter++)
+		querytag.AddTag(*iter);
+	
+	wls->SendSignal("Jabber XML Send", &message);
+	
+	return 1;
 }
 
 int
@@ -67,5 +103,6 @@ Disco::RequestInfo(WokXMLTag *tag)
 		querytag.AddTag(*iter);
 	
 	wls->SendSignal("Jabber XML Send", &message);
-	return true;
+	
+	return 1;
 }

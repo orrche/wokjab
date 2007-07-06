@@ -438,6 +438,7 @@ GUIWindow::ReadConfig(WokXMLTag *tag)
 	else
 		dock = false;
 
+
 	if(width == 0)
 		width = 120;
 
@@ -445,18 +446,7 @@ GUIWindow::ReadConfig(WokXMLTag *tag)
 		height = 500;
 
 	if( visible )
-	{
-	// More struts...
-#if 0
-		if( dock && !connected )
-			connected = g_signal_connect ((gpointer) window, "configure-event",
-											G_CALLBACK (GUIWindow::WindowMove),
-											this);
-		else if ( !dock && connected )
-			g_signal_handler_disconnect ((gpointer) window, connected);
-#endif
-		gtk_window_set_default_size(GTK_WINDOW(glade_xml_get_widget(xml,"window")), width, height);
-	}
+		gtk_window_resize(GTK_WINDOW(glade_xml_get_widget(xml,"window")), width, height);
 }
 
 void
@@ -472,9 +462,10 @@ GUIWindow::SaveConfig()
 	spos_x << pos_x;
 	spos_y << pos_y;
 
+	
 	config->GetFirstTag("width").AddAttr("data", swidth.str());
 	config->GetFirstTag("height").AddAttr("data", sheight.str());
-		config->GetFirstTag("pos_x").AddAttr("data", spos_x.str());
+	config->GetFirstTag("pos_x").AddAttr("data", spos_x.str());
 	config->GetFirstTag("pos_y").AddAttr("data", spos_y.str());
 
 	WokXMLTag conftag(NULL, "config");
