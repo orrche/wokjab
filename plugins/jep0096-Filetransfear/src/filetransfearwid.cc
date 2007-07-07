@@ -29,6 +29,8 @@ lsid(lsid)
 	GtkWidget *okbutton;
 	GtkWidget *cancelbutton;
 	GtkWidget *buttonbox;
+	GtkWidget *jid_label;
+	
 	requested = false;
 	origxml = new WokXMLTag(*xml);
 	
@@ -36,12 +38,16 @@ lsid(lsid)
 	cancelbutton = gtk_button_new_with_mnemonic("_Cancel");
 	buttonbox = gtk_hbutton_box_new();
 	
+	
 	main_vbox = gtk_vbox_new(false, false);
 	chooser = gtk_file_chooser_widget_new(GTK_FILE_CHOOSER_ACTION_SAVE);
 	gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER(chooser), origxml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("file").GetAttr("name").c_str() );
 	
+	jid_label = gtk_label_new(xml->GetFirstTag("iq").GetAttr("from").c_str());
+	
 	gtk_box_pack_start(GTK_BOX(buttonbox), okbutton, false, false, 2);
 	gtk_box_pack_start(GTK_BOX(buttonbox), cancelbutton, false, false, 2);
+	gtk_box_pack_start(GTK_BOX(main_vbox), jid_label, false, false, 2);
 	gtk_box_pack_start(GTK_BOX(main_vbox), chooser, true, true, 2);
 	gtk_box_pack_start(GTK_BOX(main_vbox), buttonbox, false, false, 2);
 	

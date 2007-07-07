@@ -67,9 +67,7 @@ IQAuthManager::Feature(WokXMLTag *tag)
 		bool plain_possibule = false;
 		
 		for ( iter = list.begin() ; iter != list.end() ; iter++ )
-		{
-			std::cout << "XML: " << **iter << std::endl;
-			
+		{			
 			if ( (*iter)->GetBody() == "PLAIN" )
 				plain_possibule = true;
 			else if ( (*iter)->GetBody() == "DIGEST-MD5" )
@@ -100,6 +98,10 @@ IQAuthManager::Feature(WokXMLTag *tag)
 int
 IQAuthManager::BindResp(WokXMLTag *tag)
 {
+	WokXMLTag jidsettag(NULL, "set");
+	jidsettag.AddTag("jid").AddText(tag->GetFirstTag("iq").GetFirstTag("bind").GetFirstTag("jid").GetBody());
+	wls->SendSignal("Jabber Connection SetJID " + tag->GetAttr("session"), jidsettag);
+	
 	WokXMLTag iqmsgtag(NULL, "message");
 	iqmsgtag.AddAttr("session", tag->GetAttr("session"));
 	WokXMLTag &itag = iqmsgtag.AddTag("iq");

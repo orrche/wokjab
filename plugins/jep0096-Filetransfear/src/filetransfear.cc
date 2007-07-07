@@ -107,25 +107,21 @@ jep96::RemoveStream(GtkButton *button, jep96 *c)
 	GtkTreeIter       iter;
 	GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(glade_xml_get_widget (c->gxml, "fileview")));
 	
-	if(gtk_tree_selection_get_selected(selection,  NULL, &iter));
+	if(gtk_tree_selection_get_selected(selection,  NULL, &iter))
 	{
 		gchar *sid;
 		
 		gtk_tree_model_get(GTK_TREE_MODEL(c->file_store), &iter, 3, &sid, -1);
 		
-		std::cout << "Sid: " << sid << std::endl;
-		
 		if ( c->rows.find(sid) != c->rows.end() )
 		{
-			g_free(c->rows[sid]);
+			//g_free(c->rows[sid]);  // Shouldn't I do this ?!?
 			c->rows.erase(sid);
-			std::cout << "Row size: " << c->rows.size() << std::endl;
 		}
 		if ( c->sessions.find(sid) != c->sessions.end() )
 		{
 			delete (c->sessions[sid]);
 			c->sessions.erase(sid);
-			std::cout << "Session size: " << c->sessions.size() << std::endl;
 		}
 		
 		gtk_list_store_remove(c->file_store, &iter);

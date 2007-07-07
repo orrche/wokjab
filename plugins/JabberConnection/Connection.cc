@@ -48,7 +48,8 @@ session(session)
 	EXP_SIGHOOK("Jabber Connection GetUserData", &Connection::GetUserVariables, 1);
 	EXP_SIGHOOK("Jabber Connection GetSocket", &Connection::GetSocket, 500);
 	EXP_SIGHOOK("Jabber Connection Reset " +session, &Connection::Reset, 500);
-
+	EXP_SIGHOOK("Jabber Connection SetJID " + session, &Connection::SetJID, 500);
+	
 	EXP_SIGHOOK("Jabber GetMyNick", &Connection::GetMyNick, 1);
 	socket_nr = 0;
 	ssl = NULL;
@@ -112,6 +113,15 @@ Connection::GetMyNick(WokXMLTag *tag)
 		tag->AddAttr("nick", username);
 
 	return true;
+}
+
+int
+Connection::SetJID(WokXMLTag *tag)
+{
+	std::string jid = tag->GetFirstTag("jid").GetBody();
+	username = jid.substr(0, jid.find("@"));
+	server = jid.substr(jid.find("@")+1, jid.find("/")-jid.find("@")-1);
+	resource = jid.substr(jid.find("/")+1);
 }
 
 int
