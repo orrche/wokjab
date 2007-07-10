@@ -27,7 +27,8 @@ initiator(xml->GetFirstTag("iq").GetAttr("from")),
 target(xml->GetFirstTag("iq").GetAttr("to")),
 sid(xml->GetFirstTag("iq").GetFirstTag("query").GetAttr("sid")),
 session(xml->GetAttr("session"))
-{
+{	
+	EXP_SIGHOOK("Jabber Stream File Send Abort " + sid, &jep65Session::Abort, 1000);
 	unsigned char buffer[50];
 	std::string iqmsg;
 	pos = 0;
@@ -120,6 +121,15 @@ jep65Session::~jep65Session()
 }
 
 #define BUFFSIZE 300000
+
+int
+jep65Session::Abort(WokXMLTag *tag)
+{
+	close(socket_nr);
+	delete this;	
+	
+	return 1;
+}
 
 int
 jep65Session::SOCKS_Data(WokXMLTag *tag)

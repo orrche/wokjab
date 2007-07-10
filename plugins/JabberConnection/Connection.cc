@@ -118,10 +118,16 @@ Connection::GetMyNick(WokXMLTag *tag)
 int
 Connection::SetJID(WokXMLTag *tag)
 {
+	
 	std::string jid = tag->GetFirstTag("jid").GetBody();
+	if ( jid.find("/") == std::string::npos || jid.find("@") == std::string::npos )
+		return 1;
+	
 	username = jid.substr(0, jid.find("@"));
 	server = jid.substr(jid.find("@")+1, jid.find("/")-jid.find("@")-1);
 	resource = jid.substr(jid.find("/")+1);
+	
+	return 1;
 }
 
 int

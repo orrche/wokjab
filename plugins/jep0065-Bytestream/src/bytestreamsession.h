@@ -39,7 +39,7 @@ class jep65Session : public WLSignalInstance
 		jep65Session(WLSignal *wls, WokXMLTag *xml);
 		~jep65Session();
 
-	
+		int Abort(WokXMLTag *tag);
 		int SOCKS_Established(WokXMLTag *xml);
 		int SOCKS_Data(WokXMLTag *tag);
 	protected:

@@ -43,7 +43,7 @@ WoklibPlugin(wls)
 	g_signal_connect (G_OBJECT (glade_xml_get_widget(gxml, "removebutton")), "clicked",
 			G_CALLBACK (jep96::RemoveStream), this);
 	
-	file_store = gtk_list_store_new (4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+	file_store = gtk_list_store_new (5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
   gtk_tree_view_set_model (GTK_TREE_VIEW(fileview), GTK_TREE_MODEL(file_store));
 	
 	renderer = gtk_cell_renderer_text_new ();
@@ -57,6 +57,9 @@ WoklibPlugin(wls)
 	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
 	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes ("sid", renderer, "text", 3, NULL);
+	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
+	renderer = gtk_cell_renderer_text_new ();
+	column = gtk_tree_view_column_new_with_attributes ("jid", renderer, "text", 4, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
 	
 	EXP_SIGHOOK("Jabber XML IQ New si set xmlns:http://jabber.org/protocol/si", &jep96::Wid, 999);
@@ -110,7 +113,6 @@ jep96::RemoveStream(GtkButton *button, jep96 *c)
 	if(gtk_tree_selection_get_selected(selection,  NULL, &iter))
 	{
 		gchar *sid;
-		
 		gtk_tree_model_get(GTK_TREE_MODEL(c->file_store), &iter, 3, &sid, -1);
 		
 		if ( c->rows.find(sid) != c->rows.end() )
@@ -119,7 +121,10 @@ jep96::RemoveStream(GtkButton *button, jep96 *c)
 			c->rows.erase(sid);
 		}
 		if ( c->sessions.find(sid) != c->sessions.end() )
-		{
+		{	
+			WokXMLTag nodata(NULL, "nodata");
+			c->wls->SendSignal("Jabber Stream File Send Abort " + c->sessions[sid]->GetFirstTag("iq").GetFirstTag("si").GetAttr("id"), nodata);
+		
 			delete (c->sessions[sid]);
 			c->sessions.erase(sid);
 		}
@@ -142,7 +147,8 @@ jep96::Wid(WokXMLTag *xml)
 	gtk_list_store_set (file_store, &iter, 0, xml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("file").GetAttr("name").c_str(),
 											1, "--",
 											2, "Negotiating" , 
-											3, sslsid.str().c_str(), -1);
+											3, sslsid.str().c_str(), 
+											4, xml->GetFirstTag("iq").GetAttr("from").c_str(), -1);
 //	gtk_widget_show(filewindow);
 //	gtk_window_present (GTK_WINDOW(filewindow));
 	rows[sslsid.str()] = gtk_tree_row_reference_new(GTK_TREE_MODEL(file_store),gtk_tree_model_get_path(GTK_TREE_MODEL(file_store), &iter));
@@ -152,6 +158,7 @@ jep96::Wid(WokXMLTag *xml)
 	if ( ! wls->SendSignal(signal.str(), xml) )
 	{	
 		new jep96Widget(wls, xml, sslsid.str());
+		sessions[sslsid.str()] = new WokXMLTag (*xml);
 	}
 	return 1;
 }
@@ -249,7 +256,7 @@ jep96::SendFile(WokXMLTag *xml)
 	
 	GtkTreeIter iter;
 	
-	gtk_list_store_append (file_store, &iter);  /* Acquire a top-level iterator */
+	gtk_list_store_append (file_store, &iter);
 	gtk_list_store_set (file_store, &iter, 0, filename.c_str(),
 											1, "--",
 											2, "Negotiating" , 
@@ -296,8 +303,6 @@ jep96::SendFile(WokXMLTag *xml)
 	data->AddAttr("file", file);
 	data->AddAttr("strsize", PrettySize(size));
 	data->AddTag(&file_tag);
-	
-	std::cout << "Data: " << data << std::endl;
 	
 	sessions[iqtag.GetAttr("id")] = data;
 	

@@ -143,20 +143,12 @@ int
 jep65send::InitProxyReply(WokXMLTag *tag)
 {
 	if ( tag->GetFirstTag("iq").GetAttr("type") == "result" )
-	{
-		std::cout << "tag: " << tag << std::endl;
-
-		
+	{		
 		pjid = tag->GetFirstTag("iq").GetFirstTag("query").GetFirstTag("streamhost").GetAttr("jid");
 		phost = tag->GetFirstTag("iq").GetFirstTag("query").GetFirstTag("streamhost").GetAttr("host");
 		pzeroconf = tag->GetFirstTag("iq").GetFirstTag("query").GetFirstTag("streamhost").GetAttr("zeroconf");
 		pport = tag->GetFirstTag("iq").GetFirstTag("query").GetFirstTag("streamhost").GetAttr("port");
-		std::cout << "PJID: " << pjid << " PHost: " << phost << " zconf: " << pzeroconf << std::endl;
-		
-		
-		
-		
-	
+			
 		WokXMLTag msgtag(NULL, "message");
 		msgtag.AddAttr("session", session);
 		WokXMLTag &iqtag = msgtag.AddTag("iq");
@@ -427,7 +419,6 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 {
 	int sent = 0;
 	int maxsize;
-	std::cout << "Availibule" << std::endl;
 	if ( tag->GetAttr("error").size() )
 	{
 		WokXMLTag termtag(NULL, "terminated");
@@ -470,7 +461,6 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 		}
 	}
 	
-	std::cout << "Sent: " << sent << std::endl;
 	
 	if( fbpos == fbend)
 	{
@@ -530,7 +520,6 @@ jep65send::SendData(char *data, uint len)
 		}
 		else if (br < 0)
 		{
-			std::cout << "shit fatal error" << std::endl;
 			return (-1);
 		}
 	}
