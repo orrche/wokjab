@@ -50,7 +50,7 @@ class Game : public WLSignalInstance
 
 		static gboolean Expose (GtkWidget *widget, GdkEventExpose *event, Game *c);
 		static gboolean Button (GtkButton *button, GdkEventButton *event, Game *c);
-		static void Destroy( GtkWidget *widget, Game *c );
+		static void Destroy( GtkWidget *widget, GdkEvent *event, Game *c);
 		bool CanMove(bool my);
 		bool Possibule(const std::string &color, int x, int y, int *dir);
 		void GameEnded();

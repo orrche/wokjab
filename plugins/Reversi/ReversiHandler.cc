@@ -53,21 +53,6 @@ ReversiHandler::Move(WokXMLTag *tag)
 	std::string id(tag->GetFirstTag("message").GetFirstTag("thread").GetBody());
 	std::string session(tag->GetAttr("session"));
 	
-	if( tag->GetFirstTag("message").GetFirstTag("x").GetTagList("forfeit").size() )
-	{
-		// std::cout << "Opponent forfeits the game" << std::endl;
-		if( Session.find(session) != Session.end() && Session[session].find(id) != Session[session].end())
-		{
-			delete Session[session][id];
-			Session[session].erase(id);
-			
-			if( !Session[session].size() )
-				Session.erase(session);
-		}
-		
-		return true;
-	}
-	
 	if( id.size() )
 	{
 		Session[session][id]->Move(tag);
@@ -164,9 +149,11 @@ ReversiHandler::RemoveSession(WokXMLTag *tag)
 	std::string session(tag->GetAttr("session"));
 	if( Session.find(session) != Session.end() && Session[session].find(id) != Session[session].end())
 	{
-		delete Session[session][id];
+		Game *ses;
+		ses = Session[session][id];
 		Session[session].erase(id);
-		
+		delete ses;
+
 		if( !Session[session].size() )
 			Session.erase(session);
 	}

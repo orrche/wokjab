@@ -72,13 +72,24 @@ mymove(mymove)
 						G_CALLBACK (Game::Expose), this);
 		g_signal_connect (G_OBJECT(glade_xml_get_widget (xml, "eventboard")), "button_press_event", 
 						G_CALLBACK (Game::Button), this);
-		g_signal_connect (G_OBJECT(window1), "destroy", 
+		g_signal_connect (G_OBJECT(window1), "delete_event", 
 						G_CALLBACK (Game::Destroy), this);
 		gtk_widget_show (window1);
 	}
 	
 	scorew = 2;
 	scoreb = 2;
+	
+	if( mymove )
+		gtk_label_set_text( GTK_LABEL(glade_xml_get_widget (xml, "StatusLabel")), "My Move");
+	else
+		gtk_label_set_text( GTK_LABEL(glade_xml_get_widget (xml, "StatusLabel")), "Opponents Move");
+	
+	std::string color_label(" (");
+	color_label += colorm;
+	color_label += ")";
+	
+	gtk_label_set_text( GTK_LABEL(glade_xml_get_widget (xml, "my_color_label")), color_label.c_str());
 }
 
 
@@ -92,9 +103,11 @@ Game::~Game()
 		xml = NULL;
 	}
 	
+	/*
 	gtk_widget_destroy(board_img);
 	gtk_widget_destroy(black_img);
 	gtk_widget_destroy(white_img);
+	*/
 }
 
 bool
@@ -215,25 +228,21 @@ Game::CanMove(bool my)
 int
 Game::Move(WokXMLTag *tag)
 {
-	/*
-	<signal name='Jabber XML Message xmlns http://rhymbox.com/protocol/reversi.html#1.0'>
-	  <message displayed='' session='jabber0'>
-		  <message from='xezer@jabber.se/Pandion' to='nedo@jabber.se/wokjab' type='' xml:lang='en'>
-			  <thread>wokjab10</thread>
-				<x xmlns='http://rhymbox.com/protocol/reversi.html#1.0'>
-				  <pass></pass>
-				</x>
-				<body></body>
-			</message>
-		</message>
-	</signal>
-	*/
+	if( tag->GetFirstTag("message").GetFirstTag("x").GetTagList("forfeit").size() )
+	{
+		ended = true;
+		mymove = false;
+		gtk_label_set_text( GTK_LABEL(glade_xml_get_widget (xml, "StatusLabel")), "Opponent forfeited");
+		
+		return 1;
+	}
+	
 	if( mymove )
 	{
 		std::stringstream str;
 		str << "Reversi: " << jid << " tries to move while its your turn, aborted";
 		woklib_error(wls, str.str());
-		return true;
+		return 1;
 	}
 		
 	WokXMLTag &move = tag->GetFirstTag("message").GetFirstTag("x").GetFirstTag("move");
@@ -243,7 +252,7 @@ Game::Move(WokXMLTag *tag)
 		if( scoreb + scorew == 64 || !scoreb || !scorew )
 		{
 			GameEnded();
-			return true;
+			return 1;
 		}
 		
 		if(CanMove(true))
@@ -256,7 +265,7 @@ Game::Move(WokXMLTag *tag)
 		str << "Reversi: " << jid << " tries to do an invalid move";
 		woklib_error(wls, str.str());
 	}
-	return true;
+	return 1;
 }
 
 void
@@ -283,7 +292,8 @@ Game::MyMove(int x, int y)
 {
 	if(!mymove)
 	{
-		woklib_message(wls, "Not your turn");
+		if ( !ended )	
+			woklib_message(wls, "Not your turn");
 		return;
 	}
 		
@@ -319,7 +329,7 @@ Game::MyMove(int x, int y)
 }
 
 void
-Game::Destroy( GtkWidget *widget, Game *c )
+Game::Destroy( GtkWidget *widget, GdkEvent *event, Game *c)
 {
 	if( !c->ended && c->scoreb + c->scorew != 64 && c->scoreb && c->scorew)
 	{
@@ -337,8 +347,6 @@ Game::Destroy( GtkWidget *widget, Game *c )
 	
 	if( c->xml ) 
 	{
-		g_object_unref(c->xml);
-		c->xml = NULL;
 		WokXMLTag removetag(NULL, "remove");
 		removetag.AddAttr("id", c->id);
 		removetag.AddAttr("session", c->session);
