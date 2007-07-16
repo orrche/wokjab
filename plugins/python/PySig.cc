@@ -53,12 +53,22 @@ PySig::Exec(WokXMLTag *tag)
 	if ( pValue == NULL )
 	{
 		PyErr_Print();
-    fprintf(stderr,"Call failed\n");
+    	fprintf(stderr,"Call failed\n");
 	}
 	else
 	{
-		ret = PyInt_AsLong(pValue);
-		Py_DECREF(pValue);
+		if ( PyInt_Check(pValue) )
+		{
+			ret = PyInt_AsLong(pValue);
+			if (ret == -1 && PyErr_Occurred())
+			{
+				ret = 1;
+			}
+			else
+				Py_DECREF(pValue);
+		}
+		else
+			ret = 1;
 	}
 	Py_DECREF(pArgs);
 	
