@@ -44,9 +44,21 @@ session(tag->GetAttr("session"))
 
 JabberSession::~JabberSession()
 {
-		WokXMLTag tag(NULL, "item");
-		tag.AddAttr("id", id);
-		wls->SendSignal("GUIRoster RemoveItem", tag);
+	std::map <std::string, User *>::iterator useriter;
+	for ( useriter = user.begin() ; useriter != user.end(); useriter++)
+	{
+		delete useriter->second;
+	}
+	
+	std::map <std::string, Group *>::iterator groupiter;
+	for ( groupiter = group.begin() ; groupiter != group.end(); groupiter++)
+	{
+		delete groupiter->second;
+	}
+	
+	WokXMLTag tag(NULL, "item");
+	tag.AddAttr("id", id);
+	wls->SendSignal("GUIRoster RemoveItem", tag);
 }
 
 int
