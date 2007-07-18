@@ -163,10 +163,9 @@ RosterEvent::Presence(WokXMLTag *tag)
 	std::string message;
 	std::string nick = itemtag.GetAttr("nick");
 	
-	if (  tag->GetFirstTag("presence").GetAttr("type") == "error" )
+	if (  tag->GetFirstTag("presence").GetAttr("type") == "error" || itemtag.GetAttr("inroster") != "true" )
 	{
 		return 1;
-	
 	}
 
 	if ( itemtag.GetAttr("presence") == "unavailable" && tag->GetFirstTag("presence").GetAttr("type") != "unavailable" )

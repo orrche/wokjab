@@ -63,7 +63,7 @@ Roster::SignalGetResource(WokXMLTag *tag)
 			(*tagiter)->AddAttr("presence", "unavailable");
 		else
 		{
-
+			(*tagiter)->AddAttr("inroster", "true");
 			(*tagiter)->AddAttr("nick", usr->GetNick());
 			std::map <std::string, Resource>::iterator riter;
 			if(usr->GetResource().begin() == usr->GetResource().end() )
