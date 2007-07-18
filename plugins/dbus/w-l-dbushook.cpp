@@ -74,8 +74,9 @@ WLDbushook::exec(WokXMLTag *tag)
 
 	/* Call ListNames method, wait for reply */
 	error = NULL;
-
-	if (!dbus_g_proxy_call (proxy, method.c_str(), &error, G_TYPE_STRING, tag->GetStr().c_str(), G_TYPE_INVALID,  G_TYPE_INT, &return_value, G_TYPE_INVALID))
+	gchar *return_xml;
+	
+	if (!dbus_g_proxy_call (proxy, method.c_str(), &error, G_TYPE_STRING, tag->GetStr().c_str(), G_TYPE_INVALID,  G_TYPE_INT, &return_value, G_TYPE_STRING, &return_xml, G_TYPE_INVALID))
 	{
 		/* Just do demonstrate remote exceptions versus regular GError */
 		if (error->domain == DBUS_GERROR && error->code == DBUS_GERROR_REMOTE_EXCEPTION)
@@ -88,7 +89,10 @@ WLDbushook::exec(WokXMLTag *tag)
 		return 1;
 	}
 	else
+	{
 		std::cout << "The return value was " << return_value << std::endl;
+		std::cout << "And the xml " << return_xml << std::endl;
+	}
 	
 	return return_value;	
 }
