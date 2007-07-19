@@ -52,9 +52,9 @@ int
 WLDbushook::exec(WokXMLTag *tag)
 {
 	DBusGConnection *connection;
-	GError *error;
+	GError *error = NULL;
 	DBusGProxy *proxy;
-	int return_value;
+	int return_value = 1;
 	
 	error = NULL;
 	connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
@@ -67,31 +67,44 @@ WLDbushook::exec(WokXMLTag *tag)
 		return 1;
     }
 	
-	proxy = dbus_g_proxy_new_for_name (connection,
+	proxy = dbus_g_proxy_new_for_name_owner (connection,
 							interface.c_str(),
 							path.c_str(),
-							interface.c_str());
-
+							interface.c_str(), &error);
+	if ( !proxy ) 
+	{
+		woklib_debug(wls, error->message);
+		g_error_free (error);
+		return 1;
+	}
 	/* Call ListNames method, wait for reply */
 	error = NULL;
-	gchar *return_xml;
+	gchar *return_xml = NULL;
 	
-	if (!dbus_g_proxy_call (proxy, method.c_str(), &error, G_TYPE_STRING, tag->GetStr().c_str(), G_TYPE_INVALID,  G_TYPE_INT, &return_value, G_TYPE_STRING, &return_xml, G_TYPE_INVALID))
+	if (dbus_g_proxy_call (proxy, method.c_str(), &error, 
+							G_TYPE_STRING, tag->GetStr().c_str(), G_TYPE_INVALID,  
+							G_TYPE_INT, &return_value, G_TYPE_STRING, &return_xml, G_TYPE_INVALID) == FALSE)
 	{
 		/* Just do demonstrate remote exceptions versus regular GError */
-		if (error->domain == DBUS_GERROR && error->code == DBUS_GERROR_REMOTE_EXCEPTION)
-			g_printerr ("Caught remote method exception %s: %s", dbus_g_error_get_name (error), error->message);
-		else
-			g_printerr ("Error: %s\n", error->message);
-		g_error_free (error);
-		
+		if ( error )
+		{
+			if (error->domain == DBUS_GERROR && error->code == DBUS_GERROR_REMOTE_EXCEPTION)
+				g_printerr ("Caught remote method exception %s: %s", dbus_g_error_get_name (error), error->message);
+			else
+				g_printerr ("Error: %s\n", error->message);
+			g_error_free (error);
+		}
 		parant->DeleteHook(this);
 		return 1;
 	}
 	else
 	{
-		std::cout << "The return value was " << return_value << std::endl;
-		std::cout << "And the xml " << return_xml << std::endl;
+		if ( return_xml && return_xml[0])
+		{
+			WokXMLTag dataxml(NULL, "data");
+			dataxml.Add(return_xml);
+			*tag = **dataxml.GetTags().begin();
+		}
 	}
 	
 	return return_value;	

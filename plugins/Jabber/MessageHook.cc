@@ -39,6 +39,12 @@ MessageHook::xml(WokXMLTag *data)
 	
 	type = data->GetFirstTag("message").GetAttr("type");
 	
+	WokXMLTag *body = &data->GetFirstTag("message").GetFirstTag("body");
+	if (body->GetBody()[0] == '!' )
+	{
+		std::string command = body->GetBody().substr(1,body->GetBody().find(" ")-1);
+		wls->SendSignal("Jabber XML Message Command " + command, data);
+	}
 	if (type.length() == 0 || type== "chat" || type== "error" || type== "normal")
 		wls->SendSignal("Jabber XML Message Normal", data);
 	else if ( type =="groupchat")
