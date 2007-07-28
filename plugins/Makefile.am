@@ -61,6 +61,7 @@ SUBDIRS= \
 	Fileshare \
 	AutoJoinGroupChat \
 	dbus \
-	RosterEvent 
+	RosterEvent \
+	GroupManager
 
 

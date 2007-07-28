@@ -1,5 +1,5 @@
 #
-#  Copyright (C) 2003-2006  Kent Gustavsson <oden@gmx.net>
+#  Copyright (C) 2003-2007  Kent Gustavsson <oden@gmx.net>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,10 +25,10 @@ pkgdata_DATA = \
 EXTRA_DIST = ${pkgdata_DATA}
 
 AM_CFLAGS =\
-	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -I../../../lib/woklib/include
+	`pkg-config libglade-2.0 gtk+-2.0 --cflags`
 
 AM_CXXFLAGS =\
-	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -I../../../lib/woklib/include
+	`pkg-config libglade-2.0 gtk+-2.0 --cflags`
 
 lib_LTLIBRARIES = libopendialogto.la
 

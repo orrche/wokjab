@@ -151,6 +151,7 @@ BrowserWidget::UpdateEntryWidget()
 	
 	gtk_tree_model_get (GTK_TREE_MODEL(sessionmenu), &treeiter, 1, &session, -1);
 	activesession = session;
+	g_free(session);
 	
 	WokXMLTag querytag(NULL, "query");
 	WokXMLTag &itemtag = querytag.AddTag("item");

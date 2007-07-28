@@ -24,6 +24,10 @@ libfileshare_la_SOURCES = \
 	SearchWid.cc \
 	SearchWid.h
 	
+
+SUBDIRS = \
+	GroupManager
+
 ## File created by the gnome-build tools
 
 

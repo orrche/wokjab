@@ -79,7 +79,7 @@ DIST_SUBDIRS = Authorization AutoPresence Config DisplayGtk EventSound \
 	OpenDialogTo python registerservice Reversi roster-rename \
 	ScriptLoader toaster Tooltip wokjab-jid-info woklib-groupchat \
 	rfc1928-SOCKS5 Idle GroupChatBookmark AutoJoinGroupChat dbus \
-	RosterEvent
+	RosterEvent GroupManager
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
@@ -136,7 +136,6 @@ PKG_CONFIG = @PKG_CONFIG@
 PY_CFLAGS = @PY_CFLAGS@
 PY_LIBS = @PY_LIBS@
 RANLIB = @RANLIB@
-SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -236,7 +235,8 @@ SUBDIRS = \
 	Fileshare \
 	AutoJoinGroupChat \
 	dbus \
-	RosterEvent 
+	RosterEvent \
+	GroupManager
 
 all: all-recursive
 

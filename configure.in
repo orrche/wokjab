@@ -103,6 +103,7 @@ AC_OUTPUT(Makefile \
 	plugins/GtkMenu/Makefile  \
         plugins/GUIRoster/Makefile  \
         plugins/GroupChatBookmark/Makefile  \
+        plugins/GroupManager/Makefile  \
 	plugins/OpenDialogTo/Makefile  \
 	plugins/wokjab-jid-info/Makefile  \
 	plugins/wokjab-jid-info/src/Makefile  \
@@ -152,6 +153,7 @@ AC_OUTPUT(Makefile \
         plugins/jep0153-VCardAvatar/Makefile  \
         plugins/Idle/Makefile  \
         plugins/Fileshare/Makefile  \
+        plugins/Fileshare/GroupManager/Makefile  \
         plugins/dbus/Makefile  \
 	wokjab/Makefile \
 	wokjab/src/Makefile \
