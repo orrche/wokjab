@@ -44,6 +44,11 @@ public:
 	
 	static void SessionChange(GtkComboBox *widget, GM_Widget *c);
 	static void GroupChange(GtkTreeView *tree_view, GM_Widget *c);
+	static void Join(GtkButton *button, GM_Widget *c);
+	static void Part(GtkButton *button, GM_Widget *c);
+	static void Add(GtkButton *button, GM_Widget *c);
+	static void Remove(GtkButton *button, GM_Widget *c);
+	static void cell_edited (GtkCellRendererText *cell, const gchar *path_string, const gchar *new_text, GM_Widget *c);
 protected:
 	GroupManager *gm;
 	GladeXML *xml;

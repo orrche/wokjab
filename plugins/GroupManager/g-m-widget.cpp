@@ -45,6 +45,9 @@ gm(gm)
 	gtk_tree_view_set_model(GTK_TREE_VIEW(glade_xml_get_widget(xml, "roster_jid")), GTK_TREE_MODEL(rosterlist));	
 	
 	renderer = gtk_cell_renderer_text_new ();
+	g_object_set (renderer, "editable", TRUE, NULL);
+	g_signal_connect (renderer, "edited", G_CALLBACK (GM_Widget::cell_edited), this);
+	g_object_set_data (G_OBJECT (renderer), "column", GINT_TO_POINTER (0));
 	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (glade_xml_get_widget(xml, "groups")),
         -1, "Groups", renderer, "text", 0, NULL);
 
@@ -86,15 +89,163 @@ gm(gm)
 	
 	
 	g_signal_connect (G_OBJECT (sessionchooser), "changed", 
-		  G_CALLBACK (GM_Widget::SessionChange), this);
+		  	G_CALLBACK (GM_Widget::SessionChange), this);
 	g_signal_connect (G_OBJECT (glade_xml_get_widget(xml, "groups")), "cursor-changed", 
-		  G_CALLBACK (GM_Widget::GroupChange), this);
+		  	G_CALLBACK (GM_Widget::GroupChange), this);
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "join")), "clicked",
+			G_CALLBACK (GM_Widget::Join), this);
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "part")), "clicked",
+			G_CALLBACK (GM_Widget::Part), this);
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "add")), "clicked",
+			G_CALLBACK (GM_Widget::Add), this);
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "remove")), "clicked",
+			G_CALLBACK (GM_Widget::Remove), this);
 }
 
 GM_Widget::~GM_Widget()
 {
 	
 	
+}
+
+void
+GM_Widget::cell_edited (GtkCellRendererText *cell, const gchar *path_string, const gchar *new_text, GM_Widget *c)
+{
+	GtkTreePath *path = gtk_tree_path_new_from_string (path_string);
+	GtkTreeIter iter;
+
+	gint column = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (cell), "column"));
+	gtk_tree_model_get_iter (GTK_TREE_MODEL(c->grouplist), &iter, path);
+
+	gchar *old_text;
+
+	gtk_tree_model_get (GTK_TREE_MODEL(c->grouplist), &iter, column, &old_text, -1);
+	
+	GtkTreeIter useriter;
+	
+	if ( gtk_tree_model_get_iter_first(GTK_TREE_MODEL(c->inlist), &useriter) )
+	{
+		do
+		{
+			gchar *jid;
+			gtk_tree_model_get(GTK_TREE_MODEL(c->inlist), &useriter, 0, &jid, -1);
+			WokXMLTag remove_tag("remove_tag");
+			remove_tag.AddAttr("jid", jid);
+			remove_tag.AddAttr("group", old_text);
+			remove_tag.AddAttr("session", c->selected_session);
+			c->wls->SendSignal("Roster Remove User From Group", remove_tag);
+			g_free(jid);
+		}
+		while ( gtk_tree_model_iter_next(GTK_TREE_MODEL(c->inlist), &useriter) );
+	}
+	
+	if ( gtk_tree_model_get_iter_first(GTK_TREE_MODEL(c->inlist), &useriter) )
+	{
+		do
+		{
+			gchar *jid;
+			gtk_tree_model_get(GTK_TREE_MODEL(c->inlist), &useriter, 0, &jid, -1);
+			WokXMLTag add_tag("add_tag");
+			add_tag.AddAttr("jid", jid);
+			add_tag.AddAttr("group", new_text);
+			add_tag.AddAttr("session", c->selected_session);
+			c->wls->SendSignal("Roster Add User To Group", add_tag);
+			g_free(jid);
+		}
+		while ( gtk_tree_model_iter_next(GTK_TREE_MODEL(c->inlist), &useriter) );
+	}
+	
+	g_free (old_text);
+
+	gtk_list_store_set (GTK_LIST_STORE (c->grouplist), &iter, column, new_text, -1);
+
+	gtk_tree_path_free (path);
+}
+
+void
+GM_Widget::Add(GtkButton *button, GM_Widget *c)
+{
+	GtkTreeIter treeiter;
+	gtk_list_store_append(GTK_LIST_STORE(c->grouplist), &treeiter);
+	gtk_list_store_set(GTK_LIST_STORE(c->grouplist), &treeiter, 0 , "Group", -1);
+}
+
+void
+GM_Widget::Remove(GtkButton *button, GM_Widget *c)
+{
+}
+
+
+void
+GM_Widget::Part(GtkButton *button, GM_Widget *c)
+{
+	GtkTreeIter treeiter;
+	GtkTreeSelection *sel = gtk_tree_view_get_selection (GTK_TREE_VIEW(glade_xml_get_widget(c->xml, "in_jid")));
+	
+	if( !gtk_tree_selection_get_selected (sel, NULL , &treeiter))
+		return;
+	
+	GtkTreeIter groupiter;
+	sel = gtk_tree_view_get_selection (GTK_TREE_VIEW(glade_xml_get_widget(c->xml, "groups")));
+	
+	if( !gtk_tree_selection_get_selected (sel, NULL , &groupiter))
+		return;
+	
+	gchar *jid, *nick, *group;
+	
+	gtk_tree_model_get(GTK_TREE_MODEL(c->grouplist), &groupiter, 0, &group, -1);
+	gtk_tree_model_get(GTK_TREE_MODEL(c->inlist), &treeiter, 0, &jid, 1, &nick, -1);
+	
+	GtkTreeIter newiter;
+	gtk_list_store_append(GTK_LIST_STORE(c->rosterlist), &newiter);
+	gtk_list_store_set(GTK_LIST_STORE(c->rosterlist), &newiter, 0 , jid, 1, nick, -1);
+	gtk_list_store_remove(GTK_LIST_STORE(c->inlist), &treeiter);
+
+	WokXMLTag remove_tag("remove_tag");
+	remove_tag.AddAttr("jid", jid);
+	remove_tag.AddAttr("group", group);
+	remove_tag.AddAttr("session", c->selected_session);
+	c->wls->SendSignal("Roster Remove User From Group", remove_tag);
+	
+	g_free(jid);
+	g_free(nick);
+	g_free(group);
+}
+
+void
+GM_Widget::Join(GtkButton *button, GM_Widget *c)
+{
+	GtkTreeIter treeiter;
+	GtkTreeSelection *sel = gtk_tree_view_get_selection (GTK_TREE_VIEW(glade_xml_get_widget(c->xml, "roster_jid")));
+	
+	if( !gtk_tree_selection_get_selected (sel, NULL , &treeiter))
+		return;
+	
+	GtkTreeIter groupiter;
+	sel = gtk_tree_view_get_selection (GTK_TREE_VIEW(glade_xml_get_widget(c->xml, "groups")));
+	
+	if( !gtk_tree_selection_get_selected (sel, NULL , &groupiter))
+		return;
+	
+	gchar *jid, *nick, *group;
+	
+	gtk_tree_model_get(GTK_TREE_MODEL(c->grouplist), &groupiter, 0, &group, -1);
+	gtk_tree_model_get(GTK_TREE_MODEL(c->rosterlist), &treeiter, 0, &jid, 1, &nick, -1);
+	
+	GtkTreeIter newiter;
+	gtk_list_store_append(GTK_LIST_STORE(c->inlist), &newiter);
+	gtk_list_store_set(GTK_LIST_STORE(c->inlist), &newiter, 0 , jid, 1, nick, -1);
+	gtk_list_store_remove(GTK_LIST_STORE(c->rosterlist), &treeiter);
+
+	WokXMLTag add_tag("add_tag");
+	add_tag.AddAttr("jid", jid);
+	add_tag.AddAttr("group", group);
+	add_tag.AddAttr("session", c->selected_session);
+	c->wls->SendSignal("Roster Add User To Group", add_tag);
+	
+	g_free(jid);
+	g_free(nick);
+	g_free(group);
 }
 
 void
@@ -108,9 +259,7 @@ GM_Widget::GroupChange(GtkTreeView *tree_view, GM_Widget *c)
 	
 	gchar *groupname;
 	gtk_tree_model_get(GTK_TREE_MODEL(c->grouplist), &treeiter, 0, &groupname, -1);
-	
-	std::cout << "Groupname: " << groupname << std::endl;
-	
+		
 	WokXMLTag roster("roster");
 	c->wls->SendSignal("Roster Get Roster", roster);
 	std::list <WokXMLTag *>::iterator sesiter; 
