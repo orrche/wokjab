@@ -3,7 +3,7 @@ INCLUDES =
 libdir = $(prefix)/lib/woklib-plugins/normal
 
 AM_CXXFLAGS =\
-	-O3 -Wall
+	-O3 -Wall -lwoklib
 
 lib_LTLIBRARIES = \
 	libjep0115-entcap.la 

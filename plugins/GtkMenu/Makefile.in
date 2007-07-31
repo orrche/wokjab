@@ -53,6 +53,9 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 libgtkmenu_la_LIBADD =
 am_libgtkmenu_la_OBJECTS = main.lo gtkmenu.lo
 libgtkmenu_la_OBJECTS = $(am_libgtkmenu_la_OBJECTS)
+libgtkmenu_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(libgtkmenu_la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I. -I$(top_builddir)@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -134,7 +137,6 @@ PKG_CONFIG = @PKG_CONFIG@
 PY_CFLAGS = @PY_CFLAGS@
 PY_LIBS = @PY_LIBS@
 RANLIB = @RANLIB@
-SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -193,7 +195,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 INCLUDES = 
 AM_CXXFLAGS = \
-	`pkg-config gtk+-2.0 --cflags` -I../../../lib/woklib/include -g -O3 -Wall
+	`pkg-config gtk+-2.0 --cflags` -I../../../lib/woklib/include -g -O3 -Wall -lwoklib
 
 lib_LTLIBRARIES = \
 	libgtkmenu.la 
@@ -202,6 +204,9 @@ libgtkmenu_la_SOURCES = \
 	main.cc        \
 	gtkmenu.h        \
 	gtkmenu.cc 
+
+libgtkmenu_la_LDFLAGS = \
+	`pkg-config gtk+-2.0 --libs`
 
 all: all-am
 
@@ -264,7 +269,7 @@ clean-libLTLIBRARIES:
 	  rm -f "$${dir}/so_locations"; \
 	done
 libgtkmenu.la: $(libgtkmenu_la_OBJECTS) $(libgtkmenu_la_DEPENDENCIES) 
-	$(CXXLINK) -rpath $(libdir) $(libgtkmenu_la_OBJECTS) $(libgtkmenu_la_LIBADD) $(LIBS)
+	$(libgtkmenu_la_LINK) -rpath $(libdir) $(libgtkmenu_la_OBJECTS) $(libgtkmenu_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

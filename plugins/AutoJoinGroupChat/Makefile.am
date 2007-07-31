@@ -20,9 +20,6 @@ libdir = $(prefix)/lib/woklib-plugins/normal
 datadir = $(prefix)/lib/woklib/glade
 pkgdata_DATA = \
         AutoJoinWid.glade
-	
-AM_CFLAGS =\
-	`pkg-config libglade-2.0 gtk+-2.0 --cflags`
 
 AM_CXXFLAGS =\
 	`pkg-config libglade-2.0  gtk+-2.0 --cflags`
@@ -38,6 +35,8 @@ libautojoingroupchat_la_SOURCES = \
 	AutoJoinWid.h \
 	AutoJoinWid.cc 
 	
+libautojoingroupchat_la_LDFLAGS = \
+	`pkg-config libglade-2.0 gtk+-2.0 --libs` -lwoklib
 
 ## File created by the gnome-build tools
 

@@ -19,10 +19,10 @@
 libdir = $(prefix)/lib/woklib-plugins/normal
 
 AM_CFLAGS =\
-	`pkg-config gtk+-2.0 --cflags`
+	`pkg-config gtk+-2.0 --cflags` 
 
 AM_CXXFLAGS =\
-	`pkg-config gtk+-2.0 --cflags`
+	`pkg-config gtk+-2.0 --cflags` -lwoklib
 
 lib_LTLIBRARIES = libtoaster.la
 

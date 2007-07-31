@@ -1,5 +1,5 @@
 #
-#  Copyright (C) 2003-2004  Kent Gustavsson <oden@gmx.net>
+#  Copyright (C) 2003-2007  Kent Gustavsson <oden@gmx.net>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ AM_CFLAGS =\
 	`pkg-config gtk+-2.0 --cflags` -I../../../../lib/woklib/include
 
 AM_CXXFLAGS =\
-	`pkg-config gtk+-2.0 --cflags` -I../../../../lib/woklib/include
+	`pkg-config gtk+-2.0 --cflags` -I../../../../lib/woklib/include -lwoklib
 
 lib_LTLIBRARIES = libgnomestatusicon.la
 

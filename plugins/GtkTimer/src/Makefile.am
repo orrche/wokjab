@@ -1,7 +1,7 @@
 libdir = $(prefix)/lib/woklib-plugins/system
 
 AM_CXXFLAGS =\
-	`pkg-config gtk+-2.0 --cflags` -I../../../../lib/woklib/include -g -O3 -Wall
+	`pkg-config gtk+-2.0 --cflags` -g -O3 -Wall -lwoklib
 
 lib_LTLIBRARIES = \
 	libgkttimer.la 

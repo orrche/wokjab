@@ -30,24 +30,33 @@
 
 Group::Group(WLSignal *wls, std::string name, std::string sessionid) : WLSignalInstance(wls)
 {	
-	WokXMLTag itemtag(NULL, "item");
-	itemtag.AddAttr("parant", sessionid);
-	WokXMLTag &columntag =  itemtag.AddTag("columns");
-	WokXMLTag &texttag = columntag.AddTag("text");
-	texttag.AddText(name);
-		
-	wls->SendSignal("GUIRoster AddItem", itemtag);
-	id = itemtag.GetAttr("id");
-	
+	if ( name[0] == '.' )
+	{
+		id = "";
+	}
+	else
+	{
+		WokXMLTag itemtag(NULL, "item");
+		itemtag.AddAttr("parant", sessionid);
+		WokXMLTag &columntag =  itemtag.AddTag("columns");
+		WokXMLTag &texttag = columntag.AddTag("text");
+		texttag.AddText(name);
+			
+		wls->SendSignal("GUIRoster AddItem", itemtag);
+		id = itemtag.GetAttr("id");
+	}
 	usr = 0;
 }
 
 Group::~Group()
 {
-	WokXMLTag tag(NULL, "item");
-	tag.AddAttr("id", id);
-	
-	wls->SendSignal("GUIRoster RemoveItem", tag);
+	if ( ! id.empty() )
+	{
+		WokXMLTag tag(NULL, "item");
+		tag.AddAttr("id", id);
+		
+		wls->SendSignal("GUIRoster RemoveItem", tag);
+	}
 }
 
 std::string 

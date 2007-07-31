@@ -21,16 +21,10 @@ INCLUDES =
 libdir = $(prefix)/lib/woklib-plugins/normal
 
 
-AM_CFLAGS =\
-	`pkg-config gtk+-2.0 --cflags`\
-	 -I.. \
-	 -Wall
-
 AM_CXXFLAGS =\
 	`pkg-config gtk+-2.0 --cflags`\
-	 -I..\
-	 -I../../../../lib/woklib/include\
-	 -Wall
+	-I.. \
+	 -Wall -lwoklib
 
 lib_LTLIBRARIES = libjep0004-xdata.la
 
@@ -49,6 +43,6 @@ libjep0004_xdata_la_SOURCES = \
 	xdatasinglelist.cc\
 	xdatamultilist.cc
 	
-libjep0004_xdata_la_LDFLAGS = 
+libjep0004_xdata_la_LDFLAGS = 	`pkg-config gtk+-2.0 --libs`
 
 libjep0004_xdata_la_LIBADD =

@@ -1,5 +1,5 @@
 #
-#  Copyright (C) 2003-2004  Kent Gustavsson <oden@gmx.net>
+#  Copyright (C) 2003-2007  Kent Gustavsson <oden@gmx.net>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,8 +20,7 @@ INCLUDES =
 libdir = $(prefix)/lib/woklib-plugins/normal
 
 AM_CXXFLAGS =\
-	`pkg-config gtk+-2.0 --cflags`\
-	-I.. -I../../../../lib/woklib/include
+	`pkg-config gtk+-2.0 --cflags` -I..
 
 lib_LTLIBRARIES = libwokjab_jid_info.la
 
@@ -31,6 +30,6 @@ libwokjab_jid_info_la_SOURCES = \
 	WokJabJIDInfoWidget.cc
 
 libwokjab_jid_info_la_LDFLAGS = \
-	`pkg-config gtk+-2.0 --libs`
+	`pkg-config gtk+-2.0 --libs` -lwoklib
 
 libwokjab_jid_info_la_LIBADD =

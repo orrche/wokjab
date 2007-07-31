@@ -55,6 +55,9 @@ am_libgtkpreference_la_OBJECTS = main.lo GtkPreference.lo \
 	GtkPString.lo GtkPText.lo GtkPBool.lo GtkPCommon.lo \
 	GtkPPassword.lo
 libgtkpreference_la_OBJECTS = $(am_libgtkpreference_la_OBJECTS)
+libgtkpreference_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(libgtkpreference_la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I. -I$(top_builddir)@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -136,7 +139,6 @@ PKG_CONFIG = @PKG_CONFIG@
 PY_CFLAGS = @PY_CFLAGS@
 PY_LIBS = @PY_LIBS@
 RANLIB = @RANLIB@
-SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -200,9 +202,7 @@ AM_CFLAGS = \
 
 AM_CXXFLAGS = \
 	`pkg-config gtk+-2.0 --cflags`\
-	 -I..\
-	 -I../../../lib/woklib/include\
-	 -Wall
+	 -Wall -lwoklib
 
 lib_LTLIBRARIES = \
 	libgtkpreference.la 
@@ -221,6 +221,9 @@ libgtkpreference_la_SOURCES = \
 	GtkPCommon.h              \
 	GtkPPassword.h              \
 	GtkPPassword.cc 
+
+libgtkpreference_la_LDFLAGS = \
+	`pkg-config libglade-2.0 gtk+-2.0 --libs`
 
 all: all-am
 
@@ -283,7 +286,7 @@ clean-libLTLIBRARIES:
 	  rm -f "$${dir}/so_locations"; \
 	done
 libgtkpreference.la: $(libgtkpreference_la_OBJECTS) $(libgtkpreference_la_DEPENDENCIES) 
-	$(CXXLINK) -rpath $(libdir) $(libgtkpreference_la_OBJECTS) $(libgtkpreference_la_LIBADD) $(LIBS)
+	$(libgtkpreference_la_LINK) -rpath $(libdir) $(libgtkpreference_la_OBJECTS) $(libgtkpreference_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

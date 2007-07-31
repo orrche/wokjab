@@ -1,3 +1,6 @@
+AM_CXXFLAGS = -lwoklib
+
+
 INCLUDES =
 libdir = $(prefix)/lib/woklib-plugins/normal
 

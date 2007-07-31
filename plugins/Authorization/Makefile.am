@@ -3,7 +3,7 @@ INCLUDES =
 libdir = $(prefix)/lib/woklib-plugins/normal
 
 AM_CXXFLAGS =\
-	-I../../../lib/woklib/include -O3 -Wall
+	-I../../../lib/woklib/include -O3 -Wall -lwoklib
 
 lib_LTLIBRARIES = \
 	libauth.la 

@@ -19,7 +19,7 @@ INCLUDES =
 libdir = $(prefix)/lib/woklib-plugins/normal
 
 AM_CXXFLAGS =\
-	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -I../../../../lib/woklib/include -g -O3 -Wall
+	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -lwoklib -g -O3 -Wall
 
 lib_LTLIBRARIES = libjep0096-Filetransfear.la
 

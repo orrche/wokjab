@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -41,9 +41,13 @@ using std::endl;
 
 void LoadPlugin(WLSignal *wls, std::string filename)
 {
+	std::cout << "Loading plugin " << filename << std::endl;
+	
 	WokXMLTag tag(NULL, "add");
 	tag.AddAttr("filename", filename);
 	wls->SendSignal("Woklib Plugin Add", &tag);
+	
+	std::cout << "Tag:" << tag << std::endl;
 }
 
 void

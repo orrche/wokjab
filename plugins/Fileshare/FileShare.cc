@@ -76,7 +76,6 @@ FileShare::MenuDownload(WokXMLTag *tag)
 		name = name.substr(name.rfind("/")+1);
 	}
 	
-	std::cout << "XML: " << *tag << std::endl;
 	WokXMLTag msg(NULL, "message");
 	msg.AddAttr("session", tag->GetAttr("session"));
 	WokXMLTag &iq = msg.AddTag("iq");

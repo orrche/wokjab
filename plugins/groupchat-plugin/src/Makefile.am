@@ -19,7 +19,7 @@ INCLUDES =
 libdir = $(prefix)/lib/woklib-plugins/normal
 
 AM_CXXFLAGS =\
-	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -Wall
+	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -Wall -lwoklib
 
 
 lib_LTLIBRARIES = libgroupchat_plugin.la

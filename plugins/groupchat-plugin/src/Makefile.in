@@ -156,7 +156,6 @@ PKG_CONFIG = @PKG_CONFIG@
 PY_CFLAGS = @PY_CFLAGS@
 PY_LIBS = @PY_LIBS@
 RANLIB = @RANLIB@
-SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -215,7 +214,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 INCLUDES = 
 AM_CXXFLAGS = \
-	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -Wall
+	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -Wall -lwoklib
 
 lib_LTLIBRARIES = libgroupchat_plugin.la
 libgroupchat_plugin_la_SOURCES = \

@@ -145,7 +145,6 @@ PKG_CONFIG = @PKG_CONFIG@
 PY_CFLAGS = @PY_CFLAGS@
 PY_LIBS = @PY_LIBS@
 RANLIB = @RANLIB@
-SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -205,7 +204,7 @@ top_srcdir = @top_srcdir@
 INCLUDES = $(PY_CFLAGS)
 AM_LDFLAGS = $(PY_LIBS) -ldl -lpthread -lm -lutil
 AM_CXXFLAGS = \
-	-O3 -Wall
+	-O3 -Wall -lwoklib
 
 lib_LTLIBRARIES = \
 	libwokpython.la 

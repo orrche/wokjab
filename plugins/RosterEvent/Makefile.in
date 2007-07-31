@@ -137,7 +137,6 @@ PKG_CONFIG = @PKG_CONFIG@
 PY_CFLAGS = @PY_CFLAGS@
 PY_LIBS = @PY_LIBS@
 RANLIB = @RANLIB@
-SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -198,7 +197,7 @@ pkgdata_DATA = \
         roster-event.glade
 
 EXTRA_DIST = ${pkgdata_DATA}
-AM_CXXFLAGS = `pkg-config libglade-2.0 gtk+-2.0 --cflags` -O3 -Wall
+AM_CXXFLAGS = `pkg-config libglade-2.0 gtk+-2.0 --cflags` -O3 -Wall -lwoklib
 AM_LDFLAGS = `pkg-config libglade-2.0 gtk+-2.0 --libs`
 lib_LTLIBRARIES = \
 	librosterevent.la 

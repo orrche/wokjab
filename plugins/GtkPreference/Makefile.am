@@ -7,9 +7,7 @@ AM_CFLAGS =\
 
 AM_CXXFLAGS =\
 	`pkg-config gtk+-2.0 --cflags`\
-	 -I..\
-	 -I../../../lib/woklib/include\
-	 -Wall
+	 -Wall -lwoklib
 	 
 	 
 lib_LTLIBRARIES = \
@@ -30,6 +28,9 @@ libgtkpreference_la_SOURCES = \
 	GtkPPassword.h              \
 	GtkPPassword.cc 
 
+libgtkpreference_la_LDFLAGS = \
+	`pkg-config libglade-2.0 gtk+-2.0 --libs`
+	
 ## File created by the gnome-build tools
 
 

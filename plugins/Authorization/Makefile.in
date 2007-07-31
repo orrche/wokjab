@@ -134,7 +134,6 @@ PKG_CONFIG = @PKG_CONFIG@
 PY_CFLAGS = @PY_CFLAGS@
 PY_LIBS = @PY_LIBS@
 RANLIB = @RANLIB@
-SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -193,7 +192,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 INCLUDES = 
 AM_CXXFLAGS = \
-	-I../../../lib/woklib/include -O3 -Wall
+	-I../../../lib/woklib/include -O3 -Wall -lwoklib
 
 lib_LTLIBRARIES = \
 	libauth.la 

@@ -19,7 +19,7 @@ INCLUDES =
 libdir = $(prefix)/lib/woklib-plugins/normal
 
 AM_CXXFLAGS =\
-	`pkg-config gtk+-2.0 --cflags` -I../../../../lib/woklib/include -g -O3 -Wall
+	`pkg-config gtk+-2.0 --cflags` -lwoklib -g -O3 -Wall
 
 lib_LTLIBRARIES = libjep0065-Bytestream.la
 
@@ -35,7 +35,7 @@ libjep0065_Bytestream_la_SOURCES = \
 	recvsocket.h
 	
 libjep0065_Bytestream_la_LDFLAGS = \
-	`pkg-config gtk+-2.0 --libs`
+	`pkg-config gtk+-2.0 --libs` -lcrypto -lssl
 
 libjep0065_Bytestream_la_LIBADD =
 

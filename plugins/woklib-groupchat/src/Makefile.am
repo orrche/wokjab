@@ -24,7 +24,8 @@ AM_CXXFLAGS =\
 	 -Wall -Wimplicit -Wunused -Wmissing-prototypes\
 	 -O1\
 	 -g\
-	 -I../../../../lib/woklib/include
+	-lwoklib
+
 
 lib_LTLIBRARIES = libwoklib_groupchat.la
 

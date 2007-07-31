@@ -55,6 +55,9 @@ am_libjabberconnection_la_OBJECTS = main.lo Jabber.lo Connection.lo \
 	IQ_auth.lo SSL.lo XML_Input.lo XML_Output.lo \
 	staticfunctions.lo IQAuthManager.lo
 libjabberconnection_la_OBJECTS = $(am_libjabberconnection_la_OBJECTS)
+libjabberconnection_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(libjabberconnection_la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I. -I$(top_builddir)@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -136,7 +139,6 @@ PKG_CONFIG = @PKG_CONFIG@
 PY_CFLAGS = @PY_CFLAGS@
 PY_LIBS = @PY_LIBS@
 RANLIB = @RANLIB@
-SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -193,6 +195,7 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+AM_CXXFLAGS = -lwoklib
 lib_LTLIBRARIES = \
 	libjabberconnection.la
 
@@ -214,6 +217,9 @@ libjabberconnection_la_SOURCES = \
 	staticfunctions.h       \
 	IQAuthManager.cc       \
 	IQAuthManager.h
+
+libjabberconnection_la_LDFLAGS = \
+	-lssl -lexpat -lcrypto
 
 all: all-am
 
@@ -276,7 +282,7 @@ clean-libLTLIBRARIES:
 	  rm -f "$${dir}/so_locations"; \
 	done
 libjabberconnection.la: $(libjabberconnection_la_OBJECTS) $(libjabberconnection_la_DEPENDENCIES) 
-	$(CXXLINK) -rpath $(libdir) $(libjabberconnection_la_OBJECTS) $(libjabberconnection_la_LIBADD) $(LIBS)
+	$(libjabberconnection_la_LINK) -rpath $(libdir) $(libjabberconnection_la_OBJECTS) $(libjabberconnection_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

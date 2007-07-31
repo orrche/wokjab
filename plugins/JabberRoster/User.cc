@@ -164,10 +164,13 @@ User::Show()
 		{
 			std::string groupid = ses->AddToGroup((*iter)->GetBody(), this);
 			
-			itemtag.AddAttr("parant", groupid);
+			if ( !groupid.empty() )
+			{
+				itemtag.AddAttr("parant", groupid);
 
-			wls->SendSignal("GUIRoster AddItem", itemtag);
-			id[(*iter)->GetBody()] = itemtag.GetAttr("id");
+				wls->SendSignal("GUIRoster AddItem", itemtag);
+				id[(*iter)->GetBody()] = itemtag.GetAttr("id");
+			}
 		}
 	}
 	else

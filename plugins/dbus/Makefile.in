@@ -134,7 +134,6 @@ PKG_CONFIG = @PKG_CONFIG@
 PY_CFLAGS = @PY_CFLAGS@
 PY_LIBS = @PY_LIBS@
 RANLIB = @RANLIB@
-SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -195,7 +194,7 @@ AM_CFLAGS = \
 	`pkg-config dbus-glib-1 --cflags`
 
 AM_CXXFLAGS = \
-	`pkg-config dbus-glib-1 --cflags`
+	`pkg-config dbus-glib-1 --cflags` -lwoklib
 
 lib_LTLIBRARIES = \
 	libdbus.la 

@@ -25,10 +25,10 @@ pkgdata_DATA = \
 EXTRA_DIST = ${pkgdata_DATA}
 
 AM_CFLAGS =\
-	`pkg-config libglade-2.0 gtk+-2.0 --cflags`
+	`pkg-config libglade-2.0 gtk+-2.0 --cflags` 
 
 AM_CXXFLAGS =\
-	`pkg-config libglade-2.0 gtk+-2.0 --cflags`
+	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -lwoklib
 
 lib_LTLIBRARIES = libopendialogto.la
 

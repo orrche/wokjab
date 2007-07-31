@@ -22,7 +22,7 @@ AM_CFLAGS =\
 	`pkg-config gtk+-2.0 --cflags`
 
 AM_CXXFLAGS =\
-	`pkg-config gtk+-2.0 --cflags`
+	`pkg-config gtk+-2.0 --cflags` -lwoklib
 
 	
 lib_LTLIBRARIES = libjep0153-vcardavatar.la 
@@ -37,4 +37,4 @@ libjep0153_vcardavatar_la_SOURCES = \
 
 
 libjep0153_vcardavatar_la_LDFLAGS = \
-	`pkg-config gtk+-2.0 --libs`
+	`pkg-config gtk+-2.0 openssl --libs` 

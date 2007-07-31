@@ -2,7 +2,7 @@ INCLUDES =
 libdir = $(prefix)/lib/woklib-plugins/system
 
 AM_CXXFLAGS =\
-	-g -O3 -Wall
+	-g -O3 -Wall -lwoklib
 
 lib_LTLIBRARIES = \
 	libconfig.la 

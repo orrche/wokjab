@@ -62,6 +62,7 @@ SUBDIRS= \
 	AutoJoinGroupChat \
 	dbus \
 	RosterEvent \
-	GroupManager
+	GroupManager \
+	History.SQLite
 
 

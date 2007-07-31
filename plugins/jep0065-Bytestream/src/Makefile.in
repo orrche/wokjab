@@ -157,7 +157,6 @@ PKG_CONFIG = @PKG_CONFIG@
 PY_CFLAGS = @PY_CFLAGS@
 PY_LIBS = @PY_LIBS@
 RANLIB = @RANLIB@
-SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -216,7 +215,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 INCLUDES = 
 AM_CXXFLAGS = \
-	`pkg-config gtk+-2.0 --cflags` -I../../../../lib/woklib/include -g -O3 -Wall
+	`pkg-config gtk+-2.0 --cflags` -lwoklib -g -O3 -Wall
 
 lib_LTLIBRARIES = libjep0065-Bytestream.la
 libjep0065_Bytestream_la_SOURCES = \
@@ -231,7 +230,7 @@ libjep0065_Bytestream_la_SOURCES = \
 	recvsocket.h
 
 libjep0065_Bytestream_la_LDFLAGS = \
-	`pkg-config gtk+-2.0 --libs`
+	`pkg-config gtk+-2.0 --libs` -lcrypto -lssl
 
 libjep0065_Bytestream_la_LIBADD = 
 all: all-am

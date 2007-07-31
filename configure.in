@@ -154,6 +154,7 @@ AC_OUTPUT(Makefile \
         plugins/Idle/Makefile  \
         plugins/Fileshare/Makefile  \
         plugins/dbus/Makefile  \
+        plugins/History.SQLite/Makefile  \
 	wokjab/Makefile \
 	wokjab/src/Makefile \
 	wokjab/include/Makefile \

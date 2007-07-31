@@ -4,7 +4,7 @@ AM_CFLAGS =\
 	`pkg-config dbus-glib-1 --cflags`
 
 AM_CXXFLAGS =\
-	`pkg-config dbus-glib-1 --cflags`
+	`pkg-config dbus-glib-1 --cflags` -lwoklib
 
 lib_LTLIBRARIES = \
 	libdbus.la 
