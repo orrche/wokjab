@@ -54,10 +54,33 @@ FileShare::FileShare(WLSignal *wls) : WoklibPlugin(wls)
 	
 	path = "";
 	
-	int rc = sqlite3_open((std::string(g_get_home_dir()) + "/.wokjab/fileshare/filelist.db").c_str(), &db);
+	
+	std::string filename = (std::string(g_get_home_dir()) + "/.wokjab/fileshare/filelist.db");
+
+	std::string::size_type pos = filename.find("/");
+	while( pos != std::string::npos )
+	{
+#ifdef __WIN32
+            mkdir(filename.substr(0, pos).c_str());
+#else
+			mkdir(filename.substr(0, pos).c_str(), 0700);
+#endif
+			pos = filename.find("/", pos + 1);
+	}
+	int rc = sqlite3_open(filename.c_str(), &db);
 	if( rc ){
 			fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
 			sqlite3_close(db);
+	}
+	else
+	{
+		char *zErrMsg = 0;
+		std::string query = "CREATE TABLE filelist (id TEXT PRIMARY KEY, file TEXT, path TEXT, size INTEGER);";
+		int rc = sqlite3_exec(db, query.c_str(), (int(*)(void *,int,char**,char**)) FileShare::sql_callback, this, &zErrMsg);
+		if( rc!=SQLITE_OK ){
+			fprintf(stderr, "SQL error: %s\n", zErrMsg);
+			sqlite3_free(zErrMsg);
+		}
 	}
 }
 
@@ -188,26 +211,26 @@ FileShare::Search(WokXMLTag *xml)
 			if ( !(*resiter)->GetAttr("name").empty() )
 				jid += "/" + (*resiter)->GetAttr("name");
 		
-				WokXMLTag msg(NULL, "message");
-				msg.AddAttr("session", "jabber0");
-				WokXMLTag &message = msg.AddTag("message");
-				
-				std::stringstream str;
-				str << "FileShare_" << n_id;
-				message.AddTag("thread").AddText(str.str());
-				xml->AddAttr("thread", str.str());
-				
-				message.AddAttr("to", jid);
-				WokXMLTag &x = message.AddTag("x");
-				x.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
-				
-				std::list <WokXMLTag *>::iterator condition;
-				for ( condition = xml->GetTagList("condition").begin() ; condition != xml->GetTagList("condition").end() ; condition++)
-				{
-					x.AddTag(*condition);				
-				}
-				
-				wls->SendSignal("Jabber XML Send", msg);
+			WokXMLTag msg(NULL, "message");
+			msg.AddAttr("session", "jabber0");
+			WokXMLTag &message = msg.AddTag("message");
+			
+			std::stringstream str;
+			str << "FileShare_" << n_id;
+			message.AddTag("thread").AddText(str.str());
+			xml->AddAttr("thread", str.str());
+			
+			message.AddAttr("to", jid);
+			WokXMLTag &x = message.AddTag("x");
+			x.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
+			
+			std::list <WokXMLTag *>::iterator condition;
+			for ( condition = xml->GetTagList("condition").begin() ; condition != xml->GetTagList("condition").end() ; condition++)
+			{
+				x.AddTag(*condition);				
+			}
+			
+			wls->SendSignal("Jabber XML Send", msg);
 		}
 	}
 
@@ -238,7 +261,7 @@ FileShare::PopulateTree(WokXMLTag *tag, std::string dir, std::string virt_dir)
 
 	if ((dip = opendir(dir.c_str())) == NULL)
 	{
-  perror("opendir");
+  		perror("opendir");
 		return;
 	}
 	
