@@ -135,11 +135,14 @@ SearchWid::IncommingResult(WokXMLTag *tag)
 {
 	std::list <WokXMLTag *>::iterator iter;
 	std::list <WokXMLTag *> *list =  NULL;
-	
+		
 	for( iter = tag->GetFirstTag("message").GetTagList("x").begin() ; iter != tag->GetFirstTag("message").GetTagList("x").end() ; iter++)
 	{
 		if ( (*iter)->GetAttr("xmlns") == "http://sf.wokjab.net/fileshare")
+		{
 			list = &(*iter)->GetFirstTag("result").GetTagList("item");	
+			break;
+		}
 	}
 	if ( list )
 	{

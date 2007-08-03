@@ -70,14 +70,14 @@ class FileShare : public WoklibPlugin
 		static int sql_callback(FileShare *c, int argc, char **argv, char **azColName);
 		static int sql_callback_search(FileShare *c, int argc, char **argv, char **azColName);
 	protected:
-			WokXMLTag *config;
-			WokXMLTag *search_result;
-			int fileshareid;
-			std::string path;
-			std::string filetosend;
-			sqlite3 *db;
-			std::map <std::string, std::string> sharepoints;
-			int n_id;
+		WokXMLTag *config;
+		WokXMLTag *search_result;
+		int fileshareid;
+		std::string path;
+		std::string filetosend;
+		sqlite3 *db;
+		std::map <std::string, std::string> sharepoints;
+		int n_id;
 
 };
 

@@ -188,52 +188,58 @@ FileShare::Config(WokXMLTag *tag)
 int
 FileShare::Search(WokXMLTag *xml)
 {
-	WokXMLTag group(NULL, "group");
-	group.AddAttr("group", "p2p");
-#warning Seriously bad !
-	group.AddAttr("session", "jabber0");
+	std::list <WokXMLTag *>::iterator sesiter;
 	
-	wls->SendSignal("Roster Get Members", group);
-	std::list <WokXMLTag *>::iterator jiditer;
-	for( jiditer = group.GetTagList("jid").begin() ; jiditer != group.GetTagList("jid").end() ; jiditer++)
-	{	
-		WokXMLTag res(NULL, "resource");
-		WokXMLTag &itemtag = res.AddTag("item");
-		itemtag.AddAttr("jid", (*jiditer)->GetBody());
-		itemtag.AddAttr("session", "jabber0");
+	WokXMLTag sesquerytag(NULL,"session");
+	wls->SendSignal("Jabber GetSessions", &sesquerytag);
+	
+	for( sesiter = sesquerytag.GetTagList("item").begin() ; sesiter != sesquerytag.GetTagList("item").end() ; sesiter++)
+	{
+		WokXMLTag group(NULL, "group");
+		group.AddAttr("group", "p2p");
+		group.AddAttr("session", (*sesiter)->GetAttr("name"));
 		
-		wls->SendSignal("Jabber Roster GetResource", res);
-		
-		std::list <WokXMLTag *>::iterator resiter;
-		for ( resiter = itemtag.GetTagList("resource").begin() ; resiter != itemtag.GetTagList("resource").end() ; resiter++ )
-		{
-			std::string jid = (*jiditer)->GetBody();
-			if ( !(*resiter)->GetAttr("name").empty() )
-				jid += "/" + (*resiter)->GetAttr("name");
-		
-			WokXMLTag msg(NULL, "message");
-			msg.AddAttr("session", "jabber0");
-			WokXMLTag &message = msg.AddTag("message");
+		wls->SendSignal("Roster Get Members", group);
+		std::list <WokXMLTag *>::iterator jiditer;
+		for( jiditer = group.GetTagList("jid").begin() ; jiditer != group.GetTagList("jid").end() ; jiditer++)
+		{	
+			WokXMLTag res(NULL, "resource");
+			WokXMLTag &itemtag = res.AddTag("item");
+			itemtag.AddAttr("jid", (*jiditer)->GetBody());
+			itemtag.AddAttr("session", "jabber0");
 			
-			std::stringstream str;
-			str << "FileShare_" << n_id;
-			message.AddTag("thread").AddText(str.str());
-			xml->AddAttr("thread", str.str());
+			wls->SendSignal("Jabber Roster GetResource", res);
 			
-			message.AddAttr("to", jid);
-			WokXMLTag &x = message.AddTag("x");
-			x.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
-			
-			std::list <WokXMLTag *>::iterator condition;
-			for ( condition = xml->GetTagList("condition").begin() ; condition != xml->GetTagList("condition").end() ; condition++)
+			std::list <WokXMLTag *>::iterator resiter;
+			for ( resiter = itemtag.GetTagList("resource").begin() ; resiter != itemtag.GetTagList("resource").end() ; resiter++ )
 			{
-				x.AddTag(*condition);				
-			}
+				std::string jid = (*jiditer)->GetBody();
+				if ( !(*resiter)->GetAttr("name").empty() )
+					jid += "/" + (*resiter)->GetAttr("name");
 			
-			wls->SendSignal("Jabber XML Send", msg);
+				WokXMLTag msg(NULL, "message");
+				msg.AddAttr("session", "jabber0");
+				WokXMLTag &message = msg.AddTag("message");
+				
+				std::stringstream str;
+				str << "FileShare_" << n_id;
+				message.AddTag("thread").AddText(str.str());
+				xml->AddAttr("thread", str.str());
+				
+				message.AddAttr("to", jid);
+				WokXMLTag &x = message.AddTag("x");
+				x.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
+				
+				std::list <WokXMLTag *>::iterator condition;
+				for ( condition = xml->GetTagList("condition").begin() ; condition != xml->GetTagList("condition").end() ; condition++)
+				{
+					x.AddTag(*condition);				
+				}
+				
+				wls->SendSignal("Jabber XML Send", msg);
+			}
 		}
 	}
-
 	return 1;
 }
 
@@ -401,6 +407,26 @@ FileShare::Rebuild(WokXMLTag *tag)
 int
 FileShare::ListRequest(WokXMLTag *tag)
 {
+	bool permission = false;
+	std::string from = tag->GetFirstTag("iq").GetAttr("from");
+	if ( from.find("/") != std::string::npos )
+		from = from.substr(0, from.find("/"));
+	
+	WokXMLTag group(NULL, "group");
+	group.AddAttr("group", "p2p");
+	group.AddAttr("session", tag->GetAttr("session"));
+	
+	wls->SendSignal("Roster Get Members", group);
+	std::list <WokXMLTag *>::iterator jiditer;
+	for( jiditer = group.GetTagList("jid").begin() ; jiditer != group.GetTagList("jid").end() ; jiditer++)
+	{	
+		if ( from == (*jiditer)->GetBody() )
+			permission = true;
+	}
+	
+	if ( !permission )
+		return 1;
+	
 	std::list <WokXMLTag *>::iterator iter;
 	for( iter = tag->GetFirstTag("iq").GetFirstTag("fileshare").GetTagList("filelist").begin() ; iter != tag->GetFirstTag("iq").GetFirstTag("fileshare").GetTagList("filelist").end() ; iter++)
 	{	
@@ -516,7 +542,7 @@ FileShare::IncommingSearch(WokXMLTag *tag)
 	search_result = new WokXMLTag (NULL, "search");
 	int rc = sqlite3_exec(db, query.c_str(), (int(*)(void *,int,char**,char**)) FileShare::sql_callback_search, this, &zErrMsg);
 	
- if( rc!=SQLITE_OK )
+ 	if( rc!=SQLITE_OK )
 	{
 		fprintf(stderr, "SQL error: %s\n", zErrMsg);
 		sqlite3_free(zErrMsg);
@@ -528,7 +554,8 @@ FileShare::IncommingSearch(WokXMLTag *tag)
 	msg.AddAttr("session", tag->GetAttr("session"));
 	WokXMLTag &message = msg.AddTag("message");
 	message.AddAttr("to", tag->GetFirstTag("message").GetAttr("from"));
-	message.AddAttr("type", tag->GetFirstTag("message").GetAttr("type"));
+	if ( !tag->GetFirstTag("message").GetAttr("type").empty() )
+		message.AddAttr("type", tag->GetFirstTag("message").GetAttr("type"));
 	message.AddTag("thread").AddText(tag->GetFirstTag("message").GetFirstTag("thread").GetBody());
 	WokXMLTag &x = message.AddTag("x");
 	x.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
