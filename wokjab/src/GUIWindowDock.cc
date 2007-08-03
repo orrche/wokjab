@@ -245,8 +245,8 @@ GUIWindowDock::ShowPage(WokXMLTag *tag)
 		GTK_SIGNAL_FUNC (GUIWindowDock::page_delete), this);
 	
 	GtkWidget *bin = gtk_event_box_new();
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), bin, box);
-		
+	gint n = gtk_notebook_append_page(GTK_NOTEBOOK(notebook), bin, box);
+	
 	gtk_widget_show_all(box);
 	gtk_widget_show_all(window);
 	
@@ -260,6 +260,8 @@ GUIWindowDock::ShowPage(WokXMLTag *tag)
 	gtk_widget_show_all(box);
 	
 	gtk_window_present (GTK_WINDOW(window));
+	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), n);
+	
 	return 1;
 }
 
@@ -344,5 +346,10 @@ int
 GUIWindowDock::Activate(WokXMLTag *tag)
 {
 	gtk_window_present (GTK_WINDOW(window));
+	if ( find(Widgets.begin(), Widgets.end() , atoi(tag->GetAttr("id").c_str())) != Widgets.end() )
+	{
+		gint n = gtk_notebook_page_num(GTK_NOTEBOOK(notebook), gtk_widget_get_parent(sockets[atoi(tag->GetAttr("id").c_str())]));
+		gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), n);
+	}
 	return true;
 }
