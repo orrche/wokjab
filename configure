@@ -2263,7 +2263,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=wokjab
- VERSION=0.0.5
+ VERSION=0.9.1.20070803
 
 
 cat >>confdefs.h <<_ACEOF

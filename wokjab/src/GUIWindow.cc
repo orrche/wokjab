@@ -246,13 +246,14 @@ GUIWindow::SetPresence(GUIWindow * c)
 	ptag.AddTag("priority").AddText(prio.str());
 
 	std::list<std::string>::iterator iter;
+
+	std::cout << "Active sessions not empty..." << std::endl;
 	for( iter = c->ActiveSessions.begin() ; iter != c->ActiveSessions.end() ; iter++)
 	{
 		WokXMLTag sendtag(msgtag);
 		sendtag.AddAttr("session", *iter);
 		c->wls->SendSignal("Jabber XML Presence Send", &sendtag);
 	}
-
 	return FALSE;
 }
 
@@ -322,13 +323,21 @@ GUIWindow::MenuActivate (GtkComboBox *widget, GUIWindow *c)
 			ptag.AddTag("show").AddText("dnd");
 			break;
 	}
-
-	std::list<std::string>::iterator iter;
-	for( iter = c->ActiveSessions.begin() ; iter != c->ActiveSessions.end() ; iter++)
+	if ( c->ActiveSessions.empty() )
 	{
-		WokXMLTag sendtag(msgtag);
-		sendtag.AddAttr("session", *iter);
-		c->wls->SendSignal("Jabber XML Presence Send", &sendtag);
+		WokXMLTag connect("data");
+		c->wls->SendSignal("MainMenu Connect", &connect);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(c->preferencexml, "showentry")), 4);
+	}
+	else
+	{
+		std::list<std::string>::iterator iter;
+		for( iter = c->ActiveSessions.begin() ; iter != c->ActiveSessions.end() ; iter++)
+		{
+			WokXMLTag sendtag(msgtag);
+			sendtag.AddAttr("session", *iter);
+			c->wls->SendSignal("Jabber XML Presence Send", &sendtag);
+		}
 	}
 }
 

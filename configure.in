@@ -17,7 +17,7 @@
 
 
 AC_INIT(wokjab/src/main.cc)
-AM_INIT_AUTOMAKE(wokjab,0.0.5)
+AM_INIT_AUTOMAKE(wokjab,0.9.1.20070803)
 AM_CONFIG_HEADER(config.h)
 AC_PROG_CC
 AC_PROG_CXX
