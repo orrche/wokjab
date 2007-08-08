@@ -65,7 +65,7 @@ void
 GtkPreference::SaveConfig()
 {	
 	int width, height, pos_x, pos_y;
-	std::stringstream sheight, swidth, spos_x, spos_y;
+	std::stringstream sheight, swidth, spos_x, spos_y, span_pos;
 
 	gtk_window_get_size(GTK_WINDOW(window), &width, &height);
 	gtk_window_get_position(GTK_WINDOW(window), &pos_x, &pos_y);
@@ -73,12 +73,14 @@ GtkPreference::SaveConfig()
 	swidth << width;
 	spos_x << pos_x;
 	spos_y << pos_y;
-
+	span_pos << gtk_paned_get_position(GTK_PANED(main_hpaned));
+	
 	myconfig->GetFirstTag("width").AddAttr("data", swidth.str());
 	myconfig->GetFirstTag("height").AddAttr("data", sheight.str());
 	myconfig->GetFirstTag("pos_x").AddAttr("data", spos_x.str());
 	myconfig->GetFirstTag("pos_y").AddAttr("data", spos_y.str());
-
+	myconfig->GetFirstTag("pan_pos").AddAttr("data", span_pos.str());
+	
 	WokXMLTag conftag(NULL, "config");
 	conftag.AddAttr("path", "/preference");
 	conftag.AddTag(myconfig);
@@ -276,22 +278,21 @@ GtkPreference::CreateWid()
 
 	
 	GtkWidget *scrolltree = gtk_scrolled_window_new (NULL, NULL);
-  gtk_container_add(GTK_CONTAINER(scrolltree), treeview);
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolltree), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolltree), GTK_SHADOW_IN);
+	gtk_container_add(GTK_CONTAINER(scrolltree), treeview);
+	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolltree), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolltree), GTK_SHADOW_IN);
 
 	configview = gtk_viewport_new (NULL, NULL);
 	GtkWidget *scrollconf = gtk_scrolled_window_new (NULL, NULL);
-  gtk_container_add(GTK_CONTAINER(scrollconf), configview);
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrollconf), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrollconf), GTK_SHADOW_IN);
+	gtk_container_add(GTK_CONTAINER(scrollconf), configview);
+	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrollconf), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrollconf), GTK_SHADOW_IN);
 	
-	GtkWidget *main_hpaned;
 	main_hpaned = gtk_hpaned_new();
+
 	gtk_paned_add1(GTK_PANED(main_hpaned), scrolltree);
 	gtk_paned_add2(GTK_PANED(main_hpaned), scrollconf);
-	gtk_paned_set_position (GTK_PANED(main_hpaned), 100);
-	
+						   
 	GtkWidget *savebutton;
 	savebutton = gtk_button_new_with_mnemonic("_Save");
 	GtkWidget *hbox;
@@ -317,15 +318,17 @@ GtkPreference::CreateWid()
 	conftag.AddAttr("path", "/preference");
 	wls->SendSignal("Config XML Trigger", &conftag);	
 	
-	int pos_x, pos_y,width,height;
+	int pos_x, pos_y,width,height, pan_pos;
 
 	width = atoi( myconfig->GetFirstTag("width").GetAttr("data").c_str());
 	height = atoi( myconfig->GetFirstTag("height").GetAttr("data").c_str());
 	pos_x = atoi( myconfig->GetFirstTag("pos_x").GetAttr("data").c_str());
 	pos_y = atoi( myconfig->GetFirstTag("pos_y").GetAttr("data").c_str());
+	pan_pos = atoi( myconfig->GetFirstTag("pan_pos").GetAttr("data").c_str());
 		
 	gtk_window_move (GTK_WINDOW(window), pos_x, pos_y);
-	
+	if(pan_pos == 0 ) 
+		pan_pos = 150;
 	if(width == 0)
 		width = 120;
 
@@ -336,6 +339,7 @@ GtkPreference::CreateWid()
 	
 	gtk_widget_show_all(window);
 	
+	gtk_paned_set_position (GTK_PANED(main_hpaned), pan_pos);
 }
 
 int

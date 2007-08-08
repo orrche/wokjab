@@ -68,6 +68,8 @@ class GtkPreference : public WoklibPlugin
 		GtkWidget *window;
 		GtkWidget *treeview;
 		GtkWidget *configview;
+		GtkWidget *main_hpaned;
+
 		GtkTreeStore *treestore;
 		WokXMLTag *config;
 		WokXMLTag *myconfig;
