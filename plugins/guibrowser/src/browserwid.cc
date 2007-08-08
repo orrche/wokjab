@@ -203,8 +203,7 @@ BrowserWidget::popup_menu(GtkTreeView *tree_view, GdkEventButton *event, Browser
 		gchar *jid;
 		gchar *session;
 		
-		gtk_tree_model_get(GTK_TREE_MODEL(c->model), &iter,
-        1, &jid, 2, &node, 3, &session, -1);
+		gtk_tree_model_get(GTK_TREE_MODEL(c->model), &iter, 1, &jid, 2, &node, 3, &session, -1);
 		
 		c->menu_jid = jid;
 		c->menu_node = node;
@@ -228,14 +227,11 @@ BrowserWidget::popup_menu(GtkTreeView *tree_view, GdkEventButton *event, Browser
 		c->wls->SendSignal("Jabber XML IQ Send", &msgtag);
 		c->InfoConnect("Jabber XML IQ ID " + tag.GetAttr("id"));
 		
-		
-		
 		menu_item = gtk_menu_item_new_with_mnemonic ("Features");
 		gtk_widget_show (menu_item);
 		gtk_container_add (GTK_CONTAINER (c->pop_menu), menu_item);
 		
-		gtk_menu_popup (GTK_MENU(c->pop_menu), NULL, NULL, NULL, NULL,
-        		event->button, event->time);
+		gtk_menu_popup (GTK_MENU(c->pop_menu), NULL, NULL, NULL, NULL, event->button, event->time);
 		
 		return true;
 	}		
@@ -282,8 +278,9 @@ BrowserWidget::MenuActivate(GtkMenuItem *menuitem, BrowserWidget *c)
 
 	WokXMLTag tag(NULL, "servicefeature");
 	tag.AddAttr("jid", c->menu_jid);
+	tag.AddAttr("node", c->menu_node);
 	tag.AddAttr("session", c->menu_session);
-	c->wls->SendSignal("Jabber disco Feature " + c->popupmenusignals[GTK_WIDGET(menuitem)], tag);
+	c->wls->SendSignal(c->popupmenusignals[GTK_WIDGET(menuitem)], tag);
 		
 	return true;
 }
@@ -317,17 +314,16 @@ BrowserWidget::AddNode(GtkTreeIter *parant, std::string jid, std::string name, s
 	GtkTreeIter    iter;
 	
 	gtk_tree_store_append (store, &iter, parant);
-  gtk_tree_store_set (store, &iter,
-                      0, name.c_str(),
-                      1, jid.c_str(),
-											2, node.c_str(),
-											3, session.c_str(),
-                      -1); 
+	gtk_tree_store_set (store, &iter,
+                    0, name.c_str(),
+                    1, jid.c_str(),
+					2, node.c_str(),
+					3, session.c_str(),
+                    -1); 
 	
 	if ( node != "" )
 	{
 		GtkTreeIter subiter;
-		
 		gtk_tree_store_append( store, &subiter, &iter);
 	}
 }
@@ -340,35 +336,40 @@ BrowserWidget::FindTreeIter(GtkTreeIter *parant, std::string jid, std::string no
 	
 	for(;;)
 	{
-		gtk_tree_model_get(GTK_TREE_MODEL(model), parant,
-        2, &iter_node, -1);
-		gtk_tree_model_get(GTK_TREE_MODEL(model), parant,
-        1, &iter_jid, -1);
+		gtk_tree_model_get(GTK_TREE_MODEL(model), parant, 2, &iter_node, 1, &iter_jid, -1);
 	
-		if( jid == iter_jid )
+		if ( iter_node && iter_jid ) 
 		{
-			if( node == iter_node )
-				return true;
-			else if( gtk_tree_model_iter_has_child(model, parant))
+			if( jid == iter_jid )
 			{
-				GtkTreeIter iter = *parant;
-				gtk_tree_model_iter_children    (model, &iter, parant);
-				if ( FindTreeIter( &iter, jid, node, session) )
+				if( node == iter_node )
+					break;
+				else if( gtk_tree_model_iter_has_child(model, parant))
 				{
-					*parant = iter;
-					return true;
+					GtkTreeIter iter = *parant;
+					gtk_tree_model_iter_children    (model, &iter, parant);
+					if ( FindTreeIter( &iter, jid, node, session) )
+					{
+						*parant = iter;
+						break;
+					}
 				}
 			}
+			g_free(iter_node);
+			g_free(iter_jid);
 		}
-		else
+		
+		if ( ! gtk_tree_model_iter_next(model, parant) )
 		{
-			if ( ! gtk_tree_model_iter_next(model, parant) )
-			{
-				parant = NULL;
-				return false;
-			}
+			parant = NULL;
+			return false;
 		}
+	
 	}
+	
+	g_free(iter_node);
+	g_free(iter_jid);
+	return true;
 }
 
 int 
@@ -385,6 +386,21 @@ BrowserWidget::GetInfoData(WokXMLTag *tag)
 	std::list <WokXMLTag *>::iterator iter;
 	popupmenusignals.clear();
 	
+	
+	list = &querytag->GetTagList("identity");
+	for( iter = list->begin() ; iter != list->end() ; iter++)
+	{
+		menu_item = gtk_menu_item_new_with_mnemonic ((*iter)->GetAttr("category").c_str());
+		gtk_widget_show (menu_item);
+		gtk_container_add (GTK_CONTAINER (pop_menu), menu_item);
+		
+		gtk_signal_connect (GTK_OBJECT (menu_item), "activate",
+                      GTK_SIGNAL_FUNC (BrowserWidget::MenuActivate),
+                      this);
+		
+		popupmenusignals[GTK_WIDGET(menu_item)] = "Jabber disco Identity " + (*iter)->GetAttr("category");
+	}
+	
 	list = &querytag->GetTagList("feature");
 	for( iter = list->begin() ; iter != list->end() ; iter++)
 	{
@@ -396,7 +412,7 @@ BrowserWidget::GetInfoData(WokXMLTag *tag)
                       GTK_SIGNAL_FUNC (BrowserWidget::MenuActivate),
                       this);
 		
-		popupmenusignals[GTK_WIDGET(menu_item)] = (*iter)->GetAttr("var").c_str();
+		popupmenusignals[GTK_WIDGET(menu_item)] = "Jabber disco Feature " + (*iter)->GetAttr("var");
 	}
 	return true;
 }
@@ -416,7 +432,7 @@ BrowserWidget::GetItemData(WokXMLTag *tag)
 	if( querytag->GetAttr("node") != "" )
 	{
 		gtk_tree_model_get_iter_first   (model, &parant);
-		FindTreeIter(&parant, querytag->GetAttr("jid"), querytag->GetAttr("node"), tag->GetAttr("session"));
+		FindTreeIter(&parant, tag->GetFirstTag("iq").GetAttr("from"), querytag->GetAttr("node"), tag->GetAttr("session"));
 		
 		if( gtk_tree_model_iter_has_child(model, &parant))
 		{

@@ -51,13 +51,15 @@ class jep96 : public WoklibPlugin
 		int Accepted(WokXMLTag *contag);
 		int MainMenu(WokXMLTag *tag);
 		int Show(WokXMLTag *tag);
-		
+		int ReadConfig(WokXMLTag *tag);
+	
 		std::string PrettySize(unsigned long long size);
 		static gboolean Delete( GtkWidget *widget, GdkEvent *event, jep96 *c);
 		static void CloseWindow(GtkButton *button, jep96 *c);
 		static void RemoveStream(GtkButton *button, jep96 *c);
 	protected:
 		std::map <std::string, WokXMLTag *> sessions;
+		std::string autoproxy;
 		int sidnum;
 		GladeXML *gxml;
 		GtkWidget *filewindow;
