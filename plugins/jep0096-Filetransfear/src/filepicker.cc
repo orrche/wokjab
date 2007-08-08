@@ -171,7 +171,7 @@ filepicker::ButtonPress (GtkButton *button, filepicker *c)
 	
 	GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(glade_xml_get_widget(c->gxml, "proxylist")));
 	
-	if(gtk_tree_selection_get_selected(selection,  NULL, &tIter) == TRUE);
+	if(gtk_tree_selection_get_selected(selection,  NULL, &tIter) == TRUE && tIter);
 	{
 		gchar *addy;
 		gtk_tree_model_get(GTK_TREE_MODEL(c->model), &tIter, 0, &addy, -1);
