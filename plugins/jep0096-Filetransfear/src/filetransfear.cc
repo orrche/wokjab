@@ -77,6 +77,12 @@ WoklibPlugin(wls)
 	EXP_SIGHOOK("Jabber Stream File Status Rejected", &jep96::Rejected, 500);
 	EXP_SIGHOOK("Jabber Stream File Status Accepted", &jep96::Accepted, 500);
 	sidnum = 0;
+	
+	EXP_SIGHOOK("Config XML Change /file-transfear/proxy", &jep96::ReadConfig, 500);
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/file-transfear/proxy");
+	wls->SendSignal("Config XML Trigger", &conftag);
+ 
 }
 
 jep96::~jep96()
@@ -88,6 +94,17 @@ jep96::~jep96()
 	
 	gtk_widget_destroy(filewindow);
 	g_object_unref(gxml);
+}
+
+int
+jep96::ReadConfig(WokXMLTag *tag)
+{
+	if ( !tag->GetFirstTag("config").GetFirstTag("proxy").GetTagList("item").empty() )
+		autoproxy = tag->GetFirstTag("config").GetFirstTag("proxy").GetFirstTag("item").GetBody();
+	else
+		autoproxy = "";
+	
+	return 1;
 }
 
 gboolean 
@@ -298,7 +315,13 @@ jep96::SendFile(WokXMLTag *xml)
 	wls->SendSignal("Jabber XML IQ Send", msgtag);
 	
 	WokXMLTag *data = new WokXMLTag (msgtag);
-	data->AddAttr("proxy", xml->GetAttr("proxy"));
+	if ( xml->GetAttr("proxy_type") == "auto")
+	{
+		data->AddAttr("proxy", autoproxy );	
+	}
+	else
+		data->AddAttr("proxy", xml->GetAttr("proxy"));
+	
 	data->AddAttr("rate", xml->GetAttr("rate"));
 	data->AddAttr("file", file);
 	data->AddAttr("strsize", PrettySize(size));

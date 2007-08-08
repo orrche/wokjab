@@ -42,11 +42,19 @@ class filepicker : public WLSignalInstance
 		filepicker(WLSignal *wls, const std::string & session, const std::string & to);
 		 ~filepicker();
 
+		int ReadConfig(WokXMLTag *tag);
+		
 		static void Destroy (GtkWidget * widget, filepicker *c);
 		static void ButtonPress (GtkButton *button, filepicker *c);
+		static void ButtonRemove (GtkButton *button, filepicker *c);
+		static void ButtonAdd (GtkButton *button, filepicker *c);
 	protected:
 		GladeXML *gxml;
 		
+		GtkListStore *model;
+	
+		WokXMLTag *config;
+	
 		std::string session;
 		std::string to;
 };
