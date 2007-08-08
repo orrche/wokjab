@@ -458,6 +458,7 @@ FileShare::ListRequest(WokXMLTag *tag)
 		send.AddAttr("session", tag->GetAttr("session"));
 		send.AddAttr("name", filelistfile);
 		send.AddAttr("sid", sid.str());
+		send.AddAttr("proxy_type", "auto");
 		wls->SendSignal("Jabber Stream File Send", send);
 	}
 	
