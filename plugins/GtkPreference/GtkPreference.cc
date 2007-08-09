@@ -324,7 +324,9 @@ GtkPreference::CreateWid()
 	pos_y = atoi( myconfig->GetFirstTag("pos_y").GetAttr("data").c_str());
 	pan_pos = atoi( myconfig->GetFirstTag("pan_pos").GetAttr("data").c_str());
 		
-	gtk_window_move (GTK_WINDOW(window), pos_x, pos_y);
+//  Think this is a bad idea but we keep it commented for a while and listen to the complains 
+//  gtk_window_move (GTK_WINDOW(window), pos_x, pos_y);
+	
 	if(pan_pos == 0 ) 
 		pan_pos = 150;
 	if(width == 0)
