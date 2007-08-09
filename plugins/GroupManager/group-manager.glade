@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.2.2 on Sat Jul 28 23:22:16 2007 by nedo@localhost-->
+<!--Generated with glade3 3.2.2 on Thu Aug  9 21:16:53 2007 by nedo@localhost-->
 <glade-interface>
   <widget class="GtkWindow" id="window">
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>

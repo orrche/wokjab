@@ -23,14 +23,19 @@
  */
 
 #include "g-m-widget.hpp"
+#include <sstream>
 
 GM_Widget::GM_Widget(WLSignal *wls, GroupManager *gm): WLSignalInstance(wls),
 gm(gm)
-{
+{	
+	config = new WokXMLTag(NULL, "NULL");
+	EXP_SIGHOOK("Config XML Change /groupmanager/window", &GM_Widget::ReadConfig, 500);
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/groupmanager/window");
+	wls->SendSignal("Config XML Trigger", &conftag);
+	
 	xml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/group-manager.glade", NULL, NULL);
 	GtkWidget *window = glade_xml_get_widget(xml, "window");
-	
-	gtk_widget_show_all(window);
 	
 	GtkWidget *sessionchooser;
 	GtkCellRenderer *renderer;
@@ -98,15 +103,67 @@ gm(gm)
 			G_CALLBACK (GM_Widget::Part), this);
 	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "add")), "clicked",
 			G_CALLBACK (GM_Widget::Add), this);
-	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "remove")), "clicked",
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "delete")), "clicked",
 			G_CALLBACK (GM_Widget::Remove), this);
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "window")), "delete-event",
+			G_CALLBACK (GM_Widget::Delete), this);
+	
+	gtk_window_set_default_size(GTK_WINDOW(glade_xml_get_widget(xml,"window")), 
+				atoi(config->GetFirstTag("size").GetAttr("width").c_str()),
+				atoi(config->GetFirstTag("size").GetAttr("height").c_str()));
+	
+	
+	gtk_widget_show_all(window);
 }
 
 GM_Widget::~GM_Widget()
 {
+	GtkWidget *window = glade_xml_get_widget(xml,"window");	
 	
-	
+	int width, height;
+	gtk_window_get_size(GTK_WINDOW(window), &width, &height);
+
+	std::stringstream s_width, s_height;
+	s_width << width;
+	s_height << height;
+
+	config->GetFirstTag("size").AddAttr("width", s_width.str().c_str());
+	config->GetFirstTag("size").AddAttr("height", s_height.str().c_str());
+
+	SaveConfig();
+	g_object_unref(xml);
+	gtk_widget_destroy(window);
 }
+
+gboolean
+GM_Widget::Delete( GtkWidget *widget, GdkEvent *event, GM_Widget *c)
+{
+	c->gm->DialogOpenerRemove(c);
+	return TRUE;
+}
+
+
+void
+GM_Widget::SaveConfig()
+{
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/groupmanager/window");
+	conftag.AddTag(config);
+
+	EXP_SIGUNHOOK("Config XML Change /groupmanager/window", &GM_Widget::ReadConfig, 500);
+	wls->SendSignal("Config XML Store", &conftag);
+	EXP_SIGHOOK("Config XML Change /groupmanager/window", &GM_Widget::ReadConfig, 500);
+}
+
+
+int
+GM_Widget::ReadConfig(WokXMLTag *tag)
+{
+	delete config;
+	config = new WokXMLTag(tag->GetFirstTag("config"));
+	return 1;
+}
+
 
 void
 GM_Widget::cell_edited (GtkCellRendererText *cell, const gchar *path_string, const gchar *new_text, GM_Widget *c)

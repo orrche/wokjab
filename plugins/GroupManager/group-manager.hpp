@@ -48,7 +48,10 @@ public:
 	int Menu(WokXMLTag *tag);
 	int DialogOpener(WokXMLTag *tag);
 	void DialogOpenerRemove( GM_Widget *gmw );
+			
 	
+	virtual std::string GetInfo() {return "Group Manager";};
+	virtual std::string GetVersion() {return VERSION;};
 protected:
 	std::list<GM_Widget *> window;
 private:

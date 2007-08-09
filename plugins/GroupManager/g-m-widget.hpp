@@ -49,6 +49,9 @@ public:
 	static void Add(GtkButton *button, GM_Widget *c);
 	static void Remove(GtkButton *button, GM_Widget *c);
 	static void cell_edited (GtkCellRendererText *cell, const gchar *path_string, const gchar *new_text, GM_Widget *c);
+	static gboolean Delete( GtkWidget *widget, GdkEvent *event, GM_Widget *c);
+	int ReadConfig(WokXMLTag *tag);
+	void SaveConfig();
 protected:
 	GroupManager *gm;
 	GladeXML *xml;
@@ -58,6 +61,8 @@ protected:
 	GtkListStore *rosterlist;
 	
 	std::string selected_session;
+	
+	WokXMLTag *config;
 	
 };
 

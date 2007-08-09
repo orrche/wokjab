@@ -33,9 +33,9 @@ GroupManager::GroupManager(WLSignal *wls) : WoklibPlugin(wls)
 GroupManager::~GroupManager()
 {
 	std::list<GM_Widget*>::iterator iter;
-	for( iter = window.begin() ; iter != window.end() ; iter = window.begin())
+	for( iter = window.begin() ; iter != window.end() ; iter++)
 	{
-		delete *iter;	
+		delete *iter;
 	}
 	
 }
@@ -70,6 +70,7 @@ GroupManager::DialogOpenerRemove( GM_Widget *gmw )
 	
 	if( iter != window.end() )
 	{
+		delete *iter;
 		window.erase(iter);
 	}
 }
