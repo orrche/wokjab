@@ -203,7 +203,6 @@ GtkPreference::FindSanity(WokXMLTag &tag)
 			return true;
 	}
 	
-	return true;
 	return false;
 }
 
@@ -230,7 +229,6 @@ GtkPreference::AddTreeItem(GtkTreeIter *parant, WokXMLTag &tag, std::string path
 			else
 			{
 				m++;
-				
 			}
 		}
 		else
