@@ -775,7 +775,9 @@ GUIMessageWidget::PutText(GtkTextIter *iter, WokXMLTag &message)
 				break;
 				
 			case 2:
-				gtk_text_buffer_insert_with_tags (buffer, iter, (*oiter)->GetStr().c_str(), (*oiter)->GetStr().length(), tags["forreign_text"], NULL);
+				WokXMLText *tt;
+				tt = (WokXMLText *)(*oiter);
+				gtk_text_buffer_insert_with_tags (buffer, iter, tt->GetText().c_str(), tt->GetText().length(), tags["forreign_text"], NULL);
 				break;
 
 			default:
@@ -994,7 +996,7 @@ GUIMessageWidget::own_message(std::string str, time_t t)
 	WokXMLTag &mtag = msgtag.AddTag("message");
 	mtag.AddAttr("to", from);
 	mtag.AddAttr("type", "chat");
-	mtag.AddTag("body").AddText(XMLisize(str));
+	mtag.AddTag("body").AddText(str);
 
 	wls->SendSignal("Jabber XML Message Send", &msgtag);
 	str = msgtag.GetFirstTag("message").GetFirstTag("body").GetBody();
@@ -1044,7 +1046,6 @@ GUIMessageWidget::own_message(std::string str, time_t t)
 					tags["my_name"],
 					NULL);
 
-	msg = DeXMLisize(msg);
 	gtk_text_buffer_insert_with_tags (buffer, &iter, msg.c_str(), msg.length(),tags["my_text"],NULL);
 	gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (textview1),
 				      end_mark, .4, TRUE, 1, 1);

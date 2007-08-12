@@ -47,20 +47,6 @@ id(id)
 		return;
 	}
 
-	int flags;
-	if ((flags = fcntl(socket_nr, F_GETFL, 0)) < 0)
-	{
-		woklib_error(wls, "Socks5 Connection couldn't get socket flags");
-	}
-
-
-	if (fcntl(socket_nr, F_SETFL, flags | O_NONBLOCK) < 0)
-	{
-		woklib_error(wls, "Socks5 Connection couldn't set non blocking socket");
-	} 
-	
-	
-
 	std::stringstream sstr_socket;
 	sstr_socket << socket_nr;
 	str_socket = sstr_socket.str();
@@ -355,13 +341,32 @@ Socks5Session::OpenConnection()
 	sa.sin_family = hp->h_addrtype;
 	sa.sin_port = htons ((u_short) port);
 	
+	std::cout << "Starting this shit.." << std::endl;
 	if ((socket_nr = socket (hp->h_addrtype, SOCK_STREAM, 0)) < 0)
 		return (-1);
+	std::cout << "Connecting... this might maybe be done none blocking but not sure" << std::endl;
+	
+	
+	int flags;
+	if ((flags = fcntl(socket_nr, F_GETFL, 0)) < 0)
+	{
+		woklib_error(wls, "Socks5 Connection couldn't get socket flags");
+	}
+
+
+	if (fcntl(socket_nr, F_SETFL, flags | O_NONBLOCK) < 0)
+	{
+		woklib_error(wls, "Socks5 Connection couldn't set non blocking socket");
+	} 
+	
+	
 	if (connect (socket_nr, (struct sockaddr *) &sa, sizeof sa) < 0)
 	{
+		return 1;
 		close (socket_nr);
 		return (-1);
 	}
+	std::cout << "And we are fucking connected" << std::endl;
 
 	return 1;
 }

@@ -35,35 +35,43 @@ using std::endl;
 
 GnomeTrayIcon::GnomeTrayIcon(WLSignal *wls) : WoklibPlugin (wls)
 {
-	EXP_SIGHOOK("Jabber Event Add", &GnomeTrayIcon::AddJIDEvent, 1000);
-	EXP_SIGHOOK("Jabber Event Remove", &GnomeTrayIcon::RemoveJIDEvent, 2);
 	
-
 	tray_icon 	= egg_tray_icon_new("WokJab Tray Icon");
-	eventbox 	= gtk_event_box_new();
-	tray_icon_tips = gtk_tooltips_new();
+	if ( tray_icon )
+	{
+		EXP_SIGHOOK("Jabber Event Add", &GnomeTrayIcon::AddJIDEvent, 1000);
+		EXP_SIGHOOK("Jabber Event Remove", &GnomeTrayIcon::RemoveJIDEvent, 2);
+	
+		eventbox 	= gtk_event_box_new();
+		tray_icon_tips = gtk_tooltips_new();
 
-  gtk_container_add (GTK_CONTAINER (tray_icon), eventbox);
+		gtk_container_add (GTK_CONTAINER (tray_icon), eventbox);
 
-	
-	image 		= gtk_image_new_from_file(PACKAGE_DATA_DIR"/wokjab/online.png");
-	gtk_container_add (GTK_CONTAINER (eventbox), image);
-	
-	gtk_tooltips_disable(GTK_TOOLTIPS(tray_icon_tips));
-	
-	gtk_widget_show_all (GTK_WIDGET (tray_icon));					 
-	
+		
+		image 		= gtk_image_new_from_file(PACKAGE_DATA_DIR"/wokjab/online.png");
+		gtk_container_add (GTK_CONTAINER (eventbox), image);
+		
+		gtk_tooltips_disable(GTK_TOOLTIPS(tray_icon_tips));
+		
+		gtk_widget_show_all (GTK_WIDGET (tray_icon));					 
+		
 
-	g_signal_connect (G_OBJECT (eventbox), "button_press_event",
-			    G_CALLBACK (GnomeTrayIcon::tray_icon_pressed), this);
-	CurrentEvent = EventList.end();
-	
-	to = g_timeout_add (500, (gboolean (*)(void *)) (GnomeTrayIcon::TimeOut), this);
+		g_signal_connect (G_OBJECT (eventbox), "button_press_event",
+					G_CALLBACK (GnomeTrayIcon::tray_icon_pressed), this);
+		CurrentEvent = EventList.end();
+		
+		to = g_timeout_add (500, (gboolean (*)(void *)) (GnomeTrayIcon::TimeOut), this);
+	}
 }
 
 GnomeTrayIcon::~GnomeTrayIcon()
 {
-	g_source_remove(to);
+	if ( tray_icon )
+	{
+		g_source_remove(to);
+	//	g_object_unref(tray_icon);
+		gtk_widget_destroy(eventbox);
+	}
 	
 	
 	std::list<WokXMLTag *>::iterator iter;
@@ -71,7 +79,6 @@ GnomeTrayIcon::~GnomeTrayIcon()
 		delete *iter;
 		
 	EventList.clear(); // Not stricly nessesary now
-
 }
 
 

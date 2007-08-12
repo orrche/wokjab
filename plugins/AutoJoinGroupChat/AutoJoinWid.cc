@@ -130,8 +130,6 @@ AutoJoinWid::~AutoJoinWid()
 	xml = NULL;
 
 	gtk_widget_destroy(window);
-
-	parent->RemoveWid(this);
 }
 
 void
@@ -153,9 +151,7 @@ AutoJoinWid::ReloadList()
 gboolean
 AutoJoinWid::destroy( GtkWidget *widget, GdkEvent *event, AutoJoinWid *c)
 {
-	if ( c->xml )
-		delete c;
-
+	c->parent->RemoveWid(c);
 	return TRUE;
 }
 

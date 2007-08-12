@@ -38,7 +38,15 @@ AutoJoin::~AutoJoin()
 void 
 AutoJoin::RemoveWid(AutoJoinWid *wid)
 {
-	widlist.erase(find(widlist.begin(), widlist.end(), wid));
+	std::list<AutoJoinWid*>::iterator iter;
+	
+	iter = std::find(widlist.begin(), widlist.end(), wid );
+	
+	if( iter != widlist.end() )
+	{
+		delete *iter;
+		widlist.erase(iter);
+	}
 }
 
 int
@@ -51,10 +59,23 @@ AutoJoin::CreateWid(WokXMLTag *xml)
 int
 AutoJoin::Menu(WokXMLTag *xml)
 {
-	WokXMLTag &settingstag = xml->AddTag("item");
-	settingstag.AddAttr("name", "Settings");
+	std::list <WokXMLTag *>::iterator iter;
+	WokXMLTag *settingstag = NULL;
+	for ( iter = xml->GetTagList("item").begin() ; iter != xml->GetTagList("item").end() ; iter++)
+	{
+		if ( (*iter)->GetAttr("name") == "Settings")
+		{
+			settingstag = *iter;
+			break;
+		}
+	}
+	if( !settingstag )
+	{
+		settingstag = &xml->AddTag("item");
+		settingstag->AddAttr("name", "Settings");
+	}
 	
-	WokXMLTag &autojoin = settingstag.AddTag("item");
+	WokXMLTag &autojoin = settingstag->AddTag("item");
 	autojoin.AddAttr("name", "Auto Joiner");
 	// This I haven't got working yet atleast in the menu but when I do it should start working
 	autojoin.AddAttr("signal", "AutoGroupChatJoinerGUI Preference");
@@ -62,7 +83,6 @@ AutoJoin::Menu(WokXMLTag *xml)
 	WokXMLTag querytag(NULL,"session");
 	wls->SendSignal("Jabber GetSessions", &querytag);
 				
-	std::list <WokXMLTag *>::iterator iter;
 	
 	for( iter = querytag.GetTagList("item").begin() ; iter != querytag.GetTagList("item").end() ; iter++)
 	{

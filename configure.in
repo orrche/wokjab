@@ -147,9 +147,11 @@ AC_OUTPUT(Makefile \
         plugins/jep0050-AdHocCommands/Makefile  \
 	plugins/jep0065-Bytestream/Makefile \
 	plugins/jep0065-Bytestream/src/Makefile  \
+        plugins/jep0060-PublishSubscribe/Makefile  \
 	plugins/jep0096-Filetransfear/Makefile \
 	plugins/jep0096-Filetransfear/src/Makefile \
 	plugins/jep0115-EntCap/Makefile  \
+        plugins/jep0118-UserTune/Makefile  \
         plugins/jep0153-VCardAvatar/Makefile  \
         plugins/Idle/Makefile  \
         plugins/Fileshare/Makefile  \

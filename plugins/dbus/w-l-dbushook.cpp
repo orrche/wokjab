@@ -101,7 +101,7 @@ WLDbushook::exec(WokXMLTag *tag)
 	{
 		if ( return_xml && return_xml[0])
 		{
-			WokXMLTag dataxml(NULL, "data");
+			WokXMLTag dataxml("data");
 			dataxml.Add(return_xml);
 			*tag = **dataxml.GetTags().begin();
 		}

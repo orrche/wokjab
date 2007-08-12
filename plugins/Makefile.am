@@ -63,6 +63,8 @@ SUBDIRS= \
 	dbus \
 	RosterEvent \
 	GroupManager \
-	History.SQLite
+	History.SQLite \
+	jep0118-UserTune \
+	jep0060-PublishSubscribe
 
 

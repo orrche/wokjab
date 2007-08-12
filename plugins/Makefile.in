@@ -79,7 +79,8 @@ DIST_SUBDIRS = Authorization AutoPresence Config DisplayGtk EventSound \
 	OpenDialogTo python registerservice Reversi roster-rename \
 	ScriptLoader toaster Tooltip wokjab-jid-info woklib-groupchat \
 	rfc1928-SOCKS5 Idle GroupChatBookmark AutoJoinGroupChat dbus \
-	RosterEvent GroupManager History.SQLite
+	RosterEvent GroupManager History.SQLite jep0118-UserTune \
+	jep0060-PublishSubscribe
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
@@ -238,7 +239,9 @@ SUBDIRS = \
 	dbus \
 	RosterEvent \
 	GroupManager \
-	History.SQLite
+	History.SQLite \
+	jep0118-UserTune \
+	jep0060-PublishSubscribe
 
 all: all-recursive
 

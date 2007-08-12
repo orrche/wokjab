@@ -43,8 +43,25 @@ GroupManager::~GroupManager()
 int
 GroupManager::Menu(WokXMLTag *xml)
 {
+	
+	std::list <WokXMLTag *>::iterator iter;
+	WokXMLTag *settingstag = NULL;
+	for ( iter = xml->GetTagList("item").begin() ; iter != xml->GetTagList("item").end() ; iter++)
+	{
+		if ( (*iter)->GetAttr("name") == "Settings")
+		{
+			settingstag = *iter;
+			break;
+		}
+	}
+	if( !settingstag )
+	{
+		settingstag = &xml->AddTag("item");
+		settingstag->AddAttr("name", "Settings");
+	}
+	
 	WokXMLTag *tag;
-	tag = &xml->AddTag("item");
+	tag = &settingstag->AddTag("item");
 	tag->AddAttr("name", "Group Manager");
 	tag->AddAttr("signal", "Jabber GUI GroupManager");
 	

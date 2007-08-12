@@ -51,7 +51,8 @@ GtkPText::GtkPText(WokXMLTag *tag) : GtkPCommon(tag)
 	vbox = gtk_vbox_new(FALSE, 2);
 	
 	GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
-	gtk_text_buffer_set_text (buffer, tag->GetBody().c_str(), tag->GetBody().size());
+	std::string text = tag->GetBody();
+	gtk_text_buffer_set_text (buffer, text.c_str(), text.size());
 	
 	gtk_container_add(GTK_CONTAINER(scroll), textview);
 	gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 2);
