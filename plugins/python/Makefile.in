@@ -54,6 +54,9 @@ libwokpython_la_LIBADD =
 am_libwokpython_la_OBJECTS = main.lo WokPython.lo PyScript.lo \
 	PyWXMLTag.lo PySig.lo
 libwokpython_la_OBJECTS = $(am_libwokpython_la_OBJECTS)
+libwokpython_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(libwokpython_la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I. -I$(top_builddir)@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -145,7 +148,6 @@ PKG_CONFIG = @PKG_CONFIG@
 PY_CFLAGS = @PY_CFLAGS@
 PY_LIBS = @PY_LIBS@
 RANLIB = @RANLIB@
-SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -221,6 +223,9 @@ libwokpython_la_SOURCES = \
 	PySig.h          \
 	PySig.cc 
 
+libwokpython_la_LDFLAGS = \
+        `pkg-config gtk+-2.0 --libs` $(PY_LIBS) -ldl -lpthread -lm -lutil
+
 SUBDIRS = \
 	preloader 
 
@@ -285,7 +290,7 @@ clean-libLTLIBRARIES:
 	  rm -f "$${dir}/so_locations"; \
 	done
 libwokpython.la: $(libwokpython_la_OBJECTS) $(libwokpython_la_DEPENDENCIES) 
-	$(CXXLINK) -rpath $(libdir) $(libwokpython_la_OBJECTS) $(libwokpython_la_LIBADD) $(LIBS)
+	$(libwokpython_la_LINK) -rpath $(libdir) $(libwokpython_la_OBJECTS) $(libwokpython_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

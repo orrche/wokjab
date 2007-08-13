@@ -54,6 +54,10 @@ libwokpythonpreloader_la_LIBADD =
 am_libwokpythonpreloader_la_OBJECTS = main.lo
 libwokpythonpreloader_la_OBJECTS =  \
 	$(am_libwokpythonpreloader_la_OBJECTS)
+libwokpythonpreloader_la_LINK = $(LIBTOOL) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
+	$(AM_CXXFLAGS) $(CXXFLAGS) $(libwokpythonpreloader_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I. -I$(top_builddir)@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -126,7 +130,6 @@ PKG_CONFIG = @PKG_CONFIG@
 PY_CFLAGS = @PY_CFLAGS@
 PY_LIBS = @PY_LIBS@
 RANLIB = @RANLIB@
-SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -190,6 +193,9 @@ lib_LTLIBRARIES = \
 libwokpythonpreloader_la_SOURCES = \
 	main.cc 
 
+libwokpythonpreloader_la_LDFLAGS = \
+        `pkg-config gtk+-2.0 --libs`
+
 all: all-am
 
 .SUFFIXES:
@@ -251,7 +257,7 @@ clean-libLTLIBRARIES:
 	  rm -f "$${dir}/so_locations"; \
 	done
 libwokpythonpreloader.la: $(libwokpythonpreloader_la_OBJECTS) $(libwokpythonpreloader_la_DEPENDENCIES) 
-	$(CXXLINK) -rpath $(libdir) $(libwokpythonpreloader_la_OBJECTS) $(libwokpythonpreloader_la_LIBADD) $(LIBS)
+	$(libwokpythonpreloader_la_LINK) -rpath $(libdir) $(libwokpythonpreloader_la_OBJECTS) $(libwokpythonpreloader_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

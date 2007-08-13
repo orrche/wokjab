@@ -17,6 +17,9 @@ libwokpython_la_SOURCES = \
 	PySig.h          \
 	PySig.cc 
 
+libwokpython_la_LDFLAGS = \
+        `pkg-config gtk+-2.0 --libs` $(PY_LIBS) -ldl -lpthread -lm -lutil
+
 SUBDIRS = \
 	preloader 
 

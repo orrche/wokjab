@@ -15,6 +15,10 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
@@ -30,9 +34,9 @@ WoklibPlugin *__WLP_plugin;
 extern "C" WoklibPlugin *maker(WLSignal *wls) {
 	WoklibPlugin *plugin;
 	WoklibPlugin *(*mkr) (WLSignal *wls);
-	std::string filename = "/usr/local/lib/woklib-plugins/secondary/libwokpython.so";
+	std::string filename = PACKAGE_PLUGIN_DIR"/secondary/libwokpython.so";
 	
-	__WLP_PlugInLib = dlopen (filename.c_str (), RTLD_GLOBAL);
+	__WLP_PlugInLib = dlopen (filename.c_str (), RTLD_GLOBAL | RTLD_LAZY );
 	if (!__WLP_PlugInLib)
 	{
 		woklib_error(wls, "Cannot load library: " + std::string(dlerror()));
