@@ -54,6 +54,7 @@ UserTune::ActivityLine(WokXMLTag *tag)
 	if ( user.find(tag->GetAttr("jid")) != user.end() )
 	{
 		WokXMLTag &item = tag->AddTag("item");
+		item.AddAttr("type_name", "User Tune");
 		WokXMLTag &line = item.AddTag("line");
 					
 		if ( status )
@@ -107,21 +108,17 @@ UserTune::Message(WokXMLTag *tag)
 	std::list <WokXMLTag *>::iterator eventiter;
 	for ( eventiter = tag->GetFirstTag("message").GetTagList("event").begin() ; eventiter != tag->GetFirstTag("message").GetTagList("event").end() ; eventiter++)
 	{
-		std::cout << "tick1" << std::endl;
 		if ( (*eventiter)->GetAttr("xmlns") == "http://jabber.org/protocol/pubsub#event" )
 		{
 			std::list <WokXMLTag *>::iterator itemiter;
 			for ( itemiter = (*eventiter)->GetTagList("items").begin() ; itemiter != (*eventiter)->GetTagList("items").end() ; itemiter++ )
 			{
-				std::cout << "tick2" << (*itemiter)->GetAttr("node") << std::endl;
 				if ( (*itemiter)->GetAttr("node") == "http://jabber.org/protocol/tune" )
 				{
-					std::cout << "Check" << std::endl;
 					std::list <WokXMLTag *>::iterator tuneiter;
 					for( tuneiter = (*itemiter)->GetFirstTag("item").GetTagList("tune").begin() ; tuneiter != (*itemiter)->GetFirstTag("item").GetTagList("tune").end() ; tuneiter++ )
 					{
 						
-						std::cout << "tick3" << std::endl;
 						if ( (*tuneiter)->GetAttr("xmlns") == "http://jabber.org/protocol/tune" )
 						{
 							tune = *tuneiter;
