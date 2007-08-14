@@ -309,6 +309,12 @@ User::UpdateRow()
 		texttag.AddText(statusmsg);
 		texttag.AddText("</span>");
 	}
+	else if ( tickeritems.size() == 1 )
+	{
+		texttag.AddText("\n<span style='italic' size='x-small'>");
+		texttag.AddText(*tickeritems.begin());
+		texttag.AddText("</span>");
+	}
 	
 	columntag.AddTag("post_pix").AddText(avatar);
 	
