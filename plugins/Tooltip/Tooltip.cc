@@ -99,8 +99,46 @@ Tooltip::DispWindow (Tooltip * c)
 	gtk_label_set_text(GTK_LABEL(glade_xml_get_widget (c->xml, "nick_label")), itemtag.GetAttr("nick").c_str());
 	gtk_label_set_text(GTK_LABEL(glade_xml_get_widget (c->xml, "show_label")), 
 											itemtag.GetFirstTag("resource").GetFirstTag("show").GetBody().c_str());
+	
+	std::string statusmsg = itemtag.GetFirstTag("resource").GetFirstTag("status").GetBody();
+	
+	WokXMLTag entries("entries");	
+	entries.AddAttr("jid", c->currenttag->GetAttr("jid"));
+	entries.AddAttr("session", c->currenttag->GetAttr("session"));
+	c->wls->SendSignal("Jabber UserActivityGet", entries);
+	c->wls->SendSignal("Jabber UserActivityGet " + c->currenttag->GetAttr("session") + " '" + XMLisize(c->currenttag->GetAttr("jid")) + "'", entries);
+	
+	gtk_table_resize(GTK_TABLE(glade_xml_get_widget (c->xml, "table") ), 5 + entries.GetTagList("item").size(), 2);
+	
+	std::list <WokXMLTag *>::iterator entry_iter;
+	int n = 0;
+	for( entry_iter = entries.GetTagList("item").begin() ; entry_iter != entries.GetTagList("item").end() ; entry_iter++)
+	{
+		/*
+		statusmsg += "\n";
+		statusmsg += (*entry_iter)->GetFirstTag("line").GetBody();	
+		*/
+		GtkWidget *line = gtk_label_new((*entry_iter)->GetFirstTag("line").GetBody().c_str());
+		GtkWidget *type = gtk_label_new(((*entry_iter)->GetAttr("type_name")+":").c_str());
+		
+		gtk_table_attach_defaults(GTK_TABLE(glade_xml_get_widget (c->xml, "table") ),
+                                                         type,
+                                                         0,
+                                                         1,
+                                                         4+n,
+                                                         5+n);
+		gtk_table_attach_defaults(GTK_TABLE(glade_xml_get_widget (c->xml, "table") ),
+                                                         line,
+                                                         1,
+                                                         2,
+                                                         4+n,
+                                                         5+n);
+		n++;
+	}
+	gtk_widget_show_all(glade_xml_get_widget (c->xml, "table"));
+	
 	gtk_label_set_text(GTK_LABEL(glade_xml_get_widget (c->xml, "status_label")), 
-											itemtag.GetFirstTag("resource").GetFirstTag("status").GetBody().c_str());
+											statusmsg.c_str());
 											
 	c->id = 0;
 	
