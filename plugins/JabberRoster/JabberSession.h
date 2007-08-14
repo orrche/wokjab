@@ -28,18 +28,19 @@
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
+using namespace Woklib;
 class JabberSession;
 
 #include <map>
 #include "User.h"
 #include "Group.h"
+#include "JabberRoster.h"
 
-using namespace Woklib;
 
 class JabberSession : public WLSignalInstance
 {
 	public:
-		JabberSession(WLSignal *wls, WokXMLTag *tag);
+		JabberSession(WLSignal *wls, WokXMLTag *tag, JabberRoster *c);
 		 ~JabberSession();
 
 		void RemoveFromGroup(std::string groupname);
@@ -50,6 +51,9 @@ class JabberSession : public WLSignalInstance
 		std::string GetSession();
 		
 		int UpdateRoster(WokXMLTag *tag);
+	
+	
+		JabberRoster *parent;
 	protected:
 		std::string id,session;
 		std::map <std::string, User*> user;

@@ -54,6 +54,7 @@ class RosterItem : public WLSignalInstance
 
 		std::string id;
 		RosterItem *parant;
+		GtkTreeModel *model;
 		GladeXML *xml;
 		GtkTreeIter iter;
 		int indent;

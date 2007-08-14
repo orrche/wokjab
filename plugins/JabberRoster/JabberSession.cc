@@ -25,8 +25,9 @@
 #include "JabberSession.h"
 
 
-JabberSession::JabberSession(WLSignal *wls, WokXMLTag *tag) : WLSignalInstance(wls),
-session(tag->GetAttr("session"))
+JabberSession::JabberSession(WLSignal *wls, WokXMLTag *tag, JabberRoster *c) : WLSignalInstance(wls),
+session(tag->GetAttr("session")),
+parent(c)
 {
 	EXP_SIGHOOK("Jabber Roster Update " + session , &JabberSession::UpdateRoster, 1000);
 	

@@ -30,6 +30,8 @@ UserTune::UserTune(WLSignal *wls) : WoklibPlugin(wls)
 	status = NULL;
 	
 	EXP_SIGHOOK("Jabber UserTune SetTune", &UserTune::SetTune, 1000);
+	EXP_SIGHOOK("Jabber PubSub JID 'http://jabber.org/protocol/tune'", &UserTune::Message, 1000);
+	EXP_SIGHOOK("Jabber UserActivityGet", &UserTune::ActivityLine, 1000);
 	
 	config = new WokXMLTag(NULL, "NULL");
 	EXP_SIGHOOK("Config XML Change /pubsub/usertune", &UserTune::ReadConfig, 500);
@@ -44,6 +46,105 @@ UserTune::~UserTune()
 	
 	
 	
+}
+
+int
+UserTune::ActivityLine(WokXMLTag *tag)
+{
+	if ( user.find(tag->GetAttr("jid")) != user.end() )
+	{
+		WokXMLTag &item = tag->AddTag("item");
+		WokXMLTag &line = item.AddTag("line");
+					
+		if ( status )
+		{
+			std::list <WokXMLObject *>::iterator oiter;
+			for ( oiter = status->GetFirstTag("status").GetItemList().begin() ; oiter != status->GetFirstTag("status").GetItemList().end() ; oiter++)
+			{
+				switch ( (*oiter)->GetType() )
+				{
+					case 1:
+						WokXMLTag *otag;
+						otag = (WokXMLTag *)(*oiter);
+						if ( otag->GetName() == "var" )
+						{
+							if ( otag->GetAttr("name") == "artist" )
+								line.AddText(user[tag->GetAttr("jid")]->GetFirstTag("artist").GetBody());
+							else if ( otag->GetAttr("name") == "length" )
+								line.AddText(user[tag->GetAttr("jid")]->GetFirstTag("length").GetBody());
+							else if ( otag->GetAttr("name") == "source")
+								line.AddText(user[tag->GetAttr("jid")]->GetFirstTag("source").GetBody());
+							else if ( otag->GetAttr("name") == "title")
+								line.AddText(user[tag->GetAttr("jid")]->GetFirstTag("title").GetBody());
+							else if ( otag->GetAttr("name") == "track")
+								line.AddText(user[tag->GetAttr("jid")]->GetFirstTag("track").GetBody());
+							else if ( otag->GetAttr("name") == "uri")
+								line.AddText(user[tag->GetAttr("jid")]->GetFirstTag("uri").GetBody());
+						}
+						break;
+					case 2:
+						
+						WokXMLText *tt;
+						tt = (WokXMLText *)(*oiter);
+						line.AddText(tt->GetText());
+						break;
+				}
+			}
+		}
+	}
+	return 1;	
+}
+
+int
+UserTune::Message(WokXMLTag *tag)
+{
+	if ( user.find(tag->GetFirstTag("message").GetAttr("from")) != user.end() )
+	{
+		delete user[tag->GetFirstTag("message").GetAttr("from")];
+	}
+	
+	WokXMLTag *tune = NULL;
+	std::list <WokXMLTag *>::iterator eventiter;
+	for ( eventiter = tag->GetFirstTag("message").GetTagList("event").begin() ; eventiter != tag->GetFirstTag("message").GetTagList("event").end() ; eventiter++)
+	{
+		std::cout << "tick1" << std::endl;
+		if ( (*eventiter)->GetAttr("xmlns") == "http://jabber.org/protocol/pubsub#event" )
+		{
+			std::list <WokXMLTag *>::iterator itemiter;
+			for ( itemiter = (*eventiter)->GetTagList("items").begin() ; itemiter != (*eventiter)->GetTagList("items").end() ; itemiter++ )
+			{
+				std::cout << "tick2" << (*itemiter)->GetAttr("node") << std::endl;
+				if ( (*itemiter)->GetAttr("node") == "http://jabber.org/protocol/tune" )
+				{
+					std::cout << "Check" << std::endl;
+					std::list <WokXMLTag *>::iterator tuneiter;
+					for( tuneiter = (*itemiter)->GetFirstTag("item").GetTagList("tune").begin() ; tuneiter != (*itemiter)->GetFirstTag("item").GetTagList("tune").end() ; tuneiter++ )
+					{
+						
+						std::cout << "tick3" << std::endl;
+						if ( (*tuneiter)->GetAttr("xmlns") == "http://jabber.org/protocol/tune" )
+						{
+							tune = *tuneiter;
+							break;
+						}
+					}
+					if( tune ) break;
+				}				
+			}
+			if( tune ) break;
+		}
+	}
+	if ( tune )
+	{
+		user[tag->GetFirstTag("message").GetAttr("from")] = new WokXMLTag(*tune);
+	
+		wls->SendSignal("Jabber UserActivityUpdate " + tag->GetAttr("session") +
+					" '" + XMLisize(tag->GetFirstTag("message").GetAttr("from")) + "'", tag);
+	}
+	else
+		woklib_debug(wls, "One think there should be some kind of sane information here in the user tune ... ");
+	
+	return 1;
 }
 
 int
@@ -62,18 +163,11 @@ UserTune::ReadConfig(WokXMLTag *tag)
 	delete config;
 	config = new WokXMLTag(tag->GetFirstTag("config"));
 	
-	if ( config->GetFirstTag("change_status").GetAttr("data") != "false" )
-	{
-		delete status;
-		status = new WokXMLTag ( "status" );
-		status->Add(config->GetFirstTag("status").GetBody() );
-	}
-	else if ( status != NULL )
-	{
-		delete status;
-		status = NULL;
-	}
 	
+	delete status;
+	status = new WokXMLTag ( "status" );
+	status->Add(config->GetFirstTag("status").GetBody() );
+
 	return 1;
 	
 }

@@ -313,7 +313,7 @@ GUIRoster::AddItem(WokXMLTag *tag)
 int
 GUIRoster::UpdateItem(WokXMLTag *tag)
 {
-
+	item[tag->GetAttr("id")]->Update(tag);
 	return 1;
 }
 

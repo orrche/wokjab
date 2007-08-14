@@ -1,4 +1,4 @@
-AM_CXXFLAGS = -lwoklib
+AM_CXXFLAGS = -lwoklib `pkg-config glib-2.0 --cflags` 
 
 libdir = $(prefix)/lib/woklib-plugins/normal
 
@@ -15,6 +15,10 @@ libjabberroster_la_SOURCES = \
 	User.h             \
 	Group.cc             \
 	Group.h 
+
+libjabberroster_la_LDFLAGS = \
+	`pkg-config glib-2.0 --libs` -lwoklib
+
 
 ## File created by the gnome-build tools
 

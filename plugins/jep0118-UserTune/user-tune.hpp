@@ -43,9 +43,13 @@ public:
 
 	int SetTune(WokXMLTag *tag);
 	int ReadConfig(WokXMLTag *tag);
+	int Message(WokXMLTag *tag);
+	int ActivityLine(WokXMLTag *tag);
 protected:
 	WokXMLTag *config;
 	WokXMLTag *status;
+	
+	std::map <std::string, WokXMLTag *> user;
 private:
 
 };

@@ -30,8 +30,8 @@ id(id),
 parant(parant),
 xml(xml)
 {
+	
 	indent = 0;
-	GtkTreeModel *model;
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(glade_xml_get_widget(xml, "view_roster")));
 	
 	if(parant)
@@ -39,33 +39,6 @@ xml(xml)
 		indent = parant->GetIndent() + 1;
 	}
 	
-	GError *err = NULL;
-	GdkPixbuf *pre_pix = NULL;
-	GdkPixbuf *post_pix = NULL;
-	if(tag->GetFirstTag("columns").GetFirstTag("pre_pix").GetBody().size())
-	{
-		pre_pix = gdk_pixbuf_new_from_file(tag->GetFirstTag("columns").GetFirstTag("pre_pix").GetBody().c_str(), &err);
-	}
-	if(tag->GetFirstTag("columns").GetFirstTag("post_pix").GetBody().size())
-	{
-		GdkPixbuf *tmp_pix = NULL;
-		tmp_pix = gdk_pixbuf_new_from_file(tag->GetFirstTag("columns").GetFirstTag("post_pix").GetBody().c_str(), &err);
-		if ( tmp_pix )
-		{
-			post_pix = gdk_pixbuf_scale_simple(tmp_pix, AVATAR_SIZE, AVATAR_SIZE, GDK_INTERP_BILINEAR);
-			g_object_unref(tmp_pix);
-		}
-	}
-	
-	std::string strindent;
-	for( int i = 0 ; i < indent ; i++ )
-		strindent += "  ";
-		
-	text = strindent.c_str() + tag->GetFirstTag("columns").GetFirstTag("text").GetBody();
-	std::string::size_type pos = -1;
-	while((pos = text.find("\n", pos+1)) != std::string::npos)
-		text.insert(pos+1, strindent);
-
 	if(parant)
 	{
 		RosterItem *ri = parant->AddChild(this);
@@ -74,13 +47,7 @@ xml(xml)
 	else
 		gtk_list_store_append(GTK_LIST_STORE(model), &iter);
 	
-	
-	gtk_list_store_set(GTK_LIST_STORE(model), &iter,
-				PRE_PIX_COLUMN, pre_pix,
-				TEXT_COLUMN, text.c_str(),
-				POST_PIX_COLUMN, post_pix,
-				ID_COLUMN, id.c_str(),
-				-1);
+	Update(tag);
 
 }
 
@@ -140,9 +107,40 @@ RosterItem::RemoveChild(RosterItem *ri)
 
 void
 RosterItem::Update(WokXMLTag *tag)
-{
-
-
+{	
+	GError *err = NULL;
+	GdkPixbuf *pre_pix = NULL;
+	GdkPixbuf *post_pix = NULL;
+	if(tag->GetFirstTag("columns").GetFirstTag("pre_pix").GetBody().size())
+	{
+		pre_pix = gdk_pixbuf_new_from_file(tag->GetFirstTag("columns").GetFirstTag("pre_pix").GetBody().c_str(), &err);
+	}
+	if(tag->GetFirstTag("columns").GetFirstTag("post_pix").GetBody().size())
+	{
+		GdkPixbuf *tmp_pix = NULL;
+		tmp_pix = gdk_pixbuf_new_from_file(tag->GetFirstTag("columns").GetFirstTag("post_pix").GetBody().c_str(), &err);
+		if ( tmp_pix )
+		{
+			post_pix = gdk_pixbuf_scale_simple(tmp_pix, AVATAR_SIZE, AVATAR_SIZE, GDK_INTERP_BILINEAR);
+			g_object_unref(tmp_pix);
+		}
+	}
+	
+	std::string strindent;
+	for( int i = 0 ; i < indent ; i++ )
+		strindent += "  ";
+		
+	text = strindent.c_str() + tag->GetFirstTag("columns").GetFirstTag("text").GetBody();
+	std::string::size_type pos = -1;
+	while((pos = text.find("\n", pos+1)) != std::string::npos)
+		text.insert(pos+1, strindent);
+	
+	gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+				PRE_PIX_COLUMN, pre_pix,
+				TEXT_COLUMN, text.c_str(),
+				POST_PIX_COLUMN, post_pix,
+				ID_COLUMN, id.c_str(),
+				-1);
 }
 
 GtkTreeIter *

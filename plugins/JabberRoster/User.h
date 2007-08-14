@@ -46,24 +46,31 @@ class User : public WLSignalInstance
 		void Show();
 		void Hide();
 		void UpdateEntry();
-
+		void UpdateRow();
+		
 		void Update(WokXMLTag *tag);
 		void AddEvent(WokXMLTag *tag);
 		void RemoveEvent(WokXMLTag *tag);
-		
+
 		int Activate(WokXMLTag *tag);
 		int Presence(WokXMLTag *tag);
 		int Recheck(WokXMLTag *tag);
 		int RightButton(WokXMLTag *tag);
 		int Tooltip(WokXMLTag *tag);
 		int TooltipReset(WokXMLTag *tag);
+		int UpdateTicketEntries(WokXMLTag *tag);
 		int UpdateXML(WokXMLTag *tag);
+		int TickerUpdate(WokXMLTag *tag);
 	protected:
+		int tickerpos;
+		std::list <std::string>::iterator currentticker;
+	
+		std::list <std::string> tickeritems;
 		std::map <std::string, std::string> id;
 		std::list <WokXMLTag *> Events;
 		bool visible;
 		JabberSession *ses;
-		std::string name, icon, avatar, showmsg, statusmsg;
+		std::string name, icon, avatar, showmsg, statusmsg, jid;
 		WokXMLTag *usertag;
 };
 

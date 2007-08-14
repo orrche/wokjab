@@ -54,6 +54,9 @@ libjabberroster_la_LIBADD =
 am_libjabberroster_la_OBJECTS = main.lo JabberRoster.lo \
 	JabberSession.lo User.lo Group.lo
 libjabberroster_la_OBJECTS = $(am_libjabberroster_la_OBJECTS)
+libjabberroster_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(libjabberroster_la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I. -I$(top_builddir)@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -191,7 +194,7 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CXXFLAGS = -lwoklib
+AM_CXXFLAGS = -lwoklib `pkg-config glib-2.0 --cflags` 
 lib_LTLIBRARIES = \
 	libjabberroster.la 
 
@@ -205,6 +208,9 @@ libjabberroster_la_SOURCES = \
 	User.h             \
 	Group.cc             \
 	Group.h 
+
+libjabberroster_la_LDFLAGS = \
+	`pkg-config glib-2.0 --libs` -lwoklib
 
 all: all-am
 
@@ -267,7 +273,7 @@ clean-libLTLIBRARIES:
 	  rm -f "$${dir}/so_locations"; \
 	done
 libjabberroster.la: $(libjabberroster_la_OBJECTS) $(libjabberroster_la_DEPENDENCIES) 
-	$(CXXLINK) -rpath $(libdir) $(libjabberroster_la_OBJECTS) $(libjabberroster_la_LIBADD) $(LIBS)
+	$(libjabberroster_la_LINK) -rpath $(libdir) $(libjabberroster_la_OBJECTS) $(libjabberroster_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

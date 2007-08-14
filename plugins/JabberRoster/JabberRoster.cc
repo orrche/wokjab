@@ -27,15 +27,68 @@
 
 JabberRoster::JabberRoster(WLSignal *wls) : WoklibPlugin(wls)
 {
+	config = new WokXMLTag("config");
+	EXP_SIGHOOK("Config XML Change /main/window/jabber_roster", &JabberRoster::ReadConfig, 500);
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/main/window/jabber_roster");
+	wls->SendSignal("Config XML Trigger", &conftag);
+	
+	
 	EXP_SIGHOOK("Jabber Event Add", &JabberRoster::AddItemEvent, 1000);
 	EXP_SIGHOOK("Jabber Event Remove", &JabberRoster::RemoveItemEvent, 1);
 	EXP_SIGHOOK("Jabber Connection Lost", &JabberRoster::LoggedOut, 1);
 	EXP_SIGHOOK("Jabber Connection Connect" , &JabberRoster::SignIn, 1000);
+	
+	
+	if ( config->GetFirstTag("ticker").GetAttr("data") != "false" )
+	{
+		WokXMLTag tag("timer");
+		tag.AddAttr("time", "500");
+		tag.AddAttr("signal", "Jabber Roster GUI Ticker Update");
+		
+		wls->SendSignal("Woklib Timmer Add",tag);
+	}
+
+	EXP_SIGHOOK("Jabber Roster GUI Ticker Update", &JabberRoster::KeepAlive, 1000);
 }
 
 JabberRoster::~JabberRoster()
 {
 	
+}
+
+int
+JabberRoster::KeepAlive(WokXMLTag *tag)
+{
+	if ( config->GetFirstTag("ticker").GetAttr("data") == "false" )
+	{
+		tag->AddAttr("stop", "no longer needed");
+		return 1;
+	}
+	return 1;	
+}
+
+int
+JabberRoster::ReadConfig(WokXMLTag *tag)
+{
+	tag->GetFirstTag("config").GetFirstTag("ticker").AddAttr("type", "bool");
+	tag->GetFirstTag("config").GetFirstTag("ticker").AddAttr("label", "Ticker");
+	
+	tag->GetFirstTag("config").GetFirstTag("ticker_single").AddAttr("type", "bool");
+	tag->GetFirstTag("config").GetFirstTag("ticker_single").AddAttr("label", "Tick single items");
+	
+	if ( config->GetFirstTag("ticker").GetAttr("data") == "false" && tag->GetFirstTag("config").GetFirstTag("ticker").GetAttr("data") != "false" )
+	{
+		WokXMLTag tag("timer");
+		tag.AddAttr("time", "500");
+		tag.AddAttr("signal", "Jabber Roster GUI Ticker Update");
+		
+		wls->SendSignal("Woklib Timmer Add",tag);
+	}
+	
+	delete config;
+	config = new WokXMLTag(tag->GetFirstTag("config"));
+	return 1;
 }
 
 int
@@ -88,7 +141,7 @@ JabberRoster::LoggedOut(WokXMLTag *tag)
 int
 JabberRoster::SignIn(WokXMLTag *tag)
 {	
-	session[tag->GetAttr("session")] = new JabberSession(wls, tag);
+	session[tag->GetAttr("session")] = new JabberSession(wls, tag, this);
 	
 	return 1;
 }

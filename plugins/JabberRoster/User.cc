@@ -26,17 +26,26 @@
 //
 
 #include "User.h"
+#include "glib.h"
+#include <algorithm>
 
 User::User(WLSignal *wls, WokXMLTag *tag, JabberSession *ses) : WLSignalInstance(wls),
 ses(ses)
 {
 	usertag = NULL;
 	visible = false;
+	tickerpos = 0;
+	currentticker = tickeritems.begin();
+	UpdateTicketEntries(NULL);
 	Update(tag);
-		
+	
+	jid = tag->GetAttr("jid");
+	
 	EXP_SIGHOOK("Jabber XML Presence To " + ses->GetSession() + " " + tag->GetAttr("jid"), &User::Presence, 1000);
 	EXP_SIGHOOK("Jabber Roster Update "  + ses->GetSession() + " " + tag->GetAttr("jid"), &User::UpdateXML, 1000);
 	EXP_SIGHOOK("Jabber Roster Recheck", &User::Recheck, 1000);
+	EXP_SIGHOOK("Jabber UserActivityUpdate " + ses->GetSession() + " '" + XMLisize(tag->GetAttr("jid"))+"'", &User::UpdateTicketEntries, 1000);
+	EXP_SIGHOOK("Jabber Roster GUI Ticker Update", &User::TickerUpdate, 500);
 }
 
 
@@ -45,6 +54,81 @@ User::~User()
 	Hide();
 	if (usertag)
 		delete usertag;
+}
+
+int
+User::UpdateTicketEntries(WokXMLTag *tag)
+{
+	//return 1;
+	WokXMLTag entries("entries");
+	entries.AddAttr("jid", jid);
+	entries.AddAttr("session", ses->GetSession());
+	
+	wls->SendSignal("Jabber UserActivityGet", entries);
+	wls->SendSignal("Jabber UserActivityGet " + ses->GetSession() + " '" + XMLisize(jid) + "'", entries);
+	
+	for( std::list<std::string>::iterator iter = tickeritems.begin() ; iter != tickeritems.end() ;)
+	{
+		bool found = false;
+		if ( *iter == statusmsg )
+		{
+			iter++;
+			found = true;
+		}
+		else
+		{
+			std::list <WokXMLTag *>::iterator tagiter;
+			for ( tagiter = entries.GetTagList("item").begin() ; tagiter != entries.GetTagList("item").end() ; tagiter++)
+			{
+				if ( *iter == (*tagiter)->GetFirstTag("line").GetBody() )
+				{
+					iter++;
+					found = true;
+					break;
+				}
+			}
+		}
+		
+		if ( !found )
+		{
+			std::list<std::string>::iterator tmpiter;
+			tmpiter = iter;
+
+			iter++;
+			if ( currentticker == tmpiter )
+			{
+				currentticker = tickeritems.begin();
+				tickerpos = 0;
+			}
+			
+			tickeritems.erase(tmpiter);
+		}
+	}
+	std::list <WokXMLTag *>::iterator tagiter;
+	for ( tagiter = entries.GetTagList("item").begin() ; tagiter != entries.GetTagList("item").end() ; tagiter++)
+	{
+		if ( find(tickeritems.begin(), tickeritems.end() , (*tagiter)->GetFirstTag("line").GetBody() ) == tickeritems.end())
+		{
+			tickeritems.push_back((*tagiter)->GetFirstTag("line").GetBody());
+		}
+	}
+	
+	if ( currentticker == tickeritems.end() ) 
+		currentticker = tickeritems.begin();
+	return 1;
+}
+
+int
+User::TickerUpdate(WokXMLTag *tag)
+{
+	if ( !tickeritems.empty() );
+	{
+		if ( visible )
+		{
+			tickerpos++;
+			UpdateRow();
+		}
+	}
 }
 
 int
@@ -88,6 +172,19 @@ User::UpdateEntry()
 {
 	Hide();
 	bool show;
+
+	if (! statusmsg.empty() )
+	{
+		std::list <std::string>::iterator item = std::find(tickeritems.begin(), tickeritems.end(), statusmsg);
+		if( item == currentticker )
+		{
+			currentticker++;
+			if ( currentticker == tickeritems.end() )
+				currentticker = tickeritems.begin();
+			tickerpos = 0;
+		}
+		tickeritems.erase(item);
+	}
 	
 	WokXMLTag querytag(NULL, "query");
 	WokXMLTag &itemtag = querytag.AddTag("item");
@@ -101,6 +198,16 @@ User::UpdateEntry()
 	statusmsg = querytag.GetFirstTag("item").GetFirstTag("resource").GetFirstTag("status").GetBody();
 	showmsg = querytag.GetFirstTag("item").GetFirstTag("resource").GetFirstTag("show").GetBody();
 	avatar = querytag.GetFirstTag("item").GetAttr("avatar");
+	
+	if ( !statusmsg.empty() )
+	{
+		tickeritems.push_back(statusmsg);
+		if( tickeritems.size() == 1 )
+		{
+			currentticker = tickeritems.begin();
+			tickerpos = 0;
+		}
+	}
 	
 	if( Events.empty() )
 	{
@@ -128,12 +235,98 @@ User::Presence(WokXMLTag *tag)
 }
 
 void
+User::UpdateRow()
+{
+	WokXMLTag itemtag(NULL, "item");
+	WokXMLTag &columntag =  itemtag.AddTag("columns");
+	WokXMLTag &texttag = columntag.AddTag("text");
+	columntag.AddTag("pre_pix").AddText(icon);
+	
+	texttag.AddText(XMLisize(name));
+			
+	std::string::size_type pos;
+	std::string stmsg = XMLisize(statusmsg);
+	while((pos = stmsg.find("\n")) != std::string::npos)
+		stmsg.erase(pos, 1);
+	std::string shmsg = XMLisize(showmsg);
+	while((pos = shmsg.find("\n")) != std::string::npos)
+		shmsg.erase(pos, 1);
+	
+	if ( ! shmsg.empty() ) 
+		texttag.AddText(" - <span style='italic' size='x-small' color='blue'>" + shmsg + "</span>");
+	
+	if ( ses->parent->config->GetFirstTag("ticker").GetAttr("data") != "false" && 
+			( tickeritems.size() > 1 || ses->parent->config->GetFirstTag("ticker_single").GetAttr("data") != "false"))
+	{
+		if ( ! tickeritems.empty() )
+		{
+			if ( tickerpos > g_utf8_strlen (currentticker->c_str(), -1) + 4)
+			{
+				tickerpos = 0;
+				currentticker++;
+				
+				if ( currentticker == tickeritems.end() )
+					currentticker = tickeritems.begin();
+			}
+			
+			texttag.AddText("\n<span style='italic' size='x-small'>");
+			if ( tickerpos > g_utf8_strlen (currentticker->c_str(), -1) )
+				texttag.AddText(std::string(" --- ").substr(-g_utf8_strlen (currentticker->c_str(), -1) + tickerpos));
+			else
+				texttag.AddText(g_utf8_offset_to_pointer(currentticker->c_str(), tickerpos));
+			
+			
+			std::list <std::string>::iterator runner(currentticker);
+			runner++;
+			int n = 0;
+			for (  ; runner != tickeritems.end() ; runner++ )
+			{
+				if ( n ||  tickerpos <= g_utf8_strlen (currentticker->c_str(), -1))
+					texttag.AddText(" --- ");
+				texttag.AddText(*runner);
+				n++;
+			}
+			
+			for( runner = tickeritems.begin() ; runner != currentticker ; runner++ )
+			{
+				if ( n ||  tickerpos <= g_utf8_strlen (currentticker->c_str(), -1))
+					texttag.AddText(" --- ");
+				texttag.AddText(*runner);
+				n++;
+			}
+			texttag.AddText(" --- ");
+			
+			texttag.AddText(currentticker->substr(0, g_utf8_offset_to_pointer(currentticker->c_str(), tickerpos) - currentticker->c_str()));
+			if ( tickerpos > g_utf8_strlen(currentticker->c_str(), -1) )
+				texttag.AddText(std::string(" --- ").substr(0, tickerpos - g_utf8_strlen(currentticker->c_str(), -1)));
+			
+			texttag.AddText("</span>");
+		}
+	}
+	else if ( !statusmsg.empty() )
+	{
+		texttag.AddText("\n<span style='italic' size='x-small'>");
+		texttag.AddText(statusmsg);
+		texttag.AddText("</span>");
+	}
+	
+	columntag.AddTag("post_pix").AddText(avatar);
+	
+	std::map <std::string, std::string>::iterator iter;
+	
+	for( iter = id.begin(); iter != id.end() ; iter++ )
+	{
+		itemtag.AddAttr("id", iter->second);
+		wls->SendSignal("GUIRoster UpdateItem", itemtag);
+	}
+}
+
+void
 User::Show()
 {
 	if ( visible ) 
 		Hide();
 	visible = true;
-	
 	
 	WokXMLTag itemtag(NULL, "item");
 	WokXMLTag &columntag =  itemtag.AddTag("columns");
@@ -150,12 +343,67 @@ User::Show()
 	while((pos = shmsg.find("\n")) != std::string::npos)
 		shmsg.erase(pos, 1);
 	
-	if ( shmsg.size() ) 
+	if ( ! shmsg.empty() ) 
 		texttag.AddText(" - <span style='italic' size='x-small' color='blue'>" + shmsg + "</span>");
-	if ( stmsg.size() )
-		texttag.AddText("\n<span style='italic' size='x-small'>" + stmsg + "</span>");
+	
+	if ( ses->parent->config->GetFirstTag("ticker").GetAttr("data") != "false" && 
+			( tickeritems.size() > 1 || ses->parent->config->GetFirstTag("ticker_single").GetAttr("data") != "false"))
+	{
+		if ( ! tickeritems.empty() )
+		{
+			if ( tickerpos > g_utf8_strlen (currentticker->c_str(), -1) + 4)
+			{
+				tickerpos = 0;
+				currentticker++;
+				
+				if ( currentticker == tickeritems.end() )
+					currentticker = tickeritems.begin();
+			}
 			
+			texttag.AddText("\n<span style='italic' size='x-small'>");
+			if ( tickerpos > g_utf8_strlen (currentticker->c_str(), -1) )
+				texttag.AddText(std::string(" --- ").substr(-g_utf8_strlen (currentticker->c_str(), -1) + tickerpos));
+			else
+				texttag.AddText(g_utf8_offset_to_pointer(currentticker->c_str(), tickerpos));
+			
+			
+			std::list <std::string>::iterator runner(currentticker);
+			runner++;
+			int n = 0;
+			for (  ; runner != tickeritems.end() ; runner++ )
+			{
+				if ( n ||  tickerpos <= g_utf8_strlen (currentticker->c_str(), -1))
+					texttag.AddText(" --- ");
+				texttag.AddText(*runner);
+				n++;
+			}
+			
+			for( runner = tickeritems.begin() ; runner != currentticker ; runner++ )
+			{
+				if ( n ||  tickerpos <= g_utf8_strlen (currentticker->c_str(), -1))
+					texttag.AddText(" --- ");
+				texttag.AddText(*runner);
+				n++;
+			}
+			texttag.AddText(" --- ");
+			
+			texttag.AddText(currentticker->substr(0, g_utf8_offset_to_pointer(currentticker->c_str(), tickerpos) - currentticker->c_str()));
+			if ( tickerpos > g_utf8_strlen(currentticker->c_str(), -1) )
+				texttag.AddText(std::string(" --- ").substr(0, tickerpos - g_utf8_strlen(currentticker->c_str(), -1)));
+			
+			texttag.AddText("</span>");
+		}
+	}
+	else if ( !statusmsg.empty() )
+	{
+		texttag.AddText("\n<span style='italic' size='x-small'>");
+		texttag.AddText(statusmsg);
+		texttag.AddText("</span>");
+	}
+	
 	columntag.AddTag("post_pix").AddText(avatar);
+	
+	
 	
 	if ( usertag->GetTagList("group").size() )
 	{

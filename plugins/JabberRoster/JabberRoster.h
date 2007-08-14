@@ -33,9 +33,12 @@
 #include <Woklib/WokXMLTag.h>
 #include <map>
 
+using namespace Woklib;
+class JabberRoster;
+
 #include "JabberSession.h"
 
-using namespace Woklib;
+
 
 class JabberRoster : public WoklibPlugin
 {
@@ -48,10 +51,13 @@ class JabberRoster : public WoklibPlugin
 		int RemoveItemEvent(WokXMLTag *tag);
 		int LoggedOut(WokXMLTag *tag);
 		int SignIn(WokXMLTag *tag);
-				
+		int KeepAlive(WokXMLTag *tag);
+		int ReadConfig(WokXMLTag *tag);
+		
 		virtual std::string GetInfo() {return "Jabber Roster";};
 		virtual std::string GetVersion() {return VERSION;};
 		
+		WokXMLTag *config;
 	protected:
 		std::map <std::string, JabberSession *> session;
 
