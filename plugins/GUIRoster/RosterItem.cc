@@ -141,6 +141,11 @@ RosterItem::Update(WokXMLTag *tag)
 				POST_PIX_COLUMN, post_pix,
 				ID_COLUMN, id.c_str(),
 				-1);
+	
+	if( pre_pix )
+		g_object_unref(pre_pix);
+	if( post_pix )
+		g_object_unref(post_pix);
 }
 
 GtkTreeIter *
