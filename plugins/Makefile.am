@@ -65,6 +65,7 @@ SUBDIRS= \
 	GroupManager \
 	History.SQLite \
 	jep0118-UserTune \
-	jep0060-PublishSubscribe
+	jep0060-PublishSubscribe \
+	jep0163-PEP
 
 

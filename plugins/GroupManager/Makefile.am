@@ -10,7 +10,7 @@ AM_CFLAGS =\
 	`pkg-config libglade-2.0 gtk+-2.0 --cflags`
 
 AM_CXXFLAGS =\
-	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -lwoklib
+	`pkg-config libglade-2.0 gtk+-2.0 --cflags` 
 	
 lib_LTLIBRARIES = \
 	libgroupmanager.la
@@ -23,4 +23,4 @@ libgroupmanager_la_SOURCES = \
 	g-m-widget.cpp
 
 libgroupmanager_la_LDFLAGS = \
-	`pkg-config libglade-2.0 gtk+-2.0 --libs`
+	`pkg-config libglade-2.0 gtk+-2.0 --libs` -lwoklib
