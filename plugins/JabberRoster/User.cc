@@ -59,7 +59,6 @@ User::~User()
 int
 User::UpdateTicketEntries(WokXMLTag *tag)
 {
-	//return 1;
 	WokXMLTag entries("entries");
 	entries.AddAttr("jid", jid);
 	entries.AddAttr("session", ses->GetSession());
