@@ -193,7 +193,7 @@ UserTune::SetTune(WokXMLTag *tag)
 		
 		std::string statusmsg = "";
 	
-		if ( status )
+		if ( status && tag->GetFirstTag("config").GetFirstTag("change_status").GetAttr("data") != "false" )
 		{
 			WokXMLTag *tune = NULL;;
 			std::list<WokXMLTag*>::iterator tuneiter;

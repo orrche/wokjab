@@ -10,5 +10,8 @@ libjep0118_usertune_la_SOURCES = \
 	user-tune.hpp                \
 	user-tune.cpp
 
+libjep0118_usertune_la_LDFLAGS = \
+	-lwoklib
+
 ## File created by the gnome-build tools
 
