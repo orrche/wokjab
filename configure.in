@@ -153,6 +153,7 @@ AC_OUTPUT(Makefile \
 	plugins/jep0115-EntCap/Makefile  \
         plugins/jep0118-UserTune/Makefile  \
         plugins/jep0153-VCardAvatar/Makefile  \
+	plugins/jep0163-PEP/Makefile \
         plugins/Idle/Makefile  \
         plugins/Fileshare/Makefile  \
         plugins/dbus/Makefile  \
