@@ -128,6 +128,8 @@ User::TickerUpdate(WokXMLTag *tag)
 			UpdateRow();
 		}
 	}
+	
+	return 1;
 }
 
 int
