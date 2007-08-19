@@ -259,7 +259,7 @@ GUIPresentReqWidget::Add_Button(GtkWidget * widget, GUIPresentReqWidget *req_wid
 	GtkTreeIter       iter;
 	GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(req_widget->jid_treeview));
 	
-	if(gtk_tree_selection_get_selected(selection,  NULL, &iter));
+	if(gtk_tree_selection_get_selected(selection,  NULL, &iter))
 	{
 		gchar *jid;
 		gchar *nick;
