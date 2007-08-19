@@ -1,5 +1,10 @@
 libdir = $(prefix)/lib/woklib-plugins/normal
 
+datadir = $(prefix)/lib/woklib/glade
+pkgdata_DATA = \
+        p-e-p-manager.glade
+
+
 AM_CXXFLAGS = `pkg-config libglade-2.0 gtk+-2.0 --cflags`
 
 lib_LTLIBRARIES = \
@@ -10,7 +15,9 @@ libjep0163_pep_la_SOURCES = \
 	p-e-p-manager.hpp           \
 	p-e-p-manager.cpp           \
 	p-e-p-widget.hpp           \
-	p-e-p-widget.cpp
+	p-e-p-widget.cpp           \
+	p-e-p-user.hpp           \
+	p-e-p-user.cpp
 
 
 libjep0163_pep_la_LDFLAGS = \

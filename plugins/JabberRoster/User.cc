@@ -254,7 +254,7 @@ User::UpdateRow()
 		shmsg.erase(pos, 1);
 	
 	if ( ! shmsg.empty() ) 
-		texttag.AddText(" - <span style='italic' size='x-small' color='blue'>" + shmsg + "</span>");
+		texttag.AddText(" - <span style='italic' size='x-small' color='blue'>" + XMLisize(shmsg) + "</span>");
 	
 	if ( ses->parent->config->GetFirstTag("ticker").GetAttr("data") != "false" && 
 			( tickeritems.size() > 1 || ses->parent->config->GetFirstTag("ticker_single").GetAttr("data") != "false"))
@@ -274,7 +274,7 @@ User::UpdateRow()
 			if ( tickerpos > g_utf8_strlen (currentticker->c_str(), -1) )
 				texttag.AddText(std::string(" --- ").substr(-g_utf8_strlen (currentticker->c_str(), -1) + tickerpos));
 			else
-				texttag.AddText(g_utf8_offset_to_pointer(currentticker->c_str(), tickerpos));
+				texttag.AddText(XMLisize(g_utf8_offset_to_pointer(currentticker->c_str(), tickerpos)));
 			
 			
 			std::list <std::string>::iterator runner(currentticker);
@@ -284,7 +284,7 @@ User::UpdateRow()
 			{
 				if ( n ||  tickerpos <= g_utf8_strlen (currentticker->c_str(), -1))
 					texttag.AddText(" --- ");
-				texttag.AddText(*runner);
+				texttag.AddText(XMLisize(*runner));
 				n++;
 			}
 			
@@ -292,12 +292,12 @@ User::UpdateRow()
 			{
 				if ( n ||  tickerpos <= g_utf8_strlen (currentticker->c_str(), -1))
 					texttag.AddText(" --- ");
-				texttag.AddText(*runner);
+				texttag.AddText(XMLisize(*runner));
 				n++;
 			}
 			texttag.AddText(" --- ");
 			
-			texttag.AddText(currentticker->substr(0, g_utf8_offset_to_pointer(currentticker->c_str(), tickerpos) - currentticker->c_str()));
+			texttag.AddText(XMLisize(currentticker->substr(0, g_utf8_offset_to_pointer(currentticker->c_str(), tickerpos) - currentticker->c_str())));
 			if ( tickerpos > g_utf8_strlen(currentticker->c_str(), -1) )
 				texttag.AddText(std::string(" --- ").substr(0, tickerpos - g_utf8_strlen(currentticker->c_str(), -1)));
 			
@@ -307,13 +307,13 @@ User::UpdateRow()
 	else if ( !statusmsg.empty() )
 	{
 		texttag.AddText("\n<span style='italic' size='x-small'>");
-		texttag.AddText(statusmsg);
+		texttag.AddText(XMLisize(statusmsg));
 		texttag.AddText("</span>");
 	}
 	else if ( tickeritems.size() == 1 )
 	{
 		texttag.AddText("\n<span style='italic' size='x-small'>");
-		texttag.AddText(*tickeritems.begin());
+		texttag.AddText(XMLisize(*tickeritems.begin()));
 		texttag.AddText("</span>");
 	}
 	
@@ -351,7 +351,7 @@ User::Show()
 		shmsg.erase(pos, 1);
 	
 	if ( ! shmsg.empty() ) 
-		texttag.AddText(" - <span style='italic' size='x-small' color='blue'>" + shmsg + "</span>");
+		texttag.AddText(" - <span style='italic' size='x-small' color='blue'>" + XMLisize(shmsg) + "</span>");
 	
 	if ( ses->parent->config->GetFirstTag("ticker").GetAttr("data") != "false" && 
 			( tickeritems.size() > 1 || ses->parent->config->GetFirstTag("ticker_single").GetAttr("data") != "false"))
@@ -371,7 +371,7 @@ User::Show()
 			if ( tickerpos > g_utf8_strlen (currentticker->c_str(), -1) )
 				texttag.AddText(std::string(" --- ").substr(-g_utf8_strlen (currentticker->c_str(), -1) + tickerpos));
 			else
-				texttag.AddText(g_utf8_offset_to_pointer(currentticker->c_str(), tickerpos));
+				texttag.AddText(XMLisize(g_utf8_offset_to_pointer(currentticker->c_str(), tickerpos)));
 			
 			
 			std::list <std::string>::iterator runner(currentticker);
@@ -381,7 +381,7 @@ User::Show()
 			{
 				if ( n ||  tickerpos <= g_utf8_strlen (currentticker->c_str(), -1))
 					texttag.AddText(" --- ");
-				texttag.AddText(*runner);
+				texttag.AddText(XMLisize(*runner));
 				n++;
 			}
 			
@@ -389,12 +389,12 @@ User::Show()
 			{
 				if ( n ||  tickerpos <= g_utf8_strlen (currentticker->c_str(), -1))
 					texttag.AddText(" --- ");
-				texttag.AddText(*runner);
+				texttag.AddText(XMLisize(*runner));
 				n++;
 			}
 			texttag.AddText(" --- ");
 			
-			texttag.AddText(currentticker->substr(0, g_utf8_offset_to_pointer(currentticker->c_str(), tickerpos) - currentticker->c_str()));
+			texttag.AddText(XMLisize(currentticker->substr(0, g_utf8_offset_to_pointer(currentticker->c_str(), tickerpos) - currentticker->c_str())));
 			if ( tickerpos > g_utf8_strlen(currentticker->c_str(), -1) )
 				texttag.AddText(std::string(" --- ").substr(0, tickerpos - g_utf8_strlen(currentticker->c_str(), -1)));
 			
@@ -404,7 +404,7 @@ User::Show()
 	else if ( !statusmsg.empty() )
 	{
 		texttag.AddText("\n<span style='italic' size='x-small'>");
-		texttag.AddText(statusmsg);
+		texttag.AddText(XMLisize(statusmsg));
 		texttag.AddText("</span>");
 	}
 	

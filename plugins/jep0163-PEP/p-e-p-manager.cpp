@@ -41,8 +41,6 @@ PEPManager::~PEPManager()
 	{
 		delete *iter;
 	}
-	
-	
 }
 
 
