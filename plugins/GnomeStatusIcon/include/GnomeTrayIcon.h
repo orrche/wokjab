@@ -47,7 +47,8 @@ class GnomeTrayIcon : public WoklibPlugin
 		 
 		int AddJIDEvent( WokXMLTag *tag);
 		int RemoveJIDEvent( WokXMLTag *tag);
-
+		int Presence(WokXMLTag *tag);
+	
 		static void tray_icon_pressed (GtkWidget *button, GdkEventButton *event, gpointer gti_data);
 		static void MenuActivate(GtkMenuItem *menuitem,GnomeTrayIcon *data);
 		static gboolean TimeOut (GnomeTrayIcon * c);
@@ -60,6 +61,7 @@ class GnomeTrayIcon : public WoklibPlugin
 		gchar sz_tip[100];
 		int to;
 		
+		std::string presence_tip;
 		std::map <GtkWidget *, std::string> MainMenuSignals;
 		list <WokXMLTag *> EventList;
 		list <WokXMLTag *>::iterator CurrentEvent;

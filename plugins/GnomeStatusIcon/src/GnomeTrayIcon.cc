@@ -41,7 +41,8 @@ GnomeTrayIcon::GnomeTrayIcon(WLSignal *wls) : WoklibPlugin (wls)
 	{
 		EXP_SIGHOOK("Jabber Event Add", &GnomeTrayIcon::AddJIDEvent, 1000);
 		EXP_SIGHOOK("Jabber Event Remove", &GnomeTrayIcon::RemoveJIDEvent, 2);
-	
+		EXP_SIGHOOK("Jabber XML Presence Send", &GnomeTrayIcon::Presence, 1000);
+		
 		eventbox 	= gtk_event_box_new();
 		tray_icon_tips = gtk_tooltips_new();
 
@@ -185,8 +186,33 @@ GnomeTrayIcon::UpdateList()
 	
 	}
 	else
-		gtk_tooltips_disable(GTK_TOOLTIPS(tray_icon_tips));
+	{
+		gtk_tooltips_set_tip(GTK_TOOLTIPS(tray_icon_tips), GTK_WIDGET(eventbox),
+				 		 presence_tip.c_str(),
+				 		 presence_tip.c_str());
+		gtk_tooltips_enable(GTK_TOOLTIPS(tray_icon_tips));
+	}
 		
+}
+
+int
+GnomeTrayIcon::Presence(WokXMLTag *tag)
+{
+	std::cout << "Presence recived.." << std::endl;
+	presence_tip = "You are " + tag->GetFirstTag("presence").GetFirstTag("show").GetBody() + "\n" + tag->GetFirstTag("presence").GetFirstTag("status").GetBody();
+	if ( EventList.empty() )
+	{
+		gtk_tooltips_set_tip(GTK_TOOLTIPS(tray_icon_tips), GTK_WIDGET(eventbox),
+				 		 presence_tip.c_str(),
+				 		 presence_tip.c_str());
+		gtk_tooltips_enable(GTK_TOOLTIPS(tray_icon_tips));
+	}
+	else
+	{
+		std::cout << "Eventlist not empty " << std::endl;
+	}
+	
+	return 1;	
 }
 
 int
