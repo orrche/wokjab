@@ -376,7 +376,7 @@ GM_Widget::GroupChange(GtkTreeView *tree_view, GM_Widget *c)
 void
 GM_Widget::SessionChange(GtkComboBox *widget, GM_Widget *c)
 {	
-	gtk_list_store_clear(c->jidlist);
+	gtk_list_store_clear(c->grouplist);
 	GtkTreeIter treeiter;
 	if( !gtk_combo_box_get_active_iter(GTK_COMBO_BOX(glade_xml_get_widget(c->xml, "session")), &treeiter) )
 	{
