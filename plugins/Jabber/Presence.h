@@ -35,7 +35,9 @@ class Presence : public WLSignalInstance
 	
 	int xml (WokXMLTag *tag);
 	int Send(WokXMLTag *tag);
+	int GetLast(WokXMLTag *tag);
 	private:
+		WokXMLTag *last_presence;
 };
 
 #endif // __WOKJAB_PRESENCE_H

@@ -24,12 +24,23 @@ WLSignalInstance ( wls )
 {
 	EXP_SIGHOOK("Jabber XML Object presence", &Presence::xml, 1000);
 	EXP_SIGHOOK("Jabber XML Presence Send", &Presence::Send, 1000);
+	EXP_SIGHOOK("Jabber XML Presence GetLast", &Presence::GetLast, 1000);
+	
+	last_presence = new WokXMLTag ("message");
 }
 
 
 Presence::~Presence()
 {
 	EXP_SIGUNHOOK("Jabber XML Object presence", &Presence::xml, 1000);
+}
+
+int
+Presence::GetLast(WokXMLTag *tag)
+{
+	tag->AddTag(last_presence);
+	
+	return 1;
 }
 
 int
@@ -46,6 +57,8 @@ Presence::xml( WokXMLTag *tag)
 int
 Presence::Send(WokXMLTag *tag)
 {
+	delete last_presence;
+	tag = new WokXMLTag(*tag);
 	wls->SendSignal("Jabber XML Send", tag);
-	return true;
+	return 1;
 }
