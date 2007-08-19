@@ -106,8 +106,6 @@ Initiat::GetArgs(WokXMLTag *xml)
 int
 Initiat::Plugins(WokXMLTag *xml)
 {
-	std::cout << "PLUGINS: " << *xml << std::endl;
-
 	return 1;
 }
 

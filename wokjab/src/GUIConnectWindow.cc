@@ -37,7 +37,7 @@ GUIConnectWindow::GUIConnectWindow (int *feedback, WLSignal * wls) : WLSignalIns
 	conn_win = glade_xml_get_widget(xml, "window");
 	accounts = glade_xml_get_widget(xml, "accounts");
 
-	accountlist = gtk_list_store_new(NUM_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
+	accountlist = gtk_list_store_new(NUM_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT, G_TYPE_BOOLEAN);
 	gtk_tree_view_set_model (GTK_TREE_VIEW(accounts), GTK_TREE_MODEL(accountlist));
 
 	GtkCellRenderer *renderer;
@@ -52,11 +52,6 @@ GUIConnectWindow::GUIConnectWindow (int *feedback, WLSignal * wls) : WLSignalIns
 	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes ("Server", renderer, "text", SERVER_COLUMN, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (accounts), column);
-/*
-	renderer = gtk_cell_renderer_text_new ();
-	column = gtk_tree_view_column_new_with_attributes ("Password", renderer, "text", PASSWORD_COLUMN, NULL);
-	gtk_tree_view_append_column (GTK_TREE_VIEW (accounts), column);
-*/
 	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes ("Port", renderer, "text", PORT_COLUMN, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (accounts), column);
@@ -64,6 +59,16 @@ GUIConnectWindow::GUIConnectWindow (int *feedback, WLSignal * wls) : WLSignalIns
 	column = gtk_tree_view_column_new_with_attributes ("Priority", renderer, "text", PRIO_COLUMN, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (accounts), column);
 
+	/*
+	renderer = gtk_cell_renderer_toggle_new ();
+//	g_signal_connect (renderer, "toggled", G_CALLBACK (AutoJoinWid::cell_toggled), this);
+	g_object_set_data (G_OBJECT (renderer), "column", GINT_TO_POINTER (4));
+	column = gtk_tree_view_column_new_with_attributes("Auto",
+							     renderer, "active",
+							     AUTO_COLUMN, NULL);
+	gtk_tree_view_append_column (GTK_TREE_VIEW (accounts), column);
+*/
+	
 	EXP_SIGHOOK("Config XML Change /connect/window", &GUIConnectWindow::Config, 500);
 	WokXMLTag conftag(NULL, "config");
 	conftag.AddAttr("path", "/connect/window");
@@ -83,6 +88,20 @@ GUIConnectWindow::GUIConnectWindow (int *feedback, WLSignal * wls) : WLSignalIns
 				G_CALLBACK (GUIConnectWindow::Remove_Button), this);
 	g_signal_connect (G_OBJECT (accounts), "row-activated",
 				G_CALLBACK (GUIConnectWindow::RowActivated), this);
+	g_signal_connect (G_OBJECT (accounts), "cursor-changed",
+				G_CALLBACK (GUIConnectWindow::RowChanged), this);
+	
+	
+	if( config->GetTagList("account").size() )
+	{
+		GtkTreeIter iter;
+		if ( gtk_tree_model_get_iter_first(GTK_TREE_MODEL(accountlist), &iter))
+		{
+			GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(accounts));
+			gtk_tree_selection_select_iter(selection, &iter);
+			RowChanged(NULL, this);
+		}
+	}
 }
 
 
@@ -101,33 +120,49 @@ GUIConnectWindow::Destroy (GtkWidget * widget, gpointer user_data)
 }
 
 void
-GUIConnectWindow::RowActivated(GtkTreeView *treeview, GtkTreePath *arg1, GtkTreeViewColumn *arg2, GUIConnectWindow *c)
+GUIConnectWindow::RowActivated(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, GUIConnectWindow *c)
 {
-	gchar *jid;
-	gchar *server;
-	gchar *resource;
-	gchar *password;
-	gint port;
-	gint prio;
-	GtkTreeIter iter;
-	gtk_tree_model_get_iter(GTK_TREE_MODEL(c->accountlist), &iter, arg1);
-	gtk_tree_model_get(GTK_TREE_MODEL(c->accountlist), &iter,
-										USER_COLUMN, &jid,
-										SERVER_COLUMN, &server,
-										PASSWORD_COLUMN, &password,
-										RESOURCE_COLUMN, &resource,
-										PRIO_COLUMN, &prio,
-										PORT_COLUMN, &port,
-										-1);
+	Connect_Button(NULL, c);	
+}
 
-	gtk_entry_set_text(GTK_ENTRY(c->username_entry), jid);
-	gtk_entry_set_text(GTK_ENTRY(c->server_entry), server);
-	gtk_entry_set_text(GTK_ENTRY(c->password_entry), password);
-	gtk_entry_set_text(GTK_ENTRY(c->resource_entry), resource);
+void
+GUIConnectWindow::RowChanged(GtkTreeView *treeview, GUIConnectWindow *c)
+{
+	GtkTreeIter       iter;
+	GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(c->accounts));
 
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(c->prio_entry), prio);
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(c->port_entry), port);
+	if(gtk_tree_selection_get_selected(selection,  NULL, &iter))
+	{
+		
+		gchar *jid;
+		gchar *server;
+		gchar *resource;
+		gchar *password;
+		gint port;
+		gint prio;
+		
+		gtk_tree_model_get(GTK_TREE_MODEL(c->accountlist), &iter,
+											USER_COLUMN, &jid,
+											SERVER_COLUMN, &server,
+											PASSWORD_COLUMN, &password,
+											RESOURCE_COLUMN, &resource,
+											PRIO_COLUMN, &prio,
+											PORT_COLUMN, &port,
+											-1);
 
+		gtk_entry_set_text(GTK_ENTRY(c->username_entry), jid);
+		gtk_entry_set_text(GTK_ENTRY(c->server_entry), server);
+		gtk_entry_set_text(GTK_ENTRY(c->password_entry), password);
+		gtk_entry_set_text(GTK_ENTRY(c->resource_entry), resource);
+
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(c->prio_entry), prio);
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(c->port_entry), port);
+
+		g_free(jid);
+		g_free(server);
+		g_free(resource);
+		g_free(password);
+	}
 }
 
 void
@@ -168,7 +203,7 @@ GUIConnectWindow::Remove_Button (GtkWidget * widget, GUIConnectWindow *c)
 	GtkTreeIter       iter;
 	GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(c->accounts));
 
-	if(gtk_tree_selection_get_selected(selection,  NULL, &iter));
+	if(gtk_tree_selection_get_selected(selection,  NULL, &iter))
 	{
 		gtk_list_store_remove(GTK_LIST_STORE(c->accountlist), &iter);
 
@@ -272,16 +307,7 @@ GUIConnectWindow::Config (WokXMLTag *tag)
 		delete config;
 	config = new WokXMLTag(tag->GetFirstTag("config"));
 
-	if( config->GetTagList("account").size() )
-	{
-		gtk_entry_set_text(GTK_ENTRY(username_entry), config->GetFirstTag("account").GetFirstTag("nick").GetAttr("data").c_str());
-		gtk_entry_set_text(GTK_ENTRY(server_entry), config->GetFirstTag("account").GetFirstTag("server").GetAttr("data").c_str());
-		gtk_entry_set_text(GTK_ENTRY(password_entry), config->GetFirstTag("account").GetFirstTag("password").GetAttr("data").c_str());
-		gtk_entry_set_text(GTK_ENTRY(resource_entry), config->GetFirstTag("account").GetFirstTag("resource").GetAttr("data").c_str());
 
-		gtk_spin_button_set_value(GTK_SPIN_BUTTON(prio_entry), atoi(config->GetFirstTag("account").GetFirstTag("prio").GetAttr("data").c_str()));
-		gtk_spin_button_set_value(GTK_SPIN_BUTTON(port_entry), atoi(config->GetFirstTag("account").GetFirstTag("port").GetAttr("data").c_str()));
-	}
 
 	std::list <WokXMLTag *>::iterator iter;
 
@@ -300,4 +326,6 @@ GUIConnectWindow::Config (WokXMLTag *tag)
 						PORT_COLUMN , atoi((**iter).GetFirstTag("port").GetAttr("data").c_str()),
 						-1);
 	}
+		
+	return 1;
 }

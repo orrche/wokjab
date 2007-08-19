@@ -37,7 +37,8 @@ class GUIConnectWindow : public WLSignalInstance
 		static void Add_Button( GtkWidget *widget, GUIConnectWindow *c );
 		static void Remove_Button( GtkWidget *widget, GUIConnectWindow *c );
 		static void RowActivated(GtkTreeView *treeview, GtkTreePath *arg1, GtkTreeViewColumn *arg2, GUIConnectWindow *c);
-		
+		static void RowChanged(GtkTreeView *treeview, GUIConnectWindow *c);
+	
 		int Config(WokXMLTag *);
 	protected:
   	GtkWidget *conn_win;
@@ -62,6 +63,7 @@ class GUIConnectWindow : public WLSignalInstance
 			RESOURCE_COLUMN,
 			PORT_COLUMN,
 			PRIO_COLUMN,
+			AUTO_COLUMN,
 			NUM_COLUMNS
 		};
 };

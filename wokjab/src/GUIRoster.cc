@@ -289,7 +289,7 @@ GUIRoster::DeleteAction(WokXMLTag *tag)
 			+ tag->GetAttr("jid") + "\" /></query></iq>";
 	
 	WokXMLTag msgtag(NULL,"message");
-	msgtag.AddText(xml_data);
+	msgtag.Add(xml_data);
 	msgtag.AddAttr("session", tag->GetAttr("session"));
 	wls->SendSignal("Jabber XML Send", &msgtag);
 	
