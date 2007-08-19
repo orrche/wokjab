@@ -42,7 +42,9 @@ class Initiat : public WLSignalInstance
 		int Plugins(WokXMLTag *xml);
 		int Version(WokXMLTag *xml);
 		int GetArgs(WokXMLTag *xml);
-		
+		int AccountConfig(WokXMLTag *xml);
+		int Ready(WokXMLTag *tag);
+	
 		static gboolean input_callback(GIOChannel *source, GIOCondition condition, Initiat *c);
 
 	protected:

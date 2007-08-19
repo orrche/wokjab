@@ -85,6 +85,8 @@ sj(sj)
 	conftag.AddAttr("path", "/");
 	wls->SendSignal("Config XML Trigger", &conftag);
 	*/
+	
+	EXP_SIGHOOK("GUI Window Init", &Initiat::Ready, 500);
 }
 
 
@@ -106,6 +108,63 @@ Initiat::GetArgs(WokXMLTag *xml)
 int
 Initiat::Plugins(WokXMLTag *xml)
 {
+	return 1;
+}
+
+int
+Initiat::Ready(WokXMLTag *tag)
+{
+	EXP_SIGHOOK("Config XML Change /connect/window", &Initiat::AccountConfig, 500);
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/connect/window");
+	wls->SendSignal("Config XML Trigger", &conftag);
+	EXP_SIGUNHOOK("Config XML Change /connect/window", &Initiat::AccountConfig, 500);
+
+	return 1;	
+}
+
+int
+Initiat::AccountConfig(WokXMLTag *tag)
+{
+	std::cout << "Trying to autoconnect.." << std::endl;
+	std::list <WokXMLTag *>::iterator iter;
+
+	for( iter = tag->GetFirstTag("config").GetTagList("account").begin() ; iter != tag->GetFirstTag("config").GetTagList("account").end() ; iter++)
+	{
+		if ( (*iter)->GetFirstTag("no_auto").GetAttr("data") == "false" )
+		{
+			std::string nick,server,password,resource, port, prio;
+
+			char buf[20];
+			server = (**iter).GetFirstTag("server").GetAttr("data");
+			nick = (**iter).GetFirstTag("nick").GetAttr("data");
+			password = (**iter).GetFirstTag("password").GetAttr("data");
+			resource = (**iter).GetFirstTag("resource").GetAttr("data");
+			prio = (**iter).GetFirstTag("prio").GetAttr("data");
+			port = (**iter).GetFirstTag("port").GetAttr("data");
+				
+			int at_position = 0;
+			if ( nick.find("@") == std::string::npos )
+				nick += "@" + server;
+			
+			at_position = nick.find("@");
+
+			WokXMLTag consig(NULL, "connect");
+			consig.AddAttr("host", server);
+			consig.AddAttr("server", nick.substr(at_position+1, nick.size()-at_position-1));
+			consig.AddAttr("username", nick.substr(0,at_position));
+			consig.AddAttr("password", password);
+			consig.AddAttr("resource", resource);
+			consig.AddAttr("port", port);
+			consig.AddAttr("prio", prio);
+			consig.AddAttr("type", "1");
+			wls->SendSignal ("Jabber Connection Connect", &consig);
+		
+			
+		}
+	}
+	
+	
 	return 1;
 }
 

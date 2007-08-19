@@ -31,14 +31,15 @@ class GUIConnectWindow : public WLSignalInstance
 	public:
 		GUIConnectWindow(int *feedback, WLSignal *wls);
 		 ~GUIConnectWindow();
-		static void Destroy( GtkWidget *widget, gpointer user_data );
+		static gboolean destroy( GtkWidget *widget, GdkEvent *event, GUIConnectWindow *c);
 		static void Connect_Button( GtkWidget *widget, gpointer data );
 		static void Cancel_Button( GtkWidget *widget, gpointer data );
 		static void Add_Button( GtkWidget *widget, GUIConnectWindow *c );
 		static void Remove_Button( GtkWidget *widget, GUIConnectWindow *c );
 		static void RowActivated(GtkTreeView *treeview, GtkTreePath *arg1, GtkTreeViewColumn *arg2, GUIConnectWindow *c);
 		static void RowChanged(GtkTreeView *treeview, GUIConnectWindow *c);
-	
+		static void cell_toggled (GtkCellRendererText *cell, const gchar *path_string, GUIConnectWindow *c);
+		
 		int Config(WokXMLTag *);
 	protected:
   	GtkWidget *conn_win;
@@ -64,6 +65,7 @@ class GUIConnectWindow : public WLSignalInstance
 			PORT_COLUMN,
 			PRIO_COLUMN,
 			AUTO_COLUMN,
+			XML_COLUMN,
 			NUM_COLUMNS
 		};
 };

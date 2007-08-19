@@ -23,6 +23,9 @@
 #  include <config.h>
 #endif
 
+#include <sstream>
+
+
 GUIConnectWindow::GUIConnectWindow (int *feedback, WLSignal * wls) : WLSignalInstance(wls)
 {
     xml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/connect.window.glade", NULL, NULL);
@@ -37,11 +40,19 @@ GUIConnectWindow::GUIConnectWindow (int *feedback, WLSignal * wls) : WLSignalIns
 	conn_win = glade_xml_get_widget(xml, "window");
 	accounts = glade_xml_get_widget(xml, "accounts");
 
-	accountlist = gtk_list_store_new(NUM_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT, G_TYPE_BOOLEAN);
+	accountlist = gtk_list_store_new(NUM_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT, G_TYPE_BOOLEAN, G_TYPE_POINTER);
 	gtk_tree_view_set_model (GTK_TREE_VIEW(accounts), GTK_TREE_MODEL(accountlist));
 
 	GtkCellRenderer *renderer;
 	GtkTreeViewColumn *column;
+
+	renderer = gtk_cell_renderer_toggle_new ();
+	g_signal_connect (renderer, "toggled", G_CALLBACK (GUIConnectWindow::cell_toggled), this);
+	g_object_set_data (G_OBJECT (renderer), "column", GINT_TO_POINTER (AUTO_COLUMN));
+	column = gtk_tree_view_column_new_with_attributes("Auto",
+							     renderer, "active",
+							     AUTO_COLUMN, NULL);
+	gtk_tree_view_append_column (GTK_TREE_VIEW (accounts), column);
 
 	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes ("JID", renderer, "text", USER_COLUMN, NULL);
@@ -59,25 +70,17 @@ GUIConnectWindow::GUIConnectWindow (int *feedback, WLSignal * wls) : WLSignalIns
 	column = gtk_tree_view_column_new_with_attributes ("Priority", renderer, "text", PRIO_COLUMN, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (accounts), column);
 
-	/*
-	renderer = gtk_cell_renderer_toggle_new ();
-//	g_signal_connect (renderer, "toggled", G_CALLBACK (AutoJoinWid::cell_toggled), this);
-	g_object_set_data (G_OBJECT (renderer), "column", GINT_TO_POINTER (4));
-	column = gtk_tree_view_column_new_with_attributes("Auto",
-							     renderer, "active",
-							     AUTO_COLUMN, NULL);
-	gtk_tree_view_append_column (GTK_TREE_VIEW (accounts), column);
-*/
+	
+
 	
 	EXP_SIGHOOK("Config XML Change /connect/window", &GUIConnectWindow::Config, 500);
 	WokXMLTag conftag(NULL, "config");
 	conftag.AddAttr("path", "/connect/window");
 	wls->SendSignal("Config XML Trigger", &conftag);
 
-	gtk_widget_show_all (conn_win);
 	this->feedback = feedback;
-	g_signal_connect (G_OBJECT (conn_win), "destroy",
-			  G_CALLBACK (GUIConnectWindow::Destroy), this);
+	
+	g_signal_connect (G_OBJECT (conn_win), "delete-event", G_CALLBACK (GUIConnectWindow::destroy), this);
 	g_signal_connect (G_OBJECT (glade_xml_get_widget(xml, "login_button")), "clicked",
 				G_CALLBACK (GUIConnectWindow::Connect_Button), this);
 	g_signal_connect (G_OBJECT (glade_xml_get_widget(xml, "cancel_button")), "clicked",
@@ -102,21 +105,73 @@ GUIConnectWindow::GUIConnectWindow (int *feedback, WLSignal * wls) : WLSignalIns
 			RowChanged(NULL, this);
 		}
 	}
+
+	gtk_window_set_default_size(GTK_WINDOW(conn_win), 
+			atoi(config->GetFirstTag("size").GetAttr("width").c_str()),
+			atoi(config->GetFirstTag("size").GetAttr("height").c_str()));
+	
+	gtk_widget_show_all(conn_win);
 }
 
 
 GUIConnectWindow::~GUIConnectWindow ()
 {
 	*feedback = false;
+	
+	int width, height;
+	gtk_window_get_size(GTK_WINDOW(conn_win), &width, &height);
+
+	std::stringstream s_width, s_height;
+	s_width << width;
+	s_height << height;
+
+	config->GetFirstTag("size").AddAttr("width", s_width.str().c_str());
+	config->GetFirstTag("size").AddAttr("height", s_height.str().c_str());
+
+	EXP_SIGUNHOOK("Config XML Change /connect/window", &GUIConnectWindow::Config, 500);
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/connect/window");
+	conftag.AddTag(config);
+	wls->SendSignal("Config XML Store", &conftag);
+	
 	g_object_unref(xml);
+	gtk_widget_destroy(conn_win);
 }
 
 void
-GUIConnectWindow::Destroy (GtkWidget * widget, gpointer user_data)
+GUIConnectWindow::cell_toggled (GtkCellRendererText *cell, const gchar *path_string, GUIConnectWindow *c)
 {
-	GUIConnectWindow *data;
-	data = static_cast < GUIConnectWindow * >(user_data);
-	delete data;
+	GtkTreeIter  iter;
+	GtkTreePath *path = gtk_tree_path_new_from_string (path_string);
+	gint column = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (cell), "column"));
+	gboolean fixed;
+	WokXMLTag *conftag;
+	
+	/* get toggled iter */
+	gtk_tree_model_get_iter (GTK_TREE_MODEL(c->accountlist), &iter, path);
+	gtk_tree_model_get (GTK_TREE_MODEL(c->accountlist), &iter, column, &fixed, XML_COLUMN, &conftag, -1);
+
+	/* do something with the value */
+	fixed ^= 1;
+
+	if ( fixed )
+		conftag->GetFirstTag("no_auto").AddAttr("data", "false");
+	else
+		conftag->GetFirstTag("no_auto").AddAttr("data", "true");
+	
+	/* set new value */
+	gtk_list_store_set (GTK_LIST_STORE (c->accountlist), &iter, column, fixed, -1);
+
+	/* clean up */
+	gtk_tree_path_free (path);
+}
+
+gboolean
+GUIConnectWindow::destroy( GtkWidget *widget, GdkEvent *event, GUIConnectWindow *c)
+{
+	delete c;
+	
+	return TRUE;
 }
 
 void
@@ -133,7 +188,6 @@ GUIConnectWindow::RowChanged(GtkTreeView *treeview, GUIConnectWindow *c)
 
 	if(gtk_tree_selection_get_selected(selection,  NULL, &iter))
 	{
-		
 		gchar *jid;
 		gchar *server;
 		gchar *resource;
@@ -230,7 +284,6 @@ GUIConnectWindow::Remove_Button (GtkWidget * widget, GUIConnectWindow *c)
 													PRIO_COLUMN, &prio,
 													PORT_COLUMN, &port, -1);
 
-				std::cout << "p" <<  port << "," << prio << std::endl;
 
 				WokXMLTag &acc_tag = c->config->AddTag("account");
 				acc_tag.GetFirstTag("nick").AddAttr("data", jid);
@@ -286,9 +339,11 @@ GUIConnectWindow::Connect_Button (GtkWidget * widget, gpointer sig_data)
 	consig.AddAttr("port", port);
 	consig.AddAttr("prio", prio);
 	consig.AddAttr("type", "1");
+	
+	std::cout << "Contag:" << consig << std::endl;
 	data->wls->SendSignal ("Jabber Connection Connect", &consig);
 
-	gtk_widget_destroy (data->conn_win);
+	delete data;
 }
 
 void
@@ -297,7 +352,7 @@ GUIConnectWindow::Cancel_Button (GtkWidget * widget, gpointer sig_data)
 	GUIConnectWindow *data;
 	data = static_cast < GUIConnectWindow * >(sig_data);
 
-	gtk_widget_destroy (data->conn_win);
+	delete data;
 }
 
 int
@@ -314,9 +369,14 @@ GUIConnectWindow::Config (WokXMLTag *tag)
 	gtk_list_store_clear(GTK_LIST_STORE(accountlist));
 	for( iter = config->GetTagList("account").begin() ; iter != config->GetTagList("account").end() ; iter++)
 	{
+		gboolean auto_con;
+		if ( (**iter).GetFirstTag("no_auto").GetAttr("data") == "false" )
+			auto_con = TRUE;
+		else
+			auto_con = FALSE;
+		
 		GtkTreeIter treeiter;
 		gtk_list_store_append(GTK_LIST_STORE(accountlist), &treeiter);
-
 		gtk_list_store_set(GTK_LIST_STORE(accountlist), &treeiter,
 						SERVER_COLUMN , (**iter).GetFirstTag("server").GetAttr("data").c_str(),
 						USER_COLUMN , (**iter).GetFirstTag("nick").GetAttr("data").c_str(),
@@ -324,6 +384,8 @@ GUIConnectWindow::Config (WokXMLTag *tag)
 						RESOURCE_COLUMN , (**iter).GetFirstTag("resource").GetAttr("data").c_str(),
 						PRIO_COLUMN , atoi((**iter).GetFirstTag("prio").GetAttr("data").c_str()),
 						PORT_COLUMN , atoi((**iter).GetFirstTag("port").GetAttr("data").c_str()),
+						AUTO_COLUMN , auto_con, 
+						XML_COLUMN, *iter, 
 						-1);
 	}
 		
