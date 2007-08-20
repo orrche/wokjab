@@ -48,7 +48,7 @@ IdleSession::~IdleSession()
 int
 IdleSession::DeathWatch(WokXMLTag *tag)
 {
-	if ( death )
+	if ( time(0) - t	> 59*3 )
 	{
 		woklib_error(wls, "Connection " + session + " seams to have timedout\n"+
 																				"But for now we are ignoring that");
@@ -57,8 +57,7 @@ IdleSession::DeathWatch(WokXMLTag *tag)
 		mtag.AddAttr("session", session);
 		wls->SendSignal("Jabber Connection Lost", mtag);
 		*/
-	
-	}
+	}		
 	
 	tag->AddAttr("stop", "stop");
 	return 1;
@@ -67,32 +66,33 @@ IdleSession::DeathWatch(WokXMLTag *tag)
 int
 IdleSession::Tick(WokXMLTag *tag)
 {
-	std::cout << "T: " << t << std::endl;
-	if ( t>=0)
-		t--;
-	if ( t == 0 )
-	{
+
+	
+	if ( time(0) - t > 59 )
+	{		
 		WokXMLTag mtag(NULL, "message");
 		mtag.AddAttr("session", session);
 		mtag.AddText(" ");
 		
 		wls->SendSignal("Jabber XML Send", mtag);
 		
-		death = true;
 		WokXMLTag timmertag(NULL, "timer");
 		timmertag.AddAttr("time", "120000");
 		timmertag.AddAttr("signal", "Jabber Idle Tick DeathWatch " + session);
 
 		wls->SendSignal("Woklib Timmer Add",timmertag);
 	}
+	else
+		tag->AddAttr("stop","stop");
 	
-	tag->AddAttr("stop", "stop");
 	return 1;
 }
 
 int
 IdleSession::Active(WokXMLTag *tag)
 {
+	t = time(0);
+
 	death = false;
 	t++;
 	WokXMLTag timmertag(NULL, "timer");

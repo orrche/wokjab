@@ -198,18 +198,18 @@ GnomeTrayIcon::UpdateList()
 int
 GnomeTrayIcon::Presence(WokXMLTag *tag)
 {
-	std::cout << "Presence recived.." << std::endl;
-	presence_tip = "You are " + tag->GetFirstTag("presence").GetFirstTag("show").GetBody() + "\n" + tag->GetFirstTag("presence").GetFirstTag("status").GetBody();
+	presence_tip = "You are " + tag->GetFirstTag("presence").GetFirstTag("show").GetBody() + "\n";
+	if ( tag->GetFirstTag("presence").GetFirstTag("status").GetBody().empty() )
+		presence_tip += "<no status set>";
+	else
+		presence_tip += tag->GetFirstTag("presence").GetFirstTag("status").GetBody();
+	
 	if ( EventList.empty() )
 	{
 		gtk_tooltips_set_tip(GTK_TOOLTIPS(tray_icon_tips), GTK_WIDGET(eventbox),
 				 		 presence_tip.c_str(),
 				 		 presence_tip.c_str());
 		gtk_tooltips_enable(GTK_TOOLTIPS(tray_icon_tips));
-	}
-	else
-	{
-		std::cout << "Eventlist not empty " << std::endl;
 	}
 	
 	return 1;	
@@ -218,7 +218,6 @@ GnomeTrayIcon::Presence(WokXMLTag *tag)
 int
 GnomeTrayIcon::AddJIDEvent(WokXMLTag *tag)
 {
-	std::cout << "Event: " << *tag << std::endl;
 	std::list<WokXMLTag *>::iterator itemiter;
 	for(itemiter = tag->GetTagList("item").begin() ; itemiter != tag->GetTagList("item").end(); itemiter++)
 	{
