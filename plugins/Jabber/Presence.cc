@@ -58,7 +58,8 @@ int
 Presence::Send(WokXMLTag *tag)
 {
 	delete last_presence;
-	tag = new WokXMLTag(*tag);
+	last_presence = new WokXMLTag(*tag);
+	
 	wls->SendSignal("Jabber XML Send", tag);
 	return 1;
 }
