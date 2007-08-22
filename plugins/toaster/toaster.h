@@ -60,7 +60,8 @@ class Toaster : public WoklibPlugin
 		virtual std::string GetInfo() {return "Toaster";};
 		virtual std::string GetVersion() {return VERSION;};
 	protected:
-		GdkRectangle rect_workspace;
+		int work_height;
+		int work_width;
 		std::list <ToasterWindow*> twlist;
 		int twid;
 		WokXMLTag *config;

@@ -202,26 +202,23 @@ Toaster::RemoveMSG(WokXMLTag *tag)
 {
 	std::list<ToasterWindow *>::iterator iter;
 	
+	
 	for( iter = twlist.begin() ; iter != twlist.end() ; iter++ )
 	{
 		if ( tag->GetAttr("id") == (*iter)->GetID() )
 		{
 			delete (*iter);
-			
 			twlist.erase(iter);
-			
-			int Height = rect_workspace.y + rect_workspace.height;
-			for ( iter = twlist.begin() ; iter != twlist.end() ; iter++)
-			{
-				(*iter)->MoveTo(rect_workspace.x + rect_workspace.width, Height);
-				Height -= (*iter)->GetHeight();	
-			}
-			
-			return 1;
+			break;
 		}
 	}
 	
-	
+	int Height = work_height;
+	for ( iter = twlist.begin() ; iter != twlist.end() ; iter++)
+	{
+		(*iter)->MoveTo(work_width, Height);
+		Height -= (*iter)->GetHeight();	
+	}
 	
 	return 1;
 }
@@ -232,6 +229,7 @@ Toaster::DisplayMSG(WokXMLTag *tag)
 	GdkDisplay *display;
 	GdkScreen *screen;
 	GdkRectangle m_geo, w_geo;
+	GdkRectangle rect_workspace;
 
 	display = gdk_display_get_default();
 	screen = gdk_display_get_screen(display, 0);
@@ -249,6 +247,8 @@ Toaster::DisplayMSG(WokXMLTag *tag)
 		rect_workspace.width = m_geo.width;
 		rect_workspace.height = m_geo.height;
 	}
+	work_height = rect_workspace.y + rect_workspace.height;
+	work_width = rect_workspace.x + rect_workspace.width;
 
 	ToasterWindow *tw;
 	std::list<ToasterWindow *>::iterator iter;

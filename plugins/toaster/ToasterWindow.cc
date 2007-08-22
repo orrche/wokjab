@@ -99,6 +99,7 @@ ToasterWindow::ToasterWindow(WLSignal *wls, WokXMLTag *config, WokXMLTag *xml, i
 ToasterWindow::~ToasterWindow()
 {
 	delete orig;
+	
 	if ( timeoutremoveid )
 		g_source_remove(timeoutremoveid);
 	if ( timeoutid ) 
@@ -168,12 +169,13 @@ ToasterWindow::MoveTo(int x, int y)
 
 gboolean
 ToasterWindow::TimeoutRemove(ToasterWindow *c)
-{
+{	
 	WokXMLTag removesig(NULL, "remove");
 	removesig.AddAttr("id", c->GetID() );
-	c->wls->SendSignal("Toaster Remove", removesig);
 	
 	c->timeoutremoveid = 0;
+	c->wls->SendSignal("Toaster Remove", removesig);
+	
 	return FALSE;
 }
 
