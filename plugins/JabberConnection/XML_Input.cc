@@ -37,7 +37,7 @@ conn(conn),
 wls(wls)
 {
 	p = XML_ParserCreate (NULL);
-
+	
 	XML_SetUserData (p, this);
 	XML_SetElementHandler (p, xml_start, xml_end);
 	XML_SetCharacterDataHandler (p, xml_charhndl);
@@ -232,7 +232,7 @@ XML_Input::SetSSL(::SSL * s)
 	{
 		//XML_ParserFree(p);
 		p = XML_ParserCreate (NULL); // FIX shouldnt this be cleared ?
-
+		
 		XML_SetUserData (p, this);
 		XML_SetElementHandler (p, xml_start, xml_end);
 		XML_SetCharacterDataHandler (p, xml_charhndl);

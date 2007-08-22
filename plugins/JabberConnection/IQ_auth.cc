@@ -247,6 +247,9 @@ IQauth::SD_Challange(WokXMLTag *tag)
 int
 IQauth::SD_Failure(WokXMLTag *tag)
 {
+	if ( tag->GetAttr("session") != session )
+		return 1;
+	
 	WokXMLTag message(NULL, "message");
 	message.AddAttr("session", session);
 	
@@ -260,7 +263,9 @@ IQauth::SD_Failure(WokXMLTag *tag)
 int
 IQauth::SD_Success(WokXMLTag *tag)
 {
-
+	if ( tag->GetAttr("session") != session )
+		return 1;
+	
 	WokXMLTag message(NULL, "message");
 	message.AddAttr("session", session);
 	
