@@ -24,6 +24,8 @@ WoklibPlugin(wls)
 {
 	EXP_SIGHOOK("Get Main Menu", &Browser::MainMenu, 999);
 	EXP_SIGHOOK("GUI Browser Open", &Browser::BrowserWid, 999);
+	EXP_SIGHOOK("Jabber Server GetMenu", &Browser::MainMenu, 999);
+	EXP_SIGHOOK("Jabber GUI GetJIDMenu", &Browser::JidMenu, 1020);
 }
 
 Browser::~Browser()
@@ -35,6 +37,32 @@ Browser::~Browser()
 	}
 }
 
+int
+Browser::JidMenu(WokXMLTag *xml)
+{
+	std::list <WokXMLTag *>::iterator iter;
+	WokXMLTag *settingstag = NULL;
+	for ( iter = xml->GetTagList("item").begin() ; iter != xml->GetTagList("item").end() ; iter++)
+	{
+		if ( (*iter)->GetAttr("name") == "Advanced")
+		{
+			settingstag = *iter;
+			break;
+		}
+	}
+	if( !settingstag )
+	{
+		settingstag = &xml->AddTag("item");
+		settingstag->AddAttr("name", "Advanced");
+	}
+	
+	WokXMLTag *tag;
+	tag = &settingstag->AddTag("item");
+	tag->AddAttr("name", "Browser");
+	tag->AddAttr("signal", "GUI Browser Open");
+	
+	
+}
 
 int
 Browser::MainMenu(WokXMLTag *xml)
@@ -50,7 +78,7 @@ Browser::MainMenu(WokXMLTag *xml)
 int
 Browser::BrowserWid(WokXMLTag *xml)
 {
-	window.push_back(new BrowserWidget(wls, this));
+	window.push_back(new BrowserWidget(wls, xml->GetAttr("session"), xml->GetAttr("jid"), this));
 	return 1;
 }
 

@@ -198,7 +198,7 @@ GnomeTrayIcon::UpdateList()
 int
 GnomeTrayIcon::Presence(WokXMLTag *tag)
 {
-	presence_tip = "You are " + tag->GetFirstTag("presence").GetFirstTag("show").GetBody() + "\n";
+	presence_tip = tag->GetFirstTag("presence").GetFirstTag("show").GetBody() + " - You are set to: ";
 	if ( tag->GetFirstTag("presence").GetFirstTag("status").GetBody().empty() )
 		presence_tip += "<no status set>";
 	else

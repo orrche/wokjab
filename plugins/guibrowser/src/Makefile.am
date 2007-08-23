@@ -19,7 +19,7 @@ INCLUDES =
 libdir = $(prefix)/lib/woklib-plugins/normal
 
 AM_CXXFLAGS =\
-	`pkg-config gtk+-2.0 --cflags` -lwoklib -g -O3 -Wall
+	`pkg-config gtk+-2.0 --cflags` -g -O3 -Wall
 
 lib_LTLIBRARIES = libbrowser.la
 
@@ -31,6 +31,6 @@ libbrowser_la_SOURCES = \
 	browserwid.h
 
 libbrowser_la_LDFLAGS = \
-	`pkg-config gtk+-2.0 --libs`
+	`pkg-config gtk+-2.0 --libs` -lwoklib 
 
-libbrowser_la_LIBADD =
+libbrowser_la_LIBADD = 

@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2005-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
@@ -31,6 +31,7 @@
 GtkTimer::GtkTimer (WLSignal * wls):
 WoklibPlugin (wls)
 {
+	id = 0;
 	EXP_SIGHOOK ("Woklib Timmer Add", &GtkTimer::Add, 999);
 
 }
@@ -45,6 +46,16 @@ GtkTimer::Add (WokXMLTag * tag)
 {
 	int time = atoi(tag->GetAttr ("time").c_str());
 
+	if( tag->GetAttr("signal").empty() )
+	{
+		std::Stringstream str;
+		
+		str << "Woklib Timmer ID" << id;
+		tag->AddAttr("signal", str.str() );
+		
+		id++;
+	}
+	
 	new GtkTimerSession (wls, time, tag->GetAttr ("signal"));
 
 	return 1;

@@ -503,7 +503,6 @@ User::RightButton(WokXMLTag *tag)
 	if (!usertag)
 		return 1;
 	
-	char buf[20];
 	WokXMLTag MenuXML(NULL, "menu");
 	
 	MenuXML.AddAttr("button", tag->GetAttr("button"));

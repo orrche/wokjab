@@ -18,7 +18,7 @@
 #include "browserwid.h"
 
 
-BrowserWidget::BrowserWidget(WLSignal *wls, Browser *bro):
+BrowserWidget::BrowserWidget(WLSignal *wls, std::string session, std::string jid, Browser *bro):
 WLSignalInstance ( wls ), bro(bro)
 {
 	GtkWidget *jid_label;
@@ -67,6 +67,9 @@ WLSignalInstance ( wls ), bro(bro)
 		gtk_list_store_append(GTK_LIST_STORE(sessionmenu), &treeiter);
 		gtk_list_store_set(GTK_LIST_STORE(sessionmenu), &treeiter, 0 , itemtag.GetFirstTag("jid").GetBody().c_str(),
 						1, (*iter)->GetAttr("name").c_str(), -1);
+		
+		if ( session == (*iter)->GetAttr("name") )
+			gtk_combo_box_set_active_iter(GTK_COMBO_BOX(sessionchooser), &treeiter);
 	}
 
 	// Tree view ...
@@ -83,7 +86,7 @@ WLSignalInstance ( wls ), bro(bro)
 	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (nodetree),
         -1, "Session", renderer, "text", 2, NULL);
   
-  store = gtk_tree_store_new (4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+  	store = gtk_tree_store_new (4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
 	
 	model = GTK_TREE_MODEL(store);
@@ -95,13 +98,14 @@ WLSignalInstance ( wls ), bro(bro)
 	button = gtk_button_new_with_label ("Browse");
 	address_entry = gtk_entry_new();
 	
-	
-	GtkTreeIter treeiter;
-	if( gtk_tree_model_get_iter_first(GTK_TREE_MODEL(sessionmenu), &treeiter) )
+	if( session.empty() )
 	{
-		gtk_combo_box_set_active_iter(GTK_COMBO_BOX(sessionchooser), &treeiter);
-		UpdateEntryWidget();
+		GtkTreeIter treeiter;
+		if( gtk_tree_model_get_iter_first(GTK_TREE_MODEL(sessionmenu), &treeiter) )
+			gtk_combo_box_set_active_iter(GTK_COMBO_BOX(sessionchooser), &treeiter);
 	}
+	UpdateEntryWidget();
+
 	
 	gtk_box_pack_start(GTK_BOX(hbox), jid_label, FALSE, 0,0);
 	gtk_box_pack_start(GTK_BOX(hbox), address_entry, FALSE, 0,0);
@@ -125,6 +129,16 @@ WLSignalInstance ( wls ), bro(bro)
 	
 	gtk_window_set_default_size(GTK_WINDOW(window), 400, 200);
 	gtk_widget_show_all(window);
+	
+	if( !jid.empty() )
+	{
+		gtk_entry_set_text(GTK_ENTRY(address_entry), jid.c_str());
+		if ( !session.empty() )
+		{
+			ButtonPress(NULL, this);
+		}
+	}
+	
 }
 
 BrowserWidget::~BrowserWidget()

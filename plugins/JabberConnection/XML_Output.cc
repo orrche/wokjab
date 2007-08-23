@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -35,7 +35,8 @@ typedef unsigned int uint;
 
 XML_Output::XML_Output(WLSignal *wls, std::string session): WLSignalInstance(wls),
 session(session)
-{
+{	
+	EXP_SIGHOOK("Jabber Connection Disconnect '" + XMLisize(session) + "'", &XML_Output::SignalDisconnect, 1000);
 	transmitting = false;
 	this->socket_nr = 0;
 	ssl = NULL;
@@ -53,6 +54,13 @@ XML_Output::set_socket(int socket_nr)
 }
 
 int
+XML_Output::SignalDisconnect(WokXMLTag *tag)
+{
+	sendxml("<stream::stream/>");
+	
+}
+
+int
 XML_Output::sendxml(std::string data)
 {
 	if(!socket_nr)
@@ -60,6 +68,10 @@ XML_Output::sendxml(std::string data)
 		WokXMLTag sigtag(NULL, "message");
 		sigtag.AddTag("body").AddText("Session not connected");
 		wls->SendSignal("Display Error", sigtag);
+				
+		WokXMLTag msg(NULL, "message");
+		msg.AddAttr("session", session);
+		wls->SendSignal("Jabber Connection Lost", &msg);
 		
 		return(-1);
 	}

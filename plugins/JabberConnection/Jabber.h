@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2006  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
@@ -45,7 +45,8 @@ class Jabber : public WoklibPlugin
 		int SendXML(WokXMLTag *tag);
 		int GetSessions(WokXMLTag *tag);
 		int ConnectionLost(WokXMLTag *tag);
-
+		int ServerMenu(WokXMLTag *tag);
+		int ServerMenuLogout(WokXMLTag *tag);
 	protected:
 		int session_nr;
 		std::map<std::string, Connection *> connections;

@@ -56,6 +56,7 @@ class GtkTimer:public WoklibPlugin
 	int Add (WokXMLTag * tag);
 
       protected:
+		unsigned int id;
 
 };
 

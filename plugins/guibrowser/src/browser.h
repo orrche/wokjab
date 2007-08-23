@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2006  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -49,7 +49,8 @@ class Browser : public WoklibPlugin
 			
 		int MainMenu(WokXMLTag *xml);
 		int BrowserWid(WokXMLTag *xml);
-		
+		int JidMenu(WokXMLTag *xml);
+	
 		void BrowserWidRemove(BrowserWidget *wid);
 	protected:
 		std::list<BrowserWidget *> window;

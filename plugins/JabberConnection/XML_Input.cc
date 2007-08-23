@@ -36,6 +36,7 @@ session(session),
 conn(conn),
 wls(wls)
 {
+	server_terminated = false;
 	p = XML_ParserCreate (NULL);
 	
 	XML_SetUserData (p, this);
@@ -126,7 +127,13 @@ XML_Input::read_data (int source)
 		return 0;
 	}
 
-	if( len == BUFFSIZE )
+	if( server_terminated )
+	{
+		WokXMLTag msg(NULL, "message");
+		msg.AddAttr("session", session);
+		wls->SendSignal("Jabber Connection Lost", &msg);
+	}
+	else if( len == BUFFSIZE )
 		read_data(source);
 	return 2;
 }
@@ -205,9 +212,7 @@ XML_Input::end (const char *el)
 		// This might not be the greatest place to put this...
 		if (std::string(el) == "stream:stream")  // Connection closing
 		{
-			WokXMLTag msg(NULL, "message");
-			msg.AddAttr("session", session);
-			wls->SendSignal("Jabber Connection Lost", &msg);
+			server_terminated = true;
 			return;
 		}
 	}

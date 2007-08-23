@@ -428,13 +428,13 @@ jep96::Position(WokXMLTag *postag)
 {
 	std::string sid = postag->GetAttr("sid");
 	
-	std::stringstream msg;
-	msg << PrettySize(atol(postag->GetAttr("pos").c_str()));// << sessions[sid]->GetAttr("strsize");
-	if ( sessions.find(sid) != sessions.end() )
-		msg << "/" << sessions[sid]->GetAttr("strsize");
-	
 	if ( rows.find(sid) != rows.end() )
 	{
+		std::stringstream msg;
+		msg << PrettySize(atol(postag->GetAttr("pos").c_str()));// << sessions[sid]->GetAttr("strsize");
+		if ( sessions.find(sid) != sessions.end() )
+			msg << "/" << sessions[sid]->GetAttr("strsize");
+		
 		GtkTreeIter iter;
 		if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[sid])))
 		{

@@ -31,6 +31,7 @@ parent(c)
 {
 	EXP_SIGHOOK("Jabber Roster Update " + session , &JabberSession::UpdateRoster, 1000);
 	
+	serverjid = tag->GetAttr("server");
 	std::string name = tag->GetAttr("username") + "@" + tag->GetAttr("server") + "/" + tag->GetAttr("resource");
 	
 	WokXMLTag itemtag(NULL, "item");
@@ -40,6 +41,9 @@ parent(c)
 		
 	wls->SendSignal("GUIRoster AddItem", itemtag);
 	id = itemtag.GetAttr("id");
+	
+	
+	EXP_SIGHOOK("GUIRoster RightButton " + id, &JabberSession::RightButton, 500);
 }
 
 
@@ -60,6 +64,24 @@ JabberSession::~JabberSession()
 	WokXMLTag tag(NULL, "item");
 	tag.AddAttr("id", id);
 	wls->SendSignal("GUIRoster RemoveItem", tag);
+}
+
+int
+JabberSession::RightButton(WokXMLTag *tag)
+{
+	WokXMLTag MenuXML(NULL, "menu");
+	
+	MenuXML.AddAttr("button", tag->GetAttr("button"));
+	MenuXML.AddAttr("time", tag->GetAttr("time"));
+	
+	MenuXML.AddTag("item").AddAttr("signal", "Jabber Server GetMenu");
+	WokXMLTag &data = MenuXML.AddTag("data");
+	data.AddAttr("jid", serverjid);
+	data.AddAttr("session", session);
+	wls->SendSignal("Jabber GUI JIDMenu", &MenuXML);
+	
+	return 1;	
+	
 }
 
 int

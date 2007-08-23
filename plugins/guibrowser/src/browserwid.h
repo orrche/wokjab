@@ -35,7 +35,7 @@ using namespace Woklib;
 class BrowserWidget : public WLSignalInstance
 {
 	public:
-		BrowserWidget(WLSignal *wls, Browser *bro);
+		BrowserWidget(WLSignal *wls, std::string session, std::string jid, Browser *bro);
 		~BrowserWidget();
 	
 		void GetItemData(WokXMLTag *tag);

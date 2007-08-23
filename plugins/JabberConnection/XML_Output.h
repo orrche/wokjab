@@ -42,6 +42,8 @@ class XML_Output : public WLSignalInstance
 	int sendxml(const char *data);
 	int SocketAvailibule(WokXMLTag *tag);
 	void code_msg(std::string data);
+	int SignalDisconnect(WokXMLTag *tag);
+	
 	private:
 		std::string buffer;
 		std::string signal_out;

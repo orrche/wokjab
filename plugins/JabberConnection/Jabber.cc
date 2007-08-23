@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2006  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,8 @@ Jabber::Jabber(WLSignal *wls) : WoklibPlugin(wls)
 	EXP_SIGHOOK("Jabber Connection Disconnect", &Jabber::SignalDisconnect, 1000);
 	EXP_SIGHOOK("Jabber Connection Lost", &Jabber::ConnectionLost, 1000);
 	
+	EXP_SIGHOOK("Jabber Server GetMenu", &Jabber::ServerMenu, 1000);
+	EXP_SIGHOOK("Jabber Server MenuLogout", &Jabber::ServerMenuLogout, 1000);
 	authmanager = new IQAuthManager(wls);
 }
 
@@ -53,6 +55,27 @@ Jabber::connect (std::string server, std::string host, std::string username,
 	connections[buf] = conn;
 	
 	return buf;
+}
+
+int
+Jabber::ServerMenuLogout(WokXMLTag *tag)
+{
+	std::cout << *tag << std::endl;
+	WokXMLTag msg("disconnect");
+	msg.AddAttr("session", tag->GetAttr("session"));
+	
+	wls->SendSignal("Jabber Connection Disconnect", msg);
+	return 1;	
+}
+
+int
+Jabber::ServerMenu(WokXMLTag *tag)
+{
+	WokXMLTag &item = tag->AddTag("item");
+	item.AddAttr("name", "Logout");
+	item.AddAttr("signal", "Jabber Server MenuLogout");
+	
+	return 1;
 }
 
 int
@@ -98,11 +121,10 @@ Jabber::SignalDisconnect(WokXMLTag *tag)
 		
 		for ( iter = connections.begin() ; iter != connections.end() ; iter ++)
 		{
+			
 			std::string session = iter->first;
 			WokXMLTag msgtag(NULL,"message");
-			msgtag.AddAttr("session", session);
-			msgtag.AddText("</stream:stream>");
-			wls->SendSignal("Jabber XML Send", &msgtag);
+			wls->SendSignal("Jabber Connection Disconnect '" + XMLisize(session) + "'", &msgtag);
 		}
 		
 	}
@@ -110,9 +132,7 @@ Jabber::SignalDisconnect(WokXMLTag *tag)
 	{
 		std::string session = tag->GetAttr("session");
 		WokXMLTag msgtag(NULL,"message");
-		msgtag.AddAttr("session", session);
-		msgtag.AddText("</stream:stream>");
-		wls->SendSignal("Jabber XML Send", &msgtag);
+		wls->SendSignal("Jabber Connection Disconnect '" + XMLisize(session) + "'", &msgtag);
 	}
 	
 	return 1;

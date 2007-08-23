@@ -301,7 +301,8 @@ Socks5Session::Read(WokXMLTag *tag)
 int
 Socks5Session::Ready(WokXMLTag *tag)
 {
-// Version 5  Ways of authentication 1  Authentication method 0
+	std::cout << "Debug.." << std::endl;
+	// Version 5  Ways of authentication 1  Authentication method 0
 
 	outpos += send (socket_nr, outbuffer , outsize - outpos, MSG_DONTWAIT);
 	if ( outpos == outsize ) 
