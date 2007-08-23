@@ -181,6 +181,7 @@ IQauth::SD_Challange(WokXMLTag *tag)
 	
 	
 	char buffer[500];
+	tag->GetFirstTag("challenge").GetBodyAsBase64(buffer,500);
 	std::string chal(buffer);
 	std::map<std::string, std::string> data;
 	
