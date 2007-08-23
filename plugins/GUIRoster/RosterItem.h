@@ -47,6 +47,7 @@ class RosterItem : public WLSignalInstance
 		int GetIndent();
 		RosterItem * GetLastItem();
 		RosterItem *AddChild(RosterItem *); /// Adds a child to a roster item and returns the item that it should be added beneth for sorting
+		RosterItem * UpdatePosition(RosterItem *ri);
 		void RemoveChild(RosterItem *);
 	protected:
 		std::list <RosterItem*> children;

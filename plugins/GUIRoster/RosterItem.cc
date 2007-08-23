@@ -87,6 +87,33 @@ RosterItem::AddChild(RosterItem *ri)
 }
 
 RosterItem *
+RosterItem::UpdatePosition(RosterItem *ri)
+{
+	std::list <RosterItem*>::iterator iter;
+	
+	std::list <RosterItem*>::iterator pos = std::find(children.begin(), children.end(), ri);
+	
+	children.erase(pos);
+	
+	for ( iter = children.end() ; iter != children.begin() ; )
+	{
+		iter--;
+		
+		if( (*iter)->text < ri->text )
+		{
+			std::list <RosterItem*>::iterator tmpiter;
+			tmpiter = iter;
+			tmpiter++;
+			children.insert(tmpiter, 1, ri);
+			return ((*iter)->GetLastItem());
+		}	
+	}
+
+	children.push_front(ri);
+	return this;	
+}
+
+RosterItem *
 RosterItem::GetLastItem()
 {
 	if ( children.empty() )
@@ -135,6 +162,11 @@ RosterItem::Update(WokXMLTag *tag)
 	while((pos = text.find("\n", pos+1)) != std::string::npos)
 		text.insert(pos+1, strindent);
 	
+	if ( parant )
+	{
+		RosterItem *ri = parant->UpdatePosition(this);
+		gtk_list_store_move_after(GTK_LIST_STORE(model), &iter, ri->GetIter());
+	}
 	gtk_list_store_set(GTK_LIST_STORE(model), &iter,
 				PRE_PIX_COLUMN, pre_pix,
 				TEXT_COLUMN, text.c_str(),
