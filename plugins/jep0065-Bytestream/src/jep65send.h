@@ -61,7 +61,7 @@ class jep65send : public WLSignalInstance
 		
 		int SendData(char *data, uint len);
 	private:
-		WokXMLTag *data;
+		WokXMLTag *msgtag_data;
 		std::string proxy;
 		std::string me;
 		std::string hash;
