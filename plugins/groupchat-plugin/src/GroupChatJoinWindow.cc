@@ -110,7 +110,6 @@ GroupChatJoinWindow::~GroupChatJoinWindow ()
 void
 GroupChatJoinWindow::QuickChange(GtkComboBox *widget, GroupChatJoinWindow *c)
 {
-	std::cout << "Trying to change the world" << std::endl;
 	GtkTreeIter treeiter;
 	if( !gtk_combo_box_get_active_iter(GTK_COMBO_BOX(c->quickchooser), &treeiter) )
 	{

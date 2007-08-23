@@ -65,7 +65,6 @@ Group::PrintMembers ()		/// Debug
 
 	for (iter = members.begin (); iter != members.end (); iter++)
 	{
-		std::cout << "Member of  group " << name << " : " << iter->second->
-			GetJID () << std::endl;
+		std::cout << "Member of  group " << name << " : " << iter->second->GetJID () << std::endl;
 	}
 }

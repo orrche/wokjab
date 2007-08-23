@@ -28,6 +28,8 @@
 #include "GtkTimer.h"
 #include "GtkTimerSession.h"
 
+#include <sstream>
+
 GtkTimer::GtkTimer (WLSignal * wls):
 WoklibPlugin (wls)
 {
@@ -48,7 +50,7 @@ GtkTimer::Add (WokXMLTag * tag)
 
 	if( tag->GetAttr("signal").empty() )
 	{
-		std::Stringstream str;
+		std::stringstream str;
 		
 		str << "Woklib Timmer ID" << id;
 		tag->AddAttr("signal", str.str() );

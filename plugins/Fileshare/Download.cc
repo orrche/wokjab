@@ -39,7 +39,7 @@ session(session)
 	
 	if( !list.empty() )
 	{
-	DownloadFile( *list.begin());
+		DownloadFile( *list.begin());
 	}
 	
 	
@@ -81,9 +81,7 @@ DownloadFolder::GetFiles(std::string path, WokXMLTag *tag)
 
 int
 DownloadFolder::Finished(WokXMLTag *tag)
-{	
-	std::cout << "Sid: " << sid << std::endl;
-	
+{		
 	if ( tag->GetAttr("sid") == sid)
 	{
 		list.pop_front();

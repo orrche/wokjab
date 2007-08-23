@@ -60,7 +60,6 @@ Jabber::connect (std::string server, std::string host, std::string username,
 int
 Jabber::ServerMenuLogout(WokXMLTag *tag)
 {
-	std::cout << *tag << std::endl;
 	WokXMLTag msg("disconnect");
 	msg.AddAttr("session", tag->GetAttr("session"));
 	

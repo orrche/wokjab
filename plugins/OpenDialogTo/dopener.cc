@@ -76,7 +76,6 @@ oper(oper)
 		gtk_list_store_set(GTK_LIST_STORE(sessionmenu), &treeiter, 0 , itemtag.GetFirstTag("jid").GetBody().c_str(),
 						1, (*iter)->GetAttr("name").c_str(), -1);
 		
-//		std::cout << "_" << itemtag.GetFirstTag("jid").GetBody() << " " << (*iter)->GetAttr("name").c_str() << std::endl;
 	}
 	
 

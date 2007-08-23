@@ -31,10 +31,6 @@
 #include <iostream>
 #include <sstream>
 
-using std::cout;
-using std::endl;
-
-
 GUIRoster::GUIRoster (WLSignal * wls):WLSignalInstance (wls)
 {				
 	hbb = gtk_hbox_new(FALSE, FALSE );

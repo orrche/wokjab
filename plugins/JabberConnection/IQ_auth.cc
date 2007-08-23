@@ -25,9 +25,6 @@
 #include <openssl/sha.h>
 #include <openssl/md5.h>
 
-using std::cout;
-using std::endl;
-
 IQauth::IQauth (WLSignal *wls, std::string session, int in_con_type):
 WLSignalInstance ( wls ),
 session(session),
@@ -184,7 +181,6 @@ IQauth::SD_Challange(WokXMLTag *tag)
 	
 	
 	char buffer[500];
-	std::cout << tag->GetFirstTag("challenge").GetBodyAsBase64(buffer,500) << std::endl;
 	std::string chal(buffer);
 	std::map<std::string, std::string> data;
 	
@@ -201,10 +197,6 @@ IQauth::SD_Challange(WokXMLTag *tag)
 	}
 	
 	std::map<std::string, std::string>::iterator iter;
-	for ( iter = data.begin() ; iter != data.end(); iter++)
-	{
-		std::cout << iter->first << " = " << iter->second << std::endl;	
-	}
 	
 	if ( !data["rspauth"].empty() )
 	{

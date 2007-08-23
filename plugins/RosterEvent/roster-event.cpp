@@ -42,7 +42,6 @@ RosterEvent::RosterEvent(WLSignal *wls) : WoklibPlugin(wls)
 
 
 	EXP_SIGHOOK("GUI Window Init", &RosterEvent::GUIWindowInit, atoi(config->GetFirstTag("pos").GetAttr("data").c_str()));
-	std::cout << "Position: " << atoi(config->GetFirstTag("pos").GetAttr("data").c_str()) << std::endl;
 }
 
 RosterEvent::~RosterEvent()

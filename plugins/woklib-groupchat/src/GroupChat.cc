@@ -81,7 +81,6 @@ GroupChat::Join(WokXMLTag *tag)
 	wls->SendSignal("Jabber XML Send", msgtag);
 	servers[tag->GetAttr("session")][tag->GetAttr("server")].AddRoom(tag->GetAttr("room"));
 	
-	std::cout << "Good thing.." << std::endl;
 	return 1;
 }
 
@@ -103,6 +102,5 @@ GroupChat::Part(WokXMLTag *tag)
 int
 GroupChat::Ban(WokXMLTag *tag)
 {
-	std::cout << "This should ban a user" << std::endl;
 	return 1;
 }

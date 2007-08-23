@@ -58,7 +58,6 @@ EntCap::Presence(WokXMLTag *tag)
 		std::list <WokXMLTag *>::iterator iter;
 		for( iter = caps.GetTagList("cap").begin() ; iter != caps.GetTagList("cap").end() ; iter++)
 		{
-			std::cout << "Body = " << (*iter)->GetBody() << std::endl;
 			buf << ' ' << (*iter)->GetBody();		
 		}
 		captag.AddAttr("ext", buf.str().substr(1));

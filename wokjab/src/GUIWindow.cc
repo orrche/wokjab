@@ -20,8 +20,6 @@
 
 #include <iostream>
 #include <sstream>
-using std::cout;
-using std::endl;
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
@@ -247,7 +245,6 @@ GUIWindow::SetPresence(GUIWindow * c)
 
 	std::list<std::string>::iterator iter;
 
-	std::cout << "Active sessions not empty..." << std::endl;
 	for( iter = c->ActiveSessions.begin() ; iter != c->ActiveSessions.end() ; iter++)
 	{
 		WokXMLTag sendtag(msgtag);

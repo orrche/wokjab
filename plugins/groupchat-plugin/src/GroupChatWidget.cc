@@ -25,14 +25,11 @@
 #  include <config.h>
 #endif
 
-using std::cout;
-using std::endl;
 
 GroupChatWidget::GroupChatWidget (WLSignal * wls, std::string session, std::string roomjid , std::string mynick, GroupChat *mclass) : WLSignalInstance(wls),
 mclass(mclass),
 session(session)
 {
-	std::cout << "Starting a groupchat widgget" << std::endl;
 	this->roomjid = roomjid;
 	this->mynick = mynick;
 	fontsize = 1;

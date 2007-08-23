@@ -25,8 +25,6 @@
 #include "include/GUIMessageWidget.h"
 #include "include/main.h"
 
-using std::endl;
-using std::cout;
 using std::string;
 
 #include <sys/stat.h>

@@ -90,7 +90,6 @@ RegisterServiceWidget::ButtonPress (GtkButton *button, RegisterServiceWidget *c)
 		query.AddTag(iter->first).AddText(gtk_entry_get_text(GTK_ENTRY(iter->second)));
 	}
 
-	std::cout << response << std::endl;
 	
 	c->wls->SendSignal("Jabber XML Send", &msgtag);
 	//#warning FIXME

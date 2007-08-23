@@ -33,7 +33,6 @@ d_path(d_path)
 		this->d_path += "/";
 	
 	std::stringstream str;
-	str << "local:" << this;
 	lsid = str.str();
 	xml = new WokXMLTag(msg);
 	EXP_SIGHOOK("Jabber XML IQ ID " + msg.GetFirstTag("iq").GetAttr("id"), &File::FileResponse, 1000);
@@ -58,15 +57,12 @@ File::FileResponse(WokXMLTag *tag)
 int
 File::Auth(WokXMLTag *tag)
 {
-	std::cout << "File: " << *tag << std::endl;
-	std::cout << ":: " << *xml << std::endl;
 	
 	if ( tag->GetAttr("sid") == sid )
 	{
 		WokXMLTag &file = tag->AddTag("file");
 		file.AddAttr("lsid", lsid);
-		file.AddAttr("name", d_path + name);	
-		std::cout << "File path: " << file.GetAttr("name") << std::endl;
+		file.AddAttr("name", d_path + name);
 	}
 	return 1;
 }

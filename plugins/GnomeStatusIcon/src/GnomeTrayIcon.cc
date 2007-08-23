@@ -24,8 +24,6 @@
 #include <iostream>
 #include <cassert>
 #include <sstream>
-using std::cout;
-using std::endl;
 
 #include "../include/GnomeTrayIcon.h"
 

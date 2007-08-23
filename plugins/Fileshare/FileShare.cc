@@ -322,7 +322,6 @@ FileShare::PopulateTree(WokXMLTag *tag, std::string dir, std::string virt_dir)
 		int rc = sqlite3_exec(db, query.c_str(), (int(*)(void *,int,char**,char**)) FileShare::sql_callback, this, &zErrMsg);
   if( rc!=SQLITE_OK ){
     fprintf(stderr, "SQL error: %s\n", zErrMsg);
-				std::cout << "Query: " << query << std::endl;
     sqlite3_free(zErrMsg);
   }
 	}
@@ -391,7 +390,6 @@ FileShare::Rebuild(WokXMLTag *tag)
 				break;
 			}
 		}
-		std::cout << ":" << iter->second << filelist << std::endl;
 		PopulateTree(point, iter->second, "/" + iter->first);
 	}
 	
@@ -567,7 +565,6 @@ FileShare::IncommingSearch(WokXMLTag *tag)
 	{
 		for( res_iter = search_result->GetTagList("result").begin() ; res_iter != search_result->GetTagList("result").end() ; res_iter++)
 		{
-			std::cout << (*res_iter)->GetAttr("id") << std::endl;
 			WokXMLTag &itemtag = result.AddTag("item");
 			itemtag.AddAttr("id", (*res_iter)->GetAttr("id"));
 			itemtag.AddAttr("name", (*res_iter)->GetAttr("path"));

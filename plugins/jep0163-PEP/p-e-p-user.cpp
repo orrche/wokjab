@@ -110,12 +110,10 @@ int
 PEPUser::UserQuerySubscription(WokXMLTag *tag)
 {
 	std::list <WokXMLTag *>::iterator ps_iter;
-	std::cout << " HERE #####################" << std::endl;
 	for ( ps_iter = tag->GetFirstTag("iq").GetTagList("pubsub").begin() ; ps_iter != tag->GetFirstTag("iq").GetTagList("pubsub").end() ; ps_iter++)
 	{
 		if ( (*ps_iter)->GetAttr("xmlns") == "http://jabber.org/protocol/pubsub" )
 		{
-			std::cout << "Pubsub.." << std::endl;
 			std::list <WokXMLTag *>::iterator sub_iter;
 			for ( sub_iter = (*ps_iter)->GetFirstTag("subscriptions").GetTagList("subscription").begin() ;
 					sub_iter != (*ps_iter)->GetFirstTag("subscriptions").GetTagList("subscription").end() ; sub_iter++)

@@ -249,7 +249,6 @@ FileListWid::Finished(WokXMLTag *tag)
 int
 FileListWid::Auth(WokXMLTag *tag)
 {
-	std::cout << "2XML: " << *tag << std::endl;
 	if ( tag->GetAttr("sid") == sid )
 	{
 		lsid = "local:" + sid;

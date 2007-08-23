@@ -248,8 +248,6 @@ int Connection::GetSocket(WokXMLTag *tag)
 		std::stringstream buf;
 		buf << socket_nr;
 		tag->AddAttr("socket", buf.str());
-		std::cout << "Sent socknr " << socket_nr << std::endl;
-		std::cout << "XML : " << *tag << std::endl;
 	}
 
 	return true;

@@ -97,8 +97,6 @@ SignalGenDialog::SendButton(GtkButton *button, SignalGenDialog *c)
 	else
 		sendingtag = *tag.GetTags().begin();
 
-	std::cout << "::" << std::flush << signal << std::endl;
-	std::cout << "::" << std::flush << sendingtag << std::endl;
 	c->wls->SendSignal(signal, sendingtag);
 	
 	gtk_widget_destroy(c->window);

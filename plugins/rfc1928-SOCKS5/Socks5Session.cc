@@ -301,7 +301,6 @@ Socks5Session::Read(WokXMLTag *tag)
 int
 Socks5Session::Ready(WokXMLTag *tag)
 {
-	std::cout << "Debug.." << std::endl;
 	// Version 5  Ways of authentication 1  Authentication method 0
 
 	outpos += send (socket_nr, outbuffer , outsize - outpos, MSG_DONTWAIT);
@@ -342,10 +341,8 @@ Socks5Session::OpenConnection()
 	sa.sin_family = hp->h_addrtype;
 	sa.sin_port = htons ((u_short) port);
 	
-	std::cout << "Starting this shit.." << std::endl;
 	if ((socket_nr = socket (hp->h_addrtype, SOCK_STREAM, 0)) < 0)
 		return (-1);
-	std::cout << "Connecting... this might maybe be done none blocking but not sure" << std::endl;
 	
 	
 	int flags;
@@ -367,7 +364,6 @@ Socks5Session::OpenConnection()
 		close (socket_nr);
 		return (-1);
 	}
-	std::cout << "And we are fucking connected" << std::endl;
 
 	return 1;
 }

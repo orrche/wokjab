@@ -340,7 +340,6 @@ GUIConnectWindow::Connect_Button (GtkWidget * widget, gpointer sig_data)
 	consig.AddAttr("prio", prio);
 	consig.AddAttr("type", "1");
 	
-	std::cout << "Contag:" << consig << std::endl;
 	data->wls->SendSignal ("Jabber Connection Connect", &consig);
 
 	delete data;

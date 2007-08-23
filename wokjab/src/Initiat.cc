@@ -126,7 +126,6 @@ Initiat::Ready(WokXMLTag *tag)
 int
 Initiat::AccountConfig(WokXMLTag *tag)
 {
-	std::cout << "Trying to autoconnect.." << std::endl;
 	std::list <WokXMLTag *>::iterator iter;
 
 	for( iter = tag->GetFirstTag("config").GetTagList("account").begin() ; iter != tag->GetFirstTag("config").GetTagList("account").end() ; iter++)

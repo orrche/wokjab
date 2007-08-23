@@ -32,8 +32,6 @@
 #include <sys/types.h>
 #include <sstream>
 
-using std::cout;
-using std::endl;
 using std::string;
 
 GUIMessageWidget::GUIMessageWidget(WLSignal *wls, std::string session, std::string from, int id) : WLSignalInstance(wls),
