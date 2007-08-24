@@ -170,6 +170,8 @@ jep96::Wid(WokXMLTag *xml)
 //	gtk_window_present (GTK_WINDOW(filewindow));
 	rows[sslsid.str()] = gtk_tree_row_reference_new(GTK_TREE_MODEL(file_store),gtk_tree_model_get_path(GTK_TREE_MODEL(file_store), &iter));
 
+	xml->AddTag("filetransfear").AddAttr("lsid", sslsid.str());
+	
 	std::stringstream signal;
 	signal << "Jabber Stream File Incomming " << xml->GetFirstTag("iq").GetFirstTag("si").GetAttr("id");
 	if ( ! wls->SendSignal(signal.str(), xml) )

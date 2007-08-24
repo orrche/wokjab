@@ -56,6 +56,8 @@ class DownloadFolder : public WLSignalInstance
 		std::string session;
 		std::string sid;
 		
+		File *f;
+	
 		std::list<std::vector<std::string> > list;
 };
 

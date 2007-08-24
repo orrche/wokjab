@@ -45,21 +45,42 @@ config ( new WokXMLTag (*config))
 	gtk_window_set_title(GTK_WINDOW(glade_xml_get_widget(xml,"window")), (tag->GetFirstTag("iq").GetAttr("to") + " filelist").c_str());
 	
 	GtkCellRenderer *renderer;
-	renderer = gtk_cell_renderer_text_new ();
-	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (glade_xml_get_widget(xml,"folder")),
-        -1, "Name", renderer, "text", 0, NULL);
-	renderer = gtk_cell_renderer_text_new ();
-	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (glade_xml_get_widget(xml,"folder")),
-        -1, "Size", renderer, "text", 1, NULL);
-	renderer = gtk_cell_renderer_text_new ();
-	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (glade_xml_get_widget(xml,"folder")),
-        -1, "ID", renderer, "text", 2, NULL);
-								
+	GtkTreeViewColumn *column;
+	
 	renderer = gtk_cell_renderer_text_new ();
 	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (glade_xml_get_widget(xml,"tree")),
         -1, "Name", renderer, "text", 0, NULL);
 	
-	path_store = gtk_tree_store_new (2, G_TYPE_STRING, G_TYPE_INT);
+	
+	column = gtk_tree_view_column_new();
+	renderer = gtk_cell_renderer_text_new ();
+	gtk_tree_view_column_pack_start(column, renderer, TRUE);
+	gtk_tree_view_column_add_attribute(column, renderer, "text", 0);
+	gtk_tree_view_column_set_sort_column_id (column, 0);
+	gtk_tree_view_column_set_title(column,"Name");
+	gtk_tree_view_append_column (GTK_TREE_VIEW (glade_xml_get_widget(xml,"folder")), GTK_TREE_VIEW_COLUMN (column));		
+		
+	column = gtk_tree_view_column_new();
+	renderer = gtk_cell_renderer_text_new ();
+	gtk_tree_view_column_pack_start(column, renderer, TRUE);
+	gtk_tree_view_column_add_attribute(column, renderer, "text", 1);
+	gtk_tree_view_column_set_sort_column_id (column, 1);
+	gtk_tree_view_column_set_title(column,"Size");
+	gtk_tree_view_append_column (GTK_TREE_VIEW (glade_xml_get_widget(xml,"folder")), GTK_TREE_VIEW_COLUMN (column));		
+		
+	column = gtk_tree_view_column_new();
+	renderer = gtk_cell_renderer_text_new ();
+	gtk_tree_view_column_pack_start(column, renderer, TRUE);
+	gtk_tree_view_column_add_attribute(column, renderer, "text", 2);
+	gtk_tree_view_column_set_sort_column_id (column, 2);
+	gtk_tree_view_column_set_title(column,"ID");
+	gtk_tree_view_append_column (GTK_TREE_VIEW (glade_xml_get_widget(xml,"folder")), GTK_TREE_VIEW_COLUMN (column));		
+		
+	
+	gtk_tree_selection_set_mode(GTK_TREE_SELECTION(gtk_tree_view_get_selection (GTK_TREE_VIEW (glade_xml_get_widget(xml,"folder")))),
+                                                         GTK_SELECTION_MULTIPLE);
+	
+	path_store = gtk_tree_store_new (2, G_TYPE_STRING, G_TYPE_POINTER);
 	folder_store = gtk_list_store_new (3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	
 	gtk_tree_view_set_model (GTK_TREE_VIEW (glade_xml_get_widget(xml,"tree")), GTK_TREE_MODEL(path_store));
@@ -164,24 +185,26 @@ FileListWid::OpenFolder (GtkTreeView *tree_view, FileListWid *c)
 	
 		WokXMLTag *tag;
 		gtk_tree_model_get(GTK_TREE_MODEL(c->path_store), &iter, 1, &tag, -1);
-		
-		gtk_list_store_clear(GTK_LIST_STORE(c->folder_store));
-		std::list <WokXMLTag *>::iterator iter;
-		for( iter = tag->GetTagList("item").begin() ; iter != tag->GetTagList("item").end() ; iter++)
+		if (tag)
 		{
-			std::string size;
-			if( (*iter)->GetAttr("type") == "folder")
-				size = "<folder>";
-			else
-				size = (*iter)->GetAttr("size");
+			gtk_list_store_clear(GTK_LIST_STORE(c->folder_store));
+			std::list <WokXMLTag *>::iterator iter;
+			for( iter = tag->GetTagList("item").begin() ; iter != tag->GetTagList("item").end() ; iter++)
+			{
+				std::string size;
+				if( (*iter)->GetAttr("type") == "folder")
+					size = "<folder>";
+				else
+					size = (*iter)->GetAttr("size");
+					
+				GtkTreeIter titer;
 				
-			GtkTreeIter titer;
-			
-			gtk_list_store_append (c->folder_store, &titer);
-			gtk_list_store_set (c->folder_store, &titer, 
-										0, (*iter)->GetAttr("name").c_str(), 
-										1, size.c_str(), 
-										2, (*iter)->GetAttr("id").c_str(), -1 );
+				gtk_list_store_append (c->folder_store, &titer);
+				gtk_list_store_set (c->folder_store, &titer, 
+											0, (*iter)->GetAttr("name").c_str(), 
+											1, size.c_str(), 
+											2, (*iter)->GetAttr("id").c_str(), -1 );
+			}
 		}
 	}
 }
@@ -256,16 +279,6 @@ FileListWid::Auth(WokXMLTag *tag)
 		file.AddAttr("lsid", lsid);
 		file.AddAttr("name", "/tmp/filelist.xml.gz");	
 	}
-	/*
-	if(  len(xml.GetTagList("file")) == 0 ):
-		print "no file tag"
-		global id
-		id += 1
-		
-		file = xml.AddTagName("file")
-		file.AddAttr("lsid", "jep96.autoreciver-" + str(id))
-		file.AddAttr("name", "/home/nedo/test.mp3")
-	*/
 
 	return 1;
 }

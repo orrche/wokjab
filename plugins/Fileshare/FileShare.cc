@@ -265,6 +265,9 @@ FileShare::PopulateTree(WokXMLTag *tag, std::string dir, std::string virt_dir)
 	struct dirent   *dit;
 	char *zErrMsg = 0;
 
+	if ( g_utf8_validate(dir.c_str(), -1, NULL) == FALSE)
+		return;
+	
 	if ((dip = opendir(dir.c_str())) == NULL)
 	{
   		perror("opendir");
@@ -277,7 +280,9 @@ FileShare::PopulateTree(WokXMLTag *tag, std::string dir, std::string virt_dir)
 		std::stringstream sizestr;
 		if ( file[0] == '.' )
 			continue;
-			
+		if ( g_utf8_validate(file.c_str(), -1, NULL) == FALSE)
+			continue;
+		
 		struct	stat	sbuf;
 		stat((dir + '/' + file).c_str(),&sbuf);
 
@@ -291,11 +296,13 @@ FileShare::PopulateTree(WokXMLTag *tag, std::string dir, std::string virt_dir)
 		}
 		else if ( sbuf.st_mode & S_IFREG )
 		{
+			sizestr << sbuf.st_size;
+
 			WokXMLTag &item = tag->AddTag("item");
 			item.AddAttr("id", dir + '/' + file);
 			item.AddAttr("name", file);
 			item.AddAttr("type", "file");
-			sizestr << sbuf.st_size;
+			item.AddAttr("size", sizestr.str());
 		}
 		
 		std::string qdir = dir;
@@ -501,10 +508,10 @@ FileShare::ListRequest(WokXMLTag *tag)
 		/* The callback is changing the filetosend variable */
 		int rc = sqlite3_exec(db, query.c_str(), (int(*)(void *,int,char**,char**)) FileShare::sql_callback, this, &zErrMsg);
 
-  if( rc!=SQLITE_OK ){
-    fprintf(stderr, "SQL error: %s\n", zErrMsg);
-    sqlite3_free(zErrMsg);
-  }
+		if( rc!=SQLITE_OK ){
+		fprintf(stderr, "SQL error: %s\n", zErrMsg);
+		sqlite3_free(zErrMsg);
+		}
 		if ( filetosend != "" )
 		{
 			WokXMLTag send(NULL, "send");
@@ -512,6 +519,7 @@ FileShare::ListRequest(WokXMLTag *tag)
 			send.AddAttr("session", tag->GetAttr("session"));
 			send.AddAttr("name", filetosend);
 			send.AddAttr("sid", sid.str());
+			send.AddAttr("proxy_type", "auto");
 			wls->SendSignal("Jabber Stream File Send", send);
 		}
 //		EXP_SIGHOOK("Jabber Stream File Incomming " + sid.str(), &FileShare::IncommingFilelist, 1000);

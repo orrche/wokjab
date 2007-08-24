@@ -32,8 +32,7 @@ d_path(d_path)
 	if ( (!d_path.empty()) && (d_path[d_path.size()-1] != '/') )
 		this->d_path += "/";
 	
-	std::stringstream str;
-	lsid = str.str();
+	lsid = "";
 	xml = new WokXMLTag(msg);
 	EXP_SIGHOOK("Jabber XML IQ ID " + msg.GetFirstTag("iq").GetAttr("id"), &File::FileResponse, 1000);
 }
@@ -78,6 +77,8 @@ File::Finished(WokXMLTag *tag)
 int
 File::Incomming(WokXMLTag *tag)
 {
+	lsid = tag->GetFirstTag("filetransfear").GetAttr("lsid");
+	
 	WokXMLTag msg(NULL, "message");
 	msg.AddAttr("session", tag->GetAttr("session"));
 	WokXMLTag &iq = msg.AddTag("iq");

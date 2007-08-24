@@ -82,7 +82,7 @@ DownloadFolder::GetFiles(std::string path, WokXMLTag *tag)
 int
 DownloadFolder::Finished(WokXMLTag *tag)
 {		
-	if ( tag->GetAttr("sid") == sid)
+	if ( tag->GetAttr("sid") == f->lsid)
 	{
 		list.pop_front();
 		if( list.begin() == list.end() )
@@ -111,15 +111,11 @@ DownloadFolder::DownloadFile(std::vector<std::string> vect)
 			
 			if ( vect[1].find("/") != std::string::npos )
 			{
-				File *f;
 				f = new File(wls, msg, vect[1].substr(vect[1].rfind("/") + 1), vect[1].substr(0,vect[1].rfind("/")));
-				sid = f->lsid;
 			}
 			else
 			{
-				File *f;
 				f = new File(wls, msg, vect[1].substr(vect[1].rfind("/") + 1),"");
-				sid = f->lsid;
 			}
 }
 

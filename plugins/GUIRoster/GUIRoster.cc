@@ -74,8 +74,7 @@ GUIRoster::CreateWid()
                                              "markup", TEXT_COLUMN);
 																						 
 	gtk_tree_view_column_set_min_width(text_column, 1);
-	gtk_tree_view_append_column (GTK_TREE_VIEW (glade_xml_get_widget(xml,"view_roster")),
-				     GTK_TREE_VIEW_COLUMN (text_column));		 
+	gtk_tree_view_append_column (GTK_TREE_VIEW (glade_xml_get_widget(xml,"view_roster")), GTK_TREE_VIEW_COLUMN (text_column));		 
 
 	post_pix_column = gtk_tree_view_column_new();
 	renderer_pix = gtk_cell_renderer_pixbuf_new ();
