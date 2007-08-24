@@ -35,6 +35,7 @@
 FileListWid::FileListWid(WLSignal *wls, WokXMLTag *tag, WokXMLTag *config) : WLSignalInstance(wls),
 config ( new WokXMLTag (*config))
 {
+	lsid = tag->GetFirstTag("filetransfear").GetAttr("lsid");
 	sid = tag->GetFirstTag("iq").GetFirstTag("si").GetAttr("id");
 	filelist = new WokXMLTag (NULL, "filelist");
 	session = tag->GetAttr("session");
@@ -274,7 +275,6 @@ FileListWid::Auth(WokXMLTag *tag)
 {
 	if ( tag->GetAttr("sid") == sid )
 	{
-		lsid = "local:" + sid;
 		WokXMLTag &file = tag->AddTag("file");
 		file.AddAttr("lsid", lsid);
 		file.AddAttr("name", "/tmp/filelist.xml.gz");	

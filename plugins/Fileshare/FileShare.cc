@@ -637,7 +637,6 @@ int
 FileShare::View(WokXMLTag *tag)
 {
 /*
-
 	<iq to='apa@jabber.org' type='get'>
 	<fileshare xmlns="http://sf.wokjab.net/fileshare" />
 	</iq>
