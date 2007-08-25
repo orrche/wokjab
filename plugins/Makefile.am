@@ -66,6 +66,7 @@ SUBDIRS= \
 	History.SQLite \
 	jep0118-UserTune \
 	jep0060-PublishSubscribe \
-	jep0163-PEP
+	jep0163-PEP \
+	CrashManager
 
 

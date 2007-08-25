@@ -118,6 +118,7 @@ AC_OUTPUT(Makefile \
 	plugins/DisplayGtk/Makefile  \
 	plugins/DisplayGtk/src/Makefile  \
 	plugins/Config/Makefile  \
+        plugins/CrashManager/Makefile  \
 	plugins/Authorization/Makefile  \
 	plugins/AutoPresence/Makefile  \
         plugins/AutoJoinGroupChat/Makefile  \

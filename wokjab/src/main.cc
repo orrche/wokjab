@@ -169,5 +169,7 @@ main (int argc, char **argv)
 	wls->SendSignal("Config XML Save", &saveconfig);
 	
 	
+	std::cout << "Clean exit.." << std::endl;
+	
 	return (0);
 }
