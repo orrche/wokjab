@@ -98,11 +98,18 @@ load_plugin_list(WLSignal *wls, GSList * plugins)
 	}
 }
 
+void
+todelo()
+{
+	std::cout << "Exiting this nightmare..." << std::endl;	
+}
+
 int
 main (int argc, char **argv)
 {
 	WLSignal *wls;
-
+	
+	g_atexit (todelo);
 	gtk_init(&argc, &argv);
 	WokLib sj;
 	wls = &sj.wls_main;
@@ -160,16 +167,19 @@ main (int argc, char **argv)
 	{
 		Roster roster(&sj.wls_main);
 		GUIWindow win(&sj.wls_main);
-
+		
+		{
+			WokXMLTag start("start");
+			wls->SendSignal("Program Start", start);
+		}
 		gtk_main();
 		delete pl;
 	}
 	
 	WokXMLTag saveconfig(NULL, "save");
 	wls->SendSignal("Config XML Save", &saveconfig);
-	
-	
-	std::cout << "Clean exit.." << std::endl;
+	WokXMLTag exit("exit");
+	wls->SendSignal("Program Exit", exit);
 	
 	return (0);
 }
