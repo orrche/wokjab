@@ -24,7 +24,9 @@
 
 #include "c-m-g-u-i.hpp"
 
-CMGUI::CMGUI(WLSignal *wls, CrashManager *parant)::WLSignalInstance(wls), 
+#include <dirent.h>
+
+CMGUI::CMGUI(WLSignal *wls, CrashManager *parant) : WLSignalInstance(wls), 
 parant(parant)
 {
 	config = new WokXMLTag(NULL, "NULL");
@@ -72,7 +74,7 @@ parant(parant)
 	DIR             *dip;
 	struct dirent   *dit;
     
-	std::string filename = path;
+	std::string filename = std::string(g_get_home_dir()) + "/.wokjab";
 
 	if ((dip = opendir(filename.c_str())) == NULL)
 	{
@@ -84,7 +86,7 @@ parant(parant)
 	{
 		std::string file = dit->d_name;
 
-		if ( file.endswith(".log") )
+		if ( file.substr(file.size() - 4 ) == ".log" )
 			std::cout << "file:" << file << std::endl;
 	}
 

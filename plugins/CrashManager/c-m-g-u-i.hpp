@@ -30,6 +30,8 @@
 #endif
 
 #include <Woklib/WokLib.h>
+#include <glade/glade.h>
+#include <gtk/gtk.h>
 
 using namespace Woklib;
 
@@ -47,6 +49,8 @@ public:
 protected:
 	CrashManager *parant;
 	WokXMLTag *config;
+	GladeXML *xml;
+	GtkListStore *sessionmenu;
 private:
 
 };
