@@ -10,7 +10,9 @@ lib_LTLIBRARIES = \
 libcrashmanager_la_SOURCES = \
 	main.cc             \
 	crash-manager.hpp             \
-	crash-manager.cpp
+	crash-manager.cpp             \
+	c-m-g-u-i.hpp             \
+	c-m-g-u-i.cpp
 
 libcrashmanager_la_LDFLAGS = \
 	`pkg-config libglade-2.0 gtk+-2.0 --libs` -lwoklib

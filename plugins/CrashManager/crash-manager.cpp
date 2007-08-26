@@ -45,6 +45,8 @@ CrashManager::CrashManager(WLSignal *wls) : WoklibPlugin(wls)
 	exiting_cleanly = false;
 	EXP_SIGHOOK("Display Signal", &CrashManager::Sig, 1000);
 	EXP_SIGHOOK("Program Exit", &CrashManager::Exit, 1000);
+	EXP_SIGHOOK("GetMenu", &CrashManager::Menu, 1000);
+	EXP_SIGHOOK("Jabber GUI CrashManager OpenWid", &CrashManager::Wid, 1000);
 	
 	std::stringstream fn;
 	fn << g_get_home_dir() << "/.wokjab/sig." << getpid() << ".log";
@@ -69,6 +71,21 @@ CrashManager::~CrashManager()
 	unlink(filename.c_str());
 }
 
+int
+CrashManager::Menu(WokXMLTag *tag)
+{
+	WokXMLTag &item = tag->AddTag("item");
+	item.AddAttr("name", "Crash Manager");
+	item.AddAttr("signal", "Jabber GUI CrashManager OpenWid");
+	return 1;
+}
+
+int
+CrashManager::Wid(WokXMLTag *tag)
+{
+	new CMGUI(wls, this);
+	return 1;
+}
 
 int
 CrashManager::Exit(WokXMLTag *tag)

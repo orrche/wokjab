@@ -22,39 +22,33 @@
  * 	Boston, MA  02110-1301, USA.
  */
 
-#ifndef _CRASH_MANAGER_HPP_
-#define _CRASH_MANAGER_HPP_
+#ifndef _C_M_G_U_I_HPP_
+#define _C_M_G_U_I_HPP_
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
 
 #include <Woklib/WokLib.h>
-#include <fstream>
 
 using namespace Woklib;
 
-class CrashManager;
+class CMGUI;
 
-#include "c-m-g-u-i.hpp"
+#include "crash-manager.hpp"
 
-class CrashManager: public WoklibPlugin 
+class CMGUI: public WLSignalInstance 
 {
 public:
-	CrashManager(WLSignal *wls);
-	~CrashManager();
+	CMGUI(WLSignal *wls, CrashManager *parant);
+	~CMGUI();
 	
-	int Sig(WokXMLTag *tag);
-	int Exit(WokXMLTag *tag);
-	int Wid(WokXMLTag *tag);
-	int Menu(WokXMLTag *tag);
-	
+	int ReadConfig(WokXMLTag *tag);
 protected:
-	std::string filename;
-	std::ofstream file;
-	bool exiting_cleanly;
+	CrashManager *parant;
+	WokXMLTag *config;
 private:
 
 };
 
-#endif // _CRASH_MANAGER_HPP_
+#endif // _C_M_G_U_I_HPP_
