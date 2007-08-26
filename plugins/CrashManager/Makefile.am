@@ -1,6 +1,10 @@
 libdir = $(prefix)/lib/woklib-plugins/normal
 
 
+datadir = $(prefix)/lib/woklib/glade
+pkgdata_DATA = \
+        cmgui.glade
+
 AM_CXXFLAGS =\
 	`pkg-config libglade-2.0 gtk+-2.0 --cflags` 
 

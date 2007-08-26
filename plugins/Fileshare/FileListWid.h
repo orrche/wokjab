@@ -47,7 +47,7 @@ class FileListWid : public WLSignalInstance
 		
 		static void OpenFolder (GtkTreeView *tree_view, FileListWid *c);
 		static void Download(GtkButton *button, FileListWid *c);
-		
+		static void SelectedDownload(GtkTreePath *path, FileListWid *c);
 	protected:
 		WokXMLTag *filelist;
 		WokXMLTag *config;

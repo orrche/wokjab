@@ -98,18 +98,11 @@ load_plugin_list(WLSignal *wls, GSList * plugins)
 	}
 }
 
-void
-todelo()
-{
-	std::cout << "Exiting this nightmare..." << std::endl;	
-}
-
 int
 main (int argc, char **argv)
 {
 	WLSignal *wls;
 	
-	g_atexit (todelo);
 	gtk_init(&argc, &argv);
 	WokLib sj;
 	wls = &sj.wls_main;

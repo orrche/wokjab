@@ -46,6 +46,11 @@ public:
 	~CMGUI();
 	
 	int ReadConfig(WokXMLTag *tag);
+	
+	static void ChatButton(GtkButton *widget, CMGUI *c);
+	static void SendButton(GtkButton *widget, CMGUI *c);
+	static gboolean Delete( GtkWidget *widget, GdkEvent *event, CMGUI *c);
+	
 protected:
 	CrashManager *parant;
 	WokXMLTag *config;

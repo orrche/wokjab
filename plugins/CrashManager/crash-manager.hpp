@@ -49,10 +49,13 @@ public:
 	int Wid(WokXMLTag *tag);
 	int Menu(WokXMLTag *tag);
 	
+	void Remove(CMGUI *wid);
 protected:
 	std::string filename;
 	std::ofstream file;
 	bool exiting_cleanly;
+	
+	std::list <CMGUI*> widgets;
 private:
 
 };

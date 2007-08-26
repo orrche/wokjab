@@ -69,6 +69,12 @@ CrashManager::~CrashManager()
 	if ( file )
 		file.close();
 	unlink(filename.c_str());
+	
+	std::list <CMGUI*>::iterator iter;
+	for ( iter = widgets.begin() ; iter != widgets.end() ; iter++)
+	{
+		delete *iter;		
+	}
 }
 
 int
@@ -83,8 +89,19 @@ CrashManager::Menu(WokXMLTag *tag)
 int
 CrashManager::Wid(WokXMLTag *tag)
 {
-	new CMGUI(wls, this);
+	widgets.push_back(new CMGUI(wls, this));
 	return 1;
+}
+
+void
+CrashManager::Remove(CMGUI *wid)
+{
+	std::list <CMGUI*>::iterator iter;
+	if ( ( iter = std::find(widgets.begin() , widgets.end() , wid) ) != widgets.end() )
+	{
+		widgets.erase(iter);
+		delete wid;
+	}
 }
 
 int

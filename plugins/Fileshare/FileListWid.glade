@@ -74,8 +74,7 @@
             <child>
               <widget class="GtkButton" id="download">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">gtk-media-play</property>
-                <property name="use_stock">True</property>
+                <property name="label" translatable="yes">Download</property>
               </widget>
             </child>
             <child>

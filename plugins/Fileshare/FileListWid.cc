@@ -111,66 +111,77 @@ FileListWid::~FileListWid()
 }
 
 void
-FileListWid::Download(GtkButton *button, FileListWid *c) 
+FileListWid::SelectedDownload(GtkTreePath *path, FileListWid *c)
 {
-	GtkTreeSelection *selection;
 	GtkTreeIter iter;
+	gtk_tree_model_get_iter(GTK_TREE_MODEL(c->folder_store), &iter,path);
 	
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (glade_xml_get_widget(c->xml,"folder")));
+	gchar *id;
+	gchar *name;
+	gchar *size;
+	gtk_tree_model_get(GTK_TREE_MODEL(c->folder_store), &iter, 0, &name, 1, &size, 2, &id, -1);
 
-	if(gtk_tree_selection_get_selected(selection,  NULL, &iter) != FALSE)
+	if ( !strcmp(size, "<folder>" ) )
 	{
-		gchar *id;
-		gchar *name;
-		gchar *size;
-		gtk_tree_model_get(GTK_TREE_MODEL(c->folder_store), &iter, 0, &name, 1, &size, 2, &id, -1);
+		GtkTreeSelection *selection;
+		GtkTreeIter iter;
+		
+		selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (glade_xml_get_widget(c->xml,"tree")));
 
-		if ( !strcmp(size, "<folder>" ) )
+		if(gtk_tree_selection_get_selected(selection,  NULL, &iter) != FALSE)
 		{
-			GtkTreeSelection *selection;
-			GtkTreeIter iter;
+			WokXMLTag *tag;
+			gtk_tree_model_get(GTK_TREE_MODEL(c->path_store), &iter, 1, &tag, -1);
 			
-			selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (glade_xml_get_widget(c->xml,"tree")));
-
-			if(gtk_tree_selection_get_selected(selection,  NULL, &iter) != FALSE)
+			std::list <WokXMLTag *>::iterator titer;
+			
+			for( titer = tag->GetTagList("item").begin(); titer != tag->GetTagList("item").end() ; titer++)
 			{
-				WokXMLTag *tag;
-				gtk_tree_model_get(GTK_TREE_MODEL(c->path_store), &iter, 1, &tag, -1);
-				
-				std::list <WokXMLTag *>::iterator titer;
-				
-				for( titer = tag->GetTagList("item").begin(); titer != tag->GetTagList("item").end() ; titer++)
+				if ( (*titer)->GetAttr("name").substr((*titer)->GetAttr("name").rfind("/")+1) == name )
 				{
-					if ( (*titer)->GetAttr("name").substr((*titer)->GetAttr("name").rfind("/")+1) == name )
-					{
-						new DownloadFolder(c->wls, *titer, c->jid, c->session, c->config->GetFirstTag("download_path").GetAttr("data"));
-					}
+					new DownloadFolder(c->wls, *titer, c->jid, c->session, c->config->GetFirstTag("download_path").GetAttr("data"));
 				}
 			}
 		}
-		else
-		{
-			if ( strlen(id) == 0 ) 
-				return;
-		
-			WokXMLTag msg(NULL, "message");
-			msg.AddAttr("session", c->session);
-			WokXMLTag &iq = msg.AddTag("iq");
-			iq.AddAttr("to", c->jid);
-			iq.AddAttr("type", "get");
-			WokXMLTag &fileshare = iq.AddTag("fileshare");
-			fileshare.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
-			WokXMLTag &file = fileshare.AddTag("file");
-			file.AddAttr("id", id);
-			
-			c->wls->SendSignal("Jabber XML IQ Send", msg);
-			
-			new File(c->wls, msg, name, c->config->GetFirstTag("download_path").GetAttr("data"));
-		}
-		g_free(id);
-		g_free(name);
-		g_free(size);
 	}
+	else
+	{
+		if ( strlen(id) == 0 ) 
+			return;
+	
+		WokXMLTag msg(NULL, "message");
+		msg.AddAttr("session", c->session);
+		WokXMLTag &iq = msg.AddTag("iq");
+		iq.AddAttr("to", c->jid);
+		iq.AddAttr("type", "get");
+		WokXMLTag &fileshare = iq.AddTag("fileshare");
+		fileshare.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
+		WokXMLTag &file = fileshare.AddTag("file");
+		file.AddAttr("id", id);
+		
+		c->wls->SendSignal("Jabber XML IQ Send", msg);
+		
+		new File(c->wls, msg, name, c->config->GetFirstTag("download_path").GetAttr("data"));
+	}
+	g_free(id);
+	g_free(name);
+	g_free(size);
+	
+}
+
+void
+FileListWid::Download(GtkButton *button, FileListWid *c) 
+{
+	GtkTreeSelection *selection;
+	GList *list;
+	GtkTreeModel *model;
+	
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (glade_xml_get_widget(c->xml,"folder")));
+	model = GTK_TREE_MODEL(c->folder_store);
+	list = gtk_tree_selection_get_selected_rows(selection, &model);
+	g_list_foreach(list, (GFunc)(FileListWid::SelectedDownload), c);
+	g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
+	g_list_free (list);
 }
 
 void

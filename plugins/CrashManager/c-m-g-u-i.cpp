@@ -23,8 +23,9 @@
  */
 
 #include "c-m-g-u-i.hpp"
-
+#include <sstream>
 #include <dirent.h>
+#include <fstream>
 
 CMGUI::CMGUI(WLSignal *wls, CrashManager *parant) : WLSignalInstance(wls), 
 parant(parant)
@@ -57,6 +58,8 @@ parant(parant)
 	
 	std::list <WokXMLTag *>::iterator iter;
 	
+
+	
 	for( iter = querytag.GetTagList("item").begin() ; iter != querytag.GetTagList("item").end() ; iter++)
 	{
 		WokXMLTag querytag(NULL, "query");
@@ -71,37 +74,85 @@ parant(parant)
 						1, (*iter)->GetAttr("name").c_str(), -1);
 	}
 	
-	DIR             *dip;
-	struct dirent   *dit;
-    
-	std::string filename = std::string(g_get_home_dir()) + "/.wokjab";
-
-	if ((dip = opendir(filename.c_str())) == NULL)
+	
+	if ( querytag.GetTagList("item").empty() )
 	{
-    	perror("opendir");
-		return;
+		woklib_error(wls, "You need to be connected");	
 	}
-
-	while ((dit = readdir(dip)) != NULL)
+	else
 	{
-		std::string file = dit->d_name;
+		DIR             *dip;
+		struct dirent   *dit;
+		
+		std::string filename = std::string(g_get_home_dir()) + "/.wokjab";
 
-		if ( file.substr(file.size() - 4 ) == ".log" )
-			std::cout << "file:" << file << std::endl;
-	}
+		if ((dip = opendir(filename.c_str())) == NULL)
+		{
+			perror("opendir");
+			return;
+		}
 
-	if (closedir(dip) == -1)
-	{
-		perror("closedir");
-		return;
+		std::string message;
+		std::stringstream my_log_file;
+		my_log_file << "sig." << getpid() << ".log";
+		
+		while ((dit = readdir(dip)) != NULL)
+		{
+			std::string file = dit->d_name;
+			if ( my_log_file.str() == file )
+				continue;
+			if ( file.size() > 4 )
+			{
+				if ( file.substr(file.size() - 4 ) == ".log" && file.substr(0,4) == "sig.")
+				{
+					std::ifstream f;
+					f.open((filename + "/" + file).c_str());
+					if ( f.is_open() )
+					{
+						while(! f.eof() )
+						{
+							std::string line;
+							std::getline(f,line);
+							message+= line+ "\n";
+						}
+					}
+					
+					message += "\n\n\n";
+					unlink((filename + "/" + file).c_str());
+				}
+			}
+		}
+		
+		gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(glade_xml_get_widget(xml, "debug_data"))), message.c_str(), -1);
+
+		if (closedir(dip) == -1)
+		{
+			perror("closedir");
+			return;
+		}
+		
+		g_signal_connect (G_OBJECT (glade_xml_get_widget(xml, "send")), "clicked",
+			G_CALLBACK (CMGUI::SendButton), this);	
+		g_signal_connect (G_OBJECT (glade_xml_get_widget(xml, "chat")), "clicked",
+			G_CALLBACK (CMGUI::ChatButton), this);	
 	}
+	g_signal_connect (G_OBJECT (glade_xml_get_widget(xml, "window")), "delete-event", 
+		G_CALLBACK (CMGUI::Delete), this);
+	gtk_widget_show_all(glade_xml_get_widget(xml, "window"));
 }
 
 CMGUI::~CMGUI()
 {
+	gtk_widget_destroy(glade_xml_get_widget(xml, "window"));
 	
 	
-	
+}
+
+gboolean
+CMGUI::Delete( GtkWidget *widget, GdkEvent *event, CMGUI *c)
+{
+	c->parant->Remove(c);
+	return TRUE;
 }
 
 int
@@ -110,4 +161,76 @@ CMGUI::ReadConfig(WokXMLTag *tag)
 	delete config;
 	config = new WokXMLTag(tag->GetFirstTag("config"));
 	return 1;
+}
+
+void
+CMGUI::SendButton(GtkButton *widget, CMGUI *c)
+{
+	WokXMLTag mesgtag("message");
+	
+	GtkTreeIter treeiter;
+	if( gtk_combo_box_get_active_iter(GTK_COMBO_BOX(glade_xml_get_widget(c->xml, "session")), &treeiter) != TRUE )
+	{
+		return;
+	}
+		
+	gchar *session;
+	gtk_tree_model_get (GTK_TREE_MODEL(c->sessionmenu), &treeiter, 1, &session, -1);
+	
+	WokXMLTag tag(NULL, "dialog");
+	tag.AddAttr("jid", "nedo@jabber.se");
+	tag.AddAttr("session", session);
+	c->wls->SendSignal("Jabber GUI MessageDialog Open", &tag);
+	
+	mesgtag.AddAttr("session", session);
+	g_free (session);
+	
+	GtkTextIter start_iter, end_iter;
+	gtk_text_buffer_get_start_iter(gtk_text_view_get_buffer(GTK_TEXT_VIEW(glade_xml_get_widget(c->xml, "debug_data"))), &start_iter);
+	gtk_text_buffer_get_end_iter(gtk_text_view_get_buffer(GTK_TEXT_VIEW(glade_xml_get_widget(c->xml, "debug_data"))), &end_iter);
+
+	std::string debug_msg = gtk_text_buffer_get_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(glade_xml_get_widget(c->xml, "debug_data"))),&start_iter, &end_iter, false);
+	
+	gtk_text_buffer_get_start_iter(gtk_text_view_get_buffer(GTK_TEXT_VIEW(glade_xml_get_widget(c->xml, "comment"))), &start_iter);
+	gtk_text_buffer_get_end_iter(gtk_text_view_get_buffer(GTK_TEXT_VIEW(glade_xml_get_widget(c->xml, "comment"))), &end_iter);
+
+	std::string comment_msg = gtk_text_buffer_get_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(glade_xml_get_widget(c->xml, "comment"))),&start_iter, &end_iter, false);
+	
+	
+	WokXMLTag &message = mesgtag.AddTag("message");
+	message.AddAttr("to","nedo@jabber.se");
+	WokXMLTag &body = message.AddTag("body");
+	body.AddText("Wokjab Crash Debug message ..\n");
+	body.AddText(debug_msg.c_str());
+	body.AddText("Comment:\n");
+	body.AddText(comment_msg.c_str());
+	body.AddText("\n");
+	if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(glade_xml_get_widget(c->xml, "response_allowed"))) == TRUE )
+		body.AddText("Responce allowed");
+	else
+		body.AddText("Responce denied");
+		
+	c->wls->SendSignal("Jabber XML Message Send", mesgtag);
+	
+	c->parant->Remove(c);
+}
+
+void
+CMGUI::ChatButton(GtkButton *widget, CMGUI *c)
+{
+	GtkTreeIter treeiter;
+	if( gtk_combo_box_get_active_iter(GTK_COMBO_BOX(glade_xml_get_widget(c->xml, "session")), &treeiter) != TRUE )
+	{
+		return;
+	}
+		
+	gchar *session;
+	gtk_tree_model_get (GTK_TREE_MODEL(c->sessionmenu), &treeiter, 1, &session, -1);
+	
+	WokXMLTag tag(NULL, "dialog");
+	tag.AddAttr("jid", "nedo@jabber.se");
+	tag.AddAttr("session", session);
+	c->wls->SendSignal("Jabber GUI MessageDialog Open", &tag);
+	
+	g_free (session);
 }

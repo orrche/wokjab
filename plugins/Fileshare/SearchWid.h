@@ -49,6 +49,8 @@ class SearchWid : public WLSignalInstance
 		
 		static void Search(GtkButton *button, SearchWid *c);
 		static gboolean popup_menu(GtkTreeView *tree_view, GdkEventButton *event, SearchWid *c);
+		static void Download(GtkButton *button, SearchWid *c);
+		static void SelectedDownload(GtkTreePath *path, SearchWid *c);
 	protected:
 		GladeXML *xml;
 		GtkListStore *search_store;

@@ -23,7 +23,6 @@
 
 #include "SearchWid.h"
 
-
 SearchWid::SearchWid(WLSignal *wls) : WLSignalInstance(wls)
 {
 	xml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/SearchWid.glade", NULL, NULL);
@@ -59,7 +58,8 @@ SearchWid::SearchWid(WLSignal *wls) : WLSignalInstance(wls)
 				G_CALLBACK (SearchWid::popup_menu), this);
 	g_signal_connect (G_OBJECT (glade_xml_get_widget(xml,"find_button")), "clicked",
 				G_CALLBACK (SearchWid::Search), this);
-				
+	g_signal_connect (G_OBJECT (glade_xml_get_widget(xml,"download_button")), "clicked",
+				G_CALLBACK (SearchWid::Download), this);
 	EXP_SIGHOOK("Jabber FileShare FileMenu", &SearchWid::Menu, 1000);
 }
 
@@ -81,6 +81,60 @@ SearchWid::Menu(WokXMLTag *tag)
 		item = & tag->AddTag("item");
 	item->AddAttr("name", "----");
 	return 1;
+}
+
+
+void
+SearchWid::SelectedDownload(GtkTreePath *path, SearchWid *c)
+{
+	/*
+	GtkTreeIter iter;
+	gtk_tree_model_get_iter(GTK_TREE_MODEL(c->search_store), &iter,path);
+	
+	gchar *id;
+	gchar *name;
+	gchar *size;
+	gtk_tree_model_get(GTK_TREE_MODEL(c->search_store), &iter, 0, &name, 1, &size, 2, &id, -1);
+
+	if ( strlen(id) == 0 ) 
+		return;
+
+	WokXMLTag msg(NULL, "message");
+	msg.AddAttr("session", c->session);
+	WokXMLTag &iq = msg.AddTag("iq");
+	iq.AddAttr("to", c->jid);
+	iq.AddAttr("type", "get");
+	WokXMLTag &fileshare = iq.AddTag("fileshare");
+	fileshare.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
+	WokXMLTag &file = fileshare.AddTag("file");
+	file.AddAttr("id", id);
+	
+	c->wls->SendSignal("Jabber XML IQ Send", msg);
+	
+	new File(c->wls, msg, name, c->config->GetFirstTag("download_path").GetAttr("data"));
+	
+	g_free(id);
+	g_free(name);
+	g_free(size);
+	*/
+}
+
+void
+SearchWid::Download(GtkButton *button, SearchWid *c) 
+{
+	return;
+		
+	// This is finnished but the foreach function is not so for now do nothing here.
+	GtkTreeSelection *selection;
+	GList *list;
+	GtkTreeModel *model;
+	
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (glade_xml_get_widget(c->xml,"resultview")));
+	model = GTK_TREE_MODEL(c->search_store);
+	list = gtk_tree_selection_get_selected_rows(selection, &model);
+	g_list_foreach(list, (GFunc)(SearchWid::SelectedDownload), c);
+	g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
+	g_list_free (list);
 }
 
 gboolean
