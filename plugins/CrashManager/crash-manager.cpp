@@ -23,5 +23,77 @@
  */
 
 #include "crash-manager.hpp"
+#include <sys/types.h>
+#include <unistd.h>
+#include <sstream>
+
+#include <gtk/gtk.h>
+
+namespace sig_linux_signal
+{
+	#include <signal.h>
+}
+
+// Hope this call is threadsafe now 
+void serial_handler (int status) {
+	gtk_main_quit();
+}
 
 
+CrashManager::CrashManager(WLSignal *wls) : WoklibPlugin(wls)
+{
+	exiting_cleanly = false;
+	EXP_SIGHOOK("Display Signal", &CrashManager::Sig, 1000);
+	EXP_SIGHOOK("Program Exit", &CrashManager::Exit, 1000);
+	
+	std::stringstream fn;
+	fn << g_get_home_dir() << "/.wokjab/sig." << getpid() << ".log";
+	filename = fn.str();
+	file.open(filename.c_str(), std::ios::out);
+	     
+	
+	struct sig_linux_signal::sigaction saio;      // set the serial interrupt handler
+	saio.sa_handler = serial_handler;      // to this function
+	sig_linux_signal::sigemptyset(&saio.sa_mask);      // clear existing settings
+	saio.sa_flags = 0;      // make sure sa_flags is cleared
+	saio.sa_restorer = NULL;      // no restorer
+	sigaction(SIGHUP, &saio, NULL);      // apply new settings
+	sigaction(SIGTERM, &saio, NULL);
+}
+
+
+CrashManager::~CrashManager()
+{
+	if ( file )
+		file.close();
+	unlink(filename.c_str());
+}
+
+
+int
+CrashManager::Exit(WokXMLTag *tag)
+{
+	exiting_cleanly = true;
+	file.close();
+	unlink(filename.c_str());
+	return 1;
+}
+
+int
+CrashManager::Sig(WokXMLTag *tag)
+{
+	if ( exiting_cleanly )
+		return 1;
+	if ( tag->GetAttr("level") == "0")
+	{
+		file.close();
+		file.open(filename.c_str(), std::ios::out);
+	}
+	
+	for( int n = atoi(tag->GetAttr("level").c_str()) ; n ; n-- )
+		file.write("  ",2);
+	file.write(tag->GetAttr("name").c_str(), tag->GetAttr("name").size());
+	file.write("\n",1);
+	file.flush();
+	return 1;
+}

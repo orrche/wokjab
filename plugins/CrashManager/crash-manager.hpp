@@ -25,12 +25,27 @@
 #ifndef _CRASH_MANAGER_HPP_
 #define _CRASH_MANAGER_HPP_
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+#include <Woklib/WokLib.h>
+#include <fstream>
+
+using namespace Woklib;
+
 class CrashManager: public WoklibPlugin 
 {
 public:
-
+	CrashManager(WLSignal *wls);
+	~CrashManager();
+	
+	int Sig(WokXMLTag *tag);
+	int Exit(WokXMLTag *tag);
 protected:
-
+	std::string filename;
+	std::ofstream file;
+	bool exiting_cleanly;
 private:
 
 };
