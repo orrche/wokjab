@@ -101,15 +101,14 @@ XML_Output::sendxml(std::string data)
 int
 XML_Output::SocketAvailibule(WokXMLTag *tag)
 {
-	uint bcount;
-	uint br;
+	int bcount;
+	int br;
 	char *str;
 
 	WokXMLTag activetag (NULL, "active");
 	activetag.AddAttr("session", session);
 	wls->SendSignal("Jabber Session IO Active", activetag);
 	wls->SendSignal("Jabber Session IO Active " + session, activetag);
-	
 	
 #ifdef DEBUG
 	{
@@ -121,11 +120,16 @@ XML_Output::SocketAvailibule(WokXMLTag *tag)
 #endif // DEBUG
 
 	bcount = br = 0;
-
 	str =(char *) buffer.c_str();
 
 	if ( ssl )
-		br = SSL_write(ssl, str, buffer.size());
+	{
+		// No idea at all why this is nessesary
+		if ( buffer.size() > 5000 )
+			br = SSL_write(ssl, str, 5000);
+		else
+			br = SSL_write(ssl, str, buffer.size());
+	}
 	else
 		br = send(socket_nr, str, buffer.size() , 0);
 

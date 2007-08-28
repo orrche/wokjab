@@ -46,8 +46,6 @@ void LoadPlugin(WLSignal *wls, std::string filename)
 	WokXMLTag tag(NULL, "add");
 	tag.AddAttr("filename", filename);
 	wls->SendSignal("Woklib Plugin Add", &tag);
-	
-	std::cout << "Tag:" << tag << std::endl;
 }
 
 void
