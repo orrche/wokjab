@@ -22,7 +22,9 @@ libfileshare_la_SOURCES = \
 	Download.cc \
 	Download.h \
 	SearchWid.cc \
-	SearchWid.h
+	SearchWid.h \
+	download-queue.hpp \
+	download-queue.cpp
 	
 libfileshare_la_LDFLAGS = \
 	`pkg-config libglade-2.0 gtk+-2.0 --libs` -lz

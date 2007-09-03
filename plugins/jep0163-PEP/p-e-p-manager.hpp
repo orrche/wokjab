@@ -50,6 +50,7 @@ public:
 	
 	int Menu(WokXMLTag *tag);
 	int DialogOpener(WokXMLTag *tag);
+	int AddRegJID(WokXMLTag *xml);
 	void DialogOpenerRemove( PEP_Widget *gmw );
 			
 	

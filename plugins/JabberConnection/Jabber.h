@@ -30,6 +30,10 @@ class Jabber;
 #include "Connection.h"
 #include "IQAuthManager.h"
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 using namespace Woklib;
 
 class Jabber : public WoklibPlugin
@@ -47,6 +51,9 @@ class Jabber : public WoklibPlugin
 		int ConnectionLost(WokXMLTag *tag);
 		int ServerMenu(WokXMLTag *tag);
 		int ServerMenuLogout(WokXMLTag *tag);
+	
+		virtual std::string GetInfo() {return "Jabber Connection Managment";};
+		virtual std::string GetVersion() {return VERSION;};
 	protected:
 		int session_nr;
 		std::map<std::string, Connection *> connections;

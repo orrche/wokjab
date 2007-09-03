@@ -22,38 +22,41 @@
  * 	Boston, MA  02110-1301, USA.
  */
 
-#ifndef _PUB_SUB_HPP_
-#define _PUB_SUB_HPP_
-
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
+#ifndef _PUB_SUB_MANAGER_HPP_
+#define _PUB_SUB_MANAGER_HPP_
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
+#include <gtk/gtk.h>
+
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
 
+
 using namespace Woklib;
 
-class PubSub: public WoklibPlugin 
+class PubSubManager;
+
+#include "pub-sub-widget.hpp"
+
+class PubSubManager: public WoklibPlugin 
 {
 public:
-	PubSub(WLSignal *wls);
-	~PubSub();
-
-	int Message(WokXMLTag *tag);
+	PubSubManager(WLSignal *wls);
+	~PubSubManager();
 	
-
-	virtual std::string GetInfo() {return "PubSub Handler";};
-	virtual std::string GetVersion() {return VERSION;};
+	int DialogOpener(WokXMLTag *tag);
+	int Menu(WokXMLTag *xml);
+	
+	void DialogOpenerRemove( PubSub_Widget *pepw );
 protected:
-
+	std::list<PubSub_Widget*> window;
+	
 private:
 
 };
 
-#endif // _PUB_SUB_HPP_
+#endif // _PUB_SUB_MANAGER_HPP_

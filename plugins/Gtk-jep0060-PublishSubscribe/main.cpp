@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,44 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-#ifndef __JEP65_H
-#define __JEP65_H
+#include "pub-sub-manager.hpp"
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
-#include <iostream>
-#include <gtk/gtk.h>
-#include "map"
+extern "C" WoklibPlugin *maker(WLSignal *wls) {
+	return reinterpret_cast <WoklibPlugin *> (new PubSubManager(wls));
+}
 
-#include "jep65send.h"
+extern "C" void destroyer(WoklibPlugin *plugin) {
+        delete plugin;
+}
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
 
-using namespace Woklib;
-
-class jep65 : public WoklibPlugin
-{
-	public:
-		jep65(WLSignal *wls);
-		~jep65();
-
-		int Session(WokXMLTag *xml);
-		int Send(WokXMLTag *xml);
-		int DiscoInfo(WokXMLTag *xml);
-		int ReadData(WokXMLTag *xml);
-	
-		virtual std::string GetInfo() {return "jep65 Bytestream handling";};
-		virtual std::string GetVersion() {return VERSION;};
-	private:
-		std::string sport;
-		int serversock;
-		std::map <int, jep65send* > socketfiles;
-	
-};
-
-#endif // __JEP65_H

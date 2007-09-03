@@ -45,6 +45,10 @@ public:
 	int ReadConfig(WokXMLTag *tag);
 	int Message(WokXMLTag *tag);
 	int ActivityLine(WokXMLTag *tag);
+	int GetNode(WokXMLTag *tag);
+	
+	virtual std::string GetInfo() {return "UserTune";};
+	virtual std::string GetVersion() {return VERSION;};
 protected:
 	WokXMLTag *config;
 	WokXMLTag *status;

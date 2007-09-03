@@ -27,6 +27,10 @@
 #include <map>
 #include <vector>
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 class GroupChat;
 
 #include "GroupChatWidget.h"
@@ -49,7 +53,11 @@ class GroupChat : public WoklibPlugin
 		int Message(WokXMLTag *tag);
 		int CloseDialog(WokXMLTag *tag);
 		int Presence(WokXMLTag *tag);
-		
+	
+	
+		virtual std::string GetInfo() {return "Group chat GUI";};
+		virtual std::string GetVersion() {return VERSION;};
+	
 		void Remove(std::string session, std::string jid, const GroupChatWidget *wid);
 	protected:
 		std::map <std::string, std::map<std::string , GroupChatWidget *> > rooms;

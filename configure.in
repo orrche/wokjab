@@ -101,6 +101,7 @@ AC_OUTPUT(Makefile \
 	plugins/GtkTimer/src/Makefile  \
 	plugins/GtkPreference/Makefile  \
 	plugins/GtkMenu/Makefile  \
+        plugins/Gtk-jep0060-PublishSubscribe/Makefile  \
         plugins/GUIRoster/Makefile  \
         plugins/GroupChatBookmark/Makefile  \
         plugins/GroupManager/Makefile  \
@@ -159,6 +160,7 @@ AC_OUTPUT(Makefile \
         plugins/Fileshare/Makefile  \
         plugins/dbus/Makefile  \
         plugins/History.SQLite/Makefile  \
+        plugins/libjep0060-GUI-PublishSubscribe/Makefile  \
 	wokjab/Makefile \
 	wokjab/src/Makefile \
 	wokjab/include/Makefile \

@@ -33,6 +33,10 @@
 
 #include <iostream>
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 using namespace Woklib;
 
 /**
@@ -46,6 +50,9 @@ class EntCap : public WoklibPlugin
 		EntCap(WLSignal *wls);
 		 ~EntCap();
 	
+	
+		virtual std::string GetInfo() {return "EntCap";};
+		virtual std::string GetVersion() {return VERSION;};
 		int Presence(WokXMLTag *tag);
 	protected:
 		

@@ -27,6 +27,10 @@
 #ifndef _VCARDAVATAR_H_
 #define _VCARDAVATAR_H_
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
@@ -48,6 +52,9 @@ class VCardAvatar : public WoklibPlugin
 		int vcard(WokXMLTag *tag);
 		int GetIcon(WokXMLTag *tag);
 		int result(WokXMLTag *tag);
+	
+		virtual std::string GetInfo() {return "VCardAvatars";};
+		virtual std::string GetVersion() {return VERSION;};
 	protected:
 		std::string Base64encode(const unsigned char *buf, int len);
 		

@@ -27,6 +27,10 @@
 #ifndef _SOCKS5_H_
 #define _SOCKS5_H_
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
@@ -41,6 +45,11 @@ class Socks5 : public WoklibPlugin
 		 ~Socks5();
 	
 		int Connect(WokXMLTag *tag);
+	
+	
+	
+		virtual std::string GetInfo() {return "SOCKS5 Handling";};
+		virtual std::string GetVersion() {return VERSION;};
 	protected:
 		int sockid;
 	

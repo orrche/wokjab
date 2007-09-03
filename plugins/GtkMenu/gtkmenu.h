@@ -33,6 +33,10 @@
 
 #include <gtk/gtk.h>
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 using namespace Woklib;
 /**
  * Takes care of generating menus in a nice fasion send it signals to call for 
@@ -49,7 +53,11 @@ class GtkJabberMenu : public WoklibPlugin
 	
 		static gboolean MenuActivate (GtkMenuItem *menuitem,GtkJabberMenu *c);
 		void AddItem(GtkWidget *menu, WokXMLTag *tag, WokXMLTag *data);
-		void CleanDataStore(); 																											/// Responsibule for the cleanup 
+		void CleanDataStore(); 																	/// Responsibule for the cleanup 
+	
+	
+		virtual std::string GetInfo() {return "Menu Widget";};
+		virtual std::string GetVersion() {return VERSION;};
 	protected:
 		std::map <GtkWidget *, std::string> MenuSignals; 														/// To store individual signals for each menu item
 		std::map <GtkWidget *, WokXMLTag *> MenuData; 															/// To store special data to send for each menu item

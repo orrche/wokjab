@@ -49,6 +49,9 @@ public:
 	int Wid(WokXMLTag *tag);
 	int Menu(WokXMLTag *tag);
 	
+	virtual std::string GetInfo() {return "Crash Manager";};
+	virtual std::string GetVersion() {return VERSION;};
+	
 	void Remove(CMGUI *wid);
 protected:
 	std::string filename;

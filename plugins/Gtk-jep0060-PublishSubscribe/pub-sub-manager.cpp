@@ -1,7 +1,7 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
 /*
  * wokjab
- * Copyright (C) Kent 2007 <Gustavsson>
+ * Copyright (C) Kent Gustavsson 2007 <nedo80@gmail.com>
  * 
  * wokjab is free software.
  * 
@@ -22,47 +22,29 @@
  * 	Boston, MA  02110-1301, USA.
  */
 
-#include "p-e-p-manager.hpp"
+#include "pub-sub-manager.hpp"
 
 
-PEPManager::PEPManager(WLSignal *wls) : WoklibPlugin(wls)
+PubSubManager::PubSubManager(WLSignal *wls) : WoklibPlugin(wls)
+{
+	EXP_SIGHOOK("GetMenu", &PubSubManager::Menu, 999);
+	EXP_SIGHOOK("Jabber GUI PubSubManager", &PubSubManager::DialogOpener, 999);
+	
+	
+	
+}
+
+
+PubSubManager::~PubSubManager()
 {
 	
-	EXP_SIGHOOK("GetMenu", &PEPManager::Menu, 999);
-	EXP_SIGHOOK("Jabber GUI PEPManager", &PEPManager::DialogOpener, 999);
-	EXP_SIGHOOK("Jabber PubSub Registration GetJIDs", &PEPManager::AddRegJID, 999);
+	
+	
 }
 
-
-
-PEPManager::~PEPManager()
-{
-	std::list<PEP_Widget*>::iterator iter;
-	for( iter = window.begin() ; iter != window.end() ; iter++)
-	{
-		delete *iter;
-	}
-}
 
 int
-PEPManager::AddRegJID(WokXMLTag *xml)
-{
-	WokXMLTag &item = xml->AddTag("item");
-	
-	WokXMLTag querytag(NULL, "query");
-	WokXMLTag &itemtag = querytag.AddTag("item");
-	itemtag.AddAttr("session", xml->GetAttr("session"));
-	wls->SendSignal("Jabber Connection GetUserData", &querytag);
-	std::string jid = itemtag.GetFirstTag("jid").GetBody();
-	
-	if( jid.find("/") != std::string::npos )
-		jid = jid.substr(0, jid.find("/"));
-	item.AddAttr("jid", jid);
-	return 1;	
-}
-
-int
-PEPManager::Menu(WokXMLTag *xml)
+PubSubManager::Menu(WokXMLTag *xml)
 {
 	
 	std::list <WokXMLTag *>::iterator iter;
@@ -83,26 +65,27 @@ PEPManager::Menu(WokXMLTag *xml)
 	
 	WokXMLTag *tag;
 	tag = &settingstag->AddTag("item");
-	tag->AddAttr("name", "PEP Manager");
-	tag->AddAttr("signal", "Jabber GUI PEPManager");
+	tag->AddAttr("name", "Publish Subscribe");
+	tag->AddAttr("signal", "Jabber GUI PubSubManager");
 	
 	return 1;
 }
 
 
+
 int
-PEPManager::DialogOpener(WokXMLTag *tag)
+PubSubManager::DialogOpener(WokXMLTag *tag)
 {
-	window.push_back( new PEP_Widget(wls, this) );
+	window.push_back( new PubSub_Widget(wls, this) );
 	
 	return 1;
 }
 
 
 void
-PEPManager::DialogOpenerRemove( PEP_Widget *pepw )
+PubSubManager::DialogOpenerRemove( PubSub_Widget *pepw )
 {
-	std::list<PEP_Widget*>::iterator iter;
+	std::list<PubSub_Widget*>::iterator iter;
 	
 	iter = std::find(window.begin(), window.end(), pepw );
 	
@@ -112,6 +95,4 @@ PEPManager::DialogOpenerRemove( PEP_Widget *pepw )
 		window.erase(iter);
 	}
 }
-
-
 

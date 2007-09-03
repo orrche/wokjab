@@ -24,6 +24,9 @@
 #include <Woklib/WokXMLTag.h>
 
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
 
 using namespace Woklib;
 class WLDbus;
@@ -65,6 +68,9 @@ class WLDbus : public WoklibPlugin
 		void DeleteHook(WLDbushook *h);
 		void Hook(std::string signal, std::string path, std::string interface, std::string method, int prio);
 		void UnHook(std::string signal, std::string path, std::string interface, std::string method, int prio);
+	
+		virtual std::string GetInfo() {return "Dbus interface for signals";};
+		virtual std::string GetVersion() {return VERSION;};
 	protected:
 		WLDbus_obj *server;
 		std::list <WLDbushook*> hooklist;

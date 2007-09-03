@@ -67,5 +67,6 @@ SUBDIRS= \
 	jep0118-UserTune \
 	jep0060-PublishSubscribe \
 	jep0163-PEP \
-	CrashManager
+	CrashManager \
+	Gtk-jep0060-PublishSubscribe
 

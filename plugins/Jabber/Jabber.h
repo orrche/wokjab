@@ -29,6 +29,11 @@ class Jabber;
 
 #include "IQHandler.h"
 
+
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 using namespace Woklib;
 
 class Jabber : public WoklibPlugin
@@ -37,6 +42,8 @@ class Jabber : public WoklibPlugin
 		Jabber(WLSignal *wls);
 		 ~Jabber();
 
+		virtual std::string GetInfo() {return "Common Jabber";};
+		virtual std::string GetVersion() {return VERSION;};
 	protected:
 		IQHandler *iq;
 };

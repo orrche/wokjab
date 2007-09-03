@@ -28,6 +28,10 @@
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 using namespace Woklib;
 
 
@@ -39,6 +43,10 @@ class Disco : public WoklibPlugin
 	
 		int RequestInfo(WokXMLTag *);
 		int RequestItem(WokXMLTag *);
+	
+	
+		virtual std::string GetInfo() {return "Disco GUI";};
+		virtual std::string GetVersion() {return VERSION;};
 	protected:
 	
 };

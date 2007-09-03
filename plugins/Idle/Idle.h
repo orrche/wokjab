@@ -33,6 +33,10 @@
 
 #include <map>
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include "IdleSession.h"
 using namespace Woklib;
 
@@ -45,6 +49,10 @@ class Idle : public WoklibPlugin
 			
 		int LoggedOut(WokXMLTag *tag);
 		int SignIn(WokXMLTag *tag);
+	
+		
+		virtual std::string GetInfo() {return "Connection timeout sensor (faliling)";};
+		virtual std::string GetVersion() {return VERSION;};
 	protected:
 		std::map <std::string, IdleSession*> sessions;
 	

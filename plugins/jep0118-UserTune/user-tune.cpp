@@ -32,6 +32,7 @@ UserTune::UserTune(WLSignal *wls) : WoklibPlugin(wls)
 	EXP_SIGHOOK("Jabber UserTune SetTune", &UserTune::SetTune, 1000);
 	EXP_SIGHOOK("Jabber PubSub JID 'http://jabber.org/protocol/tune'", &UserTune::Message, 1000);
 	EXP_SIGHOOK("Jabber UserActivityGet", &UserTune::ActivityLine, 1000);
+	EXP_SIGHOOK("Jabber PubSub Registration GetNodes", &UserTune::GetNode, 1000);
 	
 	config = new WokXMLTag(NULL, "NULL");
 	EXP_SIGHOOK("Config XML Change /pubsub/usertune", &UserTune::ReadConfig, 500);
@@ -47,6 +48,28 @@ UserTune::~UserTune()
 	
 	
 }
+
+int
+UserTune::GetNode(WokXMLTag *tag)
+{
+	WokXMLTag querytag(NULL, "query");
+	WokXMLTag &itemtag = querytag.AddTag("item");
+	itemtag.AddAttr("session", tag->GetAttr("session"));
+	wls->SendSignal("Jabber Connection GetUserData", &querytag);
+	std::string jid = itemtag.GetFirstTag("jid").GetBody();
+
+	if( jid.find("/") != std::string::npos )
+		jid = jid.substr(0, jid.find("/"));
+	
+	if ( jid == tag->GetAttr("jid") )
+	{
+		WokXMLTag &item = tag->AddTag("item");
+		item.AddAttr("node", "http://jabber.org/protocol/tune");
+	}
+	
+	return 1;	
+}
+
 
 int
 UserTune::ActivityLine(WokXMLTag *tag)
