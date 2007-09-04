@@ -53,6 +53,7 @@ public:
 	int ConfigIQResp(WokXMLTag *tag);
 	int RegisterIQResp(WokXMLTag *tag);
 	int ReadIQResp(WokXMLTag *tag);
+	int XdataResp(WokXMLTag *tag);
 		
 	void SesChange();
 	void SaveConfig();
@@ -60,6 +61,7 @@ public:
 	void ConfButton();
 	void RegButton();
 	void ReadBtn();
+	void SaveList();
 		
 	static void SessionChange(GtkComboBox *widget, PubSub_Widget *c);
 	static gboolean Delete( GtkWidget *widget, GdkEvent *event, PubSub_Widget *c);
@@ -69,13 +71,20 @@ public:
 	static void RegisterButton(GtkButton *button, PubSub_Widget *c);
 	static void ReadButton(GtkButton *button, PubSub_Widget *c);
 	static void cell_edited (GtkCellRendererText *cell, const gchar *path_string, const gchar *new_text, PubSub_Widget *c);
+	static void editing_started (GtkCellRenderer *cell, GtkCellEditable *editable, const gchar *path, PubSub_Widget *c);
+	static void ApplyButton(GtkButton *button, PubSub_Widget *c);
+	static void AddButton(GtkButton *button, PubSub_Widget *c);
+	static void DeleteButton(GtkButton *button, PubSub_Widget *c);
+	static void SubscribeButton(GtkButton *button, PubSub_Widget *c);
+	static void UnsubscribeButton(GtkButton *button, PubSub_Widget *c);
+	static void UnregisterButton(GtkButton *button, PubSub_Widget *c);
 protected:
 		
 	GtkListStore *sessionmenu;
 	GtkListStore *jidmenu;
 	GtkListStore *nodemenu;
 	GtkListStore *affiliationlist;
-	
+	GtkListStore *aff_list;
 	GladeXML *xml;
 	
 	std::string selected_session;

@@ -42,7 +42,26 @@ PubSub_Widget::PubSub_Widget(WLSignal *wls, PubSubManager *parant) : WLSignalIns
 	jidmenu = gtk_list_store_new(1, G_TYPE_STRING);
 	nodemenu = gtk_list_store_new(1, G_TYPE_STRING);
 	affiliationlist = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
-										 
+	aff_list = gtk_list_store_new(1, G_TYPE_STRING);
+	
+	GtkTreeIter tIter;
+	gtk_list_store_append(aff_list, &tIter);
+	gtk_list_store_set (aff_list, &tIter,
+                    0, "owner",
+                    -1); 
+	gtk_list_store_append(aff_list, &tIter);
+	gtk_list_store_set (aff_list, &tIter,
+                    0, "publisher",
+                    -1); 
+	gtk_list_store_append(aff_list, &tIter);
+	gtk_list_store_set (aff_list, &tIter,
+                    0, "none",
+                    -1); 
+	gtk_list_store_append(aff_list, &tIter);
+	gtk_list_store_set (aff_list, &tIter,
+                    0, "outcast",
+                    -1); 
+	
 	sessionchooser = glade_xml_get_widget(xml, "session");
 	gtk_combo_box_set_model (GTK_COMBO_BOX(sessionchooser), GTK_TREE_MODEL(sessionmenu) );
 	
@@ -68,11 +87,25 @@ PubSub_Widget::PubSub_Widget(WLSignal *wls, PubSubManager *parant) : WLSignalIns
 	gtk_tree_view_set_model(GTK_TREE_VIEW(affiliationwid), GTK_TREE_MODEL(affiliationlist));
 	
 	renderer = gtk_cell_renderer_text_new ();
+	g_object_set_data (G_OBJECT (renderer), "column", GINT_TO_POINTER (0));
 	g_object_set (renderer, "editable", TRUE, NULL);
 	g_signal_connect (renderer, "edited", G_CALLBACK (PubSub_Widget::cell_edited), this);
 	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (affiliationwid),
         -1, "JID", renderer, "text", 0, NULL);
-	renderer = gtk_cell_renderer_text_new ();
+	
+	renderer = gtk_cell_renderer_combo_new ();
+	g_object_set (renderer,
+			"model", aff_list,
+			"text-column", 0,
+			"has-entry", FALSE,
+			"editable", TRUE,
+			NULL);
+	
+	g_object_set_data (G_OBJECT (renderer), "column", GINT_TO_POINTER (1));
+	g_signal_connect (renderer, "edited",
+				G_CALLBACK (PubSub_Widget::cell_edited), this);
+	g_signal_connect (renderer, "editing-started",
+				G_CALLBACK (PubSub_Widget::editing_started), this);
 	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (affiliationwid),
         -1, "Affiliation", renderer, "text", 1, NULL);
 	
@@ -111,6 +144,18 @@ PubSub_Widget::PubSub_Widget(WLSignal *wls, PubSubManager *parant) : WLSignalIns
 			G_CALLBACK (PubSub_Widget::RegisterButton), this);	
 	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "button_read")), "clicked", 
 			G_CALLBACK (PubSub_Widget::ReadButton), this);	
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "button_add")), "clicked",
+			G_CALLBACK (PubSub_Widget::AddButton), this);
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "button_delete")), "clicked",
+			G_CALLBACK (PubSub_Widget::DeleteButton), this);
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "button_unsubscribe")), "clicked",
+			G_CALLBACK (PubSub_Widget::UnsubscribeButton), this);
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "button_subscribe")), "clicked",
+			G_CALLBACK (PubSub_Widget::SubscribeButton), this);
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "button_apply")), "clicked",
+			G_CALLBACK (PubSub_Widget::ApplyButton), this);
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "button_unregister")), "clicked",
+			G_CALLBACK (PubSub_Widget::UnregisterButton), this);
 	
 	gtk_window_set_default_size(GTK_WINDOW(glade_xml_get_widget(xml,"window")), 
 				atoi(config->GetFirstTag("size").GetAttr("width").c_str()),
@@ -139,59 +184,49 @@ PubSub_Widget::~PubSub_Widget()
 	gtk_widget_destroy(window);
 }
 
+static gboolean
+separator_row (GtkTreeModel *model,
+               GtkTreeIter  *iter,
+               gpointer      data)
+{
+  GtkTreePath *path;
+  gint idx;
+
+  path = gtk_tree_model_get_path (model, iter);
+  idx = gtk_tree_path_get_indices (path)[0];
+
+  gtk_tree_path_free (path);
+
+  return idx == 5;
+}
+
+void
+PubSub_Widget::editing_started (GtkCellRenderer *cell, GtkCellEditable *editable, const gchar *path, PubSub_Widget *c)
+{
+	gtk_combo_box_set_row_separator_func (GTK_COMBO_BOX (editable), separator_row, NULL, NULL);
+}
+
+
 void
 PubSub_Widget::cell_edited (GtkCellRendererText *cell, const gchar *path_string, const gchar *new_text, PubSub_Widget *c)
 {
 	GtkTreePath *path = gtk_tree_path_new_from_string (path_string);
+	
+	if ( path == NULL )
+	{
+		return;
+	}
 	GtkTreeIter iter;
-
-	//gint column = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (cell), "column"));
+	gint column = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (cell), "column"));
+	
 	gtk_tree_model_get_iter (GTK_TREE_MODEL(c->affiliationlist), &iter, path);
-
-	gchar *old_text;
-
-	gtk_tree_model_get (GTK_TREE_MODEL(c->affiliationlist), &iter, 0, &old_text, -1);
-	
 	/*
-	GtkTreeIter useriter;
-	
-	if ( gtk_tree_model_get_iter_first(GTK_TREE_MODEL(c->inlist), &useriter) )
-	{
-		do
-		{
-			gchar *jid;
-			gtk_tree_model_get(GTK_TREE_MODEL(c->inlist), &useriter, 0, &jid, -1);
-			WokXMLTag remove_tag("remove_tag");
-			remove_tag.AddAttr("jid", jid);
-			remove_tag.AddAttr("group", old_text);
-			remove_tag.AddAttr("session", c->selected_session);
-			c->wls->SendSignal("Roster Remove User From Group", remove_tag);
-			g_free(jid);
-		}
-		while ( gtk_tree_model_iter_next(GTK_TREE_MODEL(c->inlist), &useriter) );
-	}
-	
-	if ( gtk_tree_model_get_iter_first(GTK_TREE_MODEL(c->inlist), &useriter) )
-	{
-		do
-		{
-			gchar *jid;
-			gtk_tree_model_get(GTK_TREE_MODEL(c->inlist), &useriter, 0, &jid, -1);
-			WokXMLTag add_tag("add_tag");
-			add_tag.AddAttr("jid", jid);
-			add_tag.AddAttr("group", new_text);
-			add_tag.AddAttr("session", c->selected_session);
-			c->wls->SendSignal("Roster Add User To Group", add_tag);
-			g_free(jid);
-		}
-		while ( gtk_tree_model_iter_next(GTK_TREE_MODEL(c->inlist), &useriter) );
-	}
+		gchar *old_text;
+		gtk_tree_model_get (GTK_TREE_MODEL(c->affiliationlist), &iter, 0, &old_text, -1);
+		g_free (old_text);
 	*/
-	
-	g_free (old_text);
-
-	gtk_list_store_set (GTK_LIST_STORE (c->affiliationlist), &iter, 0, new_text, -1);
-
+		
+	gtk_list_store_set (GTK_LIST_STORE (c->affiliationlist), &iter, column, new_text, -1);
 	gtk_tree_path_free (path);
 }
 
@@ -202,11 +237,63 @@ PubSub_Widget::Delete( GtkWidget *widget, GdkEvent *event, PubSub_Widget *c)
 	return TRUE;
 }
 
+int
+PubSub_Widget::XdataResp(WokXMLTag *tag)
+{	
+	WokXMLTag mesgtag("message");	
+	mesgtag.AddAttr("session", selected_session);
+	WokXMLTag &iqtag = mesgtag.AddTag("iq");
+	iqtag.AddAttr("to", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(xml, "entry_jid"))));
+	iqtag.AddAttr("type", "set");
+	WokXMLTag &pubsub = iqtag.AddTag("pubsub");
+	pubsub.AddAttr("xmlns", "http://jabber.org/protocol/pubsub#owner");
+	WokXMLTag &config = pubsub.AddTag("configure");
+	config.AddAttr("node", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(xml, "entry_node"))));
+	config.AddTag(&tag->GetFirstTag("x"));
+	
+	wls->SendSignal("Jabber XML IQ Send", mesgtag);
+/*
+	<iq type='set'
+    from='hamlet@denmark.lit/elsinore'
+    to='pubsub.shakespeare.lit'
+    id='config2'>
+  <pubsub xmlns='http://jabber.org/protocol/pubsub#owner'>
+    <configure node='princely_musings'>
+      <x xmlns='jabber:x:data' type='submit'>
+        <field var='FORM_TYPE' type='hidden'>
+          <value>http://jabber.org/protocol/pubsub#node_config</value>
+        </field>
+        <field var='pubsub#title'><value>Princely Musings (Atom)</value></field>
+        <field var='pubsub#deliver_notifications'><value>1</value></field>
+        <field var='pubsub#deliver_payloads'><value>1</value></field>
+        <field var='pubsub#persist_items'><value>1</value></field>
+        <field var='pubsub#max_items'><value>10</value></field>
+        <field var='pubsub#access_model'><value>open</value></field>
+        <field var='pubsub#publish_model'><value>publishers</value></field>
+        <field var='pubsub#send_last_published_item'><value>never</value></field>
+        <field var='pubsub#presence_based_delivery'><value>false</value></field>
+        <field var='pubsub#notify_config'><value>0</value></field>
+        <field var='pubsub#notify_delete'><value>0</value></field>
+        <field var='pubsub#notify_retract'><value>0</value></field>
+        <field var='pubsub#max_payload_size'><value>1028</value></field>
+        <field var='pubsub#type'><value>http://www.w3.org/2005/Atom</value></field>
+        <field var='pubsub#body_xslt'>
+          <value>http://jabxslt.jabberstudio.org/atom_body.xslt</value>
+        </field>
+      </x>
+    </configure>
+  </pubsub>
+</iq>*/
+	return 1;	
+}
+
 int 
 PubSub_Widget::ConfigIQResp(WokXMLTag *tag)
 {
-	wls->SendSignal("Jabber jabber:x:data Init", tag->GetFirstTag("iq").GetFirstTag("pubsub").GetFirstTag("configure"));
+	WokXMLTag xdata(tag->GetFirstTag("iq").GetFirstTag("pubsub").GetFirstTag("configure"));
+	wls->SendSignal("Jabber jabber:x:data Init", xdata);
 	
+	EXP_SIGHOOK(xdata.GetAttr("signal"), &PubSub_Widget::XdataResp, 1000);
 	return 1;	
 }
 
@@ -330,15 +417,12 @@ PubSub_Widget::ReadIQResp(WokXMLTag *tag)
 	std::list <WokXMLTag *>::iterator pubsubiter;
 	for( pubsubiter = tag->GetFirstTag("iq").GetTagList("pubsub").begin() ; pubsubiter != tag->GetFirstTag("iq").GetTagList("pubsub").end(); pubsubiter++)
 	{
-		std::cout << "Pubsub" << std::endl;
 		if( (*pubsubiter)->GetAttr("xmlns") == "http://jabber.org/protocol/pubsub#owner")
 		{
-			std::cout << "XMLNS Right" << std::endl;
 			
 			std::list <WokXMLTag *>::iterator afliter;
 			for ( afliter = (*pubsubiter)->GetFirstTag("affiliations").GetTagList("affiliation").begin() ; afliter != (*pubsubiter)->GetFirstTag("affiliations").GetTagList("affiliation").end() ; afliter++)
 			{
-				std::cout << "AFLI" << std::endl;
 				GtkTreeIter tIter;
 				gtk_list_store_append(affiliationlist, &tIter);
 				gtk_list_store_set (affiliationlist, &tIter,
@@ -408,6 +492,204 @@ PubSub_Widget::ReadBtn()
 	</iq>
     */
 }
+
+void
+PubSub_Widget::SaveList()
+{
+	WokXMLTag mesgtag("message");	
+	mesgtag.AddAttr("session", selected_session);
+	WokXMLTag &iqtag = mesgtag.AddTag("iq");
+	iqtag.AddAttr("to", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(xml, "entry_jid"))));
+	iqtag.AddAttr("type", "set");
+	WokXMLTag &pubsub = iqtag.AddTag("pubsub");
+	pubsub.AddAttr("xmlns", "http://jabber.org/protocol/pubsub#owner");
+	WokXMLTag &affiliations = pubsub.AddTag("affiliations");
+	affiliations.AddAttr("node", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(xml, "entry_node"))));
+	
+	GtkTreeIter iter;
+	
+	if(!gtk_tree_model_get_iter_first   (GTK_TREE_MODEL(affiliationlist), &iter))
+	{
+//		wls->SendSignal("Jabber XML IQ Send", mesgtag);
+		return;
+	}
+	
+	
+	gchar *jid;
+	gchar *affili;
+	
+	do
+	{
+		gtk_tree_model_get(GTK_TREE_MODEL(affiliationlist), &iter, 0, &jid, 1, &affili, -1);
+		WokXMLTag &aff = affiliations.AddTag("affiliation");
+		aff.AddAttr("jid", jid);
+		aff.AddAttr("affiliation", affili);
+		
+		g_free(jid);
+		g_free(affili);
+	}
+	while ( gtk_tree_model_iter_next(GTK_TREE_MODEL(affiliationlist), &iter));
+
+	wls->SendSignal("Jabber XML IQ Send", mesgtag);
+	
+	/*
+	
+	<iq type='set'
+    from='hamlet@denmark.lit/elsinore'
+    to='pubsub.shakespeare.lit'
+    id='ent2'>
+  <pubsub xmlns='http://jabber.org/protocol/pubsub#owner'>
+    <affiliations node='princely_musings'/>
+      <affiliation jid='hamlet@denmark.lit' affiliation='owner'/>
+      <affiliation jid='polonius@denmark.lit' affiliation='none'/>
+      <affiliation jid='bard@shakespeare.lit' affiliation='publisher'/>
+    </affiliations>
+  </pubsub>
+</iq>
+    
+	<iq id='wokjab15' to='nedo@jabber.se' type='set'>
+		<pubsub xmlns='http://jabber.org/protocol/pubsub#owner'>
+			<affiliations node='http://jabber.org/protocol/tune'>
+				<affiliation affiliation='owner' jid='nedo@jabber.se'></affiliation>
+			</affiliations>
+		</pubsub>
+	</iq>
+
+	*/
+	
+	
+}
+
+void
+PubSub_Widget::UnregisterButton(GtkButton *button, PubSub_Widget *c)
+{
+	WokXMLTag mesgtag("message");	
+	mesgtag.AddAttr("session", c->selected_session);
+	WokXMLTag &iqtag = mesgtag.AddTag("iq");
+	iqtag.AddAttr("to", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(c->xml, "entry_jid"))));
+	iqtag.AddAttr("type", "set");
+	WokXMLTag &pubsub = iqtag.AddTag("pubsub");
+	pubsub.AddAttr("xmlns", "http://jabber.org/protocol/pubsub#owner");
+	WokXMLTag &node_delete = pubsub.AddTag("delete");
+	node_delete.AddAttr("node", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(c->xml, "entry_node"))));
+	
+	c->wls->SendSignal("Jabber XML IQ Send", mesgtag);
+	/*
+	<iq type='set'
+		from='hamlet@denmark.lit/elsinore'
+		to='pubsub.shakespeare.lit'
+		id='delete1'>
+	  <pubsub xmlns='http://jabber.org/protocol/pubsub#owner'>
+		<delete node='princely_musings'/>
+	  </pubsub>
+	</iq>
+	*/
+    
+}
+
+
+void
+PubSub_Widget::UnsubscribeButton(GtkButton *button, PubSub_Widget *c)
+{
+	WokXMLTag querytag(NULL, "query");
+	WokXMLTag &itemtag = querytag.AddTag("item");
+	itemtag.AddAttr("session", c->selected_session);
+	c->wls->SendSignal("Jabber Connection GetUserData", &querytag);
+	std::string jid = querytag.GetFirstTag("item").GetFirstTag("jid").GetBody();
+	if ( jid.find("/") != std::string::npos )
+		jid = jid.substr(0, jid.find("/"));
+	
+	WokXMLTag mesgtag ("message");
+	mesgtag.AddAttr("session", c->selected_session);
+	WokXMLTag &iq = mesgtag.AddTag("iq");
+	iq.AddAttr("type", "set");
+	iq.AddAttr("to", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(c->xml, "entry_jid"))));
+	WokXMLTag &pubsub = iq.AddTag("pubsub");
+	pubsub.AddAttr("xmlns", "http://jabber.org/protocol/pubsub");
+	WokXMLTag &subscribe =  pubsub.AddTag("unsubscribe");
+	subscribe.AddAttr("node", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(c->xml, "entry_node"))));
+	subscribe.AddAttr("jid", jid);
+	
+	c->wls->SendSignal("Jabber XML IQ Send", mesgtag);
+	
+/*
+<iq type='set'
+    from='francisco@denmark.lit/barracks'
+    to='pubsub.shakespeare.lit'
+    id='unsub1'>
+  <pubsub xmlns='http://jabber.org/protocol/pubsub'>
+     <unsubscribe
+         node='princely_musings'
+         jid='francisco@denmark.lit'/>
+  </pubsub>
+</iq>
+*/
+}
+
+void
+PubSub_Widget::SubscribeButton(GtkButton *button, PubSub_Widget *c)
+{
+	WokXMLTag querytag(NULL, "query");
+	WokXMLTag &itemtag = querytag.AddTag("item");
+	itemtag.AddAttr("session", c->selected_session);
+	c->wls->SendSignal("Jabber Connection GetUserData", &querytag);
+	std::string jid = querytag.GetFirstTag("item").GetFirstTag("jid").GetBody();
+	if ( jid.find("/") != std::string::npos )
+		jid = jid.substr(0, jid.find("/"));
+	
+	WokXMLTag mesgtag ("message");
+	mesgtag.AddAttr("session", c->selected_session);
+	WokXMLTag &iq = mesgtag.AddTag("iq");
+	iq.AddAttr("type", "set");
+	iq.AddAttr("to", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(c->xml, "entry_jid"))));
+	WokXMLTag &pubsub = iq.AddTag("pubsub");
+	pubsub.AddAttr("xmlns", "http://jabber.org/protocol/pubsub");
+	WokXMLTag &subscribe =  pubsub.AddTag("subscribe");
+	subscribe.AddAttr("node", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(c->xml, "entry_node"))));
+	subscribe.AddAttr("jid", jid);
+	
+	c->wls->SendSignal("Jabber XML IQ Send", mesgtag);
+	
+	/*
+	<iq type='set'
+		from='francisco@denmark.lit/barracks'
+		to='pubsub.shakespeare.lit'
+		id='sub1'>
+	  <pubsub xmlns='http://jabber.org/protocol/pubsub'>
+		<subscribe
+			node='princely_musings'
+			jid='francisco@denmark.lit'/>
+	  </pubsub>
+	</iq>
+	
+*/
+}
+
+void
+PubSub_Widget::ApplyButton(GtkButton *button, PubSub_Widget *c)
+{
+	c->SaveList();
+}
+
+void
+PubSub_Widget::AddButton(GtkButton *button, PubSub_Widget *c)
+{
+	GtkTreeIter tIter;
+	
+	gtk_list_store_append(c->affiliationlist, &tIter);
+}
+
+
+void
+PubSub_Widget::DeleteButton(GtkButton *button, PubSub_Widget *c)
+{
+	GtkTreeIter iter;
+	GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(glade_xml_get_widget(c->xml, "affiliationlist")));
+
+	if (gtk_tree_selection_get_selected (selection, NULL, &iter))
+		gtk_list_store_remove (GTK_LIST_STORE (c->affiliationlist), &iter);
+}
+
 
 void
 PubSub_Widget::ReadButton(GtkButton *button, PubSub_Widget *c)
