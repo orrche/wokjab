@@ -25,7 +25,7 @@
 #include "pub-sub-widget.hpp"
 #include <sstream>
 
-PubSub_Widget::PubSub_Widget(WLSignal *wls, PubSubManager *parant) : WLSignalInstance(wls), parant(parant)
+PubSub_Widget::PubSub_Widget(WLSignal *wls, WokXMLTag *data, PubSubManager *parant) : WLSignalInstance(wls), parant(parant)
 {
 	config = new WokXMLTag(NULL, "NULL");
 	EXP_SIGHOOK("Config XML Change /PubSub_Manager/window", &PubSub_Widget::ReadConfig, 500);
@@ -160,6 +160,10 @@ PubSub_Widget::PubSub_Widget(WLSignal *wls, PubSubManager *parant) : WLSignalIns
 	gtk_window_set_default_size(GTK_WINDOW(glade_xml_get_widget(xml,"window")), 
 				atoi(config->GetFirstTag("size").GetAttr("width").c_str()),
 				atoi(config->GetFirstTag("size").GetAttr("height").c_str()));
+	
+	gtk_entry_set_text(GTK_ENTRY(glade_xml_get_widget(xml, "entry_jid")), data->GetFirstTag("data").GetFirstTag("jid").GetBody().c_str());
+	gtk_entry_set_text(GTK_ENTRY(glade_xml_get_widget(xml, "entry_node")), data->GetFirstTag("data").GetFirstTag("node").GetBody().c_str());
+		
 	
 	gtk_widget_show_all(glade_xml_get_widget(xml,"window"));	
 }

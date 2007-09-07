@@ -50,7 +50,9 @@ public:
 	
 	int DialogOpener(WokXMLTag *tag);
 	int Menu(WokXMLTag *xml);
-	
+	int DiscoOpener(WokXMLTag *tag);
+		
+		
 	void DialogOpenerRemove( PubSub_Widget *pepw );
 protected:
 	std::list<PubSub_Widget*> window;

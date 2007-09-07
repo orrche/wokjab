@@ -57,6 +57,7 @@ class PyScript : public WLSignalInstance
 		PyObject* module;																											/// Python version of the class
 		PyThreadState *thread_state;
 		std::list <PySig *> signal; 																					/// List of signals that the script uses
+		FILE *fp;
 };
 
 

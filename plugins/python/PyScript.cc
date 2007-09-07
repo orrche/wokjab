@@ -123,7 +123,7 @@ PyScript::PyScript(WLSignal *wls, const std::string &filename) : WLSignalInstanc
 	PyEval_AcquireLock();
 	thread_state = Py_NewInterpreter();
 	
-	FILE *fp = fopen(filename.c_str(), "r");
+	fp = fopen(filename.c_str(), "r");
 	
 	if ( fp == NULL )
 	{
@@ -146,7 +146,6 @@ PyScript::PyScript(WLSignal *wls, const std::string &filename) : WLSignalInstanc
 	PySys_SetObject("__plugin__", (PyObject *) plugin);
 	
 	PyRun_SimpleFile(fp, filename.c_str());
-	fclose(fp);
 	
 	PyEval_ReleaseThread(thread_state);
 	PyEval_ReleaseLock();
@@ -166,6 +165,8 @@ PyScript::~PyScript()
 
 	Py_EndInterpreter(thread_state);
 	PyEval_ReleaseLock();
+	fclose(fp);
+	
 }
 
 

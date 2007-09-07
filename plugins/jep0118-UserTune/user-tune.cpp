@@ -194,12 +194,31 @@ UserTune::ReadConfig(WokXMLTag *tag)
 
 
 int
+UserTune::Blank(WokXMLTag *tag)
+{
+	WokXMLTag empty("empty");
+	SetTune(&empty);	
+	return 1;
+}
+
+int
 UserTune::SetTune(WokXMLTag *tag)
 {
 	WokXMLTag sessions("sessions");
 	wls->SendSignal("Jabber GetSessions", sessions);
 	std::list <WokXMLTag *>::iterator session;
 	
+	WokXMLTag *tune = NULL;;
+	std::list<WokXMLTag*>::iterator tuneiter;
+	for( tuneiter = tag->GetFirstTag("item").GetTagList("tune").begin() ; tuneiter != tag->GetFirstTag("item").GetTagList("tune").end() ; tuneiter++)
+	{
+		if ( (*tuneiter)->GetAttr("xmlns") == "http://jabber.org/protocol/tune" )
+		{
+			tune = (*tuneiter);
+			break;
+		}
+		
+	}
 	
 	for( session = sessions.GetTagList("item").begin() ; session != sessions.GetTagList("item").end() ; session++)
 	{
@@ -218,17 +237,7 @@ UserTune::SetTune(WokXMLTag *tag)
 	
 		if ( status && config->GetFirstTag("change_status").GetAttr("data") != "false" )
 		{
-			WokXMLTag *tune = NULL;;
-			std::list<WokXMLTag*>::iterator tuneiter;
-			for( tuneiter = tag->GetFirstTag("item").GetTagList("tune").begin() ; tuneiter != tag->GetFirstTag("item").GetTagList("tune").end() ; tuneiter++)
-			{
-				if ( (*tuneiter)->GetAttr("xmlns") == "http://jabber.org/protocol/tune" )
-				{
-					tune = (*tuneiter);
-					break;
-				}
-				
-			}
+
 			if( tune )
 			{
 				std::list <WokXMLObject *>::iterator oiter;
@@ -271,5 +280,16 @@ UserTune::SetTune(WokXMLTag *tag)
 			}
 		}
 		
+	}
+	
+	if ( tune && !tune->GetFirstTag("length").GetBody().empty())
+	{
+		WokXMLTag timer("timer");
+		timer.AddAttr("time", tune->GetFirstTag("length").GetBody() + "000");
+		wls->SendSignal("Woklib Timmer Add", timer);
+		if( !past_sig.empty() ) 
+			EXP_SIGUNHOOK(past_sig, &UserTune::Blank, 1000);
+		past_sig = timer.GetAttr("signal");
+		EXP_SIGHOOK(timer.GetAttr("signal"), &UserTune::Blank, 1000);
 	}
 }

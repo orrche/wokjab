@@ -30,7 +30,7 @@ PubSubManager::PubSubManager(WLSignal *wls) : WoklibPlugin(wls)
 	EXP_SIGHOOK("GetMenu", &PubSubManager::Menu, 999);
 	EXP_SIGHOOK("Jabber GUI PubSubManager", &PubSubManager::DialogOpener, 999);
 	
-	
+	EXP_SIGHOOK("Jabber disco Identity pubsub", &PubSubManager::DiscoOpener, 999);
 	
 }
 
@@ -42,6 +42,18 @@ PubSubManager::~PubSubManager()
 	
 }
 
+int
+PubSubManager::DiscoOpener(WokXMLTag *tag)
+{
+	WokXMLTag opener("open");
+	WokXMLTag &data = opener.AddTag("data");
+	data.AddTag("jid").AddText(tag->GetAttr("jid"));
+	data.AddTag("node").AddText(tag->GetAttr("node"));
+	
+	wls->SendSignal("Jabber GUI PubSubManager", opener);
+	
+	return 1;
+}
 
 int
 PubSubManager::Menu(WokXMLTag *xml)
@@ -76,7 +88,7 @@ PubSubManager::Menu(WokXMLTag *xml)
 int
 PubSubManager::DialogOpener(WokXMLTag *tag)
 {
-	window.push_back( new PubSub_Widget(wls, this) );
+	window.push_back( new PubSub_Widget(wls, tag, this) );
 	
 	return 1;
 }

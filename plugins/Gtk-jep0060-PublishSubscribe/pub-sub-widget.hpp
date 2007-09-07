@@ -46,7 +46,7 @@ class PubSub_Widget;
 class PubSub_Widget: public WLSignalInstance 
 {
 public:
-	PubSub_Widget(WLSignal *wls, PubSubManager *parant);
+	PubSub_Widget(WLSignal *wls, WokXMLTag *data, PubSubManager *parant);
 	~PubSub_Widget();
 	
 	int ReadConfig(WokXMLTag *tag);

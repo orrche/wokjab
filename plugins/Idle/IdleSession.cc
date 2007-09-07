@@ -48,9 +48,9 @@ IdleSession::~IdleSession()
 int
 IdleSession::DeathWatch(WokXMLTag *tag)
 {
-	if ( time(0) - t	> 59*3 )
+	if ( ( time(0) - t ) > (59*3) )
 	{
-		woklib_error(wls, "Connection " + session + " seams to have timedout\n"+
+		woklib_debug(wls, "Connection " + session + " seams to have timedout\n"+
 																				"But for now we are ignoring that");
 		/*
 		WokXMLTag mtag(NULL, "message");
@@ -68,7 +68,7 @@ IdleSession::Tick(WokXMLTag *tag)
 {
 
 	
-	if ( time(0) - t > 59 )
+	if ( (time(0) - t) > 59 )
 	{		
 		WokXMLTag mtag(NULL, "message");
 		mtag.AddAttr("session", session);
@@ -93,8 +93,6 @@ IdleSession::Active(WokXMLTag *tag)
 {
 	t = time(0);
 
-	death = false;
-	t++;
 	WokXMLTag timmertag(NULL, "timer");
 	timmertag.AddAttr("time", "60000");
 	timmertag.AddAttr("signal", "Jabber Idle Tick Normal " + session);
