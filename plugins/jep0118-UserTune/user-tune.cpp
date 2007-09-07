@@ -197,7 +197,8 @@ int
 UserTune::Blank(WokXMLTag *tag)
 {
 	WokXMLTag empty("empty");
-	SetTune(&empty);	
+	SetTune(&empty);
+	tag->AddAttr("stop", "stop");
 	return 1;
 }
 
@@ -208,6 +209,11 @@ UserTune::SetTune(WokXMLTag *tag)
 	wls->SendSignal("Jabber GetSessions", sessions);
 	std::list <WokXMLTag *>::iterator session;
 	
+	if( !past_sig.empty() ) 
+	{
+		EXP_SIGUNHOOK(past_sig, &UserTune::Blank, 1000);
+		past_sig = "";	
+	}
 	WokXMLTag *tune = NULL;;
 	std::list<WokXMLTag*>::iterator tuneiter;
 	for( tuneiter = tag->GetFirstTag("item").GetTagList("tune").begin() ; tuneiter != tag->GetFirstTag("item").GetTagList("tune").end() ; tuneiter++)
@@ -285,10 +291,13 @@ UserTune::SetTune(WokXMLTag *tag)
 	if ( tune && !tune->GetFirstTag("length").GetBody().empty())
 	{
 		WokXMLTag timer("timer");
-		timer.AddAttr("time", tune->GetFirstTag("length").GetBody() + "000");
+		std::string length = "10";
+		if ( atoi(tune->GetFirstTag("length").GetBody().c_str()) > 10 )
+			length = tune->GetFirstTag("length").GetBody().c_str();
+		
+		timer.AddAttr("time", length + "000");
 		wls->SendSignal("Woklib Timmer Add", timer);
-		if( !past_sig.empty() ) 
-			EXP_SIGUNHOOK(past_sig, &UserTune::Blank, 1000);
+
 		past_sig = timer.GetAttr("signal");
 		EXP_SIGHOOK(timer.GetAttr("signal"), &UserTune::Blank, 1000);
 	}
