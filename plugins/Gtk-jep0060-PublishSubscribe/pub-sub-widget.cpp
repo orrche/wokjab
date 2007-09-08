@@ -126,6 +126,12 @@ PubSub_Widget::PubSub_Widget(WLSignal *wls, WokXMLTag *data, PubSubManager *para
 		gtk_list_store_append(GTK_LIST_STORE(sessionmenu), &treeiter);
 		gtk_list_store_set(GTK_LIST_STORE(sessionmenu), &treeiter, 0 , itemtag.GetFirstTag("jid").GetBody().c_str(),
 						1, (*iter)->GetAttr("name").c_str(), -1);
+		
+		if( (*iter)->GetAttr("name") == data->GetFirstTag("data").GetFirstTag("session").GetBody() )
+		{
+			gtk_combo_box_set_active_iter(GTK_COMBO_BOX(sessionchooser), &treeiter);
+			selected_session = (*iter)->GetAttr("name");
+		}
 	}
 	
 	g_signal_connect (G_OBJECT (sessionchooser), "changed", 

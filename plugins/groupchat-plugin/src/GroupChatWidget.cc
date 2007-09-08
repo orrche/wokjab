@@ -360,7 +360,7 @@ GroupChatWidget::own_message(std::string msg )
 	WokXMLTag &message = msgtag.AddTag("message");
 	message.AddAttr("to", roomjid);
 	message.AddAttr("type", "groupchat");
-	message.AddTag("body").AddText(XMLisize(msg));
+	message.AddTag("body").AddText(msg);
 
 	wls->SendSignal("Jabber XML Send", &msgtag);
 

@@ -208,7 +208,8 @@ UserTune::SetTune(WokXMLTag *tag)
 	WokXMLTag sessions("sessions");
 	wls->SendSignal("Jabber GetSessions", sessions);
 	std::list <WokXMLTag *>::iterator session;
-	
+
+		
 	if( !past_sig.empty() ) 
 	{
 		EXP_SIGUNHOOK(past_sig, &UserTune::Blank, 1000);
@@ -284,9 +285,18 @@ UserTune::SetTune(WokXMLTag *tag)
 				mtag.AddTag("presence").AddTag("status").AddText(statusmsg);
                 wls->SendSignal("Jabber XML Presence Send", mtag);
 			}
+			else
+			{
+				WokXMLTag mtag("message");
+				mtag.AddAttr("session", (*session)->GetAttr("name"));
+				mtag.AddTag("presence");
+				wls->SendSignal("Jabber XML Presence Send", mtag);
+			}
 		}
 		
 	}
+	
+
 	
 	if ( tune && !tune->GetFirstTag("length").GetBody().empty())
 	{

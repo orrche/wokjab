@@ -49,7 +49,7 @@ PubSubManager::DiscoOpener(WokXMLTag *tag)
 	WokXMLTag &data = opener.AddTag("data");
 	data.AddTag("jid").AddText(tag->GetAttr("jid"));
 	data.AddTag("node").AddText(tag->GetAttr("node"));
-	
+	data.AddTag("session").AddText(tag->GetAttr("session"));
 	wls->SendSignal("Jabber GUI PubSubManager", opener);
 	
 	return 1;
