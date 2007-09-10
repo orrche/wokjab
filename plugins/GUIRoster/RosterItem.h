@@ -45,11 +45,12 @@ class RosterItem : public WLSignalInstance
 		
 		void Update(WokXMLTag *tag);
 		int GetIndent();
-		RosterItem * GetLastItem();
+		RosterItem *GetLastItem();
 		RosterItem *AddChild(RosterItem *); /// Adds a child to a roster item and returns the item that it should be added beneth for sorting
-		RosterItem * UpdatePosition(RosterItem *ri);
+		RosterItem *UpdatePosition(RosterItem *ri);
 		void RemoveChild(RosterItem *);
 	protected:
+		bool folded;
 		std::list <RosterItem*> children;
 		GtkTreeIter * GetIter();
 

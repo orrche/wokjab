@@ -42,20 +42,23 @@ xml(xml)
 	if(parant)
 	{
 		RosterItem *ri = parant->AddChild(this);
-		gtk_list_store_insert_after(GTK_LIST_STORE(model), &iter, ri->GetIter());
+		if (ri)
+			gtk_tree_store_insert_after(GTK_TREE_STORE(model), &iter, parant->GetIter(), ri->GetIter());
+		else
+			gtk_tree_store_insert_after(GTK_TREE_STORE(model), &iter, parant->GetIter(), NULL);
 	}
 	else
-		gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+		gtk_tree_store_append(GTK_TREE_STORE(model), &iter, NULL);
 	
 	Update(tag);
-
+	gtk_tree_view_expand_all(GTK_TREE_VIEW(glade_xml_get_widget(xml, "view_roster")));
 }
 
 RosterItem::~RosterItem()
 {
 	GtkTreeModel *model;
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(glade_xml_get_widget(xml, "view_roster")));
-	gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
+	gtk_tree_store_remove(GTK_TREE_STORE(model), &iter);
 
 	if ( parant )
 	{
@@ -83,7 +86,7 @@ RosterItem::AddChild(RosterItem *ri)
 	}
 
 	children.push_front(ri);
-	return this;
+	return NULL;
 }
 
 RosterItem *
@@ -110,7 +113,7 @@ RosterItem::UpdatePosition(RosterItem *ri)
 	}
 
 	children.push_front(ri);
-	return this;	
+	return NULL;	
 }
 
 RosterItem *
@@ -165,9 +168,10 @@ RosterItem::Update(WokXMLTag *tag)
 	if ( parant )
 	{
 		RosterItem *ri = parant->UpdatePosition(this);
-		gtk_list_store_move_after(GTK_LIST_STORE(model), &iter, ri->GetIter());
+		if( ri )
+			gtk_tree_store_move_after(GTK_TREE_STORE(model), &iter, ri->GetIter());
 	}
-	gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+	gtk_tree_store_set(GTK_TREE_STORE(model), &iter,
 				PRE_PIX_COLUMN, pre_pix,
 				TEXT_COLUMN, text.c_str(),
 				POST_PIX_COLUMN, post_pix,
@@ -178,6 +182,14 @@ RosterItem::Update(WokXMLTag *tag)
 		g_object_unref(pre_pix);
 	if( post_pix )
 		g_object_unref(post_pix);
+	
+	/*
+	GtkTreePath*        gtk_tree_model_get_path             (GtkTreeModel *tree_model,
+                                                         GtkTreeIter *iter);
+	gtk_tree_view_expand_row            (GtkTreeView *tree_view,
+                                                         GtkTreePath *path,
+                                                         gboolean open_all);
+	*/
 }
 
 GtkTreeIter *

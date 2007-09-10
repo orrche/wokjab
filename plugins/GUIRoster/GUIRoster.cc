@@ -88,7 +88,7 @@ GUIRoster::CreateWid()
 				     GTK_TREE_VIEW_COLUMN (post_pix_column));
 						 
 						 
-	GtkListStore *model = gtk_list_store_new (NUM_COLUMNS, GDK_TYPE_PIXBUF,
+	GtkTreeStore *model = gtk_tree_store_new (NUM_COLUMNS, GDK_TYPE_PIXBUF,
 				    G_TYPE_STRING, GDK_TYPE_PIXBUF, G_TYPE_STRING);
 	
 	
