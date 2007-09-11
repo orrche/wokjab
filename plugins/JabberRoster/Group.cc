@@ -27,6 +27,10 @@
 
 #include "Group.h"
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 
 Group::Group(WLSignal *wls, std::string name, std::string sessionid) : WLSignalInstance(wls)
 {	
@@ -40,6 +44,7 @@ Group::Group(WLSignal *wls, std::string name, std::string sessionid) : WLSignalI
 		itemtag.AddAttr("parant", sessionid);
 		WokXMLTag &columntag =  itemtag.AddTag("columns");
 		WokXMLTag &texttag = columntag.AddTag("text");
+		columntag.AddTag("pre_pix").AddText(PACKAGE_DATA_DIR"/wokjab/group.png");
 		texttag.AddText(name);
 			
 		wls->SendSignal("GUIRoster AddItem", itemtag);

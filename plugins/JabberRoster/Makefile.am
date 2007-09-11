@@ -1,5 +1,10 @@
 AM_CXXFLAGS = -lwoklib `pkg-config glib-2.0 --cflags` 
 
+pkgdata_DATA = \
+	group.png
+
+EXTRA_DIST = ${pkgdata_DATA}
+
 libdir = $(prefix)/lib/woklib-plugins/normal
 
 lib_LTLIBRARIES = \
