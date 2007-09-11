@@ -77,6 +77,9 @@ JabberRoster::ReadConfig(WokXMLTag *tag)
 	tag->GetFirstTag("config").GetFirstTag("ticker_single").AddAttr("type", "bool");
 	tag->GetFirstTag("config").GetFirstTag("ticker_single").AddAttr("label", "Tick single items");
 	
+	tag->GetFirstTag("config").GetFirstTag("display_avatar").AddAttr("type", "bool");
+	tag->GetFirstTag("config").GetFirstTag("display_avatar").AddAttr("label", "Display avatar in roster");
+	
 	if ( config->GetFirstTag("ticker").GetAttr("data") == "false" && tag->GetFirstTag("config").GetFirstTag("ticker").GetAttr("data") != "false" )
 	{
 		WokXMLTag tag("timer");

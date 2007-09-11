@@ -317,7 +317,8 @@ User::UpdateRow()
 		texttag.AddText("</span>");
 	}
 	
-	columntag.AddTag("post_pix").AddText(avatar);
+	if( ses->parent->config->GetFirstTag("display_avatar").GetAttr("data") != "false" )
+		columntag.AddTag("post_pix").AddText(avatar);
 	
 	std::map <std::string, std::string>::iterator iter;
 	
@@ -408,7 +409,8 @@ User::Show()
 		texttag.AddText("</span>");
 	}
 	
-	columntag.AddTag("post_pix").AddText(avatar);
+	if( ses->parent->config->GetFirstTag("display_avatar").GetAttr("data") != "false" )
+		columntag.AddTag("post_pix").AddText(avatar);
 	
 	
 	
