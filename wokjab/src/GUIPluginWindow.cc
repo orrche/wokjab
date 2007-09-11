@@ -16,16 +16,15 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "include/GUIPluginWindow.h"
-#include <Woklib/WokLibSignal.h>
-#include <Woklib/WokXMLTag.h>
 
 #include <dirent.h>
+#include <sstream>
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
 
-GUIPluginWindow::GUIPluginWindow(int *feedback, WLSignal *wls)
+GUIPluginWindow::GUIPluginWindow(int *feedback, WLSignal *wls) : WLSignalInstance(wls)
 {
 	xml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/plugin.glade", NULL, NULL);
 	
@@ -33,9 +32,15 @@ GUIPluginWindow::GUIPluginWindow(int *feedback, WLSignal *wls)
 	
 	this->feedback = feedback;
 	this->wls = wls;
-
+	
+	config = new WokXMLTag ("config");
+	EXP_SIGHOOK("Config XML Change /plugin/window", &GUIPluginWindow::ReadConfig, 500);
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/plugin/window");
+	wls->SendSignal("Config XML Trigger", &conftag);
+	
 	g_signal_connect (glade_xml_get_widget(xml, "close_button"), "clicked",
-		G_CALLBACK (GUIPluginWindow::Cancel_Button), this);
+		  G_CALLBACK (GUIPluginWindow::Cancel_Button), this);
 	g_signal_connect (glade_xml_get_widget(xml, "delete_button"), "clicked",
 	      G_CALLBACK (GUIPluginWindow::Remove_Button), this);
 	g_signal_connect (glade_xml_get_widget(xml, "add_button"), "clicked",
@@ -43,7 +48,9 @@ GUIPluginWindow::GUIPluginWindow(int *feedback, WLSignal *wls)
 	g_signal_connect (glade_xml_get_widget(xml, "revert_button"), "clicked",
 	      G_CALLBACK (GUIPluginWindow::Reload_Button), this);
 	g_signal_connect (glade_xml_get_widget(xml, "window"), "destroy",
-	   G_CALLBACK (GUIPluginWindow::Destroy), this);
+	      G_CALLBACK (GUIPluginWindow::Destroy), this);
+	g_signal_connect (glade_xml_get_widget(xml, "window"), "delete-event", 
+		  G_CALLBACK (GUIPluginWindow::DeleteEvent), this);
 	
 	GtkCellRenderer *renderer;  
 	GtkTreeViewColumn *column;
@@ -80,13 +87,53 @@ GUIPluginWindow::GUIPluginWindow(int *feedback, WLSignal *wls)
 	gtk_tree_view_set_model (GTK_TREE_VIEW
 		(glade_xml_get_widget(xml, "plugin_view")), GTK_TREE_MODEL (model));
 	
+	
+	
+	gtk_window_set_default_size(GTK_WINDOW(glade_xml_get_widget(xml, "window")), 
+			atoi(config->GetFirstTag("size").GetAttr("width").c_str()),
+			atoi(config->GetFirstTag("size").GetAttr("height").c_str()));
+	
+	gtk_widget_show_all(glade_xml_get_widget(xml, "window"));
+	
 	DisplayPlugins();
+	
 }
 
 
 GUIPluginWindow::~GUIPluginWindow()
 {
 	*feedback = false;
+}
+
+int
+GUIPluginWindow::ReadConfig(WokXMLTag *tag)
+{
+	if ( config )
+		delete config;
+	
+	config = new WokXMLTag (tag->GetFirstTag("config"));
+	return 1;
+}
+
+void
+GUIPluginWindow::SaveConfig()
+{
+	int width, height;
+	gtk_window_get_size(GTK_WINDOW(glade_xml_get_widget(xml, "window")), &width, &height);
+
+	std::stringstream s_width, s_height;
+	s_width << width;
+	s_height << height;
+
+	config->GetFirstTag("size").AddAttr("width", s_width.str().c_str());
+	config->GetFirstTag("size").AddAttr("height", s_height.str().c_str());	
+	
+	EXP_SIGUNHOOK("Config XML Change /plugin/window", &GUIPluginWindow::ReadConfig, 500);
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/plugin/window");
+	conftag.AddTag(config);
+	wls->SendSignal("Config XML Store", &conftag);
+	EXP_SIGHOOK("Config XML Change /plugin/window", &GUIPluginWindow::ReadConfig, 500);
 }
 
 void
@@ -178,6 +225,14 @@ GUIPluginWindow::DisplayPlugins()
 			}
 		}
 	}
+}
+
+
+gboolean
+GUIPluginWindow::DeleteEvent( GtkWidget *widget, GdkEvent *event, GUIPluginWindow *c)
+{
+	c->SaveConfig();
+	return FALSE;
 }
 
 void

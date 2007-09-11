@@ -25,9 +25,12 @@
 #include <iostream>
 #include <glade/glade.h>
 
+#include <Woklib/WokLibSignal.h>
+#include <Woklib/WokXMLTag.h>
+
 using namespace Woklib;
 
-class GUIPluginWindow
+class GUIPluginWindow : public WLSignalInstance
 {
 	public:
 		GUIPluginWindow(int *feedback, WLSignal *wls);
@@ -35,6 +38,9 @@ class GUIPluginWindow
 	
 	void DisplayPlugins();
 
+	int ReadConfig(WokXMLTag *tag);
+	void SaveConfig();
+	
 	static void load_destroy( GtkWidget *widget, GUIPluginWindow *c );
 	static void Destroy( GtkWidget *widget, GUIPluginWindow *c );
 	static void Cancel_Button( GtkWidget *widget, GUIPluginWindow *c  );
@@ -43,7 +49,10 @@ class GUIPluginWindow
 	static void Remove_Button( GtkWidget *widget, GUIPluginWindow *c );
 	static void Reload_Button( GtkWidget *widget, GUIPluginWindow *c );
 	static void Toggled (GtkCellRendererToggle *cell, gchar *path_str, GUIPluginWindow *c);
+	static gboolean DeleteEvent( GtkWidget *widget, GdkEvent *event, GUIPluginWindow *c);
 	protected:
+		WokXMLTag *config;
+	
 		GladeXML *filexml;
 		GladeXML *xml;
 		GtkListStore *model;
