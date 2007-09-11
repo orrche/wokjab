@@ -151,7 +151,22 @@ RosterItem::Update(WokXMLTag *tag)
 		tmp_pix = gdk_pixbuf_new_from_file(tag->GetFirstTag("columns").GetFirstTag("post_pix").GetBody().c_str(), &err);
 		if ( tmp_pix )
 		{
-			post_pix = gdk_pixbuf_scale_simple(tmp_pix, AVATAR_SIZE, AVATAR_SIZE, GDK_INTERP_BILINEAR);
+			int pwidth = gdk_pixbuf_get_width(tmp_pix);
+			int pheight = gdk_pixbuf_get_height(tmp_pix);
+			int w,h;
+			
+			if ( pwidth > pheight )
+			{
+				w = AVATAR_SIZE;
+				h = int(pheight / ( ((double)pwidth) / AVATAR_SIZE ));
+			}
+			else
+			{
+				w = int(pwidth / ( ((double)pheight) / AVATAR_SIZE ));
+				h = AVATAR_SIZE;
+			}
+
+			post_pix = gdk_pixbuf_scale_simple(tmp_pix, w, h, GDK_INTERP_BILINEAR);
 			g_object_unref(tmp_pix);
 		}
 	}

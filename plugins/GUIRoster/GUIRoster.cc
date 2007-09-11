@@ -58,7 +58,7 @@ GUIRoster::CreateWid()
 	pre_pix_column = gtk_tree_view_column_new();
 	
 	renderer_pix = gtk_cell_renderer_pixbuf_new ();
-	g_object_set(renderer_pix, "xalign", 0.0, "ypad", 0, NULL);
+	g_object_set(renderer_pix, "xalign", 0.0, "yalign", 0.0, "ypad", 0, "xpad", 0, NULL);
 	gtk_tree_view_column_pack_start(pre_pix_column, renderer_pix, FALSE);
 	gtk_tree_view_column_set_attributes(pre_pix_column, renderer_pix,
                                              "pixbuf", PRE_PIX_COLUMN,
@@ -68,7 +68,7 @@ GUIRoster::CreateWid()
 	
 	text_column = gtk_tree_view_column_new();
 	renderer = gtk_cell_renderer_text_new ();
-	g_object_set(renderer, "xalign", 0.0, "ypad", 0, NULL);
+	g_object_set(renderer, "xalign", 0.0, "yalign", 0.0, "ypad", 0, NULL);
 	gtk_tree_view_column_pack_start(text_column, renderer, TRUE);
 	gtk_tree_view_column_add_attribute(text_column, renderer,
                                              "markup", TEXT_COLUMN);
@@ -78,7 +78,7 @@ GUIRoster::CreateWid()
 
 	post_pix_column = gtk_tree_view_column_new();
 	renderer_pix = gtk_cell_renderer_pixbuf_new ();
-	g_object_set(renderer_pix, "xalign", 0.0, "ypad", 0, NULL);
+	g_object_set(renderer_pix, "xalign", 1.0, "yalign", 0.0, "ypad", 0, NULL);
 	gtk_tree_view_column_pack_end(post_pix_column, renderer_pix, FALSE);
 	gtk_tree_view_column_set_attributes(post_pix_column, renderer_pix,
                                              "pixbuf", POST_PIX_COLUMN,
