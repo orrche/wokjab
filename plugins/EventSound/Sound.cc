@@ -55,7 +55,7 @@ Sound::Event(WokXMLTag *tag)
 	
 	for( iter = tag->GetTagList("item").begin() ; iter != tag->GetTagList("item").end() ; iter++)
 	{
-		if((**iter).GetAttr("signal") == "Jabber GUI MessageDialog Open")
+		if( true )
 		{
 			int pid,status;
 			switch (pid = fork()){

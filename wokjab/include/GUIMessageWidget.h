@@ -52,7 +52,9 @@ class GUIMessageWidget : public WLSignalInstance
 		int NewPresence(WokXMLTag *tag);
 		int Activate(WokXMLTag *tag);
 		int Close(WokXMLTag *tag);
-		
+		int NewEvent(WokXMLTag *tag);
+		int RemoveEvent(WokXMLTag *tag);
+	
 		void SetLabel();
 	protected:
 		static gboolean focus_event (GtkWidget *widget, GdkEventFocus *event, GUIMessageWidget *c);
@@ -67,6 +69,8 @@ class GUIMessageWidget : public WLSignalInstance
 		static gboolean Scroll (GtkWidget *widget, GdkEventScroll *event, GUIMessageWidget *c);
 		static gboolean tw1_event_after (GtkWidget *text_view, GdkEvent  *ev, GUIMessageWidget *c);
 		static gboolean key_press_event(GtkWidget * widget, GdkEventKey * event, GUIMessageWidget *c);
+		static gboolean CommandExec(GtkWidget *button, GdkEventButton *event, GUIMessageWidget *c);
+	
 		void HookSignals();
 		void UnHookSignals();
 
@@ -76,6 +80,7 @@ class GUIMessageWidget : public WLSignalInstance
 		GtkWidget *expander;
 		GtkWidget *vbox;
 		GtkWidget *tophbox;
+		GtkWidget *incomming_box;
 		GtkWidget *scroll1;
 		GtkWidget *textview1;
 		GtkWidget *scroll2;
@@ -118,6 +123,7 @@ class GUIMessageWidget : public WLSignalInstance
 		std::map<std::string, GtkTextTag*> tags;
 		int cmd_count;
 		std::map<int, WokXMLTag *> commands;
+		std::map<GtkWidget *, WokXMLTag*> event_list;
 };
 
 

@@ -51,7 +51,7 @@ IdleSession::DeathWatch(WokXMLTag *tag)
 	if ( ( time(0) - t ) > (59*3) )
 	{
 		woklib_debug(wls, "Connection " + session + " seams to have timedout\n"+
-																				"But for now we are ignoring that");
+							"But for now we are ignoring that");
 		/*
 		WokXMLTag mtag(NULL, "message");
 		mtag.AddAttr("session", session);

@@ -43,19 +43,19 @@ from(from)
 	GtkWidget *label_eventbox;
 
 	eventbox = gtk_event_box_new();
-	vbox = gtk_vbox_new( false, 0 );
+	vbox = gtk_vbox_new( FALSE, 0 );
 	fontsize = 1;
 	cmd_count = 1;
 	
 	gtk_container_add (GTK_CONTAINER(eventbox), vbox);
 	GTK_WIDGET_SET_FLAGS (eventbox, GTK_CAN_FOCUS);
-	tophbox = gtk_hbox_new( false, 0);
+	tophbox = gtk_hbox_new( FALSE, 0);
 	vpaned = gtk_vpaned_new();
 	label_image = gtk_image_new();
 	image = gtk_image_new();
 
 	gtk_container_set_border_width (GTK_CONTAINER (vpaned), 5);
-	gtk_box_pack_start( GTK_BOX(vbox), tophbox, false, false, 0 );
+	gtk_box_pack_start( GTK_BOX(vbox), tophbox, FALSE, FALSE, 0 );
 
 	WokXMLTag querytag(NULL, "query");
 	WokXMLTag &itemtag = querytag.AddTag("item");
@@ -70,20 +70,22 @@ from(from)
 		nick = from;
 
 	/* Whatever to show the JID line at the top of the message window */
-	gtk_box_pack_start( GTK_BOX(tophbox), image, false, false, 5 );
+	gtk_box_pack_start( GTK_BOX(tophbox), image, FALSE, FALSE, 5 );
 	jid_label = gtk_label_new("");
 	gtk_box_pack_start( GTK_BOX(tophbox), jid_label, TRUE, TRUE, 0);
 	SetLabel();
 	gtk_label_set_ellipsize(GTK_LABEL(jid_label), PANGO_ELLIPSIZE_END);
 	gtk_misc_set_alignment (GTK_MISC (jid_label), 0, 0);
 	/* Reading and writing area */
-	gtk_box_pack_start( GTK_BOX( vbox) , vpaned, true, true, 0 );
+	gtk_box_pack_start( GTK_BOX( vbox) , vpaned, TRUE, TRUE, 0 );
 
 
 	/* Reading Area */
 	textview1 = gtk_text_view_new();
 	scroll1 = gtk_scrolled_window_new(NULL, NULL);
-	gtk_paned_pack1( GTK_PANED( vpaned) , scroll1, true, true);
+	incomming_box = gtk_vbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(incomming_box), scroll1, TRUE, TRUE, 2);
+	gtk_paned_pack1( GTK_PANED( vpaned) , incomming_box, TRUE, TRUE);
 	GtkTextIter iter;
 	gtk_container_add (GTK_CONTAINER (scroll1), textview1);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW( scroll1 ), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -256,6 +258,8 @@ from(from)
 	gtk_widget_grab_focus(textview2);
 	HookSignals();
 
+	EXP_SIGHOOK("Jabber Event Add", &GUIMessageWidget::NewEvent, 1000);
+	EXP_SIGHOOK("Jabber Event Remove", &GUIMessageWidget::RemoveEvent, 1000);
 }
 
 
@@ -443,6 +447,7 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 		if( ! focus )
 		{
 			WokXMLTag eventtag(NULL, "event");
+			eventtag.AddAttr("type", "message");
 			WokXMLTag &itemtag = eventtag.AddTag("item");
 
 			itemtag.AddAttr("jid", tag->GetFirstTag("message").GetAttr("from"));
@@ -472,6 +477,101 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 	{
 		InsertCommand(**iter);
 	}
+}
+
+int
+GUIMessageWidget::RemoveEvent(WokXMLTag *tag)
+{
+	std::list<WokXMLTag *>::iterator itemiter;
+	for(itemiter = tag->GetTagList("item").begin() ; itemiter != tag->GetTagList("item").end(); itemiter++)
+	{	
+		std::map<GtkWidget *, WokXMLTag *>::iterator iter;
+		std::map<GtkWidget *, WokXMLTag *>::iterator nxtiter;
+		
+		for( iter = event_list.begin() ; iter != event_list.end() ; )
+		{
+			if( (**itemiter).In(*iter->second) )
+			{
+				nxtiter = iter;
+				nxtiter++;
+				
+				gtk_widget_destroy(iter->first);
+				delete iter->second;
+				event_list.erase(iter);
+				
+				iter = nxtiter;
+			}
+			else
+				iter++;
+			
+			
+		}
+	}
+	return 1;
+}
+
+int
+GUIMessageWidget::NewEvent(WokXMLTag *tag)
+{
+	std::list <WokXMLTag *>::iterator itemiter;
+	
+	for( itemiter = tag->GetTagList("item").begin() ; itemiter != tag->GetTagList("item").end() ; itemiter++ )
+	{	
+		if ( (*itemiter)->GetAttr("jid") != from )
+			return 1;
+		GtkWidget *label = gtk_label_new((*itemiter)->GetFirstTag("description").GetBody().c_str());
+		GtkWidget *vbox = gtk_vbox_new(FALSE, 2);
+		
+		gtk_label_set_line_wrap (GTK_LABEL(label), TRUE);
+				
+		gtk_box_pack_end(GTK_BOX(incomming_box), vbox, FALSE, FALSE, 2 );
+		gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
+		std::list <WokXMLTag *> *com_list;
+		std::list <WokXMLTag *>::iterator c_iter;
+		
+		com_list = &(*itemiter)->GetTagList("commands");
+		for( c_iter = com_list->begin() ; c_iter != com_list->end() ; c_iter++ )
+		{
+			GtkWidget *bbox;
+			//GtkWidget *label;
+			bbox = gtk_hbox_new(FALSE, 2);
+			//label = gtk_label_new((*c_iter)->GetAttr("name").c_str());
+			
+			gtk_box_pack_start(GTK_BOX(vbox), bbox, FALSE, FALSE, 0);
+			//gtk_box_pack_start(GTK_BOX(bbox), label, FALSE, FALSE, 0);
+			
+			std::list <WokXMLTag *> *list = &(*c_iter)->GetTagList("command");
+			std::list <WokXMLTag *>::iterator iter;
+			for ( iter = list->begin(); iter != list->end(); iter++)
+			{
+				GtkWidget *button = gtk_button_new_with_label((*iter)->GetAttr("name").c_str());
+				
+				gtk_box_pack_end(GTK_BOX(bbox), button, FALSE, FALSE, 0);
+				g_object_set_data(G_OBJECT(button), "xml", *iter);
+				
+				g_signal_connect (button , "button-press-event",	G_CALLBACK (GUIMessageWidget::CommandExec),this);
+			}
+			
+		}
+		
+		gtk_widget_show_all(vbox);
+		event_list[vbox] = new WokXMLTag(**itemiter);
+	}
+	
+	return 1;
+}
+
+gboolean
+GUIMessageWidget::CommandExec(GtkWidget *button, GdkEventButton *event, GUIMessageWidget *c)
+{
+	WokXMLTag *tag = static_cast <WokXMLTag *> (g_object_get_data(G_OBJECT(button), "xml"));
+	if ( tag && !tag->GetFirstTag("signal").GetTags().empty() )
+	{
+		c->wls->SendSignal(tag->GetFirstTag("signal").GetAttr("name"), **tag->GetFirstTag("signal").GetTags().begin());
+		return TRUE;
+	}
+
+	return FALSE;
 }
 
 int
@@ -602,7 +702,7 @@ GUIMessageWidget::DragDest(GtkWidget *widget, GdkDragContext *dc,gint x, gint y,
 			send.AddAttr("to", c->from);
 			send.AddAttr("session", c->session);
 			send.AddAttr("name", file);
-			
+			send.AddAttr("proxy_type", "auto");
 			c->wls->SendSignal("Jabber Stream File Send", send);
 			g_free(file);
 

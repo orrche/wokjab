@@ -48,6 +48,7 @@ GUIMessageHandler::GUIMessageHandler(WLSignal *wls) : WLSignalInstance(wls)
 	EXP_SIGHOOK("Jabber GUI MessageDialogOpenMenu", &GUIMessageHandler::MenuOpenDialog, 1000);
 	EXP_SIGHOOK("Jabber GUI Message GetSpool", &GUIMessageHandler::GetSpool, 1000);
 
+	
 	std::string datadir = PACKAGE_DATA_DIR;
 	pix_msg = gdk_pixbuf_new_from_file(std::string(datadir + "/wokjab/msg.png").c_str(),NULL);
 	msgicon = datadir + "/wokjab/msg.png";
@@ -76,7 +77,6 @@ GUIMessageHandler::~GUIMessageHandler()
 {
 	delete guiwd;
 }
-
 
 void
 GUIMessageHandler::WriteToSpool(WokXMLTag *tag)
@@ -153,6 +153,7 @@ void
 GUIMessageHandler::TriggerEvent(WokXMLTag *tag)
 {
 	WokXMLTag eventtag(NULL, "event");
+	eventtag.AddAttr("type", "message");
 	WokXMLTag &itemtag = eventtag.AddTag("item");
 
 	itemtag.AddAttr("icon", msgicon);
@@ -260,6 +261,7 @@ GUIMessageHandler::OpenDialog(WokXMLTag *tag)
 		
 		
 		WokXMLTag eventtag(NULL, "event");
+		eventtag.AddAttr("type", "message");
 		WokXMLTag &itemtag = eventtag.AddTag("item");
 		itemtag.AddAttr("jid", tag->GetAttr("jid"));
 		itemtag.AddAttr("session", session);

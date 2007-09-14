@@ -25,45 +25,43 @@ id(xml->GetFirstTag("iq").GetAttr("id")),
 session(xml->GetAttr("session")),
 lsid(lsid)
 {
-	GtkWidget *main_vbox;
-	GtkWidget *okbutton;
-	GtkWidget *cancelbutton;
-	GtkWidget *buttonbox;
-	GtkWidget *jid_label;
-	
 	requested = false;
 	origxml = new WokXMLTag(*xml);
 	
-	okbutton = gtk_button_new_with_mnemonic("_OK");
-	cancelbutton = gtk_button_new_with_mnemonic("_Cancel");
-	buttonbox = gtk_hbutton_box_new();
-	
-	
-	main_vbox = gtk_vbox_new(false, false);
-	chooser = gtk_file_chooser_widget_new(GTK_FILE_CHOOSER_ACTION_SAVE);
-	gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER(chooser), origxml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("file").GetAttr("name").c_str() );
-	
-	jid_label = gtk_label_new(xml->GetFirstTag("iq").GetAttr("from").c_str());
-	
-	gtk_box_pack_start(GTK_BOX(buttonbox), okbutton, false, false, 2);
-	gtk_box_pack_start(GTK_BOX(buttonbox), cancelbutton, false, false, 2);
-	gtk_box_pack_start(GTK_BOX(main_vbox), jid_label, false, false, 2);
-	gtk_box_pack_start(GTK_BOX(main_vbox), chooser, true, true, 2);
-	gtk_box_pack_start(GTK_BOX(main_vbox), buttonbox, false, false, 2);
-	
-	
-	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	gtk_container_add(GTK_CONTAINER(window), main_vbox);
-	gtk_window_set_title (GTK_WINDOW (window), "File Transfear");
-	
-	g_signal_connect_swapped (G_OBJECT (cancelbutton), "clicked",
-			      G_CALLBACK (gtk_widget_destroy),
-                              G_OBJECT (window));
-	g_signal_connect (G_OBJECT (window), "destroy",
-					(void(*)())G_CALLBACK (jep96Widget::Destroy), this);
-	g_signal_connect (G_OBJECT (okbutton), "clicked",
-					G_CALLBACK(jep96Widget::ButtonPress), this);
-	gtk_widget_show_all(window);
+	eventtag = new WokXMLTag("event");
+	eventtag->AddAttr("type", "jep0096 IncommingFile");
+	WokXMLTag &item = eventtag->AddTag("item");
+	item.AddAttr("icon", "/usr/local/share/wokjab/dnd.png");
+	item.AddAttr("jid", from);
+	item.AddAttr("session", session);
+	item.AddTag("description").AddText(from + " sends you the file ");
+	WokXMLTag &commands = item.AddTag("commands");
+	{
+		WokXMLTag &command = commands.AddTag("command");
+		command.AddAttr("name", "Recive File");
+		WokXMLTag &signal = command.AddTag("signal");
+		signal.AddAttr("name", "Jabber Stream ReciveWid Open " + id);
+		signal.AddTag("empty"); // We need to send some thing :) 
+		EXP_SIGHOOK("Jabber Stream ReciveWid Open " + id, &jep96Widget::Open, 1000);
+	}
+	wls->SendSignal("Jabber Event Add", eventtag);
+		
+	/*
+	<signal level='3' name='Jabber Event Add'>
+		<event>
+			<item icon='/usr/local/share/wokjab/msg.png' jid='nedo@jabber.se/wokjab' session='jabber0'>
+				<description>nedo@jabber.se/wokjab röv</description>
+				<commands>
+					<command name='Open Dialog'>
+						<signal name='Jabber GUI MessageDialog Open'>
+							<item jid='nedo@jabber.se/wokjab' session='jabber0'></item>
+						</signal>
+					</command>
+				</commands>
+			</item>
+		</event>
+	</signal>
+	*/
 }
 
 jep96Widget::~jep96Widget()
@@ -90,6 +88,58 @@ jep96Widget::~jep96Widget()
 	}
 	delete origxml;
 	
+}
+
+int
+jep96Widget::Open(WokXMLTag *tag)
+{
+	if ( !eventtag ) 
+		return 1;
+//	EXP_SIGUNHOOK("Jabber Stream ReciveWid Open " + id, &jep96Widget::Open, 1000);
+	wls->SendSignal("Jabber Event Remove", eventtag);
+	delete eventtag;
+	eventtag = NULL;
+	
+	
+	GtkWidget *main_vbox;
+	GtkWidget *okbutton;
+	GtkWidget *cancelbutton;
+	GtkWidget *buttonbox;
+	GtkWidget *jid_label;
+	
+	okbutton = gtk_button_new_with_mnemonic("_OK");
+	cancelbutton = gtk_button_new_with_mnemonic("_Cancel");
+	buttonbox = gtk_hbutton_box_new();
+	
+	
+	main_vbox = gtk_vbox_new(false, false);
+	chooser = gtk_file_chooser_widget_new(GTK_FILE_CHOOSER_ACTION_SAVE);
+	gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER(chooser), origxml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("file").GetAttr("name").c_str() );
+	
+	jid_label = gtk_label_new(origxml->GetFirstTag("iq").GetAttr("from").c_str());
+	
+	gtk_box_pack_start(GTK_BOX(buttonbox), okbutton, false, false, 2);
+	gtk_box_pack_start(GTK_BOX(buttonbox), cancelbutton, false, false, 2);
+	gtk_box_pack_start(GTK_BOX(main_vbox), jid_label, false, false, 2);
+	gtk_box_pack_start(GTK_BOX(main_vbox), chooser, true, true, 2);
+	gtk_box_pack_start(GTK_BOX(main_vbox), buttonbox, false, false, 2);
+	
+	
+	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	gtk_container_add(GTK_CONTAINER(window), main_vbox);
+	gtk_window_set_title (GTK_WINDOW (window), "File Transfear");
+	
+	g_signal_connect_swapped (G_OBJECT (cancelbutton), "clicked",
+			      G_CALLBACK (gtk_widget_destroy),
+                              G_OBJECT (window));
+	g_signal_connect (G_OBJECT (window), "destroy",
+					(void(*)())G_CALLBACK (jep96Widget::Destroy), this);
+	g_signal_connect (G_OBJECT (okbutton), "clicked",
+					G_CALLBACK(jep96Widget::ButtonPress), this);
+	gtk_widget_show_all(window);
+	
+	
+	return 1;
 }
 
 void

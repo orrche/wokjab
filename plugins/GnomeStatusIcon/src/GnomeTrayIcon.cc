@@ -97,10 +97,12 @@ GnomeTrayIcon::tray_icon_pressed (GtkWidget * widget, GdkEventButton *event, gpo
 			return;		
 		}
 		
+		std::cout << "We are here right ?!" << std::endl;
 		if (!(gti->EventList.front())->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetTags().empty() )
 			gti->wls->SendSignal((gti->EventList.front())->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetAttr("name"), 
 									*(gti->EventList.front())->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetTags().begin());
 		
+		std::cout << "Hum hum" << std::endl;
 		if( gti->EventList.empty() )
 			return;
 

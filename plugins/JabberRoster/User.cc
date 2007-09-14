@@ -562,12 +562,14 @@ User::RemoveEvent(WokXMLTag *tag)
 {
 	std::list <WokXMLTag *>::iterator iter;
 	std::list <WokXMLTag *>::iterator tmpiter;
-	
+	std::cout << "In the user trying to remove the event..." << std::endl;
+	std::cout << *tag << std::endl;
 	for( iter = Events.begin() ; iter != Events.end() ;)
 	{
-		if (tag->In(**iter))
+		std::cout << **iter << std::endl;
+		if (tag->In(**iter) || **iter == *tag)
 		{
-		
+			std::cout << "Something removed... now why doesn't things happen?!?" << std::endl;
 			tmpiter = iter;
 			iter++;
 			delete *tmpiter;
