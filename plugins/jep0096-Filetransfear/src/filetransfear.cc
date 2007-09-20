@@ -43,8 +43,9 @@ WoklibPlugin(wls)
 	g_signal_connect (G_OBJECT (glade_xml_get_widget(gxml, "removebutton")), "clicked",
 			G_CALLBACK (jep96::RemoveStream), this);
 	
-	file_store = gtk_list_store_new (5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-  gtk_tree_view_set_model (GTK_TREE_VIEW(fileview), GTK_TREE_MODEL(file_store));
+	file_store = gtk_list_store_new (9, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
+									 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_BOOLEAN);
+  	gtk_tree_view_set_model (GTK_TREE_VIEW(fileview), GTK_TREE_MODEL(file_store));
 	
 	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes ("File/ID", renderer, "text", 0, NULL);
@@ -59,7 +60,13 @@ WoklibPlugin(wls)
 	column = gtk_tree_view_column_new_with_attributes ("sid", renderer, "text", 3, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
 	renderer = gtk_cell_renderer_text_new ();
-	column = gtk_tree_view_column_new_with_attributes ("jid", renderer, "text", 4, NULL);
+	column = gtk_tree_view_column_new_with_attributes ("Sender", renderer, "text", 4, NULL);
+	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
+	renderer = gtk_cell_renderer_text_new ();
+	column = gtk_tree_view_column_new_with_attributes ("Reciver", renderer, "text", 5, NULL);
+	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
+	renderer = gtk_cell_renderer_text_new ();
+	column = gtk_tree_view_column_new_with_attributes ("Session", renderer, "text", 6, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
 	
 	EXP_SIGHOOK("Jabber XML IQ New si set xmlns:http://jabber.org/protocol/si", &jep96::Wid, 999);
@@ -76,6 +83,8 @@ WoklibPlugin(wls)
 	EXP_SIGHOOK("Jabber Stream File Status Finished", &jep96::Finnished, 500);
 	EXP_SIGHOOK("Jabber Stream File Status Rejected", &jep96::Rejected, 500);
 	EXP_SIGHOOK("Jabber Stream File Status Accepted", &jep96::Accepted, 500);
+	
+	EXP_SIGHOOK("Jabber Stream Event Finished Ignore", &jep96::FinishIgnore, 1000);
 	sidnum = 0;
 	
 	EXP_SIGHOOK("Config XML Change /file-transfear/proxy", &jep96::ReadConfig, 500);
@@ -165,7 +174,11 @@ jep96::Wid(WokXMLTag *xml)
 											1, "--",
 											2, "Negotiating" , 
 											3, sslsid.str().c_str(), 
-											4, xml->GetFirstTag("iq").GetAttr("from").c_str(), -1);
+											4, xml->GetFirstTag("iq").GetAttr("from").c_str(), 
+											5, xml->GetFirstTag("iq").GetAttr("to").c_str(),
+											6, xml->GetAttr("session").c_str(), 
+											7, NULL,
+											8, FALSE, -1);
 //	gtk_widget_show(filewindow);
 //	gtk_window_present (GTK_WINDOW(filewindow));
 	rows[sslsid.str()] = gtk_tree_row_reference_new(GTK_TREE_MODEL(file_store),gtk_tree_model_get_path(GTK_TREE_MODEL(file_store), &iter));
@@ -275,11 +288,25 @@ jep96::SendFile(WokXMLTag *xml)
 	
 	GtkTreeIter iter;
 	
+	std::string myjid;
+	WokXMLTag jiddata("session");
+	jiddata.AddTag("item").AddAttr("session", xml->GetAttr("session"));
+	wls->SendSignal("Jabber GetUserData", jiddata);
+	myjid = jiddata.GetFirstTag("item").GetFirstTag("username").GetBody() + "@" +
+			jiddata.GetFirstTag("item").GetFirstTag("server").GetBody() + "/" +
+			jiddata.GetFirstTag("item").GetFirstTag("resource").GetBody();
+	std::cout << "What the fuck " << myjid << "  " << jiddata << std::endl;
+	
 	gtk_list_store_append (file_store, &iter);
 	gtk_list_store_set (file_store, &iter, 0, filename.c_str(),
 											1, "--",
 											2, "Negotiating" , 
-											3, sid.c_str(), -1);
+											3, sid.c_str(),
+											4, myjid.c_str(),
+											5, to.c_str(),
+											6, xml->GetAttr("session").c_str(), 
+											7, NULL,
+											8, TRUE, -1);
 //	gtk_widget_show(filewindow);
 //	gtk_window_present (GTK_WINDOW(filewindow));
 	rows[sid] = gtk_tree_row_reference_new(GTK_TREE_MODEL(file_store),gtk_tree_model_get_path(GTK_TREE_MODEL(file_store), &iter));
@@ -337,6 +364,28 @@ jep96::SendFile(WokXMLTag *xml)
 }
 
 int
+jep96::FinishIgnore(WokXMLTag *tag)
+{
+	GtkTreeIter iter;
+	if ( rows.find(tag->GetFirstTag("sid").GetAttr("name")) != rows.end() )
+	{
+		if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[tag->GetFirstTag("sid").GetAttr("name")])))
+		{
+			WokXMLTag *xml;
+			gtk_tree_model_get(GTK_TREE_MODEL(file_store), &iter, 7, &xml, -1);
+			if ( xml )
+			{
+				wls->SendSignal("Jabber Event Remove", xml);
+				gtk_list_store_set (file_store, &iter, 7, NULL , -1);
+			
+				delete xml;
+			}
+		}
+	}
+	return 1;	
+}
+
+int
 jep96::Finnished(WokXMLTag *fintag)
 {
 	GtkTreeIter iter;
@@ -344,11 +393,46 @@ jep96::Finnished(WokXMLTag *fintag)
 	{
 		if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[fintag->GetAttr("sid")])))
 		{
-			gtk_list_store_set (file_store, &iter, 2, "Finished" , -1);
+			gchar *session, *from, *to;
+			gboolean sending;
+			WokXMLTag *eventtag;
+			eventtag = new WokXMLTag("event");
+			
+			gtk_list_store_set (file_store, &iter, 2, "Finished", 7, eventtag, -1);
+			gtk_tree_model_get(GTK_TREE_MODEL(file_store), &iter, 4, &from, 5, &to, 6, &session, 8, &sending, -1);
+			
+			
+			eventtag->AddAttr("type", "jep0096 FinishedFile");
+			WokXMLTag &item = eventtag->AddTag("item");
+			item.AddAttr("icon", "/usr/local/share/wokjab/dnd.png");
+			item.AddAttr("session", session);
+			if ( sending == TRUE )
+			{
+				item.AddTag("description").AddText("File finished sending to " + std::string(to));
+				item.AddAttr("jid", to);
+			}
+			else
+			{
+				item.AddTag("description").AddText("File finished reciving from " + std::string(from));
+				item.AddAttr("jid", from);
+			}
+			
+			WokXMLTag &commands = item.AddTag("commands");
+			{
+				WokXMLTag &command = commands.AddTag("command");
+				command.AddAttr("name", "Ignore");
+				WokXMLTag &signal = command.AddTag("signal");
+				signal.AddAttr("name", "Jabber Stream Event Finished Ignore");
+				signal.GetFirstTag("data").AddTag("sid").AddAttr("name", fintag->GetAttr("sid"));
+			}
+			wls->SendSignal("Jabber Event Add", eventtag);
+			g_free(session);
+			g_free(from);
+			g_free(to);
 		}
 	}
 
-	return true;
+	return 1;
 }
 
 int
@@ -368,7 +452,7 @@ jep96::Accepted(WokXMLTag *acctag)
 		}
 	}
 	
-	return true;
+	return 1;
 }
 
 int
@@ -384,7 +468,7 @@ jep96::Terminated(WokXMLTag *termtag)
 		}
 	}
 	
-	return true;
+	return 1;
 }
 
 std::string

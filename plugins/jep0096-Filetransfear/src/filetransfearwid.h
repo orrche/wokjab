@@ -53,6 +53,7 @@ class jep96Widget : public WLSignalInstance
 		std::string id;
 		std::string session;
 		std::string lsid;
+		std::string xdataid;
 		bool requested;
 };
 

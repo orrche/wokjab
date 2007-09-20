@@ -84,6 +84,7 @@ class GUIWindow : public WLSignalInstance
 		void SetStatusTo(const std::string &status);
 
 		std::map <GtkWidget *, std::string> MainMenuSignals;
+		//std::map <std::string, int> SavedStatusMsges;
 		std::list <std::string> ActiveSessions;
 		std::vector <int> Widgets;
 		std::string current_status;

@@ -495,10 +495,23 @@ GUIMessageWidget::RemoveEvent(WokXMLTag *tag)
 				nxtiter = iter;
 				nxtiter++;
 				
+				std::list <GtkWidget *>::iterator list_iter;
+				list_iter = std::find(event_list_order.begin(), event_list_order.end(), iter->first);
+
+				if ( iter->first == *event_list_order.begin() )
+				{
+					event_list_order.erase(list_iter);
+					if ( ! event_list_order.empty() )
+					{	
+						gtk_widget_show(*event_list_order.begin());
+					}
+				}
+				else
+					event_list_order.erase(list_iter);
+				
 				gtk_widget_destroy(iter->first);
 				delete iter->second;
 				event_list.erase(iter);
-				
 				iter = nxtiter;
 			}
 			else
@@ -554,8 +567,11 @@ GUIMessageWidget::NewEvent(WokXMLTag *tag)
 			
 		}
 		
-		gtk_widget_show_all(vbox);
+		if( event_list_order.empty()) 
+			gtk_widget_show_all(vbox);
 		event_list[vbox] = new WokXMLTag(**itemiter);
+		event_list_order.push_back(vbox);
+		
 	}
 	
 	return 1;

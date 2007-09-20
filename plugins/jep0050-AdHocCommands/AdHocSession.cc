@@ -88,7 +88,7 @@ AdHocSession::CancelButton(GtkButton *button, AdHocSession *c)
 void
 AdHocSession::Button(GtkButton *button, AdHocSession *c)
 {
-		WokXMLTag xdata(NULL, "empty");
+	WokXMLTag xdata(NULL, "empty");
 	c->wls->SendSignal("Jabber jabber:x:data Get " + c->xdataid, xdata);
 	c->XDataResponse(&xdata, c->buttons[GTK_WIDGET(button)]);
 	

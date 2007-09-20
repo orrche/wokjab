@@ -125,6 +125,7 @@ UserTune::Message(WokXMLTag *tag)
 	if ( user.find(tag->GetFirstTag("message").GetAttr("from")) != user.end() )
 	{
 		delete user[tag->GetFirstTag("message").GetAttr("from")];
+		user.erase(tag->GetFirstTag("message").GetAttr("from"));
 	}
 	
 	WokXMLTag *tune = NULL;

@@ -52,6 +52,7 @@ class jep96 : public WoklibPlugin
 		int MainMenu(WokXMLTag *tag);
 		int Show(WokXMLTag *tag);
 		int ReadConfig(WokXMLTag *tag);
+		int FinishIgnore(WokXMLTag *tag);
 	
 		std::string PrettySize(unsigned long long size);
 		static gboolean Delete( GtkWidget *widget, GdkEvent *event, jep96 *c);

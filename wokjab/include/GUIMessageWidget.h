@@ -124,6 +124,7 @@ class GUIMessageWidget : public WLSignalInstance
 		int cmd_count;
 		std::map<int, WokXMLTag *> commands;
 		std::map<GtkWidget *, WokXMLTag*> event_list;
+		std::list<GtkWidget *> event_list_order;
 };
 
 

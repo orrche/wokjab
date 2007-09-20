@@ -106,6 +106,9 @@ jep96Widget::Open(WokXMLTag *tag)
 	GtkWidget *cancelbutton;
 	GtkWidget *buttonbox;
 	GtkWidget *jid_label;
+	GtkWidget *socket;
+	
+	socket = gtk_socket_new();
 	
 	okbutton = gtk_button_new_with_mnemonic("_OK");
 	cancelbutton = gtk_button_new_with_mnemonic("_Cancel");
@@ -122,6 +125,7 @@ jep96Widget::Open(WokXMLTag *tag)
 	gtk_box_pack_start(GTK_BOX(buttonbox), cancelbutton, false, false, 2);
 	gtk_box_pack_start(GTK_BOX(main_vbox), jid_label, false, false, 2);
 	gtk_box_pack_start(GTK_BOX(main_vbox), chooser, true, true, 2);
+	gtk_box_pack_start(GTK_BOX(main_vbox), socket, false, false, 2);
 	gtk_box_pack_start(GTK_BOX(main_vbox), buttonbox, false, false, 2);
 	
 	
@@ -137,6 +141,15 @@ jep96Widget::Open(WokXMLTag *tag)
 	g_signal_connect (G_OBJECT (okbutton), "clicked",
 					G_CALLBACK(jep96Widget::ButtonPress), this);
 	gtk_widget_show_all(window);
+	
+	WokXMLTag tag_x(origxml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("feature").GetFirstTag("x"));
+	WokXMLTag jabberx(NULL, "data");
+	
+	jabberx.AddTag(&tag_x);
+	jabberx.AddTag("plug");
+	wls->SendSignal("Jabber jabber:x:data Init", &jabberx);
+	xdataid = jabberx.GetAttr("id");
+	gtk_socket_add_id(GTK_SOCKET(socket), atoi(jabberx.GetFirstTag("plug").GetAttr("id").c_str()));
 	
 	
 	return 1;
@@ -154,7 +167,11 @@ jep96Widget::Activate()
 	requested = true;
 	filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER(chooser));
 	EXP_SIGHOOK("Jabber Stream RequestAuthorisation", &jep96Widget::FileAuth, 1000);
-	
+
+	WokXMLTag xdata(NULL, "empty");
+	wls->SendSignal("Jabber jabber:x:data Get " + xdataid, xdata);
+	xdataresp(&xdata);
+	/*
 	WokXMLTag tag_x(origxml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("feature").GetFirstTag("x"));
 	WokXMLTag jabberx(NULL, "data");
 	
@@ -162,6 +179,7 @@ jep96Widget::Activate()
 	jabberx.AddTag(&tag_x);
 	wls->SendSignal("Jabber jabber:x:data Init", &jabberx);
 	EXP_SIGHOOK(jabberx.GetAttr("signal"), &jep96Widget::xdataresp, 1000);
+	*/
 }
 
 void 

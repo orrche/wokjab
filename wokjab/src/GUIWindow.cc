@@ -286,6 +286,8 @@ void
 GUIWindow::EntryStatusActivate(GtkEntry *entry, GUIWindow *c)
 {
 	std::string status = gtk_entry_get_text(entry);
+	
+//	SavedStatusMsges[status] = gtk_combo_box_get_active(GTK_COMBO_BOX(glade_xml_get_widget(preferencexml, "showentry")));
 	if ( c->current_status != status )
 		c->SetStatusTo(status);
 }
@@ -294,6 +296,7 @@ gboolean
 GUIWindow::EntryStatusLeft(GtkWidget *widget, GdkEventFocus *event, GUIWindow *c)
 {
 	std::string status = gtk_entry_get_text(GTK_ENTRY(widget));
+//	SavedStatusMsges[status] = gtk_combo_box_get_active(GTK_COMBO_BOX(glade_xml_get_widget(preferencexml, "showentry")));
 	if ( c->current_status != status )
 		c->SetStatusTo(status);
 	return FALSE;
