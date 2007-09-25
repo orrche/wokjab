@@ -231,9 +231,15 @@ from(from)
 
 
 	if( from.find("/") == std::string::npos )
+	{
+		from_no_resource = from;
 		hasresource = false;
+	}
 	else
+	{
+		from_no_resource = from.substr(0, from.find("/"));
 		hasresource = true;
+	}
 
 
 
@@ -263,6 +269,10 @@ from(from)
 
 	EXP_SIGHOOK("Jabber Event Add", &GUIMessageWidget::NewEvent, 1000);
 	EXP_SIGHOOK("Jabber Event Remove", &GUIMessageWidget::RemoveEvent, 1000);
+	
+	EXP_SIGHOOK("Jabber UserActivityUpdate " + session + " '" + XMLisize(from_no_resource)+"'", &GUIMessageWidget::UserActivities, 1000);
+	UserActivities(NULL);
+
 }
 
 
@@ -360,9 +370,8 @@ GUIMessageWidget::HookSignals()
 	EXP_SIGHOOK("Jabber XML Message To " + session + " " + from, &GUIMessageWidget::NewMessage, 500);
 	EXP_SIGHOOK("Jabber XML Presence To " + session + " " + from, &GUIMessageWidget::NewPresence, 500);
 	EXP_SIGHOOK("Jabber GUI Message Activate " + session + " " + from, &GUIMessageWidget::Activate, 500);	
-	EXP_SIGHOOK("Jabber UserActivityUpdate " + session + " '" + XMLisize(from)+"'", &GUIMessageWidget::UserActivities, 1000);
 	
-	UserActivities(NULL);
+	
 }
 
 void
@@ -371,18 +380,17 @@ GUIMessageWidget::UnHookSignals()
 	EXP_SIGUNHOOK("Jabber XML Message To " + session + " " + from, &GUIMessageWidget::NewMessage, 500);
 	EXP_SIGUNHOOK("Jabber XML Presence To " + session + " " + from, &GUIMessageWidget::NewPresence, 500);
 	EXP_SIGUNHOOK("Jabber GUI Message Activate " + session + " " + from, &GUIMessageWidget::Activate, 500);
-	EXP_SIGUNHOOK("Jabber UserActivityUpdate " + session + " '" + XMLisize(from)+"'", &GUIMessageWidget::UserActivities, 1000);
 }
 
 int
 GUIMessageWidget::UserActivities(WokXMLTag *tag)
 {
 	WokXMLTag entries("entries");
-	entries.AddAttr("jid", from);
+	entries.AddAttr("jid", from_no_resource);
 	entries.AddAttr("session", session);
 	
 	wls->SendSignal("Jabber UserActivityGet", entries);
-	wls->SendSignal("Jabber UserActivityGet " + session + " '" + XMLisize(from) + "'", entries);
+	wls->SendSignal("Jabber UserActivityGet " + session + " '" + XMLisize(from_no_resource) + "'", entries);
 		
 	std::list <WokXMLTag *>::iterator entry_iter;
 	
@@ -664,7 +672,7 @@ GUIMessageWidget::NewPresence(WokXMLTag *tag)
 		{
 			UnHookSignals();
 			if ( from.find("/") != std::string::npos )
-				from = from.substr(0,from.find("/"));
+				from = from_no_resource;
 			hasresource = false;
 
 			HookSignals();

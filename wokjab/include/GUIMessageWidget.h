@@ -110,6 +110,7 @@ class GUIMessageWidget : public WLSignalInstance
 		time_t xml_time;
 		
 		std::string from;
+		std::string from_no_resource;
 		std::string nick;
 		std::string resource;
 		std::string session;

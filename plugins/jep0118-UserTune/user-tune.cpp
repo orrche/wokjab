@@ -179,8 +179,11 @@ UserTune::Message(WokXMLTag *tag)
 						
 						if ( (*tuneiter)->GetAttr("xmlns") == "http://jabber.org/protocol/tune" )
 						{
-							tune = *tuneiter;
-							break;
+							if ( !(*tuneiter)->GetTags().empty() )
+							{
+								tune = *tuneiter;
+								break;
+							}
 						}
 					}
 					if( tune ) break;
