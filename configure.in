@@ -134,6 +134,7 @@ AC_OUTPUT(Makefile \
 	plugins/Reversi/pixmaps/Makefile  \
         plugins/RosterEvent/Makefile  \
 	plugins/EventSound/Makefile  \
+        plugins/EventManager/Makefile  \
 	plugins/toaster/Makefile  \
 	plugins/Tooltip/Makefile  \
 	plugins/python/Makefile  \

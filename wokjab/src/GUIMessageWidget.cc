@@ -44,6 +44,8 @@ from(from)
 
 	eventbox = gtk_event_box_new();
 	vbox = gtk_vbox_new( FALSE, 0 );
+	activitybox = gtk_vbox_new(FALSE,2);
+	activitytable = gtk_table_new(0,0, FALSE);
 	fontsize = 1;
 	cmd_count = 1;
 	
@@ -56,7 +58,8 @@ from(from)
 
 	gtk_container_set_border_width (GTK_CONTAINER (vpaned), 5);
 	gtk_box_pack_start( GTK_BOX(vbox), tophbox, FALSE, FALSE, 0 );
-
+	gtk_box_pack_start( GTK_BOX(vbox), activitybox, FALSE, FALSE, 0);
+	
 	WokXMLTag querytag(NULL, "query");
 	WokXMLTag &itemtag = querytag.AddTag("item");
 	itemtag.AddAttr("session", session);
@@ -337,7 +340,6 @@ GUIMessageWidget::tw1_event_after (GtkWidget *text_view, GdkEvent  *ev, GUIMessa
 			{
 				if( c->commands.find(command) != c->commands.end() )
 				{
-					std::cout << *(c->commands[command]) << std::endl;
 					if ( !c->commands[command]->GetFirstTag("signal").GetTags().empty() )
 					{
 						c->wls->SendSignal(c->commands[command]->GetFirstTag("signal").GetAttr("name"), *(c->commands[command]->GetFirstTag("signal").GetTags().begin()));
@@ -357,7 +359,10 @@ GUIMessageWidget::HookSignals()
 {
 	EXP_SIGHOOK("Jabber XML Message To " + session + " " + from, &GUIMessageWidget::NewMessage, 500);
 	EXP_SIGHOOK("Jabber XML Presence To " + session + " " + from, &GUIMessageWidget::NewPresence, 500);
-	EXP_SIGHOOK("Jabber GUI Message Activate " + session + " " + from, &GUIMessageWidget::Activate, 500);
+	EXP_SIGHOOK("Jabber GUI Message Activate " + session + " " + from, &GUIMessageWidget::Activate, 500);	
+	EXP_SIGHOOK("Jabber UserActivityUpdate " + session + " '" + XMLisize(from)+"'", &GUIMessageWidget::UserActivities, 1000);
+	
+	UserActivities(NULL);
 }
 
 void
@@ -366,6 +371,48 @@ GUIMessageWidget::UnHookSignals()
 	EXP_SIGUNHOOK("Jabber XML Message To " + session + " " + from, &GUIMessageWidget::NewMessage, 500);
 	EXP_SIGUNHOOK("Jabber XML Presence To " + session + " " + from, &GUIMessageWidget::NewPresence, 500);
 	EXP_SIGUNHOOK("Jabber GUI Message Activate " + session + " " + from, &GUIMessageWidget::Activate, 500);
+	EXP_SIGUNHOOK("Jabber UserActivityUpdate " + session + " '" + XMLisize(from)+"'", &GUIMessageWidget::UserActivities, 1000);
+}
+
+int
+GUIMessageWidget::UserActivities(WokXMLTag *tag)
+{
+	WokXMLTag entries("entries");
+	entries.AddAttr("jid", from);
+	entries.AddAttr("session", session);
+	
+	wls->SendSignal("Jabber UserActivityGet", entries);
+	wls->SendSignal("Jabber UserActivityGet " + session + " '" + XMLisize(from) + "'", entries);
+		
+	std::list <WokXMLTag *>::iterator entry_iter;
+	
+	gtk_widget_destroy(activitytable);
+	activitytable = gtk_table_new(entries.GetTagList("item").size(), 2, FALSE);
+	gtk_box_pack_start(GTK_BOX(activitybox), activitytable, FALSE, 0,0);
+	int n = 0;
+	for( entry_iter = entries.GetTagList("item").begin() ; entry_iter != entries.GetTagList("item").end() ; entry_iter++)
+	{
+		GtkWidget *line = gtk_label_new((*entry_iter)->GetFirstTag("line").GetBody().c_str());
+		GtkWidget *type = gtk_label_new(((*entry_iter)->GetAttr("type_name")+":").c_str());
+			
+		gtk_misc_set_alignment (GTK_MISC (line), 0, 0);
+		gtk_misc_set_alignment (GTK_MISC (type), 0, 0);
+		gtk_table_attach(GTK_TABLE(activitytable),
+                                                         type,
+                                                         0,
+                                                         1,
+                                                         n,
+                                                         1+n,  (GtkAttachOptions)0, (GtkAttachOptions)0, 4,0);
+		gtk_table_attach_defaults(GTK_TABLE(activitytable),
+                                                         line,
+                                                         1,
+                                                         2,
+                                                         n,
+                                                         1+n);
+		n++;
+	}
+	gtk_widget_show_all(activitytable);
+	return 1;
 }
 
 int
@@ -450,6 +497,7 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 			eventtag.AddAttr("type", "message");
 			WokXMLTag &itemtag = eventtag.AddTag("item");
 
+			itemtag.AddAttr("id", "Message " + tag->GetAttr("session") + " " + tag->GetFirstTag("message").GetAttr("from"));
 			itemtag.AddAttr("jid", tag->GetFirstTag("message").GetAttr("from"));
 			itemtag.AddAttr("session", tag->GetAttr("session"));
 			itemtag.AddAttr("icon", msgicon);
@@ -490,7 +538,7 @@ GUIMessageWidget::RemoveEvent(WokXMLTag *tag)
 		
 		for( iter = event_list.begin() ; iter != event_list.end() ; )
 		{
-			if( (**itemiter).In(*iter->second) )
+			if( (*itemiter)->GetAttr("id") == iter->second->GetAttr("id"))
 			{
 				nxtiter = iter;
 				nxtiter++;
@@ -542,7 +590,11 @@ GUIMessageWidget::NewEvent(WokXMLTag *tag)
 		std::list <WokXMLTag *> *com_list;
 		std::list <WokXMLTag *>::iterator c_iter;
 		
-		com_list = &(*itemiter)->GetTagList("commands");
+		
+		
+		WokXMLTag *copytag = new WokXMLTag(**itemiter);
+		com_list = &copytag->GetTagList("commands");
+		
 		for( c_iter = com_list->begin() ; c_iter != com_list->end() ; c_iter++ )
 		{
 			GtkWidget *bbox;
@@ -569,7 +621,7 @@ GUIMessageWidget::NewEvent(WokXMLTag *tag)
 		
 		if( event_list_order.empty()) 
 			gtk_widget_show_all(vbox);
-		event_list[vbox] = new WokXMLTag(**itemiter);
+		event_list[vbox] = copytag;
 		event_list_order.push_back(vbox);
 		
 	}
@@ -647,7 +699,12 @@ GUIMessageWidget::SetLabel()
 	wls->SendSignal("Jabber Roster GetResource", &querytag);
 	wls->SendSignal("Jabber GUI GetIcon", &querytag);
 	
-	gtk_label_set_text(GTK_LABEL(jid_label), std::string(from + " (" + nick + ") [" + itemtag.GetFirstTag("resource").GetAttr("priority") + "]").c_str());
+	std::string string = from + " (" + nick + ") [" + itemtag.GetFirstTag("resource").GetAttr("priority") + "]";
+	if ( !itemtag.GetFirstTag("resource").GetFirstTag("status").GetBody().empty() )
+	{
+		string += "\n" +itemtag.GetFirstTag("resource").GetFirstTag("status").GetBody();
+	}
+	gtk_label_set_text(GTK_LABEL(jid_label), string.c_str());
 }
 
 gboolean
@@ -687,7 +744,6 @@ GUIMessageWidget::Scroll (GtkWidget *widget, GdkEventScroll *event, GUIMessageWi
 gboolean
 GUIMessageWidget::DragDrop(GtkWidget *widget, GdkDragContext *dc, gint x, gint y, guint time, GUIMessageWidget *c)
 {
-	std::cout << "Drop" << std::endl;
 	return TRUE;
 }
 
@@ -785,11 +841,7 @@ GUIMessageWidget::focus_event(GtkWidget *widget, GdkEventFocus *event, GUIMessag
 
 			WokXMLTag eventtag(NULL, "event");
 			WokXMLTag &itemtag = eventtag.AddTag("item");
-			itemtag.AddAttr("jid", c->from);
-			itemtag.AddAttr("session", c->session);
-			itemtag.AddAttr("icon", c->msgicon);
-			itemtag.GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").AddAttr("name", "Jabber GUI MessageDialog Open");
-
+			itemtag.AddAttr("id", "Message " + c->session + " " + c->from);
 			c->wls->SendSignal("Jabber Event Remove", &eventtag);
 
 			gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (c->textview1),

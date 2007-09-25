@@ -34,11 +34,15 @@ UserTune::UserTune(WLSignal *wls) : WoklibPlugin(wls)
 	EXP_SIGHOOK("Jabber UserActivityGet", &UserTune::ActivityLine, 1000);
 	EXP_SIGHOOK("Jabber PubSub Registration GetNodes", &UserTune::GetNode, 1000);
 	
+	EXP_SIGHOOK("Jabber Connection Authenticated", &UserTune::NewConnection, 1000);
+	
 	config = new WokXMLTag(NULL, "NULL");
 	EXP_SIGHOOK("Config XML Change /pubsub/usertune", &UserTune::ReadConfig, 500);
 	WokXMLTag conftag(NULL, "config");
 	conftag.AddAttr("path", "/pubsub/usertune");
 	wls->SendSignal("Config XML Trigger", &conftag);
+	
+	
 }
 
 
@@ -47,6 +51,36 @@ UserTune::~UserTune()
 	
 	
 	
+}
+
+int
+UserTune::NewConnection(WokXMLTag *tag)
+{
+	WokXMLTag empty("empty");
+	empty.AddAttr("session", tag->GetAttr("session"));
+	WokXMLTag &iq = empty.AddTag("iq");
+	iq.AddAttr("type", "set");
+	WokXMLTag &pubsub = iq.AddTag("pubsub");
+	pubsub.AddAttr("xmlns", "http://jabber.org/protocol/pubsub");
+	WokXMLTag &publish = pubsub.AddTag("publish");
+	publish.AddAttr("node", "http://jabber.org/protocol/tune");
+	publish.AddTag("item").AddTag("tune").AddAttr("xmlns", "http://jabber.org/protocol/tune");
+	
+	wls->SendSignal("Jabber XML IQ Send", empty);
+		
+/*<iq type='set'
+    from='stpeter@jabber.org/14793c64-0f94-11dc-9430-000bcd821bfb'
+    id='tunes345'>
+  <pubsub xmlns='http://jabber.org/protocol/pubsub'>
+    <publish node='http://jabber.org/protocol/tune'>
+      <item>
+        <tune xmlns='http://jabber.org/protocol/tune'/>
+      </item>
+    </publish>
+  </pubsub>
+</iq>*/
+	
+	return 1;
 }
 
 int

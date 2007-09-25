@@ -22,43 +22,28 @@
  * 	Boston, MA  02110-1301, USA.
  */
 
-#ifndef _USER_TUNE_HPP_
-#define _USER_TUNE_HPP_
+#ifndef _EVENT_MANAGER_HPP_
+#define _EVENT_MANAGER_HPP_
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
 
-#include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
+#include <map>
 
 using namespace Woklib;
 
-class UserTune: public WoklibPlugin 
+class EventManager: public WoklibPlugin 
 {
 public:
-	UserTune(WLSignal *wls);
-	~UserTune();
-
-	int SetTune(WokXMLTag *tag);
-	int ReadConfig(WokXMLTag *tag);
-	int Message(WokXMLTag *tag);
-	int ActivityLine(WokXMLTag *tag);
-	int GetNode(WokXMLTag *tag);
-	int Blank(WokXMLTag *tag);
-	int NewConnection(WokXMLTag *tag);
+	EventManager(WLSignal *wls);
+	~EventManager(); 
 	
-	virtual std::string GetInfo() {return "UserTune";};
-	virtual std::string GetVersion() {return VERSION;};
+	int Remove(WokXMLTag *tag);
+	int Add(WokXMLTag *tag);
 protected:
-	WokXMLTag *config;
-	WokXMLTag *status;
-	std::string past_sig;
-	
-	std::map <std::string, WokXMLTag *> user;
+	int id;
 private:
 
 };
 
-#endif // _USER_TUNE_HPP_
+#endif // _EVENT_MANAGER_HPP_

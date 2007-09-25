@@ -251,7 +251,7 @@ GnomeTrayIcon::RemoveJIDEvent( WokXMLTag *tag)
 		
 		for(iter = EventList.begin(); iter != EventList.end(); )
 		{
-			if( (**itemiter).In(**iter) )
+			if( (*itemiter)->GetAttr("id") == (*iter)->GetAttr("id") )
 			{
 				nxtiter = iter;
 				nxtiter++;

@@ -50,8 +50,8 @@ class User : public WLSignalInstance
 		
 		void Update(WokXMLTag *tag);
 		void AddEvent(WokXMLTag *tag);
-		void RemoveEvent(WokXMLTag *tag);
-
+		
+		int RemoveEvent(WokXMLTag *tag);
 		int Activate(WokXMLTag *tag);
 		int Presence(WokXMLTag *tag);
 		int Recheck(WokXMLTag *tag);

@@ -54,6 +54,7 @@ class GUIMessageWidget : public WLSignalInstance
 		int Close(WokXMLTag *tag);
 		int NewEvent(WokXMLTag *tag);
 		int RemoveEvent(WokXMLTag *tag);
+		int UserActivities(WokXMLTag *tag);
 	
 		void SetLabel();
 	protected:
@@ -93,7 +94,9 @@ class GUIMessageWidget : public WLSignalInstance
 		GtkWidget *vpaned;
 		GtkWidget *image;
 		GtkWidget *mainwindowplug;
-		GtkWidget *labelplug;		
+		GtkWidget *labelplug;	
+		GtkWidget *activitybox;
+		GtkWidget *activitytable;
 		GdkPixbuf *pix_msg;
 		GdkColor color_red;
 		GtkTextBuffer *buffer1;	

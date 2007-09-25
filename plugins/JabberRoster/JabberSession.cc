@@ -135,21 +135,12 @@ JabberSession::RemoveFromGroup(std::string groupname)
 void
 JabberSession::AddEvent(WokXMLTag *tag)
 {
-	std::string jid = tag->GetAttr("jid").substr(0, tag->GetAttr("jid").find("/"));
+	std::string jid = tag->GetAttr("jid");
+	if(  jid.find("/") != std::string::npos )
+		jid = jid.substr(0, tag->GetAttr("jid").find("/"));
 	
 	if ( user.find(jid) != user.end() )
 	{
 		user[jid]->AddEvent(tag);
-	}
-}
-
-void
-JabberSession::RemoveEvent(WokXMLTag *tag)
-{
-	std::string jid = tag->GetAttr("jid").substr(0, tag->GetAttr("jid").find("/"));
-	
-	if ( user.find(jid) != user.end() )
-	{
-		user[jid]->RemoveEvent(tag);
 	}
 }

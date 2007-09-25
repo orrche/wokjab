@@ -553,18 +553,19 @@ User::Activate(WokXMLTag *tag)
 void
 User::AddEvent(WokXMLTag *tag)
 {
+	EXP_SIGHOOK("Jabber Event Remove " +  tag->GetAttr("id"), &User::RemoveEvent, 1000);
 	Events.push_back(new WokXMLTag(*tag));
 	UpdateEntry();
 }
 
-void
+int
 User::RemoveEvent(WokXMLTag *tag)
 {
 	std::list <WokXMLTag *>::iterator iter;
 	std::list <WokXMLTag *>::iterator tmpiter;
 	for( iter = Events.begin() ; iter != Events.end() ;)
 	{
-		if (tag->In(**iter) || **iter == *tag)
+		if (tag->GetAttr("id") == (*iter)->GetAttr("id")) 
 		{
 			tmpiter = iter;
 			iter++;
@@ -577,4 +578,6 @@ User::RemoveEvent(WokXMLTag *tag)
 		}
 	}
 	UpdateEntry();
+	
+	return 1;
 }

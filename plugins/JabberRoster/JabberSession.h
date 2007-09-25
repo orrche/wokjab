@@ -45,7 +45,6 @@ class JabberSession : public WLSignalInstance
 
 		void RemoveFromGroup(std::string groupname);
 		void AddEvent(WokXMLTag *tag);
-		void RemoveEvent(WokXMLTag *tag);
 		std::string AddToGroup(std::string group, User *usr);
 		std::string GetID();
 		std::string GetSession();

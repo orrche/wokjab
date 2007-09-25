@@ -68,5 +68,6 @@ SUBDIRS= \
 	jep0060-PublishSubscribe \
 	jep0163-PEP \
 	CrashManager \
-	Gtk-jep0060-PublishSubscribe
+	Gtk-jep0060-PublishSubscribe \
+	EventManager
 

@@ -48,7 +48,6 @@ class JabberRoster : public WoklibPlugin
 
 		int Presence(WokXMLTag *tag);
 		int AddItemEvent(WokXMLTag *tag);
-		int RemoveItemEvent(WokXMLTag *tag);
 		int LoggedOut(WokXMLTag *tag);
 		int SignIn(WokXMLTag *tag);
 		int KeepAlive(WokXMLTag *tag);
