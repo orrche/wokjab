@@ -43,9 +43,13 @@ xml(xml)
 	{
 		RosterItem *ri = parant->AddChild(this);
 		if (ri)
+		{
 			gtk_tree_store_insert_after(GTK_TREE_STORE(model), &iter, parant->GetIter(), ri->GetIter());
+		}
 		else
+		{
 			gtk_tree_store_insert_after(GTK_TREE_STORE(model), &iter, parant->GetIter(), NULL);
+		}
 	}
 	else
 		gtk_tree_store_append(GTK_TREE_STORE(model), &iter, NULL);

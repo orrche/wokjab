@@ -531,12 +531,16 @@ PubSub_Widget::SaveList()
 	do
 	{
 		gtk_tree_model_get(GTK_TREE_MODEL(affiliationlist), &iter, 0, &jid, 1, &affili, -1);
-		WokXMLTag &aff = affiliations.AddTag("affiliation");
-		aff.AddAttr("jid", jid);
-		aff.AddAttr("affiliation", affili);
-		
-		g_free(jid);
-		g_free(affili);
+		if ( jid && affili)
+		{	WokXMLTag &aff = affiliations.AddTag("affiliation");
+			aff.AddAttr("jid", jid);
+			aff.AddAttr("affiliation", affili);
+			
+		}
+		if ( jid ) 
+			g_free(jid);
+		if ( affili ) 
+			g_free(affili);
 	}
 	while ( gtk_tree_model_iter_next(GTK_TREE_MODEL(affiliationlist), &iter));
 

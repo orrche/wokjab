@@ -69,5 +69,6 @@ SUBDIRS= \
 	jep0163-PEP \
 	CrashManager \
 	Gtk-jep0060-PublishSubscribe \
-	EventManager
+	EventManager \
+	HtmlLinkMessage
 
