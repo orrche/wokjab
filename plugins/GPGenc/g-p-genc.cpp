@@ -39,11 +39,13 @@
 
 
 gpgme_error_t
-passphrase_cb (void *opaque, const char *uid_hint, const char *passphrase_info,
+passphrase_cb (void *c, const char *uid_hint, const char *passphrase_info,
 	       int last_was_bad, int fd)
 {
-	std::cout << "######" << ((long)opaque) << std::endl;
-  write (fd, "abc\n", 4);
+	std::string *s;
+	s = (std::string*)c;
+	std::cout << "######" << s << std::endl;
+  write (fd, (*s+"\n").data(), s->size()+1);
   return 0;
 }
 
@@ -178,7 +180,7 @@ GPGenc::Setup(WokXMLTag *tag)
 	gpgme_set_protocol (ctx, GPGME_PROTOCOL_OpenPGP);
 	gpgme_set_textmode (ctx, 1);
 	gpgme_set_armor (ctx, 1);
-	gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
+	gpgme_set_passphrase_cb (ctx, passphrase_cb, (void*)(&passphrase));
 	
 	EXP_SIGHOOK("Jabber XML Presence Send", &GPGenc::Presence, 950);
 	EXP_SIGHOOK("Jabber XML Message Send", &GPGenc::OutMessage, 950);
