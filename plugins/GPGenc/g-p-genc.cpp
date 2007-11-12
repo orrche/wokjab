@@ -56,26 +56,32 @@ GPGenc::GPGenc(WLSignal *wls) : WoklibPlugin(wls)
 	gpgme_set_locale (NULL, LC_MESSAGES, setlocale (LC_MESSAGES, NULL));
 #endif
 	gpgme_error_t err;
-	err = gpgme_engine_check_version (GPGME_PROTOCOL_CMS);
-	
-	WokXMLTag form("form");
-	WokXMLTag &x = form.AddTag("x");
-	x.AddAttr("xmlns", "jabber:x:data");
-	x.AddAttr("type", "submit");
-	
-	WokXMLTag &ppfield = x.AddTag("field");
-	ppfield.AddAttr("type", "text-private");
-	ppfield.AddAttr("var", "passphrase");
-	
-	WokXMLTag &keyfield = x.AddTag("field");
-	keyfield.AddAttr("type", "list-single");
-	keyfield.AddAttr("var", "key");
-	WokXMLTag &option = keyfield.AddTag("option");
-	option.AddTag("value").AddText("default");
-	
-	wls->SendSignal("Jabber jabber:x:data Init", form);
-	
-	EXP_SIGHOOK(form.GetAttr("signal"), &GPGenc::Setup, 500);
+	err = gpgme_engine_check_version (GPGME_PROTOCOL_OpenPGP);
+	if ( err ) 
+	{
+		fprintf (stderr, "%s:%d: %s: %s\n", __FILE__, __LINE__, gpgme_strsource (err), gpgme_strerror(err));
+	}
+	else
+	{
+		WokXMLTag form("form");
+		WokXMLTag &x = form.AddTag("x");
+		x.AddAttr("xmlns", "jabber:x:data");
+		x.AddAttr("type", "submit");
+		
+		WokXMLTag &ppfield = x.AddTag("field");
+		ppfield.AddAttr("type", "text-private");
+		ppfield.AddAttr("var", "passphrase");
+		
+		WokXMLTag &keyfield = x.AddTag("field");
+		keyfield.AddAttr("type", "list-single");
+		keyfield.AddAttr("var", "key");
+		WokXMLTag &option = keyfield.AddTag("option");
+		option.AddTag("value").AddText("default");
+		
+		wls->SendSignal("Jabber jabber:x:data Init", form);
+		
+		EXP_SIGHOOK(form.GetAttr("signal"), &GPGenc::Setup, 500);
+	}
 }
 
 static void
@@ -168,10 +174,11 @@ GPGenc::Setup(WokXMLTag *tag)
 	
 	gpgme_error_t err;
 	err = gpgme_new (&ctx);
-	gpgme_set_protocol (ctx, GPGME_PROTOCOL_CMS);
+	fail_if_err(err);
+	gpgme_set_protocol (ctx, GPGME_PROTOCOL_OpenPGP);
 	gpgme_set_textmode (ctx, 1);
 	gpgme_set_armor (ctx, 1);
-//	gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
+	gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
 	
 	EXP_SIGHOOK("Jabber XML Presence Send", &GPGenc::Presence, 950);
 	EXP_SIGHOOK("Jabber XML Message Send", &GPGenc::OutMessage, 950);
@@ -233,12 +240,10 @@ GPGenc::OutMessage(WokXMLTag *tag)
 int
 GPGenc::InPresence(WokXMLTag *tag)
 {
-	std::cout << "Hum" << std::endl;
 	std::list <WokXMLTag *>::iterator xiter;
 	
 	for( xiter = tag->GetFirstTag("presence").GetTagList("x").begin() ; xiter != tag->GetFirstTag("presence").GetTagList("x").end() ; xiter++)
 	{
-		std::cout << __FILE__ << ":" << __LINE__ << std::endl;
 		if ( (*xiter)->GetAttr("xmlns") == "jabber:x:signed")
 		{
 			gpgme_error_t err;
@@ -279,11 +284,12 @@ GPGenc::Presence(WokXMLTag *tag)
 	std::string childstr = tag->GetFirstTag("presence").GetFirstTag("status").GetChildrenStr();
 	
 	err = gpgme_data_new_from_mem (&in, childstr.data(), childstr.size(), 0);
+	fail_if_err(err);
 	
 	err = gpgme_data_new (&out);
-//	fail_if_err (err);
+	fail_if_err (err);
 	err = gpgme_op_sign (ctx, in, out, GPGME_SIG_MODE_DETACH);
-//	fail_if_err (err);
+	fail_if_err (err);
 	result = gpgme_op_sign_result (ctx);
 	check_result (result, GPGME_SIG_MODE_DETACH);
 	WokXMLTag &xtag = tag->GetFirstTag("presence").AddTag("x");
