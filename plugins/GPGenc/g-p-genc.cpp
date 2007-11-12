@@ -51,6 +51,9 @@ passphrase_cb (void *c, const char *uid_hint, const char *passphrase_info,
 
 GPGenc::GPGenc(WLSignal *wls) : WoklibPlugin(wls)
 {
+	/* DISABLED FOR NOW */
+	
+#if 0
 	gpgme_check_version (NULL);
 	setlocale (LC_ALL, "");
 	gpgme_set_locale (NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
@@ -84,6 +87,7 @@ GPGenc::GPGenc(WLSignal *wls) : WoklibPlugin(wls)
 		
 		EXP_SIGHOOK(form.GetAttr("signal"), &GPGenc::Setup, 500);
 	}
+#endif
 }
 
 static void
@@ -317,7 +321,7 @@ GPGenc::Message(WokXMLTag *tag)
 			gpgme_data_t in, out;
 			gpgme_decrypt_result_t result;
 
-			std::string body = "-----BEGIN PGP MESSAGE-----\nVersion: GnuPG v2.0.7 (GNU/Linux)\n\n" + (*xiter)->GetBody()+ "-----END PGP MESSAGE-----\n";
+			std::string body = "-----BEGIN PGP MESSAGE-----\nVersion: GnuPG v2.0.7 (GNU/Linux)\n\n" + (*xiter)->GetBody()+ "\n-----END PGP MESSAGE-----\n";
 			err = gpgme_data_new_from_mem (&in, body.data(), body.size(), 0);
 			fail_if_err (err);
 
