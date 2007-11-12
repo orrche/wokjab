@@ -212,7 +212,9 @@ from(from)
 	wls->SendSignal("Config XML Trigger", &conftag);
 
 	focus = true;
-
+	
+	HookSignals();
+	
 	WokXMLTag spooltag(NULL, "spool");
 	spooltag.AddAttr("jid", from);
 	wls->SendSignal("Jabber GUI Message GetSpool", &spooltag);
@@ -265,7 +267,7 @@ from(from)
 	EXP_SIGHOOK(sig.str(), &GUIMessageWidget::Close, 500);
 
 	gtk_widget_grab_focus(textview2);
-	HookSignals();
+
 
 	EXP_SIGHOOK("Jabber Event Add", &GUIMessageWidget::NewEvent, 1000);
 	EXP_SIGHOOK("Jabber Event Remove", &GUIMessageWidget::RemoveEvent, 1000);
@@ -364,11 +366,78 @@ GUIMessageWidget::tw1_event_after (GtkWidget *text_view, GdkEvent  *ev, GUIMessa
 	
 }
 
+int
+GUIMessageWidget::SentMessage(WokXMLTag *tag)
+{
+	std::string str = tag->GetFirstTag("message").GetFirstTag("body").GetBody();
+	WokXMLTag querytag(NULL, "nick");
+	querytag.AddAttr("session", session);
+	wls->SendSignal("Jabber GetMyNick", &querytag);
+	string myname = querytag.GetAttr("nick");
+
+	std::string nick;
+	std::string msg;
+	if( str.substr(0,4) == "/me " )
+	{
+		nick += config->GetFirstTag("display").GetFirstTag("myname").GetFirstTag("pre_me").GetBody();
+		nick += myname;
+		nick += config->GetFirstTag("display").GetFirstTag("myname").GetFirstTag("post_me").GetBody();
+
+		msg = str.substr(3) + '\n';
+	}
+	else
+	{
+		nick += config->GetFirstTag("display").GetFirstTag("myname").GetFirstTag("pre").GetBody();
+
+		if(config->GetFirstTag("display").GetFirstTag("myname").GetFirstTag("show").GetAttr("data") != "false")
+			nick += myname;
+
+		nick += config->GetFirstTag("display").GetFirstTag("myname").GetFirstTag("post").GetBody();
+
+		if(secondmessageme)
+			nick += config->GetFirstTag("display").GetFirstTag("myname").GetFirstTag("continuing").GetBody();
+
+		msg = str + '\n';
+	}
+
+	GtkTextBuffer *buffer;
+	GtkTextIter iter;
+
+	MessageWithEmotions(str);
+
+	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(textview1));
+	gtk_text_buffer_get_iter_at_mark(buffer, &iter, end_mark);
+	
+#warning this is not a good fix...
+	time_t t = time(NULL);
+	
+	gtk_text_buffer_insert_with_tags (
+					buffer, &iter,
+					GetTimeStamp(t).c_str(), -1,
+					tags["timestamp"],
+					NULL);
+
+	gtk_text_buffer_insert_with_tags (
+					buffer, &iter,
+					nick.c_str(), nick.length(),
+					tags["my_name"],
+					NULL);
+
+	gtk_text_buffer_insert_with_tags (buffer, &iter, msg.c_str(), msg.length(),tags["my_text"],NULL);
+	gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (textview1),
+				      end_mark, .4, TRUE, 1, 1);
+
+	secondmessageme = true;
+	
+	return 1;
+}
+
 void
 GUIMessageWidget::HookSignals()
 {
-	EXP_SIGHOOK("Jabber XML Message To " + session + " " + from, &GUIMessageWidget::NewMessage, 500);
-	EXP_SIGHOOK("Jabber XML Presence To " + session + " " + from, &GUIMessageWidget::NewPresence, 500);
+	EXP_SIGHOOK("Jabber XML Message To '" + XMLisize(session) + "' '" + XMLisize(from) + "'", &GUIMessageWidget::SentMessage, 900);
+	EXP_SIGHOOK("Jabber XML Message From " + session + " " + from, &GUIMessageWidget::NewMessage, 500);
+	EXP_SIGHOOK("Jabber XML Presence From " + session + " " + from, &GUIMessageWidget::NewPresence, 500);
 	EXP_SIGHOOK("Jabber GUI Message Activate " + session + " " + from, &GUIMessageWidget::Activate, 500);	
 	
 	
@@ -377,8 +446,9 @@ GUIMessageWidget::HookSignals()
 void
 GUIMessageWidget::UnHookSignals()
 {
-	EXP_SIGUNHOOK("Jabber XML Message To " + session + " " + from, &GUIMessageWidget::NewMessage, 500);
-	EXP_SIGUNHOOK("Jabber XML Presence To " + session + " " + from, &GUIMessageWidget::NewPresence, 500);
+	EXP_SIGUNHOOK("Jabber XML Message To '" + XMLisize(session) + "' '" + XMLisize(from) + "'", &GUIMessageWidget::SentMessage, 900);
+	EXP_SIGUNHOOK("Jabber XML Message From " + session + " " + from, &GUIMessageWidget::NewMessage, 500);
+	EXP_SIGUNHOOK("Jabber XML Presence From " + session + " " + from, &GUIMessageWidget::NewPresence, 500);
 	EXP_SIGUNHOOK("Jabber GUI Message Activate " + session + " " + from, &GUIMessageWidget::Activate, 500);
 }
 
@@ -1159,11 +1229,6 @@ GUIMessageWidget::own_message(std::string str, time_t t)
 {
 	secondmessageother = false;
 
-	WokXMLTag querytag(NULL, "nick");
-	querytag.AddAttr("session", session);
-	wls->SendSignal("Jabber GetMyNick", &querytag);
-	string myname = querytag.GetAttr("nick");
-
 	WokXMLTag msgtag(NULL,"message");
 	msgtag.AddAttr("session", session);
 	WokXMLTag &mtag = msgtag.AddTag("message");
@@ -1172,58 +1237,7 @@ GUIMessageWidget::own_message(std::string str, time_t t)
 	mtag.AddTag("body").AddText(str);
 
 	wls->SendSignal("Jabber XML Message Send", &msgtag);
-	str = msgtag.GetFirstTag("message").GetFirstTag("body").GetBody();
-
-	std::string nick;
-	std::string msg;
-	if( str.substr(0,4) == "/me " )
-	{
-		nick += config->GetFirstTag("display").GetFirstTag("myname").GetFirstTag("pre_me").GetBody();
-		nick += myname;
-		nick += config->GetFirstTag("display").GetFirstTag("myname").GetFirstTag("post_me").GetBody();
-
-		msg = str.substr(3) + '\n';
-	}
-	else
-	{
-		nick += config->GetFirstTag("display").GetFirstTag("myname").GetFirstTag("pre").GetBody();
-
-		if(config->GetFirstTag("display").GetFirstTag("myname").GetFirstTag("show").GetAttr("data") != "false")
-			nick += myname;
-
-		nick += config->GetFirstTag("display").GetFirstTag("myname").GetFirstTag("post").GetBody();
-
-		if(secondmessageme)
-			nick += config->GetFirstTag("display").GetFirstTag("myname").GetFirstTag("continuing").GetBody();
-
-		msg = str + '\n';
-	}
-
-	GtkTextBuffer *buffer;
-	GtkTextIter iter;
-
-	MessageWithEmotions(str);
-
-	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(textview1));
-	gtk_text_buffer_get_iter_at_mark(buffer, &iter, end_mark);
-
-	gtk_text_buffer_insert_with_tags (
-					buffer, &iter,
-					GetTimeStamp(t).c_str(), -1,
-					tags["timestamp"],
-					NULL);
-
-	gtk_text_buffer_insert_with_tags (
-					buffer, &iter,
-					nick.c_str(), nick.length(),
-					tags["my_name"],
-					NULL);
-
-	gtk_text_buffer_insert_with_tags (buffer, &iter, msg.c_str(), msg.length(),tags["my_text"],NULL);
-	gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (textview1),
-				      end_mark, .4, TRUE, 1, 1);
-
-	secondmessageme = true;
+	
 }
 
 

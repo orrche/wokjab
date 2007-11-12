@@ -214,8 +214,8 @@ GUIMessageHandler::new_message(WokXMLTag *tag)
 	session = tag->GetAttr("session");
 
 
-	wls->SendSignal("Jabber XML Message To " + session + " " + message_tag->GetAttr("from"), tag);
-	wls->SendSignal("Jabber XML Message To " + session + " " + jid, tag);
+	wls->SendSignal("Jabber XML Message From " + session + " " + message_tag->GetAttr("from"), tag);
+	wls->SendSignal("Jabber XML Message From " + session + " " + jid, tag);
 
 	if( tag->GetAttr("displayed") != "true")
 	{
@@ -281,8 +281,8 @@ GUIMessageHandler::Presence(WokXMLTag *tag)
 
 	jid = tag_presence.GetAttr("from").substr(0, tag_presence.GetAttr("from").find("/"));
 
-	wls->SendSignal(std::string("Jabber XML Presence To ") + tag->GetAttr("session") + " " + tag_presence.GetAttr("from"), tag);
-	wls->SendSignal(std::string("Jabber XML Presence To ") + tag->GetAttr("session") + " " + jid, tag );
+	wls->SendSignal(std::string("Jabber XML Presence From ") + tag->GetAttr("session") + " " + tag_presence.GetAttr("from"), tag);
+	wls->SendSignal(std::string("Jabber XML Presence From ") + tag->GetAttr("session") + " " + jid, tag );
 
 	return 1;
 }

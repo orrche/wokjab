@@ -105,6 +105,7 @@ AC_OUTPUT(Makefile \
         plugins/GUIRoster/Makefile  \
         plugins/GroupChatBookmark/Makefile  \
         plugins/GroupManager/Makefile  \
+        plugins/GPGenc/Makefile  \
 	plugins/OpenDialogTo/Makefile  \
 	plugins/wokjab-jid-info/Makefile  \
 	plugins/wokjab-jid-info/src/Makefile  \

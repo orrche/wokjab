@@ -41,7 +41,7 @@ ses(ses)
 	
 	jid = tag->GetAttr("jid");
 	
-	EXP_SIGHOOK("Jabber XML Presence To " + ses->GetSession() + " " + tag->GetAttr("jid"), &User::Presence, 1000);
+	EXP_SIGHOOK("Jabber XML Presence From " + ses->GetSession() + " " + tag->GetAttr("jid"), &User::Presence, 1000);
 	EXP_SIGHOOK("Jabber Roster Update "  + ses->GetSession() + " " + tag->GetAttr("jid"), &User::UpdateXML, 1000);
 	EXP_SIGHOOK("Jabber Roster Recheck", &User::Recheck, 1000);
 	EXP_SIGHOOK("Jabber UserActivityUpdate " + ses->GetSession() + " '" + XMLisize(tag->GetAttr("jid"))+"'", &User::UpdateTicketEntries, 1000);

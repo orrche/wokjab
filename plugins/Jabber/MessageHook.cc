@@ -24,6 +24,7 @@ WLSignalInstance (wls)
 {
 	EXP_SIGHOOK("Jabber XML Object message", &MessageHook::xml, 1000);
 	EXP_SIGHOOK("Jabber XML Message Send", &MessageHook::send, 1000);
+	EXP_SIGHOOK("Jabber XML Message Send", &MessageHook::devide, 500);
 }
 
 MessageHook::~MessageHook ()
@@ -56,6 +57,13 @@ MessageHook::xml(WokXMLTag *data)
 		wls->SendSignal("Jabber XML Message xmlns " + (*iter)->GetAttr("xmlns"), data);
 	
 	return 1;
+}
+
+int
+MessageHook::devide(WokXMLTag *tag)
+{
+	wls->SendSignal("Jabber XML Message To '" + XMLisize(tag->GetAttr("session")) + "' '" + XMLisize(tag->GetFirstTag("message").GetAttr("to")) + "'", tag);
+	return 1;	
 }
 
 int

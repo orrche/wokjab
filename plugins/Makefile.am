@@ -70,5 +70,6 @@ SUBDIRS= \
 	CrashManager \
 	Gtk-jep0060-PublishSubscribe \
 	EventManager \
-	HtmlLinkMessage
+	HtmlLinkMessage \
+	GPGenc
 
