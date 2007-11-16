@@ -35,6 +35,7 @@ class jep96Widget : public WLSignalInstance
 
 		int xdataresp(WokXMLTag *xml);
 		int FileAuth(WokXMLTag *xml);
+		int ReadConfig (WokXMLTag *tag);
 	
 		void Activate();
 		int Open(WokXMLTag *tag);
@@ -46,6 +47,7 @@ class jep96Widget : public WLSignalInstance
 		GtkWidget *window;
 		GtkWidget *chooser;
 		
+		WokXMLTag *config;
 		WokXMLTag *eventtag;
 		WokXMLTag *origxml;
 		std::string filename;

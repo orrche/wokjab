@@ -163,7 +163,7 @@ GUIRoster::ReadConfig (WokXMLTag *tag)
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(togg3), bstate[togg3]);
 
 	saveconfig = true;
-	return true;
+	return 1;
 }
 
 void

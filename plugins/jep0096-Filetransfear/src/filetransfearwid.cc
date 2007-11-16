@@ -25,6 +25,12 @@ id(xml->GetFirstTag("iq").GetAttr("id")),
 session(xml->GetAttr("session")),
 lsid(lsid)
 {
+	config = new WokXMLTag(NULL, "NULL");
+	EXP_SIGHOOK("Config XML Change /main/window/roster_visibility", &jep96Widget::ReadConfig, 500);
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/main/window/roster_visibility");
+	wls->SendSignal("Config XML Trigger", &conftag);
+	
 	requested = false;
 	origxml = new WokXMLTag(*xml);
 	
@@ -42,15 +48,35 @@ lsid(lsid)
 		WokXMLTag &signal = command.AddTag("signal");
 		signal.AddAttr("name", "Jabber Stream ReciveWid Open " + id);
 		signal.AddTag("empty"); // We need to send some thing :) 
-		EXP_SIGHOOK("Jabber Stream ReciveWid Open " + id, &jep96Widget::Open, 1000);
 	}
+	{
+		WokXMLTag &command = commands.AddTag("command");
+		command.AddAttr("name", "To Desktop");
+		WokXMLTag &signal = command.AddTag("signal");
+		signal.AddAttr("name", "Jabber Stream ReciveWid Open " + id);
+		WokXMLTag &settings = signal.AddTag("settings"); 
+		WokXMLTag &destfolder = settings.AddTag("destination_folder");
+		destfolder.AddText(std::string(g_get_home_dir()) + "/Desktop");
+	}
+	{
+		WokXMLTag &command = commands.AddTag("command");
+		command.AddAttr("name", "To User Folder");
+		WokXMLTag &signal = command.AddTag("signal");
+		signal.AddAttr("name", "Jabber Stream ReciveWid Open " + id);
+		WokXMLTag &settings = signal.AddTag("settings"); 
+		WokXMLTag &destfolder = settings.AddTag("destination_folder");
+		destfolder.AddText(config->GetFirstTag("userfolder_root").GetAttr("data") + "/" + from);
+	}
+
+	EXP_SIGHOOK("Jabber Stream ReciveWid Open " + id, &jep96Widget::Open, 1000);
+	
 	wls->SendSignal("Jabber Event Add", eventtag);
 		
 	/*
 	<signal level='3' name='Jabber Event Add'>
 		<event>
 			<item icon='/usr/local/share/wokjab/msg.png' jid='nedo@jabber.se/wokjab' session='jabber0'>
-				<description>nedo@jabber.se/wokjab röv</description>
+				<description>nedo@jabber.se/wokjab</description>
 				<commands>
 					<command name='Open Dialog'>
 						<signal name='Jabber GUI MessageDialog Open'>
@@ -91,6 +117,17 @@ jep96Widget::~jep96Widget()
 }
 
 int
+jep96Widget::ReadConfig (WokXMLTag *tag)
+{
+	delete config;
+	config = new WokXMLTag(tag->GetFirstTag("config"));
+
+	tag->GetFirstTag("config").GetFirstTag("userfolder_root").AddAttr("type", "string");
+	
+	return 1;
+}
+
+int
 jep96Widget::Open(WokXMLTag *tag)
 {
 	if ( !eventtag ) 
@@ -118,6 +155,7 @@ jep96Widget::Open(WokXMLTag *tag)
 	main_vbox = gtk_vbox_new(false, false);
 	chooser = gtk_file_chooser_widget_new(GTK_FILE_CHOOSER_ACTION_SAVE);
 	gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER(chooser), origxml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("file").GetAttr("name").c_str() );
+	gtk_file_chooser_set_current_folder_uri (GTK_FILE_CHOOSER(chooser), tag->GetFirstTag("destination_folder").GetBody().c_str());
 	
 	jid_label = gtk_label_new(origxml->GetFirstTag("iq").GetAttr("from").c_str());
 	
