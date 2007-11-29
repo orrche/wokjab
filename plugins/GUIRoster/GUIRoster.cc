@@ -54,7 +54,42 @@ GUIRoster::CreateWid()
 
 	GtkCellRenderer *renderer;
 	GtkCellRenderer *renderer_pix;
+	
+	
+	pre_pix_column = gtk_tree_view_column_new();
+	
+	renderer = gtk_cell_renderer_text_new();
+	gtk_tree_view_column_pack_start(pre_pix_column, renderer, FALSE);
+	gtk_tree_view_column_set_attributes(pre_pix_column, renderer,
+                                             "text", INDENT_COLUMN, NULL);
+	
+	
+	renderer_pix = gtk_cell_renderer_pixbuf_new ();
+	g_object_set(renderer_pix, "xalign", 0.0, "yalign", 0.0, "ypad", 0, "xpad", 0, NULL);
+	gtk_tree_view_column_pack_start(pre_pix_column, renderer_pix, FALSE);
+	gtk_tree_view_column_set_attributes(pre_pix_column, renderer_pix,
+                                             "pixbuf", PRE_PIX_COLUMN, NULL);
 
+	
+	renderer = gtk_cell_renderer_text_new ();
+	g_object_set(renderer, "xalign", 0.0, "yalign", 0.0, "ypad", 0, NULL);
+	gtk_tree_view_column_pack_start(pre_pix_column, renderer, TRUE);
+	gtk_tree_view_column_add_attribute(pre_pix_column, renderer,
+                                             "markup", TEXT_COLUMN);
+																						 
+	//gtk_tree_view_column_set_min_width(text_column, 1);
+	
+	renderer_pix = gtk_cell_renderer_pixbuf_new ();
+	g_object_set(renderer_pix, "xalign", 1.0, "yalign", 0.0, "ypad", 0, NULL);
+	gtk_tree_view_column_pack_end(pre_pix_column, renderer_pix, FALSE);
+	gtk_tree_view_column_set_attributes(pre_pix_column, renderer_pix,
+                                             "pixbuf", POST_PIX_COLUMN, NULL);
+
+	
+	gtk_tree_view_append_column (GTK_TREE_VIEW (glade_xml_get_widget(xml,"view_roster")),
+				     GTK_TREE_VIEW_COLUMN (pre_pix_column));
+	
+/*
 	pre_pix_column = gtk_tree_view_column_new();
 	
 	renderer_pix = gtk_cell_renderer_pixbuf_new ();
@@ -86,10 +121,10 @@ GUIRoster::CreateWid()
 
 	gtk_tree_view_append_column (GTK_TREE_VIEW (glade_xml_get_widget(xml,"view_roster")),
 				     GTK_TREE_VIEW_COLUMN (post_pix_column));
-						 
+	*/					 
 						 
 	GtkTreeStore *model = gtk_tree_store_new (NUM_COLUMNS, GDK_TYPE_PIXBUF,
-				    G_TYPE_STRING, GDK_TYPE_PIXBUF, G_TYPE_STRING);
+				    G_TYPE_STRING, GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING);
 	
 	
 	gtk_tree_view_set_model (GTK_TREE_VIEW
@@ -135,9 +170,9 @@ GUIRoster::SizeChange(GtkWidget *widget, GtkAllocation *requisition, GUIRoster *
 {	
 	int width = requisition->width - requisition->x - AVATAR_SIZE - 
 			gtk_tree_view_column_get_width(c->pre_pix_column);
-			
+	/*		
 	gtk_tree_view_column_set_max_width(c->text_column, width);
-	gtk_tree_view_column_set_min_width(c->text_column, width);
+	gtk_tree_view_column_set_min_width(c->text_column, width);*/
 }
 
 gboolean

@@ -44,6 +44,8 @@ class RosterItem : public WLSignalInstance
 		 ~RosterItem();
 		
 		void Update(WokXMLTag *tag);
+		void UpdateExpand();
+
 		int GetIndent();
 		RosterItem *GetLastItem();
 		RosterItem *AddChild(RosterItem *); /// Adds a child to a roster item and returns the item that it should be added beneth for sorting
@@ -69,6 +71,7 @@ enum
 	TEXT_COLUMN,
 	POST_PIX_COLUMN,
 	ID_COLUMN,
+	INDENT_COLUMN,
 	NUM_COLUMNS
 };
 

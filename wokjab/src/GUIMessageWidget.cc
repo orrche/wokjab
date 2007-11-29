@@ -34,6 +34,20 @@
 
 using std::string;
 
+static gboolean DNDDragMotionCB(
+        GtkWidget *widget, GdkDragContext *dc,
+        gint x, gint y, guint t,
+        gpointer data
+)
+{
+	if((dc == NULL))
+    	return(FALSE);
+
+	gdk_drag_status(dc, GDK_ACTION_COPY, t);
+
+	return(FALSE);
+}
+
 GUIMessageWidget::GUIMessageWidget(WLSignal *wls, std::string session, std::string from, int id) : WLSignalInstance(wls),
 session(session),
 from(from)
@@ -179,19 +193,25 @@ from(from)
 	/* Drag and drop .... */
 	GtkTargetEntry target_entry[3];
 
-	target_entry[0].target = "text/plain";
-	target_entry[0].flags = 0;
-	target_entry[0].info = 0;
-	target_entry[1].target = "text/uri-list";
-	target_entry[1].flags = 0;
-	target_entry[1].info = 1;
-	target_entry[2].target = "STRING";
-	target_entry[2].flags = 0;
-	target_entry[2].info = 2;
 
+	target_entry[0].target = "text/uri-list";
+	target_entry[0].flags = 0;
+	target_entry[0].info = 1;
+	target_entry[1].target = "STRING";
+	target_entry[1].flags = 0;
+	target_entry[1].info = 2;
+	target_entry[2].target = "text/plain";
+	target_entry[2].flags = 0;
+	target_entry[2].info = 0;
 //	gtk_drag_dest_set(textview1, (GtkDestDefaults)(GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_DROP), target_entry, 3, (GdkDragAction) (GDK_ACTION_COPY));
 	gtk_drag_dest_set(textview2, (GtkDestDefaults)(GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_DROP), target_entry, 3, (GdkDragAction) (GDK_ACTION_COPY));
 	
+	gtk_signal_connect(
+			GTK_OBJECT(textview2), "drag_motion",
+			GTK_SIGNAL_FUNC(DNDDragMotionCB),
+			this
+		);
+
 //	g_signal_connect(textview1, "drag_data_received",G_CALLBACK (GUIMessageWidget::DragDest),this);
 	g_signal_connect(textview2, "drag_data_received",G_CALLBACK (GUIMessageWidget::DragDest),this);
 	g_signal_connect(textview2, "drag_drop",G_CALLBACK (GUIMessageWidget::DragDrop),this);
@@ -276,7 +296,6 @@ from(from)
 	UserActivities(NULL);
 
 }
-
 
 GUIMessageWidget::~GUIMessageWidget()
 {
