@@ -57,6 +57,7 @@ class jep96Widget : public WLSignalInstance
 		std::string lsid;
 		std::string xdataid;
 		bool requested;
+		bool default_question;
 };
 
 #endif // __REGISTER_SERVICE_WIDGET_H

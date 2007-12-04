@@ -18,6 +18,15 @@
 #include "filetransfearwid.h"
 #include "fstream"
 
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#ifdef __WIN32
+#include <io.h>
+#endif
+
 jep96Widget::jep96Widget(WLSignal *wls, WokXMLTag *xml, const std::string &lsid):
 WLSignalInstance ( wls ),
 from(xml->GetFirstTag("iq").GetAttr("from")),
@@ -26,13 +35,33 @@ session(xml->GetAttr("session")),
 lsid(lsid)
 {
 	config = new WokXMLTag(NULL, "NULL");
-	EXP_SIGHOOK("Config XML Change /main/window/roster_visibility", &jep96Widget::ReadConfig, 500);
+	EXP_SIGHOOK("Config XML Change /filetransfear/filetransfearwid", &jep96Widget::ReadConfig, 500);
 	WokXMLTag conftag(NULL, "config");
-	conftag.AddAttr("path", "/main/window/roster_visibility");
+	conftag.AddAttr("path", "/filetransfear/filetransfearwid");
 	wls->SendSignal("Config XML Trigger", &conftag);
 	
 	requested = false;
 	origxml = new WokXMLTag(*xml);
+	default_question = false;
+	if ( origxml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("feature").GetFirstTag("x").GetTagList("field").size() == 1 )
+	{
+		if ( origxml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("feature").GetFirstTag("x").GetFirstTag("field").GetAttr("var") == "stream-method" )
+		{
+			std::list <WokXMLTag *>::iterator iter;
+			
+			for( iter = origxml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("feature").GetFirstTag("x").GetFirstTag("field").GetTagList("option").begin() ;
+				 iter != origxml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("feature").GetFirstTag("x").GetFirstTag("field").GetTagList("option").end() ;
+				iter++)
+			{
+				if ( (*iter)->GetFirstTag("value").GetBody() == "http://jabber.org/protocol/bytestreams" )
+				{
+					default_question = true;
+					break;
+				}				
+			}
+		}
+	}
+	
 	
 	eventtag = new WokXMLTag("event");
 	eventtag->AddAttr("type", "jep0096 IncommingFile");
@@ -65,7 +94,10 @@ lsid(lsid)
 		signal.AddAttr("name", "Jabber Stream ReciveWid Open " + id);
 		WokXMLTag &settings = signal.AddTag("settings"); 
 		WokXMLTag &destfolder = settings.AddTag("destination_folder");
-		destfolder.AddText(config->GetFirstTag("userfolder_root").GetAttr("data") + "/" + from);
+		if ( from.find("/") == std::string::npos )
+			destfolder.AddText(config->GetFirstTag("userfolder_root").GetAttr("data") + "/" + from);
+		else
+			destfolder.AddText(config->GetFirstTag("userfolder_root").GetAttr("data") + "/" + from.substr(0, from.find("/")));
 	}
 
 	EXP_SIGHOOK("Jabber Stream ReciveWid Open " + id, &jep96Widget::Open, 1000);
@@ -123,7 +155,7 @@ jep96Widget::ReadConfig (WokXMLTag *tag)
 	config = new WokXMLTag(tag->GetFirstTag("config"));
 
 	tag->GetFirstTag("config").GetFirstTag("userfolder_root").AddAttr("type", "string");
-	
+	tag->GetFirstTag("config").GetFirstTag("userfolder_root").AddAttr("label", "Root for userfolders");
 	return 1;
 }
 
@@ -151,11 +183,24 @@ jep96Widget::Open(WokXMLTag *tag)
 	cancelbutton = gtk_button_new_with_mnemonic("_Cancel");
 	buttonbox = gtk_hbutton_box_new();
 	
+	std::string filename = tag->GetFirstTag("destination_folder").GetBody()+"/";
+	std::string::size_type pos = filename.find("/");
+	while( pos != std::string::npos )
+	{
+#ifdef __WIN32
+            mkdir(filename.substr(0, pos).c_str());
+#else
+			mkdir(filename.substr(0, pos).c_str(), 0700);
+#endif
+			pos = filename.find("/", pos + 1);
+	}
 	
 	main_vbox = gtk_vbox_new(false, false);
 	chooser = gtk_file_chooser_widget_new(GTK_FILE_CHOOSER_ACTION_SAVE);
 	gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER(chooser), origxml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("file").GetAttr("name").c_str() );
-	gtk_file_chooser_set_current_folder_uri (GTK_FILE_CHOOSER(chooser), tag->GetFirstTag("destination_folder").GetBody().c_str());
+	gtk_file_chooser_set_current_folder_uri (GTK_FILE_CHOOSER(chooser), ("file://" + tag->GetFirstTag("destination_folder").GetBody()+"/").c_str());
+	
+
 	
 	jid_label = gtk_label_new(origxml->GetFirstTag("iq").GetAttr("from").c_str());
 	
