@@ -633,8 +633,10 @@ GUIMessageWidget::RemoveEvent(WokXMLTag *tag)
 		std::map<GtkWidget *, WokXMLTag *>::iterator iter;
 		std::map<GtkWidget *, WokXMLTag *>::iterator nxtiter;
 		
+		std::cout << "We have " << event_list.size() << " events " << __FILE__ << ":" << __LINE__ << std::endl;
 		for( iter = event_list.begin() ; iter != event_list.end() ; )
 		{
+			std::cout << "Tick..." << __FILE__ << ":" << __LINE__ << std::endl;
 			if( (*itemiter)->GetAttr("id") == iter->second->GetAttr("id"))
 			{
 				nxtiter = iter;
@@ -648,7 +650,9 @@ GUIMessageWidget::RemoveEvent(WokXMLTag *tag)
 					event_list_order.erase(list_iter);
 					if ( ! event_list_order.empty() )
 					{	
-						gtk_widget_show(*event_list_order.begin());
+						gtk_widget_show_all(*event_list_order.begin());
+						std::cout << "we should be here..." << __FILE__ << ":" << __LINE__ << std::endl;
+						std::cout << "We have " << event_list.size() << " events " << __FILE__ << ":" << __LINE__ << std::endl;
 					}
 				}
 				else
@@ -729,13 +733,18 @@ GUIMessageWidget::NewEvent(WokXMLTag *tag)
 gboolean
 GUIMessageWidget::CommandExec(GtkWidget *button, GdkEventButton *event, GUIMessageWidget *c)
 {
+	std::cout << "here no ? " << std::endl;
 	WokXMLTag *tag = static_cast <WokXMLTag *> (g_object_get_data(G_OBJECT(button), "xml"));
 	if ( tag && !tag->GetFirstTag("signal").GetTags().empty() )
 	{
-		c->wls->SendSignal(tag->GetFirstTag("signal").GetAttr("name"), **tag->GetFirstTag("signal").GetTags().begin());
+		WokXMLTag temptag(**tag->GetFirstTag("signal").GetTags().begin());
+		c->wls->SendSignal(tag->GetFirstTag("signal").GetAttr("name"), temptag);
+		
+		std::cout << "Should work..." << std::endl;
 		return TRUE;
 	}
 
+	std::cout << "Should work.." << std::endl;
 	return FALSE;
 }
 

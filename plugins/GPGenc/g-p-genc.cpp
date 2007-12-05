@@ -52,8 +52,7 @@ passphrase_cb (void *c, const char *uid_hint, const char *passphrase_info,
 GPGenc::GPGenc(WLSignal *wls) : WoklibPlugin(wls)
 {
 	/* DISABLED FOR NOW */
-	
-#if 0
+
 	gpgme_check_version (NULL);
 	setlocale (LC_ALL, "");
 	gpgme_set_locale (NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
@@ -87,7 +86,6 @@ GPGenc::GPGenc(WLSignal *wls) : WoklibPlugin(wls)
 		
 		EXP_SIGHOOK(form.GetAttr("signal"), &GPGenc::Setup, 500);
 	}
-#endif
 }
 
 static void
