@@ -90,6 +90,7 @@ session(xml->GetAttr("session"))
 		{
 			EXP_SIGHOOK("SOCKS5 Connection Established " + s5id, &jep65Session::SOCKS_Established, 1000);
 			EXP_SIGHOOK("SOCKS5 Connection Data " + s5id, &jep65Session::SOCKS_Data, 1000);
+			EXP_SIGHOOK("SOCKS5 Connection Failed " + s5id, &jep65Session::SOCKS_Fail, 1000);
 		}
 		else
 			delete this;
@@ -121,6 +122,44 @@ jep65Session::~jep65Session()
 }
 
 #define BUFFSIZE 300000
+
+int
+jep65Session::SOCKS_Fail(WokXMLTag *tag)
+{
+	socket_nr = atoi(tag->GetAttr("socket").c_str());
+		
+	WokXMLTag contag(NULL, "Terminated");
+	contag.AddAttr("sid", lsid);
+	wls->SendSignal("Jabber Stream File Status", &contag);
+	wls->SendSignal("Jabber Stream File Status Terminated", &contag);
+		
+	WokXMLTag msgtag(NULL, "message");
+	msgtag.AddAttr("session", session);
+	WokXMLTag &repiq = msgtag.AddTag("iq");
+	repiq.AddAttr("type", "error");
+	repiq.AddAttr("to", orig->GetFirstTag("iq").GetAttr("from"));
+	repiq.AddAttr("id", orig->GetFirstTag("iq").GetAttr("id"));
+	WokXMLTag &errortag = repiq.AddTag("error");
+	errortag.AddAttr("code", "406");
+	errortag.AddAttr("type", "auth");
+	errortag.AddTag("not-acceptable").AddAttr("xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas");
+	
+	wls->SendSignal("Jabber XML Send", &msgtag);
+	
+	/*
+	<iq type='error' 
+    from='target@example.org/bar' 
+    to='initiator@example.com/foo' 
+    id='initiate'>
+  <error code='406' type='auth'>
+    <not-acceptable xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/>
+  </error>
+</iq>
+	*/
+	
+	return 1;	
+}
+
 
 int
 jep65Session::Abort(WokXMLTag *tag)

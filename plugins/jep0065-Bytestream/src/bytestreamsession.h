@@ -42,6 +42,7 @@ class jep65Session : public WLSignalInstance
 		int Abort(WokXMLTag *tag);
 		int SOCKS_Established(WokXMLTag *xml);
 		int SOCKS_Data(WokXMLTag *tag);
+		int SOCKS_Fail(WokXMLTag *tag);
 	protected:
 		WokXMLTag *orig;
 		std::string initiator;
