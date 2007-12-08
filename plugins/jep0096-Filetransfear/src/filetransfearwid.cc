@@ -169,71 +169,115 @@ jep96Widget::Open(WokXMLTag *tag)
 	delete eventtag;
 	eventtag = NULL;
 	
-	
-	GtkWidget *main_vbox;
-	GtkWidget *okbutton;
-	GtkWidget *cancelbutton;
-	GtkWidget *buttonbox;
-	GtkWidget *jid_label;
-	GtkWidget *socket;
-	
-	socket = gtk_socket_new();
-	
-	okbutton = gtk_button_new_with_mnemonic("_OK");
-	cancelbutton = gtk_button_new_with_mnemonic("_Cancel");
-	buttonbox = gtk_hbutton_box_new();
-	
-	std::string filename = tag->GetFirstTag("destination_folder").GetBody()+"/";
-	std::string::size_type pos = filename.find("/");
-	while( pos != std::string::npos )
+	if ( (!tag->GetFirstTag("destination_folder").GetBody().empty()) && default_question )
 	{
-#ifdef __WIN32
-            mkdir(filename.substr(0, pos).c_str());
-#else
-			mkdir(filename.substr(0, pos).c_str(), 0700);
-#endif
-			pos = filename.find("/", pos + 1);
-	}
-	
-	main_vbox = gtk_vbox_new(false, false);
-	chooser = gtk_file_chooser_widget_new(GTK_FILE_CHOOSER_ACTION_SAVE);
-	gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER(chooser), origxml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("file").GetAttr("name").c_str() );
-	gtk_file_chooser_set_current_folder_uri (GTK_FILE_CHOOSER(chooser), ("file://" + tag->GetFirstTag("destination_folder").GetBody()+"/").c_str());
-	
+		requested = true;
+		filename = origxml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("file").GetAttr("name");
+		EXP_SIGHOOK("Jabber Stream RequestAuthorisation", &jep96Widget::FileAuth, 1000);
 
-	
-	jid_label = gtk_label_new(origxml->GetFirstTag("iq").GetAttr("from").c_str());
-	
-	gtk_box_pack_start(GTK_BOX(buttonbox), okbutton, false, false, 2);
-	gtk_box_pack_start(GTK_BOX(buttonbox), cancelbutton, false, false, 2);
-	gtk_box_pack_start(GTK_BOX(main_vbox), jid_label, false, false, 2);
-	gtk_box_pack_start(GTK_BOX(main_vbox), chooser, true, true, 2);
-	gtk_box_pack_start(GTK_BOX(main_vbox), socket, false, false, 2);
-	gtk_box_pack_start(GTK_BOX(main_vbox), buttonbox, false, false, 2);
-	
-	
-	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	gtk_container_add(GTK_CONTAINER(window), main_vbox);
-	gtk_window_set_title (GTK_WINDOW (window), "File Transfear");
-	
-	g_signal_connect_swapped (G_OBJECT (cancelbutton), "clicked",
-			      G_CALLBACK (gtk_widget_destroy),
-                              G_OBJECT (window));
-	g_signal_connect (G_OBJECT (window), "destroy",
-					(void(*)())G_CALLBACK (jep96Widget::Destroy), this);
-	g_signal_connect (G_OBJECT (okbutton), "clicked",
-					G_CALLBACK(jep96Widget::ButtonPress), this);
-	gtk_widget_show_all(window);
-	
-	WokXMLTag tag_x(origxml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("feature").GetFirstTag("x"));
-	WokXMLTag jabberx(NULL, "data");
-	
-	jabberx.AddTag(&tag_x);
-	jabberx.AddTag("plug");
-	wls->SendSignal("Jabber jabber:x:data Init", &jabberx);
-	xdataid = jabberx.GetAttr("id");
-	gtk_socket_add_id(GTK_SOCKET(socket), atoi(jabberx.GetFirstTag("plug").GetAttr("id").c_str()));
-	
+		WokXMLTag msgtag(NULL, "message");
+		msgtag.AddAttr("session", session);
+		WokXMLTag &tag = msgtag.AddTag("iq");
+		
+		tag.AddAttr("type", "result");
+		
+		tag.AddAttr("to", from);
+		tag.AddAttr("id", id);
+		WokXMLTag &si_tag = tag.AddTag("si");
+		si_tag.AddAttr("xmlns", "http://jabber.org/protocol/si");
+		WokXMLTag &feature_tag = si_tag.AddTag("feature");
+		feature_tag.AddAttr("xmlns", "http://jabber.org/protocol/feature-neg");
+		
+		WokXMLTag &x_tag = feature_tag.AddTag("x");
+		x_tag.AddAttr("xmlns", "jabber:x:data");
+		x_tag.AddAttr("type", "submit");
+		WokXMLTag &field_tag = x_tag.AddTag("field");
+		field_tag.AddAttr("var", "stream-method");
+		field_tag.AddTag("value").AddText("http://jabber.org/protocol/bytestreams");
+		/*
+		<x xmlns='jabber:x:data' type='submit'>
+        	<field var='stream-method'>
+          		<value>http://jabber.org/protocol/bytestreams</value>
+        	</field>
+      	</x>
+		*/
+		
+		wls->SendSignal("Jabber XML Send", &msgtag);
+		
+			
+		WokXMLTag rejtag(NULL, "Accepted");
+		rejtag.AddAttr("sid", lsid);
+		wls->SendSignal("Jabber Stream File Status", &rejtag);
+		wls->SendSignal("Jabber Stream File Status Accepted", &rejtag);
+	}
+	else
+	{
+		GtkWidget *main_vbox;
+		GtkWidget *okbutton;
+		GtkWidget *cancelbutton;
+		GtkWidget *buttonbox;
+		GtkWidget *jid_label;
+		GtkWidget *socket;
+		
+		socket = gtk_socket_new();
+		
+		okbutton = gtk_button_new_with_mnemonic("_OK");
+		cancelbutton = gtk_button_new_with_mnemonic("_Cancel");
+		buttonbox = gtk_hbutton_box_new();
+		
+		std::string filename = tag->GetFirstTag("destination_folder").GetBody()+"/";
+		std::string::size_type pos = filename.find("/");
+		while( pos != std::string::npos )
+		{
+	#ifdef __WIN32
+				mkdir(filename.substr(0, pos).c_str());
+	#else
+				mkdir(filename.substr(0, pos).c_str(), 0700);
+	#endif
+				pos = filename.find("/", pos + 1);
+		}
+		
+		main_vbox = gtk_vbox_new(false, false);
+		chooser = gtk_file_chooser_widget_new(GTK_FILE_CHOOSER_ACTION_SAVE);
+		gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER(chooser), origxml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("file").GetAttr("name").c_str() );
+		if( ! tag->GetFirstTag("destination_folder").GetBody().empty() )
+			gtk_file_chooser_set_current_folder_uri (GTK_FILE_CHOOSER(chooser), ("file://" + tag->GetFirstTag("destination_folder").GetBody()+"/").c_str());
+		
+
+		
+		jid_label = gtk_label_new(origxml->GetFirstTag("iq").GetAttr("from").c_str());
+		
+		gtk_box_pack_start(GTK_BOX(buttonbox), okbutton, false, false, 2);
+		gtk_box_pack_start(GTK_BOX(buttonbox), cancelbutton, false, false, 2);
+		gtk_box_pack_start(GTK_BOX(main_vbox), jid_label, false, false, 2);
+		gtk_box_pack_start(GTK_BOX(main_vbox), chooser, true, true, 2);
+		gtk_box_pack_start(GTK_BOX(main_vbox), socket, false, false, 2);
+		gtk_box_pack_start(GTK_BOX(main_vbox), buttonbox, false, false, 2);
+		
+		
+		window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+		gtk_container_add(GTK_CONTAINER(window), main_vbox);
+		gtk_window_set_title (GTK_WINDOW (window), "File Transfear");
+		
+		g_signal_connect_swapped (G_OBJECT (cancelbutton), "clicked",
+					  G_CALLBACK (gtk_widget_destroy),
+								  G_OBJECT (window));
+		g_signal_connect (G_OBJECT (window), "destroy",
+						(void(*)())G_CALLBACK (jep96Widget::Destroy), this);
+		g_signal_connect (G_OBJECT (okbutton), "clicked",
+						G_CALLBACK(jep96Widget::ButtonPress), this);
+		gtk_widget_show_all(window);
+		
+		WokXMLTag tag_x(origxml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("feature").GetFirstTag("x"));
+		WokXMLTag jabberx(NULL, "data");
+		
+		jabberx.AddTag(&tag_x);
+		jabberx.AddTag("plug");
+		wls->SendSignal("Jabber jabber:x:data Init", &jabberx);
+		xdataid = jabberx.GetAttr("id");
+		gtk_socket_add_id(GTK_SOCKET(socket), atoi(jabberx.GetFirstTag("plug").GetAttr("id").c_str()));
+		
+	}
 	
 	return 1;
 }
