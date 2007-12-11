@@ -66,7 +66,7 @@ lsid(lsid)
 	eventtag = new WokXMLTag("event");
 	eventtag->AddAttr("type", "jep0096 IncommingFile");
 	WokXMLTag &item = eventtag->AddTag("item");
-	item.AddAttr("icon", "/usr/local/share/wokjab/dnd.png");
+	item.AddAttr("icon", "/usr/local/share/wokjab/filetransfer.png");
 	item.AddAttr("jid", from);
 	item.AddAttr("session", session);
 	item.AddTag("description").AddText(from + " sends you the file ");
@@ -171,8 +171,22 @@ jep96Widget::Open(WokXMLTag *tag)
 	
 	if ( (!tag->GetFirstTag("destination_folder").GetBody().empty()) && default_question )
 	{
-		requested = true;
-		filename = origxml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("file").GetAttr("name");
+		requested = true;		
+		
+		{
+			std::string filename = tag->GetFirstTag("destination_folder").GetBody()+"/";
+			std::string::size_type pos = filename.find("/");
+			while( pos != std::string::npos )
+			{
+		#ifdef __WIN32
+					mkdir(filename.substr(0, pos).c_str());
+		#else
+					mkdir(filename.substr(0, pos).c_str(), 0700);
+		#endif
+					pos = filename.find("/", pos + 1);
+			}
+		}
+		filename = tag->GetFirstTag("destination_folder").GetBody() + "/" + origxml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("file").GetAttr("name");
 		EXP_SIGHOOK("Jabber Stream RequestAuthorisation", &jep96Widget::FileAuth, 1000);
 
 		WokXMLTag msgtag(NULL, "message");

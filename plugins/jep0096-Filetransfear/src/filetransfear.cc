@@ -404,7 +404,7 @@ jep96::Finnished(WokXMLTag *fintag)
 			
 			eventtag->AddAttr("type", "jep0096 FinishedFile");
 			WokXMLTag &item = eventtag->AddTag("item");
-			item.AddAttr("icon", "/usr/local/share/wokjab/dnd.png");
+			item.AddAttr("icon", "/usr/local/share/wokjab/filetransfer.png");
 			item.AddAttr("session", session);
 			if ( sending == TRUE )
 			{

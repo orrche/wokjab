@@ -29,6 +29,9 @@
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
+#include <glib.h>
+#include <sqlite3.h>
+
 using namespace Woklib;
 
 class History: public WoklibPlugin 
@@ -36,8 +39,12 @@ class History: public WoklibPlugin
 public:
 	History(WLSignal *wls);
 	~History();
+	
+	int Outgoing(WokXMLTag *tag);
+	int Incomming(WokXMLTag *tag);
+		
 protected:
-
+	sqlite3 *db;
 private:
 
 };

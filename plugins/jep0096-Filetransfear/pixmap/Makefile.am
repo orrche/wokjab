@@ -1,5 +1,5 @@
 #
-#  Copyright (C) 2003-2004  Kent Gustavsson <oden@gmx.net>
+#  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,13 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-SUBDIRS=src \
-	pixmap
-
-datadir = $(prefix)/lib/woklib/glade
+ 
 pkgdata_DATA = \
-        streams.glade \
-	filepicker.glade
-				
+        filetransfer.png
+ 
 EXTRA_DIST = ${pkgdata_DATA}
