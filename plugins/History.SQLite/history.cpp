@@ -97,9 +97,9 @@ History::GetLast(WokXMLTag *tag)
 	char *zErrMsg;
 	std::string query;
 	if( tag->GetAttr("relation").empty() )
-		query = "SELECT * FROM history ORDER BY time LIMIT 15";
+		query = "SELECT * FROM ( SELECT * FROM history ORDER BY time DESC LIMIT 15 ) ORDER BY time ASC";
 	else
-		query = "SELECT * FROM history WHERE relation='" + tag->GetAttr("relation") + "' ORDER BY time LIMIT 15";
+		query = "SELECT * FROM ( SELECT * FROM history WHERE relation='" + tag->GetAttr("relation") + "' ORDER BY time DESC LIMIT 15 ) ORDER BY time ASC";
 	
 	WokXMLTag &ret = tag->AddTag("history");
 	int rc = sqlite3_exec( db, query.c_str(), callback, &ret, &zErrMsg );
@@ -126,8 +126,8 @@ History::Outgoing(WokXMLTag *tag)
 	else
 		resource = "";
 		
-	int rc = sqlite3_exec( db, ("INSERT INTO history (relation, resource, to_jid, from_jid, xml) VALUES ('"+ jid +"', '" + resource + "', '" + tag->GetFirstTag("message").GetAttr("to") + 
-					  		"', '" + tag->GetFirstTag("message").GetAttr("from") + "' , '" + XMLisize(tag->GetStr()) + "')").c_str(), callback, 0, &zErrMsg );
+	int rc = sqlite3_exec( db, ("INSERT INTO history (relation, resource, to_jid, from_jid, xml, time) VALUES ('"+ jid +"', '" + resource + "', '" + tag->GetFirstTag("message").GetAttr("to") + 
+					  		"', '" + tag->GetFirstTag("message").GetAttr("from") + "' , '" + XMLisize(tag->GetStr()) + "', strftime('%s','now'))").c_str(), callback, 0, &zErrMsg );
 	if( rc!=SQLITE_OK )
 	{
 		fprintf( stderr, "SQL error: %s\n", zErrMsg );
@@ -152,8 +152,8 @@ History::Incomming(WokXMLTag *tag)
 	else
 		resource = "";
 	
-	int rc = sqlite3_exec( db, ("INSERT INTO history (relation, resource, to_jid, from_jid, xml) VALUES ('"+ jid +"', '" + resource + "', '" + tag->GetFirstTag("message").GetAttr("to") + 
-					  		"', '" + tag->GetFirstTag("message").GetAttr("from") + "' , '" + XMLisize(tag->GetStr()) + "')").c_str(), callback, 0, &zErrMsg );
+	int rc = sqlite3_exec( db, ("INSERT INTO history (relation, resource, to_jid, from_jid, xml, time) VALUES ('"+ jid +"', '" + resource + "', '" + tag->GetFirstTag("message").GetAttr("to") + 
+					  		"', '" + tag->GetFirstTag("message").GetAttr("from") + "' , '" + XMLisize(tag->GetStr()) + "', strftime('%s','now'))").c_str(), callback, 0, &zErrMsg );
 	if( rc!=SQLITE_OK )
 	{
 		fprintf( stderr, "SQL error: %s\n", zErrMsg );

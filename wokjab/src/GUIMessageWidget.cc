@@ -305,10 +305,13 @@ from(from)
 	std::list<WokXMLTag *>::iterator hist_iter;
 	for( hist_iter = history.GetFirstTag("history").GetTagList("row").begin() ; hist_iter != history.GetFirstTag("history").GetTagList("row").end() ; hist_iter++ )
 	{
-		if ( (*hist_iter)->GetFirstTag("xml").GetFirstTag("message").GetAttr("from") == "" )
+		if ( (*hist_iter)->GetFirstTag("xml").GetFirstTag("message").GetFirstTag("message").GetAttr("from") == "" )
 			SentMessage(&((*hist_iter)->GetFirstTag("xml").GetFirstTag("message")));
 		else
+		{
+			(*hist_iter)->GetFirstTag("xml").GetFirstTag("message").AddAttr("displayed", "false");
 			NewMessage(&((*hist_iter)->GetFirstTag("xml").GetFirstTag("message")));
+		}
 	}
 }
 
@@ -404,7 +407,6 @@ int
 GUIMessageWidget::SentMessage(WokXMLTag *tag)
 {
 	std::string str = tag->GetFirstTag("message").GetFirstTag("body").GetBody();
-	std::cout << "::" << str << std::endl;
 	
 	WokXMLTag querytag(NULL, "nick");
 	querytag.AddAttr("session", session);
@@ -650,10 +652,8 @@ GUIMessageWidget::RemoveEvent(WokXMLTag *tag)
 		std::map<GtkWidget *, WokXMLTag *>::iterator iter;
 		std::map<GtkWidget *, WokXMLTag *>::iterator nxtiter;
 		
-		std::cout << "We have " << event_list.size() << " events " << __FILE__ << ":" << __LINE__ << std::endl;
 		for( iter = event_list.begin() ; iter != event_list.end() ; )
 		{
-			std::cout << "Tick..." << __FILE__ << ":" << __LINE__ << std::endl;
 			if( (*itemiter)->GetAttr("id") == iter->second->GetAttr("id"))
 			{
 				nxtiter = iter;
@@ -668,8 +668,6 @@ GUIMessageWidget::RemoveEvent(WokXMLTag *tag)
 					if ( ! event_list_order.empty() )
 					{	
 						gtk_widget_show_all(*event_list_order.begin());
-						std::cout << "we should be here..." << __FILE__ << ":" << __LINE__ << std::endl;
-						std::cout << "We have " << event_list.size() << " events " << __FILE__ << ":" << __LINE__ << std::endl;
 					}
 				}
 				else
