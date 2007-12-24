@@ -98,7 +98,7 @@ load_plugin_list(WLSignal *wls, GSList * plugins)
 
 int
 main (int argc, char **argv)
-{
+{{
 	WLSignal *wls;
 	
 	gtk_init(&argc, &argv);
@@ -172,5 +172,7 @@ main (int argc, char **argv)
 	WokXMLTag exit("exit");
 	wls->SendSignal("Program Exit", exit);
 	
+}
+	std::cout << "Ok thats a bit odd..." << std::endl;
 	return (0);
 }

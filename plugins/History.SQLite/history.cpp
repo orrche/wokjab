@@ -29,14 +29,21 @@
 
 #include "history.hpp"
 static int callback(void *NotUsed, int argc, char **argv, char **azColName){
-  int i;
-  NotUsed=0;
-
-  for(i=0; i<argc; i++){
-    printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-  }
-  printf("\n");
-  return 0;
+	int i;
+	WokXMLTag *tag = (WokXMLTag *)NotUsed;
+	if ( NotUsed )
+	{
+		WokXMLTag &row = tag->AddTag("row");
+		for(i=0; i<argc; i++)
+		{
+			WokXMLTag &value = row.AddTag(azColName[i]);
+			if ( value.GetName() == "xml")
+				value.Add(argv[i] ? DeXMLisize(argv[i]) : "NULL");
+			else
+				value.AddText(argv[i] ? argv[i] : "NULL");
+		}
+	}
+	return 0;
 }
 
 History::History(WLSignal *wls): WoklibPlugin(wls)
@@ -63,7 +70,7 @@ History::History(WLSignal *wls): WoklibPlugin(wls)
 	{
 		char *zErrMsg;
 		
-		rc = sqlite3_exec( db, "CREATE TABLE history(relation varchar(255), time timestamp, to_jid varchar(255), from_jid varchar(255), xml blob)", callback, 0, &zErrMsg );
+		rc = sqlite3_exec( db, "CREATE TABLE history(relation varchar(255), resource varchar(255), time timestamp, to_jid varchar(255), from_jid varchar(255), xml blob)", callback, 0, &zErrMsg );
 		if( rc!=SQLITE_OK )
 		{
 			fprintf( stderr, "SQL error: %s\n", zErrMsg );
@@ -74,6 +81,7 @@ History::History(WLSignal *wls): WoklibPlugin(wls)
 		
 		EXP_SIGHOOK("Jabber XML Message Send", &History::Outgoing , 1000);
 		EXP_SIGHOOK("Jabber XML Message Normal", &History::Incomming , 1000);
+		EXP_SIGHOOK("Jabber History GetLast", &History::GetLast, 1000);
 	}
 }
 
@@ -84,11 +92,41 @@ History::~History()
 }
 
 int
+History::GetLast(WokXMLTag *tag)
+{
+	char *zErrMsg;
+	std::string query;
+	if( tag->GetAttr("relation").empty() )
+		query = "SELECT * FROM history ORDER BY time LIMIT 15";
+	else
+		query = "SELECT * FROM history WHERE relation='" + tag->GetAttr("relation") + "' ORDER BY time LIMIT 15";
+	
+	WokXMLTag &ret = tag->AddTag("history");
+	int rc = sqlite3_exec( db, query.c_str(), callback, &ret, &zErrMsg );
+	if( rc!=SQLITE_OK )
+	{
+		fprintf( stderr, "SQL error: %s\n", zErrMsg );
+		sqlite3_free( zErrMsg );
+	}
+	
+	return 1;	
+}
+
+int
 History::Outgoing(WokXMLTag *tag)
 {
 	char *zErrMsg;
-	
-	int rc = sqlite3_exec( db, ("INSERT INTO history (relation, to_jid, from_jid, xml) VALUES ('"+ tag->GetFirstTag("message").GetAttr("to") +"', '" + tag->GetFirstTag("message").GetAttr("to") + 
+	std::string jid = tag->GetFirstTag("message").GetAttr("to");
+	std::string resource;
+	if ( jid.find("/") != std::string::npos )
+	{
+		resource = jid.substr(jid.find("/")+1);
+		jid = jid.substr(0, jid.find("/"));
+	}
+	else
+		resource = "";
+		
+	int rc = sqlite3_exec( db, ("INSERT INTO history (relation, resource, to_jid, from_jid, xml) VALUES ('"+ jid +"', '" + resource + "', '" + tag->GetFirstTag("message").GetAttr("to") + 
 					  		"', '" + tag->GetFirstTag("message").GetAttr("from") + "' , '" + XMLisize(tag->GetStr()) + "')").c_str(), callback, 0, &zErrMsg );
 	if( rc!=SQLITE_OK )
 	{
@@ -104,8 +142,17 @@ int
 History::Incomming(WokXMLTag *tag)
 {
 	char *zErrMsg;
-		
-	int rc = sqlite3_exec( db, ("INSERT INTO history (relation, to_jid, from_jid, xml) VALUES ('"+ tag->GetFirstTag("message").GetAttr("from") +"', '" + tag->GetFirstTag("message").GetAttr("to") + 
+	std::string jid = tag->GetFirstTag("message").GetAttr("from");
+	std::string resource;	
+	if ( jid.find("/") != std::string::npos )
+	{
+		resource = jid.substr(jid.find("/")+1);
+		jid = jid.substr(0, jid.find("/"));
+	}
+	else
+		resource = "";
+	
+	int rc = sqlite3_exec( db, ("INSERT INTO history (relation, resource, to_jid, from_jid, xml) VALUES ('"+ jid +"', '" + resource + "', '" + tag->GetFirstTag("message").GetAttr("to") + 
 					  		"', '" + tag->GetFirstTag("message").GetAttr("from") + "' , '" + XMLisize(tag->GetStr()) + "')").c_str(), callback, 0, &zErrMsg );
 	if( rc!=SQLITE_OK )
 	{

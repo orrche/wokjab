@@ -69,6 +69,7 @@ MessageHook::devide(WokXMLTag *tag)
 int
 MessageHook::send(WokXMLTag *tag)
 {
-	wls->SendSignal("Jabber XML Send", tag);
+	if ( tag->GetAttr("send") != "false" )
+		wls->SendSignal("Jabber XML Send", tag);
 	return 1;
 }

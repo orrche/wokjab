@@ -42,7 +42,7 @@ public:
 	
 	int Outgoing(WokXMLTag *tag);
 	int Incomming(WokXMLTag *tag);
-		
+	int GetLast(WokXMLTag *tag);
 protected:
 	sqlite3 *db;
 private:

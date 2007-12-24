@@ -111,6 +111,8 @@ from(from)
 	gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (textview1), GTK_WRAP_WORD);
 	buffer1 = gtk_text_view_get_buffer (GTK_TEXT_VIEW(textview1));
 
+	
+	
 	/* Writing area */
 	GtkWidget *hbox_writing;
 
@@ -264,7 +266,6 @@ from(from)
 	}
 
 
-
 	char buf[20];
 	WokXMLTag contag(NULL, "connect");
 	if ( nick.empty() )
@@ -294,7 +295,21 @@ from(from)
 	
 	EXP_SIGHOOK("Jabber UserActivityUpdate " + session + " '" + XMLisize(from_no_resource)+"'", &GUIMessageWidget::UserActivities, 1000);
 	UserActivities(NULL);
-
+	
+	
+	WokXMLTag history ("history");
+	history.AddAttr("relation", from_no_resource);
+	
+	focus = true;
+	wls->SendSignal("Jabber History GetLast", history);
+	std::list<WokXMLTag *>::iterator hist_iter;
+	for( hist_iter = history.GetFirstTag("history").GetTagList("row").begin() ; hist_iter != history.GetFirstTag("history").GetTagList("row").end() ; hist_iter++ )
+	{
+		if ( (*hist_iter)->GetFirstTag("xml").GetFirstTag("message").GetAttr("from") == "" )
+			SentMessage(&((*hist_iter)->GetFirstTag("xml").GetFirstTag("message")));
+		else
+			NewMessage(&((*hist_iter)->GetFirstTag("xml").GetFirstTag("message")));
+	}
 }
 
 GUIMessageWidget::~GUIMessageWidget()
@@ -389,6 +404,8 @@ int
 GUIMessageWidget::SentMessage(WokXMLTag *tag)
 {
 	std::string str = tag->GetFirstTag("message").GetFirstTag("body").GetBody();
+	std::cout << "::" << str << std::endl;
+	
 	WokXMLTag querytag(NULL, "nick");
 	querytag.AddAttr("session", session);
 	wls->SendSignal("Jabber GetMyNick", &querytag);
@@ -733,18 +750,15 @@ GUIMessageWidget::NewEvent(WokXMLTag *tag)
 gboolean
 GUIMessageWidget::CommandExec(GtkWidget *button, GdkEventButton *event, GUIMessageWidget *c)
 {
-	std::cout << "here no ? " << std::endl;
 	WokXMLTag *tag = static_cast <WokXMLTag *> (g_object_get_data(G_OBJECT(button), "xml"));
 	if ( tag && !tag->GetFirstTag("signal").GetTags().empty() )
 	{
 		WokXMLTag temptag(**tag->GetFirstTag("signal").GetTags().begin());
 		c->wls->SendSignal(tag->GetFirstTag("signal").GetAttr("name"), temptag);
 		
-		std::cout << "Should work..." << std::endl;
 		return TRUE;
 	}
 
-	std::cout << "Should work.." << std::endl;
 	return FALSE;
 }
 
