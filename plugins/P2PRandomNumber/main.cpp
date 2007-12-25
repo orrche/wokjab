@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-#include "history.hpp"
+#include "rand.hpp"
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
 extern "C" WoklibPlugin *maker(WLSignal *wls) {
-	return reinterpret_cast <WoklibPlugin *> (new History(wls));
+	return reinterpret_cast <WoklibPlugin *> (new Rand(wls));
 }
 
 extern "C" void destroyer(WoklibPlugin *plugin) {
