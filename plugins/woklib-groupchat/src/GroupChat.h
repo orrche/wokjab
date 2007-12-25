@@ -15,35 +15,33 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#include "../include/MUCServer.h"
+
+#ifndef _GROUPCHAT_H_
+#define _GROUPCHAT_H_
+
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokLib.h>
+#include <Woklib/WLSignal.h>
 
 
-MUCServer::MUCServer()
+class GroupChat : public WoklibPlugin
 {
-	// TODO: put constructor code here
-}
+	public:
+		GroupChat(WLSignal *wls);
+		 ~GroupChat();
+		int Join(WokXMLTag *tag);
+		int Part(WokXMLTag *tag);
+		int Ban(WokXMLTag *tag);
+		int Presence(WokXMLTag *tag);
 
 
-MUCServer::~MUCServer()
-{
-	// TODO: put destructor code here
-}
+		virtual std::string GetInfo() {return "MUC Groupchat";};
+		virtual std::string GetVersion() {return VERSION;};
+	protected:
+};
 
-int
-MUCServer::Presence(WokXMLTag *tag)
-{	
-	return 1;
-}
-
-int
-MUCServer::AddRoom(std::string room)
-{
-	return 1;
-}
-
-int
-MUCServer::LeaveRoom(std::string room)
-{
-	return 1;
-	
-}
+#endif	//_GROUPCHAT_H_

@@ -30,8 +30,8 @@ AM_CXXFLAGS =\
 lib_LTLIBRARIES = libwoklib_groupchat.la
 
 libwoklib_groupchat_la_SOURCES = \
-	MUCServer.cc\
 	GroupChat.cc\
+	GroupChat.h \
 	main.cc
 
 libwoklib_groupchat_la_LDFLAGS = \
