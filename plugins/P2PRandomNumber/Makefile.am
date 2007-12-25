@@ -4,7 +4,9 @@ lib_LTLIBRARIES = \
 
 libp2prandomnumber_la_SOURCES = main.cpp \
 	rand.hpp\
-	rand.cpp
+	rand.cpp\
+	session.hpp\
+	session.cpp
 
 ## File created by the gnome-build tools
 

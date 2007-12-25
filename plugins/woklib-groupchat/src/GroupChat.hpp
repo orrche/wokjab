@@ -27,6 +27,9 @@
 #include <Woklib/WokLib.h>
 #include <Woklib/WLSignal.h>
 
+#include "room.hpp"
+
+using namespace Woklib;
 
 class GroupChat : public WoklibPlugin
 {
@@ -42,6 +45,9 @@ class GroupChat : public WoklibPlugin
 		virtual std::string GetInfo() {return "MUC Groupchat";};
 		virtual std::string GetVersion() {return VERSION;};
 	protected:
+		
+		
+		std::map <std::string, std::map <std::string, Room*> > rooms;
 };
 
 #endif	//_GROUPCHAT_H_

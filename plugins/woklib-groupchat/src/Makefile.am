@@ -32,7 +32,9 @@ lib_LTLIBRARIES = libwoklib_groupchat.la
 libwoklib_groupchat_la_SOURCES = \
 	GroupChat.cpp\
 	GroupChat.hpp \
-	main.cc
+	main.cc \
+	room.hpp \
+	room.cpp
 
 libwoklib_groupchat_la_LDFLAGS = \
 	`pkg-config --libs glib-2.0`

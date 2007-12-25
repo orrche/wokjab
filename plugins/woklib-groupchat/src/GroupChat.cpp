@@ -15,7 +15,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#include "GroupChat.h"
+#include "GroupChat.hpp"
 #include <Woklib/WokXMLTag.h>
 #include <iostream>
 
@@ -60,9 +60,8 @@ GroupChat::Presence(WokXMLTag *tag)
 	tag->AddAttr("room", room);
 	
 	
-	if( servers[session].find(server) != servers[session].end() )
+	if( rooms[session].find(room + "@" + server) != rooms[session].end() )
 	{
-		servers[session][server].Presence(tag);
 		wls->SendSignal("Jabber GroupChat Presence", tag);
 	}
 	return 1;
@@ -79,7 +78,10 @@ GroupChat::Join(WokXMLTag *tag)
 	xtag.AddAttr("xmlns", "http://jabber.org/protocol/muc");
 	
 	wls->SendSignal("Jabber XML Send", msgtag);
-	servers[tag->GetAttr("session")][tag->GetAttr("server")].AddRoom(tag->GetAttr("room"));
+	if ( rooms[tag->GetAttr("session")].find(tag->GetAttr("room") + '@' + tag->GetAttr("server")) == rooms[tag->GetAttr("session")].end())
+		rooms[tag->GetAttr("session")][tag->GetAttr("room") + '@' + tag->GetAttr("server")] = new Room(wls);
+	else
+		woklib_message(wls,"Great now your joining a room your already in like you haven't been causing enough problems for today already");
 	
 	return 1;
 }
@@ -94,7 +96,18 @@ GroupChat::Part(WokXMLTag *tag)
 	presencetag.AddAttr("type", "unavailable");
 	
 	wls->SendSignal("Jabber XML Send", msgtag);
-	servers[tag->GetAttr("session")][tag->GetAttr("server")].LeaveRoom(tag->GetAttr("room"));
+	
+	if ( rooms[tag->GetAttr("session")].find(tag->GetAttr("room") + '@' + tag->GetAttr("server")) == rooms[tag->GetAttr("session")].end())
+		woklib_message(wls,"And how did you manage to trick the client into leaving a room you aint in ?");
+	else
+	{
+		rooms[tag->GetAttr("session")][tag->GetAttr("room") + '@' + tag->GetAttr("server")] = new Room(wls);
+		delete rooms[tag->GetAttr("session")][tag->GetAttr("room") + '@' + tag->GetAttr("server")];
+		rooms[tag->GetAttr("session")].erase(tag->GetAttr("room") + '@' + tag->GetAttr("server"));
+		if ( rooms[tag->GetAttr("session")].empty() )
+			rooms.erase(tag->GetAttr("session"));
+
+	}
 	
 	return 1;
 }

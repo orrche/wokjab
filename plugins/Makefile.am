@@ -71,5 +71,6 @@ SUBDIRS= \
 	Gtk-jep0060-PublishSubscribe \
 	EventManager \
 	HtmlLinkMessage \
-	GPGenc
+	GPGenc \
+	P2PRandomNumber
 

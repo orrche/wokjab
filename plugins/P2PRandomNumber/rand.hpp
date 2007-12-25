@@ -33,15 +33,20 @@
 #  include <config.h>
 #endif
 
+#include "session.hpp"
+
 using namespace Woklib;
 
 class Rand : public WoklibPlugin
 {
 public:
 	Rand(WLSignal *wls);
+	~Rand();
 	
+	int NewSession(WokXMLTag *tag);
+	int Message(WokXMLTag *tag);
 protected:
-
+	std::list <Session*> sessions;
 private:
 
 };

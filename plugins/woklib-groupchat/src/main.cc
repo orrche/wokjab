@@ -17,7 +17,7 @@
 
 #include <iostream>
 
-#include "../include/GroupChat.h"
+#include "GroupChat.hpp"
 
 extern "C"
 #ifdef __WIN32
