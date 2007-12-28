@@ -34,7 +34,9 @@ libwoklib_groupchat_la_SOURCES = \
 	GroupChat.hpp \
 	main.cc \
 	room.hpp \
-	room.cpp
+	room.cpp \
+	user.hpp \
+	user.cpp
 
 libwoklib_groupchat_la_LDFLAGS = \
 	`pkg-config --libs glib-2.0`
