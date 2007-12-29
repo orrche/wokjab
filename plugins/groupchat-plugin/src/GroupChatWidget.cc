@@ -186,14 +186,11 @@ GroupChatWidget::~GroupChatWidget ()
 	}
 	if( labelplug )
 		gtk_widget_destroy(labelplug);
-
-	std::string message;
-	message = "<presence to='" + roomjid + "' type='unavailable'/>";
-
+	
 	WokXMLTag msgtag(NULL, "message");
 	msgtag.AddAttr("session", session);
 	WokXMLTag &presencetag = msgtag.AddTag("presence");
-	presencetag.AddAttr("to",roomjid);
+	presencetag.AddAttr("to",roomjid + "/" + mynick);
 	presencetag.AddAttr("type","unavailable");
 
 

@@ -25,3 +25,25 @@
 #include "user.hpp"
 
 
+User::User(WLSignal *wls, WokXMLTag *xml) : WLSignalInstance(wls)
+{
+	userdata = new WokXMLTag(*xml);
+}
+
+User::~User()
+{
+	delete userdata;
+}
+
+void
+User::Update(WokXMLTag *xml)
+{
+	delete userdata;
+	userdata = new WokXMLTag(*xml);
+}	
+
+WokXMLTag &
+User::GetUserData()
+{
+	return *userdata;	
+}

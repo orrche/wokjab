@@ -40,12 +40,14 @@ using namespace Woklib;
 class Room: public WLSignalInstance 
 {
 public:
-	Room(WLSignal *wls);
-	void AddUser(std::string username, std::string affiliation);
-	void RemoveUser(std::string username);
+	Room(WLSignal *wls, WokXMLTag *xml);
+
 	void SetAffiliation(std::string username, std::string affiliation);
+	
+	int Presence(WokXMLTag *tag);
 protected:
-	std::map<std::string, std::list <User*> > users;
+	WokXMLTag *origxml;
+	std::map <std::string, User* > users;
 private:
 
 		

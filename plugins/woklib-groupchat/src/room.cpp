@@ -25,28 +25,35 @@
 #include "room.hpp"
 
 
-Room::Room(WLSignal *wls) : WLSignalInstance(wls)
+Room::Room(WLSignal *wls, WokXMLTag *xml) : WLSignalInstance(wls), 
+origxml(new WokXMLTag(*xml))
 {
-	
+	EXP_SIGHOOK("Jabber GroupChat Presence '" + XMLisize(origxml->GetAttr("room") + '@' + origxml->GetAttr("server")) + "'", &Room::Presence, 1000);
 	
 	
 }
 
-
-void
-Room::AddUser(std::string username)
+int
+Room::Presence(WokXMLTag *tag)
 {
-	
-	
-	
-}
+	std::string from = tag->GetFirstTag("presence").GetAttr("from");
+	std::string nick = from.substr(from.find("/"));
 
-void
-Room::RemoveUser(std::string username)
-{
+	if ( tag->GetFirstTag("presence").GetAttr("type") == "unavailable" )
+	{
+		if ( users.find(nick) != users.end())
+		{
+			delete users[nick];
+			users.erase(nick);
+		}
+	}	
+	else if ( users.find(nick) == users.end())
+	{
+	}
+	else
+		users[nick]->Update(tag);
 	
-	
-	
+	return 1;
 }
 
 void

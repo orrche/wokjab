@@ -25,12 +25,26 @@
 #ifndef _USER_HPP_
 #define _USER_HPP_
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokLib.h>
+#include <Woklib/WLSignal.h>
+
+using namespace Woklib;
+
 class User: public WLSignalInstance 
 {
 public:
-
+	User(WLSignal *wls, WokXMLTag *xml);
+	~User();
+	
+	void Update(WokXMLTag *xml);
+	WokXMLTag &GetUserData();
 protected:
-
+	WokXMLTag *userdata;
 private:
 
 };

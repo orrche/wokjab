@@ -63,6 +63,8 @@ GroupChat::Presence(WokXMLTag *tag)
 	if( rooms[session].find(room + "@" + server) != rooms[session].end() )
 	{
 		wls->SendSignal("Jabber GroupChat Presence", tag);
+		wls->SendSignal("Jabber GroupChat Presence '" + XMLisize(room + "@" + server) + "'", tag);
+		wls->SendSignal("Jabber GroupChat Presence '" + XMLisize(tag_presence->GetAttr("from")) + "'", tag);
 	}
 	return 1;
 }
@@ -79,7 +81,7 @@ GroupChat::Join(WokXMLTag *tag)
 	
 	wls->SendSignal("Jabber XML Send", msgtag);
 	if ( rooms[tag->GetAttr("session")].find(tag->GetAttr("room") + '@' + tag->GetAttr("server")) == rooms[tag->GetAttr("session")].end())
-		rooms[tag->GetAttr("session")][tag->GetAttr("room") + '@' + tag->GetAttr("server")] = new Room(wls);
+		rooms[tag->GetAttr("session")][tag->GetAttr("room") + '@' + tag->GetAttr("server")] = new Room(wls, tag);
 	else
 		woklib_message(wls,"Great now your joining a room your already in like you haven't been causing enough problems for today already");
 	
@@ -101,7 +103,6 @@ GroupChat::Part(WokXMLTag *tag)
 		woklib_message(wls,"And how did you manage to trick the client into leaving a room you aint in ?");
 	else
 	{
-		rooms[tag->GetAttr("session")][tag->GetAttr("room") + '@' + tag->GetAttr("server")] = new Room(wls);
 		delete rooms[tag->GetAttr("session")][tag->GetAttr("room") + '@' + tag->GetAttr("server")];
 		rooms[tag->GetAttr("session")].erase(tag->GetAttr("room") + '@' + tag->GetAttr("server"));
 		if ( rooms[tag->GetAttr("session")].empty() )
