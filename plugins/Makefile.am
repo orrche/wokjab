@@ -20,6 +20,7 @@ pythondir = python
 endif
 
 SUBDIRS= \
+	normal \
 	Authorization \
 	AutoPresence \
 	Config \
@@ -52,7 +53,6 @@ SUBDIRS= \
 	roster-rename \
 	ScriptLoader \
 	toaster \
-	Tooltip \
 	wokjab-jid-info \
 	woklib-groupchat \
 	rfc1928-SOCKS5 \

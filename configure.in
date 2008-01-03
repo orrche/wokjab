@@ -92,6 +92,8 @@ AC_DEFINE_UNQUOTED([PACKAGE_GLADE_DIR], ["${prefix}/lib/woklib/glade"], ["Where 
 
 AC_OUTPUT(Makefile \
 	plugins/Makefile  \
+	plugins/normal/Makefile \
+	plugins/normal/Tooltip/Makefile  \
 	plugins/MenuResource/Makefile  \
 	plugins/MenuRoster/Makefile  \
 	plugins/GnomeStatusIcon/Makefile  \
@@ -137,7 +139,6 @@ AC_OUTPUT(Makefile \
 	plugins/EventSound/Makefile  \
         plugins/EventManager/Makefile  \
 	plugins/toaster/Makefile  \
-	plugins/Tooltip/Makefile  \
 	plugins/python/Makefile  \
         plugins/python/preloader/Makefile  \
 	plugins/ScriptLoader/Makefile  \
@@ -159,6 +160,7 @@ AC_OUTPUT(Makefile \
         plugins/jep0118-UserTune/Makefile  \
         plugins/jep0153-VCardAvatar/Makefile  \
 	plugins/jep0163-PEP/Makefile \
+	plugins/P2PRandomNumber/Makefile \
         plugins/Idle/Makefile  \
         plugins/Fileshare/Makefile  \
         plugins/dbus/Makefile  \
