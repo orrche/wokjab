@@ -21,6 +21,8 @@ endif
 
 SUBDIRS= \
 	normal \
+	system \
+	experimental \
 	Authorization \
 	AutoPresence \
 	Config \
@@ -34,8 +36,6 @@ SUBDIRS= \
 	GtkMenu \
 	guibrowser \
 	GUIRoster \
-	Jabber \
-	JabberConnection \
 	JabberRoster \
 	jep0004-xdata \
 	jep0030-Disco \

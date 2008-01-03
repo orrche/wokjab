@@ -19,8 +19,5 @@ if DO_PYTHON
 pythondir = python
 endif
 
-SUBDIRS= \
-	Jabber \
-	JabberConnection \
-	Tooltip
+SUBDIRS= 
 
