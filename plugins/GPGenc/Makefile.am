@@ -12,7 +12,7 @@ libgpgenc_la_SOURCES = \
 	g-p-genc.hpp                \
 	g-p-genc.cpp
 
-libfileshare_la_LDFLAGS = \
+libgpgenc_la_LDFLAGS = \
 	`gpgme-config --libs`
 
 ## File created by the gnome-build tools
