@@ -189,12 +189,11 @@ GroupChatWidget::~GroupChatWidget ()
 	
 	WokXMLTag msgtag(NULL, "message");
 	msgtag.AddAttr("session", session);
-	WokXMLTag &presencetag = msgtag.AddTag("presence");
-	presencetag.AddAttr("to",roomjid + "/" + mynick);
-	presencetag.AddAttr("type","unavailable");
+	msgtag.AddAttr("room", roomjid.substr(0, roomjid.find("@")));
+	msgtag.AddAttr("server", roomjid.substr(roomjid.find("@")+1));
+	msgtag.AddAttr("nick", mynick);
 
-
-	wls->SendSignal("Jabber XML Send", &msgtag);
+	wls->SendSignal("Jabber GroupChat Leave", &msgtag);
 
 	mclass->Remove(session, roomjid, this);
 

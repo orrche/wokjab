@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2003-2007  Kent Gustavsson <oden@gmx.net>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,11 +25,31 @@ GroupChat::GroupChat(WLSignal *wls) : WoklibPlugin (wls)
 	EXP_SIGHOOK("Jabber GroupChat Join", &GroupChat::Join, 998);
 	EXP_SIGHOOK("Jabber GroupChat Leave", &GroupChat::Part, 998);
 	EXP_SIGHOOK("Jabber GroupChat BanUser", &GroupChat::Ban, 998);
+	EXP_SIGHOOK("Jabber GroupChat GetRooms", &GroupChat::GetRooms, 998);
 }
 
 GroupChat::~GroupChat()
 {
 
+}
+
+int
+GroupChat::GetRooms(WokXMLTag *tag)
+{
+	
+	std::map< std::string, std::map< std::string, Room* > >::iterator sesiter;
+	
+	for( sesiter = rooms.begin() ; sesiter != rooms.end() ; sesiter++)
+	{
+		std::map< std::string, Room* >::iterator roomiter;
+		for ( roomiter = sesiter->second.begin() ; roomiter != sesiter->second.end() ; roomiter++)
+		{
+			WokXMLTag &item = tag->AddTag("item");
+			item.AddAttr("session", sesiter->first);
+			item.AddAttr("roomjid", roomiter->first);			
+		}		
+	}
+	return 1;	
 }
 
 int
@@ -63,8 +83,8 @@ GroupChat::Presence(WokXMLTag *tag)
 	if( rooms[session].find(room + "@" + server) != rooms[session].end() )
 	{
 		wls->SendSignal("Jabber GroupChat Presence", tag);
-		wls->SendSignal("Jabber GroupChat Presence '" + XMLisize(room + "@" + server) + "'", tag);
-		wls->SendSignal("Jabber GroupChat Presence '" + XMLisize(tag_presence->GetAttr("from")) + "'", tag);
+		wls->SendSignal("Jabber GroupChat Presence '" + XMLisize(tag->GetAttr("session")) + "' '" + XMLisize(room + "@" + server) + "'", tag);
+		wls->SendSignal("Jabber GroupChat Presence '" + XMLisize(tag->GetAttr("session")) + "' '" + XMLisize(tag_presence->GetAttr("from")) + "'", tag);
 	}
 	return 1;
 }
@@ -93,7 +113,7 @@ GroupChat::Part(WokXMLTag *tag)
 {
 	WokXMLTag msgtag(NULL, "message");
 	msgtag.AddAttr("session", tag->GetAttr("session"));
-	WokXMLTag presencetag(NULL, "presence");
+	WokXMLTag &presencetag = msgtag.AddTag("presence");
 	presencetag.AddAttr("to", tag->GetAttr("room") + '@' + tag->GetAttr("server") + '/' + tag->GetAttr("nick"));
 	presencetag.AddAttr("type", "unavailable");
 	

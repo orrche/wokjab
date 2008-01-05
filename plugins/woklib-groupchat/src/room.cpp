@@ -49,6 +49,7 @@ Room::Presence(WokXMLTag *tag)
 	}	
 	else if ( users.find(nick) == users.end())
 	{
+		users[nick] = new User(wls, tag);
 	}
 	else
 		users[nick]->Update(tag);

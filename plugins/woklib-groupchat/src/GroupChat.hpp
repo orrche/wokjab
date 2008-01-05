@@ -40,7 +40,7 @@ class GroupChat : public WoklibPlugin
 		int Part(WokXMLTag *tag);
 		int Ban(WokXMLTag *tag);
 		int Presence(WokXMLTag *tag);
-
+		int GetRooms(WokXMLTag *tag);
 
 		virtual std::string GetInfo() {return "MUC Groupchat";};
 		virtual std::string GetVersion() {return VERSION;};

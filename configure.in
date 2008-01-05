@@ -132,7 +132,6 @@ AC_OUTPUT(Makefile \
         plugins/AutoJoinGroupChat/Makefile  \
 	plugins/woklib-groupchat/Makefile  \
 	plugins/woklib-groupchat/src/Makefile  \
-	plugins/woklib-groupchat/include/Makefile  \
 	plugins/groupchat-plugin/Makefile  \
 	plugins/groupchat-plugin/src/Makefile  \
 	plugins/groupchat-plugin/glade/Makefile  \
@@ -168,6 +167,7 @@ AC_OUTPUT(Makefile \
         plugins/dbus/Makefile  \
         plugins/History.SQLite/Makefile  \
         plugins/HtmlLinkMessage/Makefile  \
+        plugins/P2PRandomNumber/Makefile  \
 	wokjab/Makefile \
 	wokjab/src/Makefile \
 	wokjab/include/Makefile \
