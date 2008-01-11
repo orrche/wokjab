@@ -25,7 +25,7 @@ GroupChat::GroupChat(WLSignal *wls) : WoklibPlugin (wls)
 	EXP_SIGHOOK("Jabber GroupChat Join", &GroupChat::Join, 998);
 	EXP_SIGHOOK("Jabber GroupChat Leave", &GroupChat::Part, 998);
 	EXP_SIGHOOK("Jabber GroupChat BanUser", &GroupChat::Ban, 998);
-	EXP_SIGHOOK("Jabber GroupChat GetRooms", &GroupChat::GetRooms, 998);
+	EXP_SIGHOOK("Jabber GroupChat GetRooms", &GroupChat::GetRooms, 100);
 }
 
 GroupChat::~GroupChat()
@@ -49,6 +49,7 @@ GroupChat::GetRooms(WokXMLTag *tag)
 			item.AddAttr("roomjid", roomiter->first);			
 		}		
 	}
+	
 	return 1;	
 }
 

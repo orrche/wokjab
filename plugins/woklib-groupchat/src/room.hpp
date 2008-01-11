@@ -45,6 +45,7 @@ public:
 	void SetAffiliation(std::string username, std::string affiliation);
 	
 	int Presence(WokXMLTag *tag);
+	int GetOccupants(WokXMLTag *tag);
 protected:
 	WokXMLTag *origxml;
 	std::map <std::string, User* > users;

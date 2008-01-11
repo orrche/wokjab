@@ -28,17 +28,31 @@
 Room::Room(WLSignal *wls, WokXMLTag *xml) : WLSignalInstance(wls), 
 origxml(new WokXMLTag(*xml))
 {
-	EXP_SIGHOOK("Jabber GroupChat Presence '" + XMLisize(origxml->GetAttr("room") + '@' + origxml->GetAttr("server")) + "'", &Room::Presence, 1000);
+	EXP_SIGHOOK("Jabber GroupChat Presence '" + XMLisize(origxml->GetAttr("session")) + "' '" + XMLisize(origxml->GetAttr("room") + '@' + origxml->GetAttr("server")) + "'", &Room::Presence, 1000);
+	EXP_SIGHOOK("Jabber GroupChat GetOccupants '" + XMLisize(origxml->GetAttr("session")) + "' '" + XMLisize(origxml->GetAttr("room") + '@' + origxml->GetAttr("server")) + "'", &Room::GetOccupants, 1000);
+}
+
+int
+Room::GetOccupants(WokXMLTag *tag)
+{
+	std::map <std::string, User* >::iterator useriter;
 	
+	for( useriter = users.begin() ; useriter != users.end() ; useriter++)
+	{
+		WokXMLTag &item = tag->AddTag("item");
+		item.AddAttr("nick", useriter->first);
+		item.AddTag(&(useriter->second->GetUserData()));
+	}
 	
+	return 1;
 }
 
 int
 Room::Presence(WokXMLTag *tag)
 {
 	std::string from = tag->GetFirstTag("presence").GetAttr("from");
-	std::string nick = from.substr(from.find("/"));
-
+	std::string nick = from.substr(from.find("/")+1);
+	
 	if ( tag->GetFirstTag("presence").GetAttr("type") == "unavailable" )
 	{
 		if ( users.find(nick) != users.end())
