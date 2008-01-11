@@ -29,7 +29,6 @@ SUBDIRS= \
 	DisplayGtk \
 	EventSound \
 	Fileshare \
-	GnomeStatusIcon \
 	groupchat-plugin \
 	GtkTimer \
 	GtkPreference \

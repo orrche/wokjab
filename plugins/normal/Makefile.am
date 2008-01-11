@@ -20,6 +20,7 @@ pythondir = python
 endif
 
 SUBDIRS= \
+	GnomeStatusIcon \
 	Jabber \
 	JabberConnection \
 	Tooltip
