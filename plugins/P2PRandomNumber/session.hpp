@@ -44,6 +44,7 @@ public:
 protected:
 	std::string id;
 	WokXMLTag origxml;
+	bool mine
 private:
 
 };

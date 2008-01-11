@@ -41,6 +41,10 @@ Rand::~Rand()
 	}	
 }
 
+
+/*
+<tag session="jabber0" roomjid="test@conference.jabber.se"/>
+*/
 int
 Rand::NewSession(WokXMLTag *tag)
 {
@@ -50,18 +54,57 @@ Rand::NewSession(WokXMLTag *tag)
 	return 1;
 }
 
+/*
+<message session="jabber0">
+  <message to="nedo@jabber.se" from="rand@conference.jabber.se/basil" type="groupchat">
+    <x xmlns="RandomNumber">
+      <rand owner="rand@conference.jabber.se/basi" id="13" type="genereate request">
+        <hash>ce47d07243bb6eaf5e1322c81baf9bbf</hash>
+      </rand>
+    </x>
+  </message>
+</message>
+
+<message session="jabber0">
+  <message to="nedo@jabber.se" from="rand@conference.jabber.se/basil" type="groupchat">
+    <x xmlns="RandomNumber">
+      <rand owner="rand@conference.jabber.se/nedo", id="4" type="participant seed">
+        <hash>5892587866cdf0d229b6b3e3305d997b</hash>
+      </rand>
+    </x>
+  </message>
+</message>
+
+<message session="jabber0">
+  <message to="nedo@jabber.se" from="rand@conference.jabber.se/basil" type="groupchat">
+    <x xmlns="RandomNumber">
+      <rand owner="rand@conference.jabber.se/basil", id="13" type="cancel" />
+    </x>
+  </message>
+</message>
+*/
+
 int
 Rand::Message(WokXMLTag *tag)
 {
 	WokXMLTag &x = tag->GetFirstTag("message").GetFirstTag("x");
 	std::string type = x.GetAttr("type");
 
-	if ( type == "invite" )
+	if ( wls->SendSignal("Jabber RandomNumber Session '" + tag->GetAttr("session") + "' '" + x.GetFirstTag("rand").GetAttr("owner") + "'", tag) == 0 )
 	{
-		
-		
+		if ( tag->GetFirstTag("message").GetFirstTag("x").GetFirstTag("rand").GetAttr("type") == "generate request" )
+		{
+			WokXMLTag sessiontag("session");
+			sessiontag.AddAttr("roomjid", tag->GetFirstTag("message").GetAttr("from").substr(0, tag->GetFirstTag("message").GetAttr("from").find("/")));
+			sessiontag.AddAttr("session", tag->GetAttr("session"));
+							   
+			Session *ses;
+			ses = new Session(wls, &sessiontag);
+			sessions.push_back(ses);
+							   
+			wls->SendSignal("Jabber RandomNumber Session '" + tag->GetAttr("session") + "' '" + x.GetFirstTag("rand").GetAttr("owner") + "'", tag);
+		}
 	}
-	wls->SendSignal("Jabber RandomNumber Session '" + x.GetAttr("id") + "' '" + XMLisize(type) + "'", tag);
 	
 	return 1;
 }

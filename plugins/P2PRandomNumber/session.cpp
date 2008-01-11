@@ -24,10 +24,35 @@
 
 #include "session.hpp"
 
-Session::Session(WLSignal *wls, WokXMLTag *xml) : WLSignalInstance(wls),
-origxml(*xml)
+Session::Session(WLSignal *wls, WokXMLTag *xml, bool mine) : WLSignalInstance(wls),
+origxml(*xml),
+mine(mine)
 {
-	EXP_SIGHOOK("Jabber RandomNumber Session '" + XMLisize(id) + "' Generate", &Session::Generate, 1000);
+	EXP_SIGHOOK("Jabber RandomNumber Session '" + XMLisize(origxml.GetAttr("session")) + "' '" + XMLisize(origxml.GetAttr("roomjid")) + "' Generate", &Session::Generate, 1000);
+	
+	if ( mine ) 
+	{
+/*
+	<message session="jabber0">
+	  <message to="nedo@jabber.se" from="rand@conference.jabber.se/basil" type="groupchat">
+		<x xmlns="RandomNumber">
+		  <rand owner="rand@conference.jabber.se/basi" id="13" type="genereate request">
+			<hash>ce47d07243bb6eaf5e1322c81baf9bbf</hash>
+		  </rand>
+		</x>
+	  </message>
+	</message>	
+*/	
+		WokXMLTag mtag("message");
+		mtag.AddAttr("session", origxml.GetAttr("session"));
+		WokXMLTag &message = mtag.AddTag("message");
+		message.AddAttr("to", origxml.GetAttr("roomjid"));
+		message.AddAttr("type", "groupchat");
+		WokXMLTag &x = message.AddTag("x");
+		x.AddAttr("xmlns", "RandomNumber");
+					
+		
+	}
 }
 
 int
