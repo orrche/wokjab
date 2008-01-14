@@ -50,8 +50,20 @@ mine(mine)
 		message.AddAttr("type", "groupchat");
 		WokXMLTag &x = message.AddTag("x");
 		x.AddAttr("xmlns", "RandomNumber");
-					
-		
+		x.AddAttr("type", "generate request");
+		x.AddAttr("id", "13"); // fix ..
+		WokXMLTag &hash = x.AddTag("hash");
+		char data[] = "123456789abcdef";
+		std::string h;
+		for( int x = 0 ; x < 16 ; x++ )
+			h += data[16 * rand()/RAND_MAX];
+		hash.AddText(h);
+	}
+	else
+	{
+#warning cant be programming with an english keyboard dont find anything...
+		WokXMLTag mtag("message");
+		mtag.AddAttr("session", origxml.GetAttr("session"));
 	}
 }
 

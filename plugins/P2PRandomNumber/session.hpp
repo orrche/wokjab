@@ -38,13 +38,15 @@ using namespace Woklib;
 class Session: public WLSignalInstance 
 {
 public:
-	Session(WLSignal *wls, WokXMLTag *xml);
+	Session(WLSignal *wls, WokXMLTag *xml, bool mine);
 	
 	int Generate(WokXMLTag *tag);
 protected:
 	std::string id;
 	WokXMLTag origxml;
-	bool mine
+	bool mine;
+	
+	std::map <std::string, std::string> hashes;
 private:
 
 };

@@ -49,7 +49,7 @@ int
 Rand::NewSession(WokXMLTag *tag)
 {
 	Session *ses;
-	ses = new Session(wls, tag);
+	ses = new Session(wls, tag, true);
 	sessions.push_back(ses);
 	return 1;
 }
@@ -99,7 +99,8 @@ Rand::Message(WokXMLTag *tag)
 			sessiontag.AddAttr("session", tag->GetAttr("session"));
 							   
 			Session *ses;
-			ses = new Session(wls, &sessiontag);
+			/* Not sure this is entirely correct.. need to think this through maybe later */
+			ses = new Session(wls, &sessiontag, false);
 			sessions.push_back(ses);
 							   
 			wls->SendSignal("Jabber RandomNumber Session '" + tag->GetAttr("session") + "' '" + x.GetFirstTag("rand").GetAttr("owner") + "'", tag);
