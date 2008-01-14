@@ -93,6 +93,9 @@ AC_DEFINE_UNQUOTED([PACKAGE_GLADE_DIR], ["${prefix}/lib/woklib/glade"], ["Where 
 AC_OUTPUT(Makefile \
 	plugins/Makefile  \
 	plugins/normal/Makefile \
+	plugins/normal/GnomeStatusIcon/Makefile  \
+	plugins/normal/GnomeStatusIcon/src/Makefile  \
+	plugins/normal/GnomeStatusIcon/include/Makefile  \
 	plugins/normal/Jabber/Makefile \
         plugins/normal/JabberConnection/Makefile  \
 	plugins/normal/Tooltip/Makefile  \
@@ -100,9 +103,6 @@ AC_OUTPUT(Makefile \
 	plugins/experimental/Makefile \
 	plugins/MenuResource/Makefile  \
 	plugins/MenuRoster/Makefile  \
-	plugins/GnomeStatusIcon/Makefile  \
-	plugins/GnomeStatusIcon/src/Makefile  \
-	plugins/GnomeStatusIcon/include/Makefile  \
 	plugins/GtkTimer/Makefile  \
 	plugins/GtkTimer/src/Makefile  \
 	plugins/GtkPreference/Makefile  \
