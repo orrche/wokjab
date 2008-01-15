@@ -587,11 +587,7 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 		std::string stamp = "";
 		WokXMLTag tag_body = tag->GetFirstTag("message");
 
-		for( iter = tag_body.GetTagList("x").begin() ; iter != tag_body.GetTagList("x").end() ; iter++)
-		{
-			if( (*iter)->GetAttr("xmlns") == "jabber:x:delay")
-				stamp = (*iter)->GetAttr("stamp");
-		}
+		stamp = tag_body.GetFirstTag("x", "jabber:x:delay").GetAttr("stamp");
 
 		if( stamp.size() )
 		{
@@ -1037,6 +1033,42 @@ GUIMessageWidget::PutText(GtkTextIter *iter, WokXMLTag &message)
 					GdkPixbuf *pic = gdk_pixbuf_new_from_file(tag->GetAttr("src").c_str(), NULL);
 					if ( pic ) 
 						gtk_text_buffer_insert_pixbuf (buffer, iter, pic);
+					
+					std::cout << "Found image.." << std::endl;
+					std::cout << "Tag: " << *tag << std::endl;
+				}
+				if( tag->GetName() == "span")
+				{
+					GtkTextIter start_iter;
+
+					GtkTextMark *mark;
+					mark = gtk_text_buffer_create_mark(buffer, NULL, iter, TRUE);
+
+
+					PutText(iter, *((WokXMLTag *)(*oiter)));
+					gtk_text_buffer_get_iter_at_mark (buffer, &start_iter, mark);
+					
+					std::string style = tag->GetAttr("style");
+					while( style.find(";") != std::string::npos )
+					{
+						int n = 0;
+						for(n=0;style[n] == ' ';n++);
+						style = style.substr(n);
+						
+						if ( style.substr(0,6) == "color:" )
+						{
+							std::string value = style.substr(6, style.find(";")-6);
+							for(n=0;value[n] == ' ';n++);
+							value = value.substr(n);
+							
+							GtkTextTag *tmptag;
+							tmptag = gtk_text_buffer_create_tag( buffer1 , NULL, "foreground", value.c_str(), NULL);
+							gtk_text_buffer_apply_tag(buffer, tmptag, &start_iter, iter);
+						}
+						style = style.substr(style.find(";")+1);
+					}
+
+					gtk_text_buffer_delete_mark (buffer, mark);
 				}
 				else
 				{
