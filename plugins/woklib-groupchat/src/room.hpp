@@ -46,6 +46,7 @@ public:
 	
 	int Presence(WokXMLTag *tag);
 	int GetOccupants(WokXMLTag *tag);
+	int Whoami(WokXMLTag *tag);
 protected:
 	WokXMLTag *origxml;
 	std::map <std::string, User* > users;

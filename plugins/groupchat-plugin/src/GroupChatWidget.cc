@@ -431,8 +431,20 @@ GroupChatWidget::Message (WokXMLTag& tag_msg)
 		else
 		{
 			std::string nick;
+			bool action;
 			nick = tag_msg.GetAttr("from").substr( tag_msg.GetAttr("from").find("/") + 1, tag_msg.GetAttr("from").length() );
-			str = '<' + nick + "> ";
+			if ( tag_msg.GetFirstTag("body").GetBody().substr(0,4) == "/me " )
+			{
+				str = "*" + nick + " ";
+				action = true;
+				message = message.substr(4);
+			}
+			else
+			{
+				str = '<' + nick + "> ";
+				action = false;
+			}
+			
 			if(nick == mynick)
 			{
 				gtk_text_buffer_insert_with_tags (outputbuffer, &iter, str.c_str(), str.length(), tags["my_name"], NULL);

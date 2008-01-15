@@ -1,3 +1,7 @@
+AM_CXXFLAGS = -lwoklib
+
+
+libdir = $(prefix)/lib/woklib-plugins/normal
 
 lib_LTLIBRARIES = \
 	libp2prandomnumber.la

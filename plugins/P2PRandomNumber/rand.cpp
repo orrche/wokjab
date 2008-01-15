@@ -23,10 +23,11 @@
  */
 
 #include "rand.hpp"
-
+#include <sstream>
 
 Rand::Rand(WLSignal *wls) : WoklibPlugin(wls)
 {
+	id = 0;
 	EXP_SIGHOOK("Jabber RandomNumber SessionCreate", &Rand::NewSession, 1000);
 	EXP_SIGHOOK("Jabber XML Message xmlns RandomNumber", &Rand::Message, 1000);
 }
@@ -48,8 +49,10 @@ Rand::~Rand()
 int
 Rand::NewSession(WokXMLTag *tag)
 {
+	std::stringstream str;
+	str << id++;
 	Session *ses;
-	ses = new Session(wls, tag, true);
+	ses = new Session(wls, tag, str.str());
 	sessions.push_back(ses);
 	return 1;
 }
@@ -57,29 +60,23 @@ Rand::NewSession(WokXMLTag *tag)
 /*
 <message session="jabber0">
   <message to="nedo@jabber.se" from="rand@conference.jabber.se/basil" type="groupchat">
-    <x xmlns="RandomNumber">
-      <rand owner="rand@conference.jabber.se/basi" id="13" type="genereate request">
-        <hash>ce47d07243bb6eaf5e1322c81baf9bbf</hash>
-      </rand>
+    <x xmlns="RandomNumber" owner="rand@conference.jabber.se/basi" id="13" type="genereate request">
+      <hash>862e127cfea6b543</hash>
     </x>
   </message>
 </message>
 
 <message session="jabber0">
   <message to="nedo@jabber.se" from="rand@conference.jabber.se/basil" type="groupchat">
-    <x xmlns="RandomNumber">
-      <rand owner="rand@conference.jabber.se/nedo", id="4" type="participant seed">
-        <hash>5892587866cdf0d229b6b3e3305d997b</hash>
-      </rand>
+    <x xmlns="RandomNumber" owner="rand@conference.jabber.se/nedo", id="4" type="participant seed">
+      <hash>862e127cfea6b543</hash>
     </x>
   </message>
 </message>
 
 <message session="jabber0">
   <message to="nedo@jabber.se" from="rand@conference.jabber.se/basil" type="groupchat">
-    <x xmlns="RandomNumber">
-      <rand owner="rand@conference.jabber.se/basil", id="13" type="cancel" />
-    </x>
+    <x xmlns="RandomNumber" rand owner="rand@conference.jabber.se/basil", id="13" type="cancel" />
   </message>
 </message>
 */
@@ -87,20 +84,22 @@ Rand::NewSession(WokXMLTag *tag)
 int
 Rand::Message(WokXMLTag *tag)
 {
-	WokXMLTag &x = tag->GetFirstTag("message").GetFirstTag("x");
+	WokXMLTag &x = tag->GetFirstTag("message").GetFirstTag("x", "RandomNumber");
 	std::string type = x.GetAttr("type");
-
-	if ( wls->SendSignal("Jabber RandomNumber Session '" + tag->GetAttr("session") + "' '" + x.GetFirstTag("rand").GetAttr("owner") + "'", tag) == 0 )
+	std::string roomjid = tag->GetFirstTag("message").GetAttr("from").substr(0, tag->GetFirstTag("message").GetAttr("from").find("/"));
+	
+	if ( wls->SendSignal("Jabber RandomNumber Session '" + XMLisize(tag->GetAttr("session")) + "' '" + XMLisize(x.GetAttr("owner")) + "' '"+ XMLisize(x.GetAttr("id")) + "'", tag) == 0 )
 	{
-		if ( tag->GetFirstTag("message").GetFirstTag("x").GetFirstTag("rand").GetAttr("type") == "generate request" )
-		{
+		if ( tag->GetFirstTag("message").GetFirstTag("x", "RandomNumber").GetAttr("type") == "generate request" )
+		{			
 			WokXMLTag sessiontag("session");
 			sessiontag.AddAttr("roomjid", tag->GetFirstTag("message").GetAttr("from").substr(0, tag->GetFirstTag("message").GetAttr("from").find("/")));
 			sessiontag.AddAttr("session", tag->GetAttr("session"));
-							   
+			sessiontag.AddAttr("owner", tag->GetFirstTag("message").GetAttr("from"));
+			sessiontag.AddAttr("id", tag->GetFirstTag("x", "RandomNumber").GetAttr("id"));
 			Session *ses;
-			/* Not sure this is entirely correct.. need to think this through maybe later */
-			ses = new Session(wls, &sessiontag, false);
+			
+			ses = new Session(wls, &sessiontag);
 			sessions.push_back(ses);
 							   
 			wls->SendSignal("Jabber RandomNumber Session '" + tag->GetAttr("session") + "' '" + x.GetFirstTag("rand").GetAttr("owner") + "'", tag);

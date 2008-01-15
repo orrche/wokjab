@@ -33,7 +33,7 @@ using namespace Woklib;
 class GroupChatRoster : public WLSignalInstance
 {
 	public:
-		GroupChatRoster(WLSignal *wls, std::string room, std::string mainwid);
+		GroupChatRoster(WLSignal *wls, std::string room, std::string mainwid, std::string mynick);
 		 ~GroupChatRoster();
 	
 		int Message(WokXMLTag *tag);
@@ -45,6 +45,7 @@ class GroupChatRoster : public WLSignalInstance
 		std::string id;
 		std::string room;
 		std::string mainwid;
+		std::string mynick;
 		std::list <std::string> message;
 	
 };

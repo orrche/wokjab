@@ -30,6 +30,14 @@ origxml(new WokXMLTag(*xml))
 {
 	EXP_SIGHOOK("Jabber GroupChat Presence '" + XMLisize(origxml->GetAttr("session")) + "' '" + XMLisize(origxml->GetAttr("room") + '@' + origxml->GetAttr("server")) + "'", &Room::Presence, 1000);
 	EXP_SIGHOOK("Jabber GroupChat GetOccupants '" + XMLisize(origxml->GetAttr("session")) + "' '" + XMLisize(origxml->GetAttr("room") + '@' + origxml->GetAttr("server")) + "'", &Room::GetOccupants, 1000);
+	EXP_SIGHOOK("Jabber GroupChat Whoami '" + XMLisize(origxml->GetAttr("session")) + "' '" + XMLisize(origxml->GetAttr("room") + '@' + origxml->GetAttr("server")) + "'", &Room::Whoami, 1000);
+}
+
+int
+Room::Whoami(WokXMLTag *tag)
+{
+	tag->AddAttr("nick", origxml->GetAttr("nick"));
+	return 1;
 }
 
 int

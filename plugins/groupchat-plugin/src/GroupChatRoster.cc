@@ -28,9 +28,10 @@
 #  include <config.h>
 #endif
 
-GroupChatRoster::GroupChatRoster(WLSignal *wls, std::string room, std::string mainwid) : WLSignalInstance(wls),
+GroupChatRoster::GroupChatRoster(WLSignal *wls, std::string room, std::string mainwid, std::string mynick) : WLSignalInstance(wls),
 room(room),
-mainwid(mainwid)
+mainwid(mainwid),
+mynick(mynick)
 {
 	WokXMLTag itemtag(NULL, "item");
 	WokXMLTag &columntag =  itemtag.AddTag("columns");
@@ -99,17 +100,37 @@ GroupChatRoster::Activate(WokXMLTag *tag)
 int
 GroupChatRoster::Message(WokXMLTag *tag)
 {
+	if ( tag->GetTagList("body").empty() )
+		return 1;
+	
+	std::string body = tag->GetFirstTag("body").GetBody();
+	if ( body.empty() )
+		return 1;
+	
+	while ( body.find("\n") != std::string::npos )
+	{
+		body.replace(body.find("\n"), 1, " ");
+	}
+	
 	std::string msg;
 	
 	if ( tag->GetAttr("from").find("/") == std::string::npos )
 	{
 		// Status message
-		msg = "\n <span size='x-small' color='blue'>" + XMLisize(tag->GetFirstTag("body").GetBody()) + "</span>";
+		msg = "\n <span size='x-small' color='blue'>" + XMLisize(body) + "</span>";
 	}
 	else
 	{
 		// Normal message
-		msg = "\n <span size='x-small' color='green'>&lt;" + XMLisize(tag->GetAttr("from").substr(tag->GetAttr("from").find("/")+1)) + "&gt;</span><span size='x-small'>" + XMLisize(tag->GetFirstTag("body").GetBody()) + "</span>";
+		std::string color = "green";
+		if ( mynick == tag->GetAttr("from").substr(tag->GetAttr("from").find("/")+1) )
+			color = "gray";
+		
+		if ( body.substr(0,4) == "/me " )
+			msg = "\n <span size='x-small' color='" + color + "'>*" + XMLisize(tag->GetAttr("from").substr(tag->GetAttr("from").find("/")+1)) + " " + XMLisize(body.substr(4)) + "</span>";
+		else
+			msg = "\n <span size='x-small' color='" + color + "'>&lt;" + XMLisize(tag->GetAttr("from").substr(tag->GetAttr("from").find("/")+1)) + "&gt;</span><span size='x-small'>" + XMLisize(body) + "</span>";
+		
 	}
 
 

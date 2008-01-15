@@ -104,7 +104,7 @@ GroupChat::Join(WokXMLTag *tag)
 //	EXP_SIGHOOK(std::string("GUI WindowDock ReConnect ") + contag.GetAttr("mainwidget"), &GroupChat::ReConnect, 500);
 	
 	rooms[tag->GetAttr("session")][roomjid] = wid;
-	rosterrooms[tag->GetAttr("session")][roomjid] = new GroupChatRoster(wls, roomjid, contag.GetAttr("mainwidget"));
+	rosterrooms[tag->GetAttr("session")][roomjid] = new GroupChatRoster(wls, roomjid, contag.GetAttr("mainwidget"), tag->GetAttr("nick"));
 	roomids[contag.GetAttr("mainwidget")].push_back(tag->GetAttr("session"));
 	roomids[contag.GetAttr("mainwidget")].push_back(roomjid);
 	

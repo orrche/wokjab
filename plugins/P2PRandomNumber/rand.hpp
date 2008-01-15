@@ -47,6 +47,7 @@ public:
 	int Message(WokXMLTag *tag);
 protected:
 	std::list <Session*> sessions;
+	int id;
 private:
 
 };
