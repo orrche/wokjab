@@ -61,6 +61,7 @@ class jep96 : public WoklibPlugin
 	protected:
 		std::map <std::string, WokXMLTag *> sessions;
 		std::string autoproxy;
+		std::string autoproxytype;
 		int sidnum;
 		GladeXML *gxml;
 		GtkWidget *filewindow;

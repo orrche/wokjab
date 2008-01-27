@@ -109,7 +109,10 @@ int
 jep96::ReadConfig(WokXMLTag *tag)
 {
 	if ( !tag->GetFirstTag("config").GetFirstTag("proxy").GetTagList("item").empty() )
+	{
 		autoproxy = tag->GetFirstTag("config").GetFirstTag("proxy").GetFirstTag("item").GetBody();
+		autoproxytype = tag->GetFirstTag("config").GetFirstTag("proxy").GetFirstTag("item").GetAttr("type");
+	}
 	else
 		autoproxy = "";
 	
@@ -295,7 +298,6 @@ jep96::SendFile(WokXMLTag *xml)
 	myjid = jiddata.GetFirstTag("item").GetFirstTag("username").GetBody() + "@" +
 			jiddata.GetFirstTag("item").GetFirstTag("server").GetBody() + "/" +
 			jiddata.GetFirstTag("item").GetFirstTag("resource").GetBody();
-	std::cout << "What the fuck " << myjid << "  " << jiddata << std::endl;
 	
 	gtk_list_store_append (file_store, &iter);
 	gtk_list_store_set (file_store, &iter, 0, filename.c_str(),
@@ -346,10 +348,14 @@ jep96::SendFile(WokXMLTag *xml)
 	WokXMLTag *data = new WokXMLTag (msgtag);
 	if ( xml->GetAttr("proxy_type") == "auto")
 	{
+		data->AddAttr("proxy_type", autoproxytype );
 		data->AddAttr("proxy", autoproxy );	
 	}
 	else
+	{
+		data->AddAttr("proxy_type", xml->GetAttr("proxy_type"));
 		data->AddAttr("proxy", xml->GetAttr("proxy"));
+	}
 	
 	data->AddAttr("rate", xml->GetAttr("rate"));
 	data->AddAttr("file", file);
@@ -604,6 +610,7 @@ jep96::SendReply(WokXMLTag *msgtag)
 			filesend.AddAttr("to", sessions[id]->GetFirstTag("iq").GetAttr("to"));
 			filesend.AddAttr("rate", sessions[id]->GetAttr("rate"));
 			filesend.AddAttr("proxy", sessions[id]->GetAttr("proxy"));
+			filesend.AddAttr("proxy_type", sessions[id]->GetAttr("proxy_type"));
 			filesend.AddAttr("sid", sid);
 			filesend.AddAttr("session", msgtag->GetAttr("session"));
 			wls->SendSignal("Jabber Stream File Send Method " + method, filesend);

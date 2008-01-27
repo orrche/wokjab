@@ -36,3 +36,4 @@ libjep0096_Filetransfear_la_LDFLAGS = \
 	`pkg-config libglade-2.0 gtk+-2.0 --libs`
 
 libjep0096_Filetransfear_la_LIBADD =
+

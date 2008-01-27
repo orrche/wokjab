@@ -42,7 +42,7 @@ jep65::jep65(WLSignal *wls):
 WoklibPlugin(wls)
 {
 	struct sockaddr_in echoserver;
-	sport = "8011";
+	sport = "8111";
 	
 	EXP_SIGHOOK("Jabber XML IQ New query set xmlns:http://jabber.org/protocol/bytestreams", &jep65::Session, 999);
 	EXP_SIGHOOK("Jabber Stream File Send Method http://jabber.org/protocol/bytestreams", &jep65::Send, 999);
@@ -59,7 +59,7 @@ WoklibPlugin(wls)
 	echoserver.sin_port = htons(atoi(sport.c_str()));	/* server port */
 	
 	/* Bind the server socket */
-	int i = 1; 
+	int i = 0; 
 	while (bind(serversock, (struct sockaddr *) &echoserver,
 			sizeof(echoserver)) < 0) 
 	{
@@ -71,7 +71,7 @@ WoklibPlugin(wls)
 	{
 		i--;
 		std::stringstream str;
-		str << 8011 + i;
+		str << 8111 + i;
 		sport = str.str();
 		
 		woklib_debug(wls, "New listening port " + sport);

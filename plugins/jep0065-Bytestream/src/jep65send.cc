@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2008  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -88,9 +88,14 @@ sport(sport)
 	EXP_SIGHOOK("Jabber Stream File Send Method http://jabber.org/protocol/bytestreams push hash:" + hash, &jep65send::FileTransfear, 1000);
 	
 	proxy = msgtag->GetAttr("proxy");
-	if ( proxy == "" )
+	proxy_type = msgtag->GetAttr("proxy_type");
+	
+	std::cout << "ProxyType" << proxy_type << std::endl;
+	std::cout << "XML::: " << *msgtag << std::endl;
+	
+	if ( proxy == "" ||  proxy_type == "forward" )
 	{
-		SendInitiat(false);
+		SendInitiat();
 	}
 	else
 	{
@@ -283,7 +288,7 @@ jep65send::ProxyReply(WokXMLTag *tag)
 }
 
 void
-jep65send::SendInitiat( bool use_proxy)
+jep65send::SendInitiat()
 {
 	WokXMLTag msgtag(NULL, "message");
 	msgtag.AddAttr("session", session);
@@ -301,7 +306,10 @@ jep65send::SendInitiat( bool use_proxy)
 	WokXMLTag &itemtag = userinfo.AddTag("item");
 	itemtag.AddAttr("session", session);
 	wls->SendSignal("Jabber Connection GetUserData", &userinfo);
-	streamhost.AddAttr("host", itemtag.GetFirstTag("ip").GetBody());
+	if ( proxy_type == "forward" && !proxy.empty() )
+		streamhost.AddAttr("host", proxy);
+	else
+		streamhost.AddAttr("host", itemtag.GetFirstTag("ip").GetBody());
 	streamhost.AddAttr("jid", itemtag.GetFirstTag("jid").GetBody());
 	
 	wls->SendSignal("Jabber XML IQ Send", &msgtag);

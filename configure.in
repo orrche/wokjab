@@ -100,7 +100,8 @@ AC_OUTPUT(Makefile \
         plugins/normal/JabberConnection/Makefile  \
 	plugins/normal/Tooltip/Makefile  \
 	plugins/system/Makefile \
-	plugins/experimental/Makefile \
+	plugins/experimental/Makefile  \
+        plugins/experimental/Dice/Makefile  \
 	plugins/MenuResource/Makefile  \
 	plugins/MenuRoster/Makefile  \
 	plugins/GtkTimer/Makefile  \
@@ -161,7 +162,7 @@ AC_OUTPUT(Makefile \
         plugins/jep0118-UserTune/Makefile  \
         plugins/jep0153-VCardAvatar/Makefile  \
 	plugins/jep0163-PEP/Makefile \
-	plugins/P2PRandomNumber/Makefile \
+	plugins/P2PRandomNumber/Makefile  \
         plugins/Idle/Makefile  \
         plugins/Fileshare/Makefile  \
         plugins/dbus/Makefile  \

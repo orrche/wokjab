@@ -19,5 +19,6 @@ if DO_PYTHON
 pythondir = python
 endif
 
-SUBDIRS= 
+SUBDIRS= \
+	Dice
 

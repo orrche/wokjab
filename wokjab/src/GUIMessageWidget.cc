@@ -312,7 +312,15 @@ from(from)
 			(*hist_iter)->GetFirstTag("xml").GetFirstTag("message").AddAttr("displayed", "false");
 			NewMessage(&((*hist_iter)->GetFirstTag("xml").GetFirstTag("message")));
 		}
-	}
+	}		
+	
+	UnHookSignals();
+	if ( from.find("/") != std::string::npos )
+		from = from_no_resource;
+	hasresource = false;
+
+	HookSignals();
+	SetLabel();
 }
 
 GUIMessageWidget::~GUIMessageWidget()

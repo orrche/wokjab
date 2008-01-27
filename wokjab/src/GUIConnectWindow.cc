@@ -361,8 +361,6 @@ GUIConnectWindow::Config (WokXMLTag *tag)
 		delete config;
 	config = new WokXMLTag(tag->GetFirstTag("config"));
 
-
-
 	std::list <WokXMLTag *>::iterator iter;
 
 	gtk_list_store_clear(GTK_LIST_STORE(accountlist));

@@ -45,7 +45,7 @@ class jep65send : public WLSignalInstance
 		const std::string & GetHash();
 	
 		void ReqProxy();
-		void SendInitiat( bool use_proxy);
+		void SendInitiat();
 		void InitProxy();
 
 		int InitProxyReply(WokXMLTag *tag);
@@ -63,6 +63,7 @@ class jep65send : public WLSignalInstance
 	private:
 		WokXMLTag *msgtag_data;
 		std::string proxy;
+		std::string proxy_type;
 		std::string me;
 		std::string hash;
 		std::string file;
@@ -81,8 +82,8 @@ class jep65send : public WLSignalInstance
 		int rate;
 		int baserate;
 		unsigned long long size, fsize;
-		int fbend;
-		int fbpos;
+		unsigned long long fbend;
+		unsigned long long fbpos;
 		bool listening;
 		
 		char filebuf[SHUNKSIZE];

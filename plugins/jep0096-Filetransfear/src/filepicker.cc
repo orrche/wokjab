@@ -50,14 +50,16 @@ to(to)
 	g_signal_connect (G_OBJECT (glade_xml_get_widget (gxml, "button_delete")), "clicked",
 					G_CALLBACK(filepicker::ButtonRemove), this);
 	
-	model = gtk_list_store_new(1, G_TYPE_STRING);
+	model = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
 	
 	GtkCellRenderer *renderer;  
 	GtkTreeViewColumn *column;
 	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes("Address", renderer, "text", 0, NULL);		
-	
 	gtk_tree_view_append_column (GTK_TREE_VIEW (glade_xml_get_widget(gxml, "proxylist")), column);
+	column = gtk_tree_view_column_new_with_attributes("Type", renderer, "text", 1, NULL);		
+	gtk_tree_view_append_column (GTK_TREE_VIEW (glade_xml_get_widget(gxml, "proxylist")), column);
+	
 	gtk_tree_view_set_model (GTK_TREE_VIEW (glade_xml_get_widget(gxml, "proxylist")), GTK_TREE_MODEL (model));
 	
 	config = NULL;
@@ -96,7 +98,7 @@ filepicker::ReadConfig(WokXMLTag *tag)
 		GtkTreeIter tIter;			 
 		gtk_list_store_append (model, &tIter);
 		gtk_list_store_set (model, &tIter,
-			    0, (*listiter)->GetBody().c_str(),
+			    0, (*listiter)->GetBody().c_str(), 1,(*listiter)->GetAttr("type").c_str(),
 			    -1);
 	}
 	
@@ -113,8 +115,20 @@ void
 filepicker::ButtonAdd (GtkButton *button, filepicker *c)
 {
 	std::string proxy = gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget (c->gxml, "proxyentry")));
+	std::string proxy_type;
+	switch(gtk_combo_box_get_active(GTK_COMBO_BOX(glade_xml_get_widget (c->gxml, "proxytype"))) )
+	{
+		case 0:
+			proxy_type = "";
+			break;
+		case 1:
+			proxy_type = "forward";
+			break;		
+	}
 	
-	c->config->GetFirstTag("proxy").AddTag("item").AddText(proxy);
+	WokXMLTag &item = c->config->GetFirstTag("proxy").AddTag("item");
+	item.AddText(proxy);
+	item.AddAttr("type", proxy_type);
 	
 	WokXMLTag conftag(NULL, "config");
 	conftag.AddAttr("path", "/file-transfear/proxy");
@@ -167,19 +181,22 @@ filepicker::ButtonPress (GtkButton *button, filepicker *c)
 		tag.AddAttr("rate", rate + "000");
 	
 	std::string proxy("");
+	std::string proxy_type;
 	GtkTreeIter tIter;
 	
 	GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(glade_xml_get_widget(c->gxml, "proxylist")));
 	
 	if(gtk_tree_selection_get_selected(selection,  NULL, &tIter) == TRUE && &tIter)
 	{
-		gchar *addy;
-		gtk_tree_model_get(GTK_TREE_MODEL(c->model), &tIter, 0, &addy, -1);
+		gchar *addy, *type;
+		gtk_tree_model_get(GTK_TREE_MODEL(c->model), &tIter, 0, &addy, 1, &type, -1);
 		proxy = addy;
+		proxy_type = type;
 		g_free(addy);
 	}
 	
 	tag.AddAttr("proxy", proxy);
+	tag.AddAttr("proxy_type", proxy_type);
 	
 	c->wls->SendSignal("Jabber Stream File Send", &tag);
 	gtk_widget_destroy(glade_xml_get_widget (c->gxml, "window"));
