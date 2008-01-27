@@ -28,6 +28,7 @@
 Rand::Rand(WLSignal *wls) : WoklibPlugin(wls)
 {
 	id = 0;
+	EXP_SIGHOOK("Jabber RandomNumber RegisterSesseion", &Rand::RegisterSession, 1000);
 	EXP_SIGHOOK("Jabber RandomNumber SessionCreate", &Rand::NewSession, 1000);
 	EXP_SIGHOOK("Jabber XML Message xmlns RandomNumber", &Rand::Message, 1000);
 }
@@ -43,16 +44,25 @@ Rand::~Rand()
 }
 
 
+int
+Rand::RegisterSession(WokXMLTag *tag)
+{
+	std::stringstream str;
+	str << id++;
+	
+	tag->AddAttr("id", str.str());
+	
+	return 1;
+}
 /*
-<tag session="jabber0" roomjid="test@conference.jabber.se"/>
+<tag session="jabber0" roomjid="test@conference.jabber.se" id="13"/>
 */
 int
 Rand::NewSession(WokXMLTag *tag)
 {
-	std::stringstream str;
-	str << id++;
+
 	Session *ses;
-	ses = new Session(wls, tag, str.str());
+	ses = new Session(wls, tag, tag->GetAttr("id"));
 	sessions.push_back(ses);
 	return 1;
 }

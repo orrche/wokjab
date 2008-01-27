@@ -46,8 +46,11 @@ protected:
 	std::string owner;
 	WokXMLTag origxml;
 	std::string mynick;
+	std::string myplain;
+	bool sent_plain;
 	
 	std::map <std::string, std::string> hashes;
+	std::map <std::string, std::string> plain;
 	std::map <std::string, std::string> numbers;
 	
 	std::list <std::string> requiredusers;

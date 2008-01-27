@@ -12,5 +12,11 @@ libp2prandomnumber_la_SOURCES = main.cpp \
 	session.hpp\
 	session.cpp
 
+libp2prandomnumber_la_LDFLAGS = \
+	-lssl -lcrypto
+
+SUBDIRS = \
+	.
+
 ## File created by the gnome-build tools
 
