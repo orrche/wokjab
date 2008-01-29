@@ -10,7 +10,9 @@ lib_LTLIBRARIES = \
 libdice_la_SOURCES = \
 	main.cpp    \
 	dice.hpp    \
-	dice.cpp
+	dice.cpp    \
+	dice-session.hpp    \
+	dice-session.cpp
 
 ## File created by the gnome-build tools
 

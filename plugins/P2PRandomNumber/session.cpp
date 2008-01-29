@@ -82,7 +82,7 @@ id(id)
 	
 	wls->SendSignal("Jabber XML Send", mtag);
 	
-	EXP_SIGHOOK("Jabber RandomNumber Session '" + XMLisize(origxml.GetAttr("session")) + "' '" + XMLisize(x.GetAttr("owner")) + "' '" + x.GetAttr("id") + "'", &Session::Message, 1000);
+	EXP_SIGHOOK("Jabber RandomNumber Session '" + XMLisize(origxml.GetAttr("session")) + "' '" + XMLisize(x.GetAttr("owner")) + "' '" + id + "'", &Session::Message, 1000);
 }
 
 
@@ -115,6 +115,7 @@ origxml(*xml)
 	wls->SendSignal("Jabber GroupChat Whoami '" + XMLisize(origxml.GetAttr("session")) + "' '" + XMLisize(origxml.GetAttr("roomjid")) + "'", whoami);
 	mynick = whoami.GetAttr("nick");
 	
+	std::cout << "XML: " << *xml << std::endl;
 	id = xml->GetAttr("id");
 	owner = xml->GetAttr("owner");
 	
@@ -123,8 +124,7 @@ origxml(*xml)
 	WokXMLTag &message = mtag.AddTag("message");
 	message.AddAttr("to", origxml.GetAttr("roomjid"));
 	message.AddAttr("type", "groupchat");
-	WokXMLTag &x = message.AddTag("x");
-	x.AddAttr("xmlns", "RandomNumber");
+	WokXMLTag &x = message.AddTag("x", "RandomNumber");
 	x.AddAttr("type", "participant seed");
 	x.AddAttr("id", id);
 	x.AddAttr("owner", xml->GetAttr("owner"));
@@ -132,6 +132,8 @@ origxml(*xml)
 	hash.AddText(myhash);
 	
 	wls->SendSignal("Jabber XML Send", mtag);
+	
+	EXP_SIGHOOK("Jabber RandomNumber Session '" + XMLisize(origxml.GetAttr("session")) + "' '" + XMLisize(x.GetAttr("owner")) + "' '" + id + "'", &Session::Message, 1000);
 }
 
 int
@@ -158,6 +160,7 @@ Session::Message(WokXMLTag *tag)
 			}
 		}
 		hashes[tag->GetFirstTag("message").GetAttr("from")] = tag->GetFirstTag("message").GetFirstTag("x", "RandomNumber").GetFirstTag("hash").GetBody();
+		std::cout << "::::" << tag->GetFirstTag("message").GetAttr("from") << "   " << tag->GetFirstTag("message").GetFirstTag("x", "RandomNumber").GetFirstTag("hash").GetBody() << std::endl;
 	}
 	else if ( type == "participant seed" )
 	{
@@ -199,7 +202,7 @@ Session::Message(WokXMLTag *tag)
 				
 				wls->SendSignal("Jabber XML Send", mtag);
 			}
-			woklib_message(wls, "Something fishy is going on with this random number...");
+			woklib_message(wls, "Something fishy is going on with this random number... got " + hashes[tag->GetFirstTag("message").GetAttr("from")] + " from " + tag->GetFirstTag("message").GetAttr("from") + " and my computed is " + thehash);
 		}
 	}
 	
@@ -241,6 +244,9 @@ Session::Message(WokXMLTag *tag)
 		str << std::hex << r;
 		WokXMLTag number ("number");
 		number.AddAttr("num", str.str());
+		number.AddAttr("id", id);
+		number.AddAttr("owner", owner);
+		number.AddAttr("session", origxml.GetAttr("session"));
 		wls->SendSignal("Jabber RandomNumber Generated '" + XMLisize(origxml.GetAttr("session")) + "' '" + XMLisize(owner) + "' '" + XMLisize(id) + "'", number);
 	}
 	return 1;

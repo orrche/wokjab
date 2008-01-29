@@ -22,9 +22,8 @@
  * 	Boston, MA  02110-1301, USA.
  */
 
-#ifndef _DICE_HPP_
-#define _DICE_HPP_
-
+#ifndef _DICE_SESSION_HPP_
+#define _DICE_SESSION_HPP_
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
@@ -37,49 +36,35 @@
 #include <gtk/gtk.h>
 #include <glade/glade.h>
 
-
 using namespace Woklib;
-class Dice;
 
-#include "dice-session.hpp"
-
-class Dice: public WoklibPlugin 
+class DiceSession: public WLSignalInstance 
 {
 public:
-	Dice(WLSignal *wls);
-	~Dice();
+	DiceSession(WLSignal *wls, std::string session, std::string roomjid, GladeXML *parant_gxml);
+	~DiceSession();
 	
-	int MainMenu(WokXMLTag *tag);
-	int DiceWid(WokXMLTag *tag);
-	int ReadConfig(WokXMLTag *tag);
+	void AddToSession(WokXMLTag &die);
+	void Roll();
 	
-	// Should be migrated to a non gui plugin...
+	int RandNR(WokXMLTag *tag);
 	int Message(WokXMLTag *tag);
 		
-	void CreateWid();
-	void AddToCollection(WokXMLTag &xml);
-	
-	static gboolean DeleteEvent( GtkWidget *widget, GdkEvent *event, Dice *c);
-	static void NewSessionMenu(GtkMenuItem *menuitem, Dice *c);
-	static void NewSession(GtkMenuItem *menuitem, Dice *c);
-	static void MenuItemDestroy(GtkObject *object, Dice *c);
-	static void DragGet(GtkWidget *wgt, GdkDragContext *contect, GtkSelectionData *selection, guint info, guint time, Dice *c);
+	static void DataReceived(GtkWidget *wgt, GdkDragContext *context, int x, int y,
+                        GtkSelectionData *seldata, guint info, guint time, DiceSession *c);
+	static void StartRoll(GtkButton *button, DiceSession *c);
+	static void ClearHistory(GtkButton *button, DiceSession *c);
 protected:
-	GladeXML *gxml;
-	GtkWidget *menu;
-	WokXMLTag *config;
 
-	
-	// What the fuck is this
-	/*
-	std::map <std::string, std::map <std::string, GladeXML* > > session_gxml;
-	std::map <std::string, std::map <std::string, GtkListStore * > > session_store;
-	*/
-	
-	GtkListStore *collection_store;
-	std::map <std::string, std::map <std::string, DiceSession * > > session_dice;
 private:
-
+	std::string session, roomjid, mynick;
+	GladeXML *gxml, *parant_gxml;
+	
+	GtkListStore *roll_store, *hist_store;
+	
+	
+	std::map <std::string, std::string> rand_num;
+	std::map <std::string, WokXMLTag *> dice_data;
 };
 
-#endif // _DICE_HPP_
+#endif // _DICE_SESSION_HPP_

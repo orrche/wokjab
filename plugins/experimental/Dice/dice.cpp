@@ -24,6 +24,8 @@
 
 #include "dice.hpp"
 #include <sstream>
+#include <fstream>
+#include <vector>
 
 static void
 set_cell_color (GtkCellLayout   *cell_layout,
@@ -54,6 +56,7 @@ Dice::Dice(WLSignal *wls): WoklibPlugin(wls)
 {
 	EXP_SIGHOOK("Get Main Menu", &Dice::MainMenu, 999);
 	EXP_SIGHOOK("GUI Dice Open", &Dice::DiceWid, 999);
+	EXP_SIGHOOK("Jabber XML Message xmlns http://wokjab.sf.net/dice", &Dice::Message, 1000);
 	
 	gxml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/dice.glade", "dice_window", NULL);
 	collection_store = gtk_list_store_new (3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER);
@@ -71,17 +74,13 @@ Dice::Dice(WLSignal *wls): WoklibPlugin(wls)
       TARGET_URL
     };
 	static GtkTargetEntry target_entry[] =
-    {
-      { "STRING",        0, TARGET_STRING },
+    {      
+	  { "STRING",        0, TARGET_STRING },
       { "text/plain",    0, TARGET_STRING },
-      { "text/uri-list", 0, TARGET_URL },
     };
 	
 	gtk_icon_view_enable_model_drag_source(GTK_ICON_VIEW(glade_xml_get_widget (gxml, "collection_view")),
-                                                         (GdkModifierType) 0,
-                                                         target_entry,
-                                                         3,
-                                                         (GdkDragAction) (GDK_ACTION_COPY));
+                                                         (GdkModifierType) 0, target_entry, 1, (GdkDragAction) (GDK_ACTION_COPY));
 	
 	config = new WokXMLTag ("config");
 	EXP_SIGHOOK("Config XML Change /dice", &Dice::ReadConfig, 500);
@@ -121,48 +120,36 @@ Dice::DeleteEvent( GtkWidget *widget, GdkEvent *event, Dice *c)
 void
 Dice::DragGet(GtkWidget *wgt, GdkDragContext *context, GtkSelectionData *selection, guint info, guint time, Dice *c)
 {
-	std::cout << "TFT" << std::endl;
-//	gtk_selection_data_set_text         (selection, "unknown shit", -1);
-	gtk_selection_data_set              (selection, GDK_TARGET_STRING, 8, (const guchar*)"unknown shit123", 12);
-}
-
-void
-Dice::DataReceived(GtkWidget *wgt, GdkDragContext *context, int x, int y,
-                        GtkSelectionData *seldata, guint info, guint time, Dice *c)
-{
-	std::cout << "Beawear" << std::endl;
+	GtkTreeIter iter;
 	
+	std::vector <std::string> uris;
+	WokXMLTag dice("dice");
+	GList *list = gtk_icon_view_get_selected_items (GTK_ICON_VIEW(glade_xml_get_widget(c->gxml, "collection_view")));
+	for(;list; list = list->next)
+	{
+		WokXMLTag *tag;
+		gtk_tree_model_get_iter (GTK_TREE_MODEL(c->collection_store), &iter, (GtkTreePath *) list->data);
+		gtk_tree_model_get(GTK_TREE_MODEL(c->collection_store), &iter, 2, &tag, -1);
+		
+		dice.AddTag(tag);
+	}
 	
+	g_list_foreach (list, ( void(*)(void*, void*)) gtk_tree_path_free, NULL);
+	g_list_free (list);
+	
+	std::string data;
+	data = dice.GetStr();
+	gtk_selection_data_set_text(selection, data.c_str(), data.size());
 }
 
 void
 Dice::NewSession(GtkMenuItem *menuitem, Dice *c)
 {
+	
 	std::string roomjid = *static_cast <std::string*>(g_object_get_data(G_OBJECT(menuitem), "roomjid"));
 	std::string session = *static_cast <std::string*>(g_object_get_data(G_OBJECT(menuitem), "session"));
-		
-	
-	c->session_gxml[session][roomjid] = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/dice.glade", "mainbox", NULL);
-	gtk_notebook_append_page(GTK_NOTEBOOK(glade_xml_get_widget (c->gxml, "notebook")), glade_xml_get_widget (c->session_gxml[session][roomjid], "mainbox"), gtk_label_new((session + ":" + roomjid).c_str()));
-	
-	GtkListStore *rollstore = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER);
-	gtk_icon_view_set_model(GTK_ICON_VIEW(glade_xml_get_widget (c->session_gxml[session][roomjid], "current_roll")), GTK_TREE_MODEL(rollstore));
-	g_object_unref(rollstore);
 
-    enum
-    {
-      TARGET_STRING,
-      TARGET_URL
-    };
-	static GtkTargetEntry target_entry[] =
-    {
-      { "STRING",        0, TARGET_STRING },
-      { "text/plain",    0, TARGET_STRING },
-      { "text/uri-list", 0, TARGET_URL },
-    };
-	gtk_drag_dest_set(glade_xml_get_widget (c->session_gxml[session][roomjid], "current_roll"), GTK_DEST_DEFAULT_ALL, target_entry, 3, (GdkDragAction) (GDK_ACTION_COPY|GDK_ACTION_MOVE|GDK_ACTION_LINK));
-	//gtk_icon_view_enable_model_drag_dest(GTK_ICON_VIEW(glade_xml_get_widget (c->session_gxml[session][roomjid], "current_roll")), target_entry, 3, (GdkDragAction) (GDK_ACTION_COPY));
-	g_signal_connect(glade_xml_get_widget (c->session_gxml[session][roomjid], "current_roll"), "drag_data_received", G_CALLBACK(Dice::DataReceived), c);
+	c->session_dice[session][roomjid] = new DiceSession(c->wls, session, roomjid, c->gxml);
 }
 
 void
@@ -197,10 +184,39 @@ Dice::NewSessionMenu(GtkMenuItem *menuitem, Dice *c)
 	
 }
 
+void
+Dice::AddToCollection(WokXMLTag &xml)
+{
+	// tar -xjf foo.tar.bz2 -C bar/
+	
+	// Lazy
+	
+	GtkTreeIter iter;
+	
+	gtk_list_store_append (collection_store, &iter);
+	std::cout << "::" << xml.GetFirstTag("type", "common notation") << std::endl;
+	std::cout << "XML: " << xml << std::endl;
+	
+	gtk_list_store_set (collection_store, &iter, 0, (xml.GetFirstTag("name").GetBody() + " [" + xml.GetFirstTag("type", "common notation").GetBody() + "]").c_str() , 2 , new WokXMLTag (xml), -1);
+}
+
+int
+Dice::Message(WokXMLTag *tag)
+{		
+	std::string session, roomjid;
+	
+	session = tag->GetAttr("session");
+	roomjid = tag->GetFirstTag("message").GetAttr("from");
+	roomjid = roomjid.substr(0, roomjid.find("/"));
+	
+	wls->SendSignal("Jabber Dice Message '" + XMLisize(session) + "' '" + XMLisize(roomjid) + "'",tag);
+	
+	return 1;
+}
+
 int
 Dice::ReadConfig(WokXMLTag *tag)
 {
-	GtkTreeIter iter;
 	if ( config )
 		delete config;
 	config = new WokXMLTag(tag->GetFirstTag("config"));
@@ -212,28 +228,22 @@ Dice::ReadConfig(WokXMLTag *tag)
 	gtk_list_store_clear(GTK_LIST_STORE(collection_store));
 	for( die = config->GetTagList("die").begin() ; die != config->GetTagList("die").end() ; die++)
 	{
-		gtk_list_store_append (collection_store, &iter);
-		gtk_list_store_set (collection_store, &iter, 0, (*die)->GetAttr("name").c_str() , 3 , new WokXMLTag(**die), -1);
+		AddToCollection(**die);
 	}
 	
 	
 	
 	/// Debug stuff...
-	gtk_list_store_append (collection_store, &iter);
-	gtk_list_store_set (collection_store, &iter, 0, "donkey" , -1);
-	gtk_list_store_append (collection_store, &iter);
-	gtk_list_store_set (collection_store, &iter, 0, "wesnoth" ,-1);
-
 	
 	for( int x = 10 ; x ; x--)
 	{
-		std::stringstream str;
-		
-		str << "Dice " <<  x;
-		gtk_list_store_append (collection_store, &iter);
-		gtk_list_store_set (collection_store, &iter, 0, str.str().c_str() ,-1);
-		
-		
+		std::stringstream d_type;
+		d_type << "d" << 2*x;
+		WokXMLTag die("die");
+		die.AddTag("name").AddText("Dragon Dice");
+		die.AddTag("type", "common notation").AddText(d_type.str());
+
+		AddToCollection(die);
 	}
 	return 1;
 }

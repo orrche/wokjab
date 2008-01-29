@@ -35,7 +35,11 @@ WokJabJIDInfoWidgetManager::~WokJabJIDInfoWidgetManager()
 int
 WokJabJIDInfoWidgetManager::NewWidget(WokXMLTag *tag)
 {
-	new WokJabJIDInfoWidget(wls,tag->GetAttr("jid"), tag->GetAttr("session"));
+	std::string jid = tag->GetAttr("jid");
+	if ( jid.find("/") != std::string::npos )
+		jid = jid.substr(0, jid.find("/"));
+	
+	new WokJabJIDInfoWidget(wls, jid, tag->GetAttr("session"));
 	return true;
 }
 
