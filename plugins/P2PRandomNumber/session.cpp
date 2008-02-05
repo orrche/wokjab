@@ -327,12 +327,12 @@ Session::Message(WokXMLTag *tag)
 	}
 	if ( plain.size() == requiredusers.size() )
 	{
-		unsigned long int r = 0;
+		unsigned long long int r = 0;
 		
 		std::map <std::string, std::string>::iterator plainiter;
 		for ( plainiter = plain.begin() ; plainiter != plain.end() ; plainiter++)
 		{
-			unsigned long int x = strtoull(("0x" + plainiter->second).c_str(), NULL, 16);
+			unsigned long long int x = strtoull(("0x" + plainiter->second).c_str(), NULL, 16);
 			r ^= x;
 			
 		}

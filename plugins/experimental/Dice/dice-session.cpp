@@ -174,15 +174,15 @@ DiceSession::Message(WokXMLTag *tag)
 int 
 DiceSession::RandNR(WokXMLTag *tag)
 {	
-	long long unsigned int num = strtoul(("0x" + tag->GetAttr("num")).c_str(), NULL, 16);
-	long long unsigned int bits = 0xFFFFFFFFFFFFFFFF;
+	unsigned long long int num = strtoul(("0x" + tag->GetAttr("num")).c_str(), NULL, 16);
+	unsigned long long int bits = 0xFFFFFFFFFFFFFFFF;
 		
 	std::stringstream result_str;
 	
 	std::list <WokXMLTag *>::iterator dieiter;
 	for( dieiter = dice_data[tag->GetAttr("owner")]->GetTagList("die").begin(); dieiter != dice_data[tag->GetAttr("owner")]->GetTagList("die").end() ; dieiter++)
 	{
-		long long unsigned int faces = atoi((*dieiter)->GetFirstTag("type", "common notation").GetBody().substr(1).c_str());
+		unsigned long long int faces = atoi((*dieiter)->GetFirstTag("type", "common notation").GetBody().substr(1).c_str());
 		
 		if ( faces > bits )
 		{
@@ -190,7 +190,7 @@ DiceSession::RandNR(WokXMLTag *tag)
 			break;
 		}
 		
-		long long unsigned int result = num%faces + 1;
+		unsigned long long int result = num%faces + 1;
 		num /= faces;
 		bits /= faces;
 		
