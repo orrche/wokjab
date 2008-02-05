@@ -175,7 +175,7 @@ int
 DiceSession::RandNR(WokXMLTag *tag)
 {	
 	unsigned long long int num = strtoul(("0x" + tag->GetAttr("num")).c_str(), NULL, 16);
-	unsigned long long int bits = 0xFFFFFFFFFFFFFFFF;
+	unsigned long long int bits = 0xFFFFFFFFFFFFFFFFULL;
 		
 	std::stringstream result_str;
 	
