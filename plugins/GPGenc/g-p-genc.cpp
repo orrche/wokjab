@@ -23,6 +23,8 @@
  */
 
 #include "g-p-genc.hpp"
+
+/*
 #define fail_if_err(err)					\
   do								\
     {								\
@@ -48,6 +50,7 @@ passphrase_cb (void *c, const char *uid_hint, const char *passphrase_info,
   write (fd, (*s+"\n").data(), s->size()+1);
   return 0;
 }
+*/
 
 GPGenc::GPGenc(WLSignal *wls) : WoklibPlugin(wls)
 {
@@ -89,6 +92,7 @@ GPGenc::GPGenc(WLSignal *wls) : WoklibPlugin(wls)
 #endif
 }
 
+#if 0
 static void
 check_result (gpgme_sign_result_t result, gpgme_sig_mode_t type)
 {
@@ -357,3 +361,4 @@ GPGenc::Encrypted(WokXMLTag *tag)
 	
 	return 1;
 }
+#endif

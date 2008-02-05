@@ -29,7 +29,7 @@
 #  include <config.h>
 #endif
 
-#include <gpgme.h>
+// #include <gpgme.h>
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
@@ -41,7 +41,7 @@ class GPGenc: public WoklibPlugin
 {
 public:
 	GPGenc(WLSignal *wls);
-	
+	/*
 	int Presence(WokXMLTag *tag);
 	int Message(WokXMLTag *tag);
 	int Encrypted(WokXMLTag *tag);
@@ -56,7 +56,7 @@ public:
 protected:
 	std::string passphrase;
 	gpgme_ctx_t ctx;
-	
+	*/
 private:
 
 };

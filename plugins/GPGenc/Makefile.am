@@ -2,7 +2,7 @@ INCLUDES =
 libdir = $(prefix)/lib/woklib-plugins/normal
 
 AM_CXXFLAGS =\
-	-O3 -Wall -lwoklib -lgpgme `gpgme-config --cflags` 
+	-O3 -Wall -lwoklib `gpgme-config --cflags --libs` 
 
 lib_LTLIBRARIES = \
 	libgpgenc.la
