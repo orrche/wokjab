@@ -20,5 +20,6 @@ pythondir = python
 endif
 
 SUBDIRS= \
-	Dice
+	Dice\
+	P2PRandomNumberMonitor
 

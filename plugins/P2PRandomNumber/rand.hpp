@@ -46,6 +46,8 @@ public:
 	int NewSession(WokXMLTag *tag);
 	int Message(WokXMLTag *tag);
 	int RegisterSession(WokXMLTag *tag);
+	int GetSessions(WokXMLTag *tag);
+	int Removesession(WokXMLTag *tag);
 protected:
 	std::list <Session*> sessions;
 	int id;

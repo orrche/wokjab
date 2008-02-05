@@ -102,6 +102,7 @@ AC_OUTPUT(Makefile \
 	plugins/system/Makefile \
 	plugins/experimental/Makefile  \
         plugins/experimental/Dice/Makefile  \
+        plugins/experimental/P2PRandomNumberMonitor/Makefile  \
 	plugins/MenuResource/Makefile  \
 	plugins/MenuRoster/Makefile  \
 	plugins/GtkTimer/Makefile  \

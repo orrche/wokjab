@@ -5,19 +5,17 @@ AM_CXXFLAGS =\
 	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -lwoklib -g -O3 -Wall
 
 lib_LTLIBRARIES = \
-	libdice.la
+	libp2pmonitor.la
 
-libdice_la_SOURCES = \
-	main.cpp    \
-	dice.hpp    \
-	dice.cpp    \
-	dice-session.hpp    \
-	dice-session.cpp    
-
-## File created by the gnome-build tools
+libp2pmonitor_la_SOURCES = \
+	main.cpp          \
+	monitor.hpp          \
+	monitor.cpp
 
 datadir = $(prefix)/lib/woklib/glade
 pkgdata_DATA = \
-       dice.glade 
+       p2prandmonitor.glade 
 				
 EXTRA_DIST = ${pkgdata_DATA}
+## File created by the gnome-build tools
+

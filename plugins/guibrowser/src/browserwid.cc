@@ -246,7 +246,7 @@ BrowserWidget::popup_menu(GtkTreeView *tree_view, GdkEventButton *event, Browser
 		gtk_container_add (GTK_CONTAINER (c->pop_menu), menu_item);
 		
 		gtk_menu_popup (GTK_MENU(c->pop_menu), NULL, NULL, NULL, NULL, event->button, event->time);
-		
+		gtk_tree_path_free(path);
 		return true;
 	}		
 	return false;

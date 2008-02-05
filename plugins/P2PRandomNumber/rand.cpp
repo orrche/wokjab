@@ -28,9 +28,12 @@
 Rand::Rand(WLSignal *wls) : WoklibPlugin(wls)
 {
 	id = 0;
+	EXP_SIGHOOK("Jabber RandomNumber GetSessions", &Rand::GetSessions, 1000);
 	EXP_SIGHOOK("Jabber RandomNumber RegisterSesseion", &Rand::RegisterSession, 1000);
-	EXP_SIGHOOK("Jabber RandomNumber SessionCreate", &Rand::NewSession, 1000);
+	EXP_SIGHOOK("Jabber RandomNumber RemoveSession", &Rand::Removesession, 1000);
+	EXP_SIGHOOK("Jabber RandomNumber SessionCreate", &Rand::NewSession, 500);
 	EXP_SIGHOOK("Jabber XML Message xmlns RandomNumber", &Rand::Message, 1000);
+	
 }
 
 Rand::~Rand()
@@ -43,6 +46,38 @@ Rand::~Rand()
 	}	
 }
 
+int
+Rand::Removesession(WokXMLTag *tag)
+{
+	std::list <Session*>::iterator sess_iter;
+	
+	for( sess_iter = sessions.begin(); sess_iter != sessions.end() ; sess_iter++)
+	{
+		(*sess_iter)->GetData(tag->AddTag("item"));
+		
+		if ( (*sess_iter)->Is(tag->GetAttr("owner"), tag->GetAttr("id"), tag->GetAttr("session"), tag->GetAttr("roomjid")))
+		{
+			delete *sess_iter;
+			sessions.erase(sess_iter);		
+			break;
+		}
+	}
+	
+	return 1;	
+}
+
+int
+Rand::GetSessions(WokXMLTag *tag)
+{
+	std::list <Session*>::iterator sess_iter;
+	
+	for( sess_iter = sessions.begin(); sess_iter != sessions.end() ; sess_iter++)
+	{
+		(*sess_iter)->GetData(tag->AddTag("item"));
+	}
+	
+	return 1;
+}
 
 int
 Rand::RegisterSession(WokXMLTag *tag)
@@ -55,14 +90,14 @@ Rand::RegisterSession(WokXMLTag *tag)
 	return 1;
 }
 /*
-<tag session="jabber0" roomjid="test@conference.jabber.se" id="13"/>
+<tag session="jabber0" roomjid="test@conference.jabber.se" id="13" owner="something.."/>
 */
 int
 Rand::NewSession(WokXMLTag *tag)
 {
 
 	Session *ses;
-	ses = new Session(wls, tag, tag->GetAttr("id"));
+	ses = new Session(wls, tag);
 	sessions.push_back(ses);
 	return 1;
 }
@@ -94,10 +129,10 @@ Rand::NewSession(WokXMLTag *tag)
 int
 Rand::Message(WokXMLTag *tag)
 {
-	std::cout << "hum XML: " << *tag << std::endl;
+	if ( ! tag->GetFirstTag("message").GetTagList("x", "jabber:x:delay").empty() )
+		return 1;
 	
 	WokXMLTag &x = tag->GetFirstTag("message").GetFirstTag("x", "RandomNumber");
-	std::cout << "X: " << x << std::endl;
 	
 	std::string type = x.GetAttr("type");
 	std::string roomjid = tag->GetFirstTag("message").GetAttr("from").substr(0, tag->GetFirstTag("message").GetAttr("from").find("/"));
@@ -113,9 +148,7 @@ Rand::Message(WokXMLTag *tag)
 			sessiontag.AddAttr("id", x.GetAttr("id"));
 			Session *ses;
 			
-			ses = new Session(wls, &sessiontag);
-			sessions.push_back(ses);
-							   
+			wls->SendSignal("Jabber RandomNumber SessionCreate", sessiontag);
 			wls->SendSignal("Jabber RandomNumber Session '" + XMLisize(tag->GetAttr("session")) + "' '" + XMLisize(x.GetAttr("owner")) + "' '"+ XMLisize(x.GetAttr("id")) + "'", tag);
 		}
 	}

@@ -76,7 +76,8 @@ parant_gxml(parant_gxml)
 	
 	
 	g_signal_connect (G_OBJECT (glade_xml_get_widget (gxml, "roll_button")), "clicked" , G_CALLBACK(DiceSession::StartRoll), this);
-	g_signal_connect (G_OBJECT (glade_xml_get_widget (gxml, "clear_button")), "clicked" , G_CALLBACK(DiceSession::ClearHistory), this);
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (gxml, "clear_history_button")), "clicked" , G_CALLBACK(DiceSession::ClearHistory), this);
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (gxml, "clear_button")), "clicked" , G_CALLBACK(DiceSession::ClearSelection), this);
 	
     enum
     {
@@ -211,6 +212,12 @@ void
 DiceSession::StartRoll(GtkButton *button, DiceSession *c)
 {
 	c->Roll();
+}
+
+void
+DiceSession::ClearSelection(GtkButton *button, DiceSession *c)
+{
+	gtk_list_store_clear(GTK_LIST_STORE(c->roll_store));
 }
 
 
