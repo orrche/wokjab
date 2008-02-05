@@ -83,7 +83,7 @@ int
 Monitor::Create(WokXMLTag *tag)
 {
 	if ( !gxml )
-		return;
+		return 1;
 	
 	GtkTreeIter iter;
 	gtk_list_store_prepend (sess_store, &iter);
@@ -102,7 +102,7 @@ int
 Monitor::Remove(WokXMLTag *tag)
 {
 	if ( !gxml )
-		return;
+		return 1;
 	
 	GtkTreeIter iter;
 	if ( FindIter(tag->GetAttr("session"), tag->GetAttr("id"), tag->GetAttr("owner"), tag->GetAttr("roomjid"), iter) )
@@ -117,7 +117,7 @@ int
 Monitor::Progress(WokXMLTag *tag)
 {
 	if ( !gxml )
-		return;
+		return 1;
 	
 	GtkTreeIter iter;
 	
@@ -134,7 +134,7 @@ int
 Monitor::Generated(WokXMLTag *tag)
 {
 	if ( !gxml )
-		return;
+		return 1;
 	
 	GtkTreeIter iter;
 	if ( FindIter(tag->GetAttr("session"), tag->GetAttr("id"), tag->GetAttr("owner"), tag->GetAttr("roomjid"), iter) )
@@ -150,7 +150,7 @@ int
 Monitor::Cancel(WokXMLTag *tag)
 {
 	if ( !gxml )
-		return;
+		return 1;
 	
 	GtkTreeIter iter;
 	if ( FindIter(tag->GetAttr("session"), tag->GetAttr("id"), tag->GetAttr("owner"), tag->GetAttr("roomjid"), iter) )
