@@ -1,4 +1,4 @@
-AM_CXXFLAGS = -lwoklib pkg-config openssl --cflags
+AM_CXXFLAGS = -lwoklib `pkg-config openssl --cflags`
 
 libdir = $(prefix)/lib/woklib-plugins/normal
 
@@ -25,7 +25,7 @@ libjabberconnection_la_SOURCES = \
 	IQAuthManager.h
 
 libjabberconnection_la_LDFLAGS = \
-	pkg-config openssl --libs
+	`pkg-config openssl --libs`
 	
 ## File created by the gnome-build tools
 
