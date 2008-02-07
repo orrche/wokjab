@@ -65,6 +65,8 @@ class GroupChatWidget : public WLSignalInstance
 		GroupChat *mclass;
 		bool focus;
 		bool minimized;
+		bool text_since_last_focus;
+	
 		WokXMLTag *config;
 		std::string session;
 		std::string roomjid;

@@ -34,7 +34,8 @@ session(session)
 	this->mynick = mynick;
 	fontsize = 1;
 	minimized = false;
-
+	text_since_last_focus = false;
+	
 	xml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/groupchat.glade", "groupchat", NULL);
 	inputview = glade_xml_get_widget (xml, "input");
 	outputview = glade_xml_get_widget(xml, "view");
@@ -126,7 +127,7 @@ session(session)
 	g_signal_connect((gpointer) minimize_button, "clicked",
 									G_CALLBACK (GroupChatWidget::Minimize_button), this);
 
-
+  	gtk_text_buffer_create_tag (outputbuffer, "center", "justification", GTK_JUSTIFY_CENTER, NULL);
 	Defocus();
 
 	config = new WokXMLTag (NULL, "NULL");
@@ -314,7 +315,7 @@ GroupChatWidget::popup_menu(GtkTreeView *tree_view, GdkEventButton *event, Group
 		MenuXML.AddAttr("button", buf);
 		sprintf(buf, "%d", event->time);
 		MenuXML.AddAttr("time", buf);
-		MenuXML.AddTag("item").AddAttr("signal", "Jabber GUI GroupChat GetJIDMenu");
+		MenuXML.AddTag("item").AddAttr("signal", "Jabber GroupChat GetJIDMenu");
 		MenuXML.AddTag("item").AddAttr("signal", "Jabber GUI GetJIDMenu");
 		WokXMLTag &data = MenuXML.AddTag("data");
 		data.AddAttr("jid", jid);
@@ -416,7 +417,8 @@ GroupChatWidget::Message (WokXMLTag& tag_msg)
 	{
 		std::string message = tag_msg.GetFirstTag("body").GetBody() + "\n";
 		std::string timestamp = GetTimeStamp(tag_msg);
-
+		text_since_last_focus = true;
+		
 		if(!focus)
 		{
 			gtk_widget_modify_fg(GTK_WIDGET(label_label), GTK_STATE_ACTIVE, &color_red);
@@ -713,4 +715,27 @@ void
 GroupChatWidget::Defocus()
 {
 	focus = false;
+	
+	if ( text_since_last_focus )
+	{
+		GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file (PACKAGE_DATA_DIR"/wokjab/groupchat/wokjab/wokjab.new.message.bar.png.svg", NULL);
+		if ( pixbuf ) 
+		{
+			GtkTextIter textiter, startiter;
+			gtk_text_buffer_get_iter_at_mark(outputbuffer, &textiter, end_mark);
+			
+			GtkTextMark *mark = gtk_text_mark_new("pre_hl_mark", TRUE);
+			gtk_text_buffer_add_mark(outputbuffer, mark, &textiter);
+			
+			gtk_text_buffer_insert_pixbuf (outputbuffer, &textiter, pixbuf);
+			gtk_text_buffer_insert(outputbuffer, &textiter, "\n", 1);
+			g_object_unref (pixbuf);
+			
+			gtk_text_buffer_get_iter_at_mark(outputbuffer, &startiter, mark);
+			gtk_text_buffer_apply_tag_by_name(outputbuffer, "center", &startiter, &textiter);
+			gtk_text_buffer_delete_mark( outputbuffer, mark);
+		}
+		text_since_last_focus = false;
+	}
+	
 }
