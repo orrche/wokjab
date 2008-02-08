@@ -1,4 +1,4 @@
-AM_CXXFLAGS = -lwoklib
+AM_CXXFLAGS = -lwoklib `pkg-config openssl --cflags`
 
 
 libdir = $(prefix)/lib/woklib-plugins/normal
@@ -13,7 +13,7 @@ libp2prandomnumber_la_SOURCES = main.cpp \
 	session.cpp
 
 libp2prandomnumber_la_LDFLAGS = \
-	-lssl -lcrypto
+	`pkg-config openssl --libs`
 
 SUBDIRS = \
 	.
