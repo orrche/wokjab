@@ -22,8 +22,9 @@
  * 	Boston, MA  02110-1301, USA.
  */
 
-#include <openssl/sha.h>
 #include "session.hpp"
+
+#include <openssl/sha.h>
 #include <sstream>
 
 Session::Session(WLSignal *wls, WokXMLTag *xml) : WLSignalInstance(wls),
