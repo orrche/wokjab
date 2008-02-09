@@ -26,11 +26,160 @@ GroupChat::GroupChat(WLSignal *wls) : WoklibPlugin (wls)
 	EXP_SIGHOOK("Jabber GroupChat Leave", &GroupChat::Part, 998);
 	EXP_SIGHOOK("Jabber GroupChat BanUser", &GroupChat::Ban, 998);
 	EXP_SIGHOOK("Jabber GroupChat GetRooms", &GroupChat::GetRooms, 100);
+	EXP_SIGHOOK("Jabber GroupChat GetJIDMenu", &GroupChat::Menu, 1000);
+	
+	EXP_SIGHOOK("Jabber GroupChat SetRole", &GroupChat::SetRole, 500);
+	
+	EXP_SIGHOOK("Jabber GroupChat Menu SetRole none", &GroupChat::Menu_none, 1000);
+	EXP_SIGHOOK("Jabber GroupChat Menu SetRole visitor", &GroupChat::Menu_visitor, 1000);
+	EXP_SIGHOOK("Jabber GroupChat Menu SetRole participant", &GroupChat::Menu_participant, 1000);
+	EXP_SIGHOOK("Jabber GroupChat Menu SetRole moderator", &GroupChat::Menu_mod, 1000);
 }
 
 GroupChat::~GroupChat()
 {
 
+}
+
+
+int
+GroupChat::SetRole(WokXMLTag *tag)
+{
+	wls->SendSignal("Jabber GroupChat SetRole " + tag->GetAttr("role"), tag);
+	
+	if ( tag->GetAttr("send") != "false" )
+	{
+		WokXMLTag mtag("message");
+		mtag.AddAttr("session", tag->GetAttr("session"));
+		
+		WokXMLTag &iq = mtag.AddTag("iq");
+		iq.AddAttr("to", tag->GetAttr("roomjid"));
+		iq.AddAttr("type", "set");
+		
+		WokXMLTag &query = iq.AddTag("query", "http://jabber.org/protocol/muc#admin");
+		WokXMLTag &item = query.AddTag("item");
+		item.AddAttr("nick", tag->GetAttr("nick"));
+		item.AddAttr("role", tag->GetAttr("role"));
+		
+		wls->SendSignal("Jabber XML IQ Send", mtag);
+	}
+	return 1;	
+}
+
+int
+GroupChat::Menu_none(WokXMLTag *tag)
+{
+	WokXMLTag none("role");
+	none.AddAttr("nick", tag->GetAttr("jid").substr(tag->GetAttr("jid").rfind("/")+1));
+	none.AddAttr("roomjid", tag->GetAttr("jid").substr(0, tag->GetAttr("jid").rfind("/")));
+	none.AddAttr("session", tag->GetAttr("session"));
+	none.AddAttr("role", "none");
+	
+	wls->SendSignal("Jabber GroupChat SetRole", none);
+	return 1;
+}
+
+int
+GroupChat::Menu_visitor(WokXMLTag *tag)
+{
+	WokXMLTag visitor("role");
+	visitor.AddAttr("nick", tag->GetAttr("jid").substr(tag->GetAttr("jid").rfind("/")+1));
+	visitor.AddAttr("roomjid", tag->GetAttr("jid").substr(0, tag->GetAttr("jid").rfind("/")));
+	visitor.AddAttr("session", tag->GetAttr("session"));
+	visitor.AddAttr("role", "visitor");
+	
+	wls->SendSignal("Jabber GroupChat SetRole", visitor);
+	return 1;
+}
+
+int
+GroupChat::Menu_participant(WokXMLTag *tag)
+{
+	WokXMLTag participant("role");
+	participant.AddAttr("nick", tag->GetAttr("jid").substr(tag->GetAttr("jid").rfind("/")+1));
+	participant.AddAttr("roomjid", tag->GetAttr("jid").substr(0, tag->GetAttr("jid").rfind("/")));
+	participant.AddAttr("session", tag->GetAttr("session"));
+	participant.AddAttr("role", "participant");
+	
+	wls->SendSignal("Jabber GroupChat SetRole", participant);
+	return 1;
+}
+
+int
+GroupChat::Menu_mod(WokXMLTag *tag)
+{
+	WokXMLTag mod("role");
+	mod.AddAttr("nick", tag->GetAttr("jid").substr(tag->GetAttr("jid").rfind("/")+1));
+	mod.AddAttr("roomjid", tag->GetAttr("jid").substr(0, tag->GetAttr("jid").rfind("/")));
+	mod.AddAttr("session", tag->GetAttr("session"));
+	mod.AddAttr("role", "moderator");
+	
+	wls->SendSignal("Jabber GroupChat SetRole", mod);
+	return 1;
+}
+
+int
+GroupChat::Menu(WokXMLTag *tag)
+{
+	std::list <WokXMLTag *>::iterator iter;
+	WokXMLTag *admintag = NULL;
+	for ( iter = tag->GetTagList("item").begin() ; iter != tag->GetTagList("item").end() ; iter++)
+	{
+		if ( (*iter)->GetAttr("name") == "Admin")
+		{
+			admintag = *iter;
+			break;
+		}
+	}
+	if( !admintag )
+	{
+		admintag = &tag->AddTag("item");
+		admintag->AddAttr("name", "Admin");
+	}
+	
+	WokXMLTag *setroletag = NULL;
+	for ( iter = admintag->GetTagList("item").begin() ; iter != admintag->GetTagList("item").end() ; iter++)
+	{
+		if ( (*iter)->GetAttr("name") == "Set Role")
+		{
+			setroletag = *iter;
+			break;
+		}
+	}
+	if( !setroletag )
+	{
+		setroletag = &admintag->AddTag("item");
+		setroletag->AddAttr("name", "Set Role");
+	}
+	
+	WokXMLTag &none = setroletag->AddTag("item");
+	none.AddAttr("name", "none (kick)");
+	none.AddAttr("signal", "Jabber GroupChat Menu SetRole none");
+	
+	WokXMLTag &visitor = setroletag->AddTag("item");
+	visitor.AddAttr("name", "visitor (devoice)");
+	visitor.AddAttr("signal", "Jabber GroupChat Menu SetRole visitor");
+	
+	WokXMLTag &ptag = setroletag->AddTag("item");
+	ptag.AddAttr("name", "participant (voice)");
+	ptag.AddAttr("signal", "Jabber GroupChat Menu SetRole participant");
+	
+	WokXMLTag &mod = setroletag->AddTag("item");
+	mod.AddAttr("name", "moderator (OP)");
+	mod.AddAttr("signal", "Jabber GroupChat Menu SetRole moderator");
+	
+	/*
+	
+	WokXMLTag &kick = admintag->AddTag("item");
+	kick.AddAttr("name", "Ban");
+	tag->AddAttr("signal", "Jabber GroupChat Menu Ban");
+	
+	WokXMLTag &kick = admintag->AddTag("item");
+	kick.AddAttr("name", "UnBan");
+	tag->AddAttr("signal", "Jabber GroupChat Menu UnBan");
+	*/
+	
+	return 1;
 }
 
 int

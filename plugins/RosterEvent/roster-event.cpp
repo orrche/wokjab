@@ -75,6 +75,13 @@ RosterEvent::ReadConfig(WokXMLTag *tag)
 	tag->GetFirstTag("config").GetFirstTag("pos").AddAttr("type", "string");
 	tag->GetFirstTag("config").GetFirstTag("pos").AddAttr("label", "Position in the main window");
 
+	if ( tag->GetFirstTag("config").GetFirstTag("pos").GetAttr("data").empty() )
+		tag->GetFirstTag("config").GetFirstTag("pos").AddAttr("data", "900");
+	if ( tag->GetFirstTag("config").GetFirstTag("history_size").GetAttr("data").empty() )
+		tag->GetFirstTag("config").GetFirstTag("history_size").AddAttr("data", "40");
+	if ( tag->GetFirstTag("config").GetFirstTag("timestamp_format").GetBody().empty() )
+		tag->GetFirstTag("config").GetFirstTag("timestamp_format").AddText("[%H:%M]");
+	
 	config = new WokXMLTag (tag->GetFirstTag("config"));
 	
 	if ( tag->GetFirstTag("config").GetFirstTag("hasgrip").GetAttr("data") != "false" )

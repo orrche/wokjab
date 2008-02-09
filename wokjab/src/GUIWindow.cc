@@ -447,14 +447,7 @@ GUIWindow::ReadConfig(WokXMLTag *tag)
 	else
 		dock = false;
 
-
-	if(width == 0)
-		width = 120;
-
-	if(height == 0)
-		height = 500;
-
-	if( visible )
+	if( visible && width && height)
 		gtk_window_resize(GTK_WINDOW(glade_xml_get_widget(xml,"window")), width, height);
 }
 

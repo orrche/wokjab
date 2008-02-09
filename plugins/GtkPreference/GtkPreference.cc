@@ -329,11 +329,12 @@ GtkPreference::CreateWid()
 	
 	if(pan_pos == 0 ) 
 		pan_pos = 150;
+	
 	if(width == 0)
-		width = 120;
+		width = 600;
 
 	if(height == 0)
-		height = 500;
+		height = 600;
 		
 	gtk_window_set_default_size(GTK_WINDOW(window), width, height);
 	
