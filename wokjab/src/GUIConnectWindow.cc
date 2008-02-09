@@ -340,6 +340,27 @@ GUIConnectWindow::Connect_Button (GtkWidget * widget, gpointer sig_data)
 	consig.AddAttr("prio", prio);
 	consig.AddAttr("type", "1");
 	
+	
+	std::list <WokXMLTag *>::iterator iter;
+
+	bool in_storage = false;
+	for( iter = data->config->GetTagList("account").begin() ; iter != data->config->GetTagList("account").end() ; iter++)
+	{
+		if ( server == (**iter).GetFirstTag("server").GetAttr("data") &&
+			nick == (**iter).GetFirstTag("nick").GetAttr("data") &&
+			password == (**iter).GetFirstTag("password").GetAttr("data") && 
+			prio == (**iter).GetFirstTag("prio").GetAttr("data") && 
+			resource == (**iter).GetFirstTag("resource").GetAttr("data") &&
+			port == (**iter).GetFirstTag("port").GetAttr("data") )
+		{
+			in_storage = true;
+		}
+	}
+	if( !in_storage )
+	{
+		woklib_message(data->wls, "Your login data is not saved you have to use the [Add] button for that.\n Sorry for no nicer options then this at the moment but I'm to TIRED to get that working at the moment");
+	}
+	
 	data->wls->SendSignal ("Jabber Connection Connect", &consig);
 
 	delete data;
