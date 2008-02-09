@@ -386,7 +386,11 @@ GtkPreference::CreateConfig(GtkWidget *parant, WokXMLTag *tag)
 		
 		if( (*iter)->GetTags().size() )
 		{
-			GtkWidget *frame = gtk_frame_new((*iter)->GetName().c_str());
+			std::string frame_name = (*iter)->GetAttr("label");
+			if ( frame_name.empty() )
+				frame_name = (*iter)->GetName();
+			GtkWidget *frame = gtk_frame_new(frame_name.c_str());
+			std::cout << "Frame Name: " << frame_name << std::endl;
 			int n = CreateConfig(frame, (*iter));
 			if ( n ) 
 			{
