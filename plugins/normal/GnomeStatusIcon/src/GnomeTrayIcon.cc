@@ -97,12 +97,10 @@ GnomeTrayIcon::tray_icon_pressed (GtkWidget * widget, GdkEventButton *event, gpo
 			return;		
 		}
 		
-		std::cout << "We are here right ?!" << std::endl;
 		if (!(gti->EventList.front())->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetTags().empty() )
 			gti->wls->SendSignal((gti->EventList.front())->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetAttr("name"), 
 									*(gti->EventList.front())->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetTags().begin());
 		
-		std::cout << "Hum hum" << std::endl;
 		if( gti->EventList.empty() )
 			return;
 
@@ -153,16 +151,30 @@ GnomeTrayIcon::UpdateList()
 {
 	if( EventList.size() )
 	{
+		std::string image_file;
 		if ( CurrentEvent == EventList.end() )
 		{
-			gtk_image_set_from_file(GTK_IMAGE(image),  std::string(PACKAGE_DATA_DIR"/wokjab/online.png").c_str());
-			
+			image_file = PACKAGE_DATA_DIR"/wokjab/online.png";	
 			CurrentEvent = EventList.begin();
 		}
 		else
 		{
-			gtk_image_set_from_file (GTK_IMAGE(image), (*CurrentEvent)->GetAttr("icon").c_str());
+			image_file = (*CurrentEvent)->GetAttr("icon");
 			CurrentEvent++;
+		}
+		
+		
+		GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file (image_file.c_str(),  NULL);
+		if ( pixbuf )
+		{
+				
+			GdkPixbuf *scaled = gdk_pixbuf_scale_simple (pixbuf, 14, 14, GDK_INTERP_BILINEAR);
+			if ( scaled )
+			{
+				gtk_image_set_from_pixbuf (GTK_IMAGE(image), scaled);
+				g_object_unref(scaled);
+			}
+			g_object_unref(pixbuf);
 		}
 	}
 	else

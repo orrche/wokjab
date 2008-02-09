@@ -175,7 +175,15 @@ filepicker::ButtonPress (GtkButton *button, filepicker *c)
 	tag.AddAttr("to", c->to);
 	tag.AddAttr("session", c->session);
 	
-	tag.AddAttr("name", gtk_file_chooser_get_filename (GTK_FILE_CHOOSER(glade_xml_get_widget (c->gxml, "chooser"))));
+	gchar *file_name = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER(glade_xml_get_widget (c->gxml, "chooser")));
+	if ( file_name == NULL )
+	{
+		woklib_message(c->wls, "You need to pick a file");
+		return;
+	}
+	tag.AddAttr("name", file_name);
+	g_free(file_name);
+	
 	std::string rate = gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget (c->gxml, "rateentry")));
 	if ( atoi(rate.c_str()) > 0 )
 		tag.AddAttr("rate", rate + "000");

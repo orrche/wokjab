@@ -218,6 +218,7 @@ jep65Session::SOCKS_Data(WokXMLTag *tag)
 	{
 		WokXMLTag fintag(NULL, "finished");
 		fintag.AddAttr("sid", lsid);
+		fintag.AddAttr("filename", filename);
 		wls->SendSignal("Jabber Stream File Status", &fintag);
 		wls->SendSignal("Jabber Stream File Status Finished", &fintag);
 	

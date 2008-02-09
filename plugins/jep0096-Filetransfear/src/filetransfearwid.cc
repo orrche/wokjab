@@ -35,9 +35,9 @@ session(xml->GetAttr("session")),
 lsid(lsid)
 {
 	config = new WokXMLTag(NULL, "NULL");
-	EXP_SIGHOOK("Config XML Change /filetransfear/filetransfearwid", &jep96Widget::ReadConfig, 500);
+	EXP_SIGHOOK("Config XML Change /filetransfer", &jep96Widget::ReadConfig, 500);
 	WokXMLTag conftag(NULL, "config");
-	conftag.AddAttr("path", "/filetransfear/filetransfearwid");
+	conftag.AddAttr("path", "/filetransfer");
 	wls->SendSignal("Config XML Trigger", &conftag);
 	
 	requested = false;
@@ -88,16 +88,19 @@ lsid(lsid)
 		destfolder.AddText(std::string(g_get_home_dir()) + "/Desktop");
 	}
 	{
-		WokXMLTag &command = commands.AddTag("command");
-		command.AddAttr("name", "To User Folder");
-		WokXMLTag &signal = command.AddTag("signal");
-		signal.AddAttr("name", "Jabber Stream ReciveWid Open " + id);
-		WokXMLTag &settings = signal.AddTag("settings"); 
-		WokXMLTag &destfolder = settings.AddTag("destination_folder");
-		if ( from.find("/") == std::string::npos )
-			destfolder.AddText(config->GetFirstTag("userfolder_root").GetAttr("data") + "/" + from);
-		else
-			destfolder.AddText(config->GetFirstTag("userfolder_root").GetAttr("data") + "/" + from.substr(0, from.find("/")));
+		if ( ! config->GetFirstTag("userfolder_root").GetAttr("data").empty() )
+		{
+			WokXMLTag &command = commands.AddTag("command");
+			command.AddAttr("name", "To User Folder");
+			WokXMLTag &signal = command.AddTag("signal");
+			signal.AddAttr("name", "Jabber Stream ReciveWid Open " + id);
+			WokXMLTag &settings = signal.AddTag("settings"); 
+			WokXMLTag &destfolder = settings.AddTag("destination_folder");
+			if ( from.find("/") == std::string::npos )
+				destfolder.AddText(config->GetFirstTag("userfolder_root").GetAttr("data") + "/" + from);
+			else
+				destfolder.AddText(config->GetFirstTag("userfolder_root").GetAttr("data") + "/" + from.substr(0, from.find("/")));
+		}
 	}
 
 	EXP_SIGHOOK("Jabber Stream ReciveWid Open " + id, &jep96Widget::Open, 1000);
@@ -153,9 +156,6 @@ jep96Widget::ReadConfig (WokXMLTag *tag)
 {
 	delete config;
 	config = new WokXMLTag(tag->GetFirstTag("config"));
-
-	tag->GetFirstTag("config").GetFirstTag("userfolder_root").AddAttr("type", "string");
-	tag->GetFirstTag("config").GetFirstTag("userfolder_root").AddAttr("label", "Root for userfolders");
 	return 1;
 }
 

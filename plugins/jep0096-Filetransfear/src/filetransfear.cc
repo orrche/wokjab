@@ -23,6 +23,10 @@
 #include "filepicker.h"
 #include <sstream>
 
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
@@ -44,7 +48,7 @@ WoklibPlugin(wls)
 			G_CALLBACK (jep96::RemoveStream), this);
 	
 	file_store = gtk_list_store_new (9, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
-									 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_BOOLEAN);
+									 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_BOOLEAN, G_TYPE_STRING);
   	gtk_tree_view_set_model (GTK_TREE_VIEW(fileview), GTK_TREE_MODEL(file_store));
 	
 	renderer = gtk_cell_renderer_text_new ();
@@ -85,11 +89,12 @@ WoklibPlugin(wls)
 	EXP_SIGHOOK("Jabber Stream File Status Accepted", &jep96::Accepted, 500);
 	
 	EXP_SIGHOOK("Jabber Stream Event Finished Ignore", &jep96::FinishIgnore, 1000);
+	EXP_SIGHOOK("Jabber Stream Event Finished OpenFolder", &jep96::FinishOpen, 1000);
 	sidnum = 0;
 	
-	EXP_SIGHOOK("Config XML Change /file-transfear/proxy", &jep96::ReadConfig, 500);
+	EXP_SIGHOOK("Config XML Change /filetransfer", &jep96::ReadConfig, 500);
 	WokXMLTag conftag(NULL, "config");
-	conftag.AddAttr("path", "/file-transfear/proxy");
+	conftag.AddAttr("path", "/filetransfer");
 	wls->SendSignal("Config XML Trigger", &conftag);
  
 }
@@ -108,6 +113,14 @@ jep96::~jep96()
 int
 jep96::ReadConfig(WokXMLTag *tag)
 {
+	tag->GetFirstTag("config").GetFirstTag("openfoler_with").AddAttr("type", "string");
+	tag->GetFirstTag("config").GetFirstTag("openfoler_with").AddAttr("label", "Open folder with");
+	openwith = tag->GetFirstTag("config").GetFirstTag("openfoler_with").GetAttr("data");
+	
+	tag->GetFirstTag("config").GetFirstTag("userfolder_root").AddAttr("type", "string");
+	tag->GetFirstTag("config").GetFirstTag("userfolder_root").AddAttr("label", "Root for userfolders");
+	
+	
 	if ( !tag->GetFirstTag("config").GetFirstTag("proxy").GetTagList("item").empty() )
 	{
 		autoproxy = tag->GetFirstTag("config").GetFirstTag("proxy").GetFirstTag("item").GetBody();
@@ -171,6 +184,7 @@ jep96::Wid(WokXMLTag *xml)
 	sslsid << "jep96-" << sidnum++;
 	
 	GtkTreeIter iter;
+	std::cout << "Where.. " << *xml << std::endl;
 	
 	gtk_list_store_append (file_store, &iter);  /* Acquire a top-level iterator */
 	gtk_list_store_set (file_store, &iter, 0, xml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("file").GetAttr("name").c_str(),
@@ -181,7 +195,8 @@ jep96::Wid(WokXMLTag *xml)
 											5, xml->GetFirstTag("iq").GetAttr("to").c_str(),
 											6, xml->GetAttr("session").c_str(), 
 											7, NULL,
-											8, FALSE, -1);
+											8, FALSE, 
+											9, "", -1);
 //	gtk_widget_show(filewindow);
 //	gtk_window_present (GTK_WINDOW(filewindow));
 	rows[sslsid.str()] = gtk_tree_row_reference_new(GTK_TREE_MODEL(file_store),gtk_tree_model_get_path(GTK_TREE_MODEL(file_store), &iter));
@@ -308,7 +323,8 @@ jep96::SendFile(WokXMLTag *xml)
 											5, to.c_str(),
 											6, xml->GetAttr("session").c_str(), 
 											7, NULL,
-											8, TRUE, -1);
+											8, TRUE, 
+											-1);
 //	gtk_widget_show(filewindow);
 //	gtk_window_present (GTK_WINDOW(filewindow));
 	rows[sid] = gtk_tree_row_reference_new(GTK_TREE_MODEL(file_store),gtk_tree_model_get_path(GTK_TREE_MODEL(file_store), &iter));
@@ -392,6 +408,28 @@ jep96::FinishIgnore(WokXMLTag *tag)
 }
 
 int
+jep96::FinishOpen(WokXMLTag *tag)
+{
+	int pid,status;
+	switch (pid = fork()){
+		case 0:
+			switch (fork())
+			{
+				case 0:
+					system((openwith + " " + tag->GetFirstTag("folder").GetAttr("name")).c_str());
+					_exit(1);
+			}
+			_exit(1);
+	}
+	
+	if(pid > 0)
+		waitpid(pid, &status, 0);
+	
+	FinishIgnore(tag);
+	return 1;
+}
+
+int
 jep96::Finnished(WokXMLTag *fintag)
 {
 	GtkTreeIter iter;
@@ -410,7 +448,7 @@ jep96::Finnished(WokXMLTag *fintag)
 			
 			eventtag->AddAttr("type", "jep0096 FinishedFile");
 			WokXMLTag &item = eventtag->AddTag("item");
-			item.AddAttr("icon", "/usr/local/share/wokjab/filetransfer.png");
+			item.AddAttr("icon", PACKAGE_DATA_DIR"/wokjab/filetransfer.png");
 			item.AddAttr("session", session);
 			if ( sending == TRUE )
 			{
@@ -431,6 +469,16 @@ jep96::Finnished(WokXMLTag *fintag)
 				signal.AddAttr("name", "Jabber Stream Event Finished Ignore");
 				signal.GetFirstTag("data").AddTag("sid").AddAttr("name", fintag->GetAttr("sid"));
 			}
+			if ( !openwith.empty() && !fintag->GetAttr("filename").empty())
+			{
+				WokXMLTag &command = commands.AddTag("command");
+				command.AddAttr("name", "Open Folder");
+				WokXMLTag &signal = command.AddTag("signal");
+				signal.AddAttr("name", "Jabber Stream Event Finished OpenFolder");
+				signal.GetFirstTag("data").AddTag("sid").AddAttr("name", fintag->GetAttr("sid"));
+				signal.GetFirstTag("data").AddTag("folder").AddAttr("name", fintag->GetAttr("filename").substr(0,fintag->GetAttr("filename").rfind("/")));
+			}
+			
 			wls->SendSignal("Jabber Event Add", eventtag);
 			g_free(session);
 			g_free(from);
@@ -444,6 +492,7 @@ jep96::Finnished(WokXMLTag *fintag)
 int
 jep96::Accepted(WokXMLTag *acctag)
 {
+	std::cout << "Accepted.." << *acctag << std::endl;
 	GtkTreeIter iter;
 	GtkTreePath* path;
 	
