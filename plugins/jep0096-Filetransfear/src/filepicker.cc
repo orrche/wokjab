@@ -63,9 +63,9 @@ to(to)
 	gtk_tree_view_set_model (GTK_TREE_VIEW (glade_xml_get_widget(gxml, "proxylist")), GTK_TREE_MODEL (model));
 	
 	config = NULL;
-	EXP_SIGHOOK("Config XML Change /file-transfear/proxy", &filepicker::ReadConfig, 500);
+	EXP_SIGHOOK("Config XML Change /filetransfer", &filepicker::ReadConfig, 500);
 	WokXMLTag conftag(NULL, "config");
-	conftag.AddAttr("path", "/file-transfear/proxy");
+	conftag.AddAttr("path", "/filetransfer");
 	wls->SendSignal("Config XML Trigger", &conftag);
  
 	
@@ -131,7 +131,7 @@ filepicker::ButtonAdd (GtkButton *button, filepicker *c)
 	item.AddAttr("type", proxy_type);
 	
 	WokXMLTag conftag(NULL, "config");
-	conftag.AddAttr("path", "/file-transfear/proxy");
+	conftag.AddAttr("path", "/filetransfer");
 	conftag.AddTag(c->config);
 	
 	c->wls->SendSignal("Config XML Store", &conftag);
@@ -160,7 +160,7 @@ filepicker::ButtonRemove (GtkButton *button, filepicker *c)
 		}
 	
 		WokXMLTag conftag(NULL, "config");
-		conftag.AddAttr("path", "/file-transfear/proxy");
+		conftag.AddAttr("path", "/filetransfer");
 		conftag.AddTag(c->config);
 		
 		c->wls->SendSignal("Config XML Store", &conftag);
