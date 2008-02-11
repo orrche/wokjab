@@ -89,10 +89,7 @@ sport(sport)
 	
 	proxy = msgtag->GetAttr("proxy");
 	proxy_type = msgtag->GetAttr("proxy_type");
-	
-	std::cout << "ProxyType" << proxy_type << std::endl;
-	std::cout << "XML::: " << *msgtag << std::endl;
-	
+		
 	if ( proxy == "" ||  proxy_type == "forward" )
 	{
 		SendInitiat();
@@ -176,6 +173,8 @@ jep65send::InitProxyReply(WokXMLTag *tag)
 	else
 	{
 		woklib_error(wls, "Proxy didn't agree!!");
+		delete this;
+		return 1;
 	}
 
 	return 1;
@@ -331,6 +330,19 @@ int
 jep65send::TransfearStart(WokXMLTag *tag)
 {
 	EXP_SIGUNHOOK("Jabber Stream File Send Method http://jabber.org/protocol/bytestreams push hash:" + hash, &jep65send::FileTransfear, 1000);
+	
+	if ( tag->GetFirstTag("iq").GetAttr("type") == "error" )
+	{
+		WokXMLTag termtag(NULL, "terminated");
+		termtag.AddAttr("sid", sid);
+		wls->SendSignal("Jabber Stream File Status", &termtag);
+		wls->SendSignal("Jabber Stream File Status Terminated", &termtag);
+		
+		tag->AddAttr("error", "terminated");
+		delete this;
+		return 1;
+	}
+	
 	if ( socket ) 
 	{
 		if ( ! listening ) 
@@ -342,7 +354,8 @@ jep65send::TransfearStart(WokXMLTag *tag)
 			EXP_SIGHOOK(sigtag.GetAttr("signal"), &jep65send::SocketAvailibule, 1000);
 		}
 		ffile.open(file.c_str(), std::ios::in);
-	}	
+	}
+	
 	return 1;
 }
 
@@ -361,6 +374,8 @@ jep65send::FileTransfear(WokXMLTag *tag)
 		wls->SendSignal("Jabber Stream File Status Terminated", &termtag);
 		
 		tag->AddAttr("error", "terminated");
+		delete this;
+		return 1;
 	}
 
 	if( !socket )

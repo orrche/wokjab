@@ -184,7 +184,6 @@ jep96::Wid(WokXMLTag *xml)
 	sslsid << "jep96-" << sidnum++;
 	
 	GtkTreeIter iter;
-	std::cout << "Where.. " << *xml << std::endl;
 	
 	gtk_list_store_append (file_store, &iter);  /* Acquire a top-level iterator */
 	gtk_list_store_set (file_store, &iter, 0, xml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("file").GetAttr("name").c_str(),
@@ -196,7 +195,7 @@ jep96::Wid(WokXMLTag *xml)
 											6, xml->GetAttr("session").c_str(), 
 											7, NULL,
 											8, FALSE, 
-											9, "", -1);
+											-1);
 //	gtk_widget_show(filewindow);
 //	gtk_window_present (GTK_WINDOW(filewindow));
 	rows[sslsid.str()] = gtk_tree_row_reference_new(GTK_TREE_MODEL(file_store),gtk_tree_model_get_path(GTK_TREE_MODEL(file_store), &iter));
@@ -381,7 +380,6 @@ jep96::SendFile(WokXMLTag *xml)
 	sessions[iqtag.GetAttr("id")] = data;
 	
 	EXP_SIGHOOK("Jabber XML IQ ID "  + iqtag.GetAttr("id"), &jep96::SendReply, 500);
-	
 	return 1;
 }
 
@@ -622,9 +620,11 @@ jep96::SendReply(WokXMLTag *msgtag)
 {
 	WokXMLTag &iqtag = msgtag->GetFirstTag("iq");
 	std::string id = iqtag.GetAttr("id");
+	
+	
 	if ( sessions.find(id) == sessions.end() )
 		return true;
-		
+	
 	std::string sid = sessions[id]->GetFirstTag("iq").GetFirstTag("si").GetAttr("id");
 	
 	if(iqtag.GetAttr("type") == "error")

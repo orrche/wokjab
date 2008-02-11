@@ -146,6 +146,7 @@ jep65Session::SOCKS_Fail(WokXMLTag *tag)
 	
 	wls->SendSignal("Jabber XML Send", &msgtag);
 	
+	
 	/*
 	<iq type='error' 
     from='target@example.org/bar' 
@@ -157,6 +158,7 @@ jep65Session::SOCKS_Fail(WokXMLTag *tag)
 </iq>
 	*/
 	
+	delete this;
 	return 1;	
 }
 
