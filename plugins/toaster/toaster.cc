@@ -36,6 +36,10 @@
 
 #include <sstream>
 
+#ifndef _
+#define _(x) x
+#endif
+
 Toaster::Toaster(WLSignal *wls) : WoklibPlugin(wls)
 {
 	EXP_SIGHOOK("Jabber Event Add", &Toaster::AddJIDEvent, 1000);
@@ -59,11 +63,39 @@ Toaster::~Toaster()
 int
 Toaster::ReadConfig(WokXMLTag *tag)
 {
+	
+	if ( tag->GetFirstTag("config").GetFirstTag("color1").GetAttr("data").empty() )
+	{
+		tag->GetFirstTag("config").GetFirstTag("color1").AddAttr("type", "string");
+		tag->GetFirstTag("config").GetFirstTag("color1").AddAttr("label", _("BG color 1"));
+		tag->GetFirstTag("config").GetFirstTag("color1").AddAttr("data", "red");
+	}
+	if ( tag->GetFirstTag("config").GetFirstTag("color2").GetAttr("data").empty() )
+	{
+		tag->GetFirstTag("config").GetFirstTag("color2").AddAttr("type", "string");
+		tag->GetFirstTag("config").GetFirstTag("color2").AddAttr("label", _("BG color 2"));
+		tag->GetFirstTag("config").GetFirstTag("color2").AddAttr("data", "blue");
+	}
+	if ( tag->GetFirstTag("config").GetFirstTag("delay").GetAttr("data").empty() )
+	{
+		tag->GetFirstTag("config").GetFirstTag("delay").AddAttr("type", "string");	
+		tag->GetFirstTag("config").GetFirstTag("delay").AddAttr("label", _("Delay"));
+		tag->GetFirstTag("config").GetFirstTag("delay").AddAttr("data", "15");
+	}
+	if(  tag->GetFirstTag("config").GetFirstTag("flashes").GetAttr("data").empty() )
+	{
+		tag->GetFirstTag("config").GetFirstTag("flashes").AddAttr("type", "string");	
+		tag->GetFirstTag("config").GetFirstTag("flashes").AddAttr("label", _("Flashes"));
+		tag->GetFirstTag("config").GetFirstTag("flashes").AddAttr("data", "10");
+	}
+	if(  tag->GetFirstTag("config").GetFirstTag("fspeed").GetAttr("data").empty() )
+	{
+		tag->GetFirstTag("config").GetFirstTag("fspeed").AddAttr("type", "string");	
+		tag->GetFirstTag("config").GetFirstTag("fspeed").AddAttr("label", _("Flash speed (ms)"));
+		tag->GetFirstTag("config").GetFirstTag("fspeed").AddAttr("data", "200");
+	}
 	delete config;
 	config = new WokXMLTag(tag->GetFirstTag("config"));
-	
-	tag->GetFirstTag("config").GetFirstTag("delay").AddAttr("type", "string");
-
 	
 	return 1;	
 }

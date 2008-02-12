@@ -52,7 +52,8 @@ class ToasterWindow : public WLSignalInstance
 		static gboolean CommandExec(GtkWidget *button, GdkEventButton *event, ToasterWindow *c);
 	protected:
 		WokXMLTag *orig;
-		GdkColor noticable_color;
+		GdkColor noticable_color1;
+		GdkColor noticable_color2;
 		GtkWidget *window;
 		GtkWidget *port;
 		int t;

@@ -37,8 +37,10 @@ ToasterWindow::ToasterWindow(WLSignal *wls, WokXMLTag *config, WokXMLTag *xml, i
 	GtkWidget *label = gtk_label_new(xml->GetFirstTag("body").GetBody().c_str());
 	gtk_label_set_line_wrap (GTK_LABEL(label), TRUE);
 	
-	gdk_color_parse ("red", &noticable_color);
-	gtk_widget_modify_bg (port, GTK_STATE_NORMAL, &noticable_color);
+	gdk_color_parse (config->GetFirstTag("color1").GetAttr("data").c_str(), &noticable_color1);
+	gdk_color_parse (config->GetFirstTag("color2").GetAttr("data").c_str(), &noticable_color2);
+	
+	gtk_widget_modify_bg (port, GTK_STATE_NORMAL, &noticable_color1);
 																																																									
 																																																									
 	gtk_viewport_set_shadow_type (GTK_VIEWPORT (port), GTK_SHADOW_OUT);
@@ -83,8 +85,8 @@ ToasterWindow::ToasterWindow(WLSignal *wls, WokXMLTag *config, WokXMLTag *xml, i
 	gtk_window_get_size(GTK_WINDOW(window), &width, &height);
 	gtk_window_move(GTK_WINDOW(window), x - width, y - height);
 
-	t = 10;
-	timeoutid = g_timeout_add (200, (gboolean (*)(void *)) (ToasterWindow::Timeout), this);
+	t = atoi(config->GetFirstTag("flashes").GetAttr("data").c_str());
+	timeoutid = g_timeout_add (atoi(config->GetFirstTag("fspeed").GetAttr("data").c_str()), (gboolean (*)(void *)) (ToasterWindow::Timeout), this);
 		
 	int delay = 0;
 	if ( ( delay = atoi(config->GetFirstTag("delay").GetAttr("data").c_str())) < 1 )
@@ -182,14 +184,12 @@ ToasterWindow::TimeoutRemove(ToasterWindow *c)
 gboolean
 ToasterWindow::Timeout(ToasterWindow *c)
 {
+	GdkColor *color;
+
 	if ( c->t--%2)
-	{
-		gdk_color_parse ("red", &c->noticable_color);
-	}
+		color = &c->noticable_color1;
 	else
-	{
-		gdk_color_parse ("blue", &c->noticable_color);
-	}
+		color = &c->noticable_color2;
 	
 
 	
@@ -200,6 +200,6 @@ ToasterWindow::Timeout(ToasterWindow *c)
 		return FALSE;
 	}
 	
-	gtk_widget_modify_bg (c->port, GTK_STATE_NORMAL, &c->noticable_color);
+	gtk_widget_modify_bg (c->port, GTK_STATE_NORMAL, color);
 	return TRUE;
 }
