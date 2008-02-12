@@ -167,7 +167,7 @@ jep96::RemoveStream(GtkButton *button, jep96 *c)
 		
 		if ( c->rows.find(sid) != c->rows.end() )
 		{
-			g_object_unref(c->rows[sid]);
+			// g_object_unref(c->rows[sid]); <-- dont get why I shouldn't clean this up
 			c->rows.erase(sid);
 		}
 		if ( c->sessions.find(sid) != c->sessions.end() )

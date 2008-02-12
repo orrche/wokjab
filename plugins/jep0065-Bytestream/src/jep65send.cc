@@ -90,7 +90,7 @@ sport(sport)
 	proxy = msgtag->GetAttr("proxy");
 	proxy_type = msgtag->GetAttr("proxy_type");
 		
-	if ( proxy == "" ||  proxy_type == "forward" )
+	if ( proxy == "" || proxy_type == "forward" )
 	{
 		SendInitiat();
 	}
@@ -347,8 +347,12 @@ jep65send::TransfearStart(WokXMLTag *tag)
 	{
 		if ( ! listening ) 
 		{
+			std::stringstream str;
+			str << socket;
+			
 			WokXMLTag sigtag(NULL, "socket");
-			sigtag.AddAttr("socket", tag->GetAttr("socket"));
+			sigtag.AddAttr("socket", str.str());
+//			sigtag.AddAttr("socket", tag->GetAttr("socket"));
 			listening = true;
 			wls->SendSignal("Woklib Socket Out Add", sigtag);
 			EXP_SIGHOOK(sigtag.GetAttr("signal"), &jep65send::SocketAvailibule, 1000);
@@ -442,9 +446,9 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 {
 	int sent = 0;
 	int maxsize;
+		
 	if ( tag->GetAttr("error").size() )
 	{
-		
 		WokXMLTag termtag(NULL, "terminated");
 		termtag.AddAttr("sid", sid);
 		wls->SendSignal("Jabber Stream File Status", &termtag);
@@ -461,21 +465,29 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 	else
 		maxsize = SHUNKSIZE;
 
-	
 	if(size > 0 )
 	{
 		if( fbpos != fbend )
 		{
-			sent = send ( socket, filebuf + fbpos, fbend - fbpos, MSG_DONTWAIT);
-			if ( sent == -1 )
+			for (;;)
 			{
-				if ( errno == EAGAIN || errno == EWOULDBLOCK)
-					return 1;
-				tag->AddAttr("stop", "error");
-				listening = false;
-				delete this;
-				return 1;
-			}	
+				sent = send ( socket, filebuf + fbpos, fbend - fbpos, MSG_DONTWAIT);
+				if ( sent == -1 )
+				{
+					if (!(errno == EAGAIN || errno == EWOULDBLOCK) )
+					{
+						woklib_error(wls, "Stoping due to error....");
+				
+						tag->AddAttr("stop", "error");
+						listening = false;
+						delete this;
+						return 1;
+					}
+				}
+				else
+					break;
+			}
+			
 			fbpos += sent;
 		}
 		else
@@ -512,8 +524,6 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 			tag->AddAttr("stop", "finished");
 		}
 	}
-	
-
 	
 	WokXMLTag postag(NULL, "position");
 	std::stringstream pos;

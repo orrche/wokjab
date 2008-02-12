@@ -181,7 +181,7 @@ DisplayWidget::Error(WokXMLTag *tag)
 											-1);
 	
 	
-	if( (lines = gtk_tree_model_iter_n_children (GTK_TREE_MODEL(error_store), NULL)) > 100)
+	if( (lines = gtk_tree_model_iter_n_children (GTK_TREE_MODEL(error_store), NULL)) > 400)
 	{
 		gtk_tree_model_get_iter_first(GTK_TREE_MODEL(error_store), &iter);
 		gtk_list_store_remove(error_store, &iter);

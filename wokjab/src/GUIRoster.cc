@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2008  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 
 #include "include/GUIRoster.h"
 
-// Addons .. should be plugins maybe
+// Addons .. should be plugins
 #include "include/GUIAddJIDWidget.h"
 #include "include/GUIPresentReqWidget.h"
 
@@ -77,7 +77,7 @@ GUIRoster::GUIRoster (WLSignal * wls):WLSignalInstance (wls)
 	conftag.AddAttr("path", "/main/window/roster_visibility");
 	wls->SendSignal("Config XML Trigger", &conftag);
 	
-	// Initiating add ins .. maybe should be plugins..
+	// Initiating add ins .. should be plugins..
 	
 	new GUIAddJIDWidget(wls);
 	new GUIPresentReqWidget(wls);
@@ -234,9 +234,7 @@ GUIRoster::View(WokXMLTag *tag)
 
 int
 GUIRoster::GetIcon(WokXMLTag *tag)
-{
-	std::string datadir = PACKAGE_DATA_DIR;
-	
+{	
 	if(tag->GetFirstTag("item").GetTagList("resource").begin() == tag->GetFirstTag("item").GetTagList("resource").end())
 		wls->SendSignal("Jabber Roster GetResource",tag);
 	
@@ -247,15 +245,15 @@ GUIRoster::GetIcon(WokXMLTag *tag)
 		for( riter = (*tagiter)->GetTagList("resource").begin() ; riter != (*tagiter)->GetTagList("resource").end() ; riter++)
 		{
 			if( (*tagiter)->GetAttr("type") == "unavailable")
-				(*riter)->AddAttr("icon", datadir + "/wokjab/offline.png");
+				(*riter)->AddAttr("icon", PACKAGE_DATA_DIR"/wokjab/offline.png");
 			else if ( (*riter)->GetFirstTag("show").GetBody() != "")
 				(*riter)->AddAttr("icon", icons[(*riter)->GetFirstTag("show").GetBody()]);
 			else
-				(*riter)->AddAttr("icon", datadir + "/wokjab/online.png");
+				(*riter)->AddAttr("icon", PACKAGE_DATA_DIR"/wokjab/online.png");
 		}
 		if( (*tagiter)->GetTagList("resource").begin() == (*tagiter)->GetTagList("resource").end() )
 		{
-			(*tagiter)->AddAttr("icon", datadir + "/wokjab/offline.png");
+			(*tagiter)->AddAttr("icon", PACKAGE_DATA_DIR"/wokjab/offline.png");
 		}
 		else
 			(*tagiter)->AddAttr("icon",(*tagiter)->GetFirstTag("resource").GetAttr("icon"));
@@ -291,7 +289,3 @@ GUIRoster::DeleteAction(WokXMLTag *tag)
 	
 	return true;
 }
-
-
-
-

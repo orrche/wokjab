@@ -37,13 +37,15 @@ GUIRoster::GUIRoster(WLSignal *wls) : WoklibPlugin(wls)
 	EXP_SIGHOOK("GUI Window Init", &GUIRoster::GUIWindowInit, 500);
 	inittag = NULL;
 	hoverid = NULL;
+	xml = NULL;
 	CreateWid();
 }
 
 
 GUIRoster::~GUIRoster()
 {
-
+	if ( xml ) 
+		g_object_unref(xml);
 }
 
 void
@@ -135,6 +137,7 @@ GUIRoster::CreateWid()
 	
 	gtk_widget_show_all(mainwindowplug);
 	
+	
 	g_signal_connect (G_OBJECT(glade_xml_get_widget(xml,"view_roster")), "row_activated", 
 		  G_CALLBACK (GUIRoster::row_activated), this);
 	g_signal_connect (G_OBJECT(glade_xml_get_widget(xml,"view_roster")), "button_press_event", 
@@ -145,6 +148,21 @@ GUIRoster::CreateWid()
 			G_CALLBACK (GUIRoster::MouseLeave), this);
 	g_signal_connect (G_OBJECT(glade_xml_get_widget(xml,"view_roster")), "size_allocate",
 			G_CALLBACK (GUIRoster::SizeChange), this);
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "view_roster")), "drag_data_get", 
+			G_CALLBACK (GUIRoster::DragGet), this);
+	enum
+    {
+      TARGET_STRING,
+      TARGET_URL
+    };
+	static GtkTargetEntry target_entry[] =
+    {      
+	  { "STRING",        0, TARGET_STRING },
+      { "text/plain",    0, TARGET_STRING },
+    };
+	
+	gtk_tree_view_enable_model_drag_source(GTK_TREE_VIEW(glade_xml_get_widget(xml,"view_roster")), (GdkModifierType) GDK_BUTTON1_MASK , target_entry, 2, (GdkDragAction) (GDK_ACTION_COPY));
+	
 	char buf[200];
 	WokXMLTag contag(NULL, "connect");
 	sprintf(buf, "%d", gtk_plug_get_id(GTK_PLUG(mainwindowplug)));
@@ -162,7 +180,44 @@ GUIRoster::CreateWid()
 		std::stringstream sig;
 		sig << "GUI Window Close " << gtk_plug_get_id(GTK_PLUG(mainwindowplug));
 		EXP_SIGHOOK(sig.str(), &GUIRoster::Close, 500);
+	}    
+	
+
+	
+	
+}
+
+void
+GUIRoster::DragGet(GtkWidget *wgt, GdkDragContext *context, GtkSelectionData *selection, guint info, guint time, GUIRoster *c)
+{
+	GtkTreeIter iter;
+	
+	WokXMLTag data("data");
+	GtkTreeModel *model;
+	
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(glade_xml_get_widget(c->xml, "view_roster")));
+	
+	GtkTreeSelection* select =  gtk_tree_view_get_selection(GTK_TREE_VIEW(glade_xml_get_widget(c->xml, "view_roster")));
+	GList *list =  gtk_tree_selection_get_selected_rows(select, &model);
+	for(;list; list = list->next)
+	{
+		gchar *id;
+		gtk_tree_model_get_iter(GTK_TREE_MODEL(model), &iter, (GtkTreePath *) list->data);
+		gtk_tree_model_get(GTK_TREE_MODEL(model), &iter, ID_COLUMN, &id, -1);
+	
+		WokXMLTag emptytag("item");
+		c->wls->SendSignal(std::string("GUIRoster DragGet ") + id, emptytag);
+		data.AddTag("emptytag");
+		
+		g_free(id);
 	}
+	
+	g_list_foreach (list, ( void(*)(void*, void*)) gtk_tree_path_free, NULL);
+	g_list_free (list);
+	
+	std::string data_str;
+	data_str = data.GetStr();
+	gtk_selection_data_set_text(selection, data_str.c_str(), data_str.size());
 }
 
 void

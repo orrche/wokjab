@@ -25,6 +25,8 @@ typedef unsigned int uint;
 #include <sys/utsname.h>
 #endif
 
+#include <sstream>
+
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
@@ -175,7 +177,8 @@ Initiat::AddWatcher(WokXMLTag *xml)
 	char freebuf[40];
 	id++;
 	sprintf(freebuf, "Socket Availibule %d", id);
-	freesockets[atoi(xml->GetAttr("socket").c_str())] = freebuf;
+
+	freesockets[socket] = freebuf;
 	xml->AddAttr("signal", freebuf);
 
 	GIOChannel *source = g_io_channel_unix_new (socket);

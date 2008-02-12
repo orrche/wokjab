@@ -48,6 +48,7 @@ class GUIRoster : public WoklibPlugin
 		int Close(WokXMLTag *tag);
 		int GUIWindowInit(WokXMLTag *tag);
 		
+		static void DragGet(GtkWidget *wgt, GdkDragContext *context, GtkSelectionData *selection, guint info, guint time, GUIRoster *c);
 		static int row_activated (GtkTreeView *treeview, GtkTreePath *arg1, GtkTreeViewColumn *arg2, GUIRoster *c);
 		static gboolean popup_menu(GtkTreeView *tree_view, GdkEventButton *event, GUIRoster *c);
 		static gboolean MouseMotion (GtkWidget *treeview, GdkEventMotion *event, GUIRoster *c);

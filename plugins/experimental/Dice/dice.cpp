@@ -79,8 +79,7 @@ Dice::Dice(WLSignal *wls): WoklibPlugin(wls)
       { "text/plain",    0, TARGET_STRING },
     };
 	
-	gtk_icon_view_enable_model_drag_source(GTK_ICON_VIEW(glade_xml_get_widget (gxml, "collection_view")),
-                                                         (GdkModifierType) 0, target_entry, 1, (GdkDragAction) (GDK_ACTION_COPY));
+	gtk_icon_view_enable_model_drag_source(GTK_ICON_VIEW(glade_xml_get_widget (gxml, "collection_view")), (GdkModifierType) 0, target_entry, 1, (GdkDragAction) (GDK_ACTION_COPY));
 	
 	config = new WokXMLTag ("config");
 	EXP_SIGHOOK("Config XML Change /dice", &Dice::ReadConfig, 500);
