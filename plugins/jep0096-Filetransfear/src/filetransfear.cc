@@ -124,7 +124,7 @@ jep96::ReadConfig(WokXMLTag *tag)
 	tag->GetFirstTag("config").GetFirstTag("userfolder_root").AddAttr("type", "string");
 	tag->GetFirstTag("config").GetFirstTag("userfolder_root").AddAttr("label", _("Root for userfolders"));
 	
-	tag->GetFirstTag("config").GetFirstTag("popup_transfear_wid").AddAttr("type", "string");
+	tag->GetFirstTag("config").GetFirstTag("popup_transfear_wid").AddAttr("type", "bool");
 	tag->GetFirstTag("config").GetFirstTag("popup_transfear_wid").AddAttr("label", _("Popup transfer window"));
 	popup_ft_wid = tag->GetFirstTag("config").GetFirstTag("popup_transfear_wid").GetAttr("data");
 	
