@@ -115,7 +115,7 @@ UserTune::ActivityLine(WokXMLTag *tag)
 	{
 		WokXMLTag &item = tag->AddTag("item");
 		item.AddAttr("type_name", "xep0118");
-		item.AddAttr("label", _("User Tune"));
+		item.AddAttr("label", config->GetFirstTag("label").GetAttr("data"));
 		WokXMLTag &line = item.AddTag("line");
 					
 		if ( status )
