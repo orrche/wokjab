@@ -237,6 +237,7 @@ from(from)
 	
 	HookSignals();
 	
+	/*
 	WokXMLTag spooltag(NULL, "spool");
 	spooltag.AddAttr("jid", from);
 	wls->SendSignal("Jabber GUI Message GetSpool", &spooltag);
@@ -251,6 +252,8 @@ from(from)
 		else if ((*titer)->GetName() == "precense")
 			NewPresence(*titer);
 	}
+	*/
+	
 	focus = false;
 
 

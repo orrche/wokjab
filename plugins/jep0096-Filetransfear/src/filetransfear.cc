@@ -31,6 +31,10 @@
 #  include <config.h>
 #endif
 
+#ifndef _
+#define _(x) x
+#endif
+
 jep96::jep96(WLSignal *wls):
 WoklibPlugin(wls)
 {
@@ -114,11 +118,15 @@ int
 jep96::ReadConfig(WokXMLTag *tag)
 {
 	tag->GetFirstTag("config").GetFirstTag("openfoler_with").AddAttr("type", "string");
-	tag->GetFirstTag("config").GetFirstTag("openfoler_with").AddAttr("label", "Open folder with");
+	tag->GetFirstTag("config").GetFirstTag("openfoler_with").AddAttr("label", _("Open folder with"));
 	openwith = tag->GetFirstTag("config").GetFirstTag("openfoler_with").GetAttr("data");
 	
 	tag->GetFirstTag("config").GetFirstTag("userfolder_root").AddAttr("type", "string");
-	tag->GetFirstTag("config").GetFirstTag("userfolder_root").AddAttr("label", "Root for userfolders");
+	tag->GetFirstTag("config").GetFirstTag("userfolder_root").AddAttr("label", _("Root for userfolders"));
+	
+	tag->GetFirstTag("config").GetFirstTag("popup_transfear_wid").AddAttr("type", "string");
+	tag->GetFirstTag("config").GetFirstTag("popup_transfear_wid").AddAttr("label", _("Popup transfer window"));
+	popup_ft_wid = tag->GetFirstTag("config").GetFirstTag("popup_transfear_wid").GetAttr("data");
 	
 	
 	if ( !tag->GetFirstTag("config").GetFirstTag("proxy").GetTagList("item").empty() )
@@ -196,8 +204,15 @@ jep96::Wid(WokXMLTag *xml)
 											7, NULL,
 											8, FALSE, 
 											-1);
+	
+	if ( popup_ft_wid != "false" )
+	{
+		
+		
+	}
 //	gtk_widget_show(filewindow);
 //	gtk_window_present (GTK_WINDOW(filewindow));
+	
 	rows[sslsid.str()] = gtk_tree_row_reference_new(GTK_TREE_MODEL(file_store),gtk_tree_model_get_path(GTK_TREE_MODEL(file_store), &iter));
 
 	xml->AddTag("filetransfear").AddAttr("lsid", sslsid.str());
@@ -263,7 +278,12 @@ jep96::JidMenuActivated(WokXMLTag *xml)
 	
 	return 1;
 }
-
+/**
+ * <send to="jid" name="path to file" popup="false" sid="id"/>
+ * 
+ *
+ *
+ */
 int
 jep96::SendFile(WokXMLTag *xml)
 {
@@ -324,8 +344,13 @@ jep96::SendFile(WokXMLTag *xml)
 											7, NULL,
 											8, TRUE, 
 											-1);
-//	gtk_widget_show(filewindow);
-//	gtk_window_present (GTK_WINDOW(filewindow));
+	
+	if ( popup_ft_wid != "false" && xml->GetAttr("popup") != "false" )
+	{
+		WokXMLTag popup("popup");
+		wls->SendSignal("Jabber Stream File Show", popup);
+	}
+	
 	rows[sid] = gtk_tree_row_reference_new(GTK_TREE_MODEL(file_store),gtk_tree_model_get_path(GTK_TREE_MODEL(file_store), &iter));
 	
 	WokXMLTag msgtag(NULL, "message");
@@ -490,7 +515,6 @@ jep96::Finnished(WokXMLTag *fintag)
 int
 jep96::Accepted(WokXMLTag *acctag)
 {
-	std::cout << "Accepted.." << *acctag << std::endl;
 	GtkTreeIter iter;
 	GtkTreePath* path;
 	
@@ -505,6 +529,11 @@ jep96::Accepted(WokXMLTag *acctag)
 		}
 	}
 	
+	if ( popup_ft_wid != "false" && acctag->GetAttr("popup") != "false" )
+	{
+		WokXMLTag popup("popup");
+		wls->SendSignal("Jabber Stream File Show", popup);
+	}
 	return 1;
 }
 

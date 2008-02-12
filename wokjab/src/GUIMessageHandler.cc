@@ -46,26 +46,11 @@ GUIMessageHandler::GUIMessageHandler(WLSignal *wls) : WLSignalInstance(wls)
 	EXP_SIGHOOK("Jabber XML Presence", &GUIMessageHandler::Presence, 1000);
 	EXP_SIGHOOK("Jabber GUI GetJIDMenu", &GUIMessageHandler::JIDMenu, 1000);
 	EXP_SIGHOOK("Jabber GUI MessageDialogOpenMenu", &GUIMessageHandler::MenuOpenDialog, 1000);
-	EXP_SIGHOOK("Jabber GUI Message GetSpool", &GUIMessageHandler::GetSpool, 1000);
 
 	
 	std::string datadir = PACKAGE_DATA_DIR;
 	pix_msg = gdk_pixbuf_new_from_file(std::string(datadir + "/wokjab/msg.png").c_str(),NULL);
 	msgicon = datadir + "/wokjab/msg.png";
-
-	SpoolDir = std::string(g_get_home_dir()) + string(CONFDIR) + "/spool/";
-#ifdef __WIN32
-    mkdir(SpoolDir.c_str());
-#else
-	mkdir(SpoolDir.c_str(), 0700);
-#endif
-
-	XMLSpool = new WokXMLTag(NULL,"spool");
-
-	std::string filename = SpoolDir + "spool.xml";
-	std::ifstream spoolfile( filename.c_str() , std::ios::in);
-	spoolfile >> *XMLSpool;
-	spoolfile.close();
 
 	// What is this doing here ?!?
 	guiwd = new GUIWindowDock(wls);
@@ -77,77 +62,6 @@ GUIMessageHandler::~GUIMessageHandler()
 {
 	delete guiwd;
 }
-
-void
-GUIMessageHandler::WriteToSpool(WokXMLTag *tag)
-{
-	/* This is a potentioal security risk, attacker could remove files with odd jids I bet */
-	bool newfile;
-	std::string filename = SpoolDir + "spool.xml";
-	std::ofstream outfile(filename.c_str(), std::ios::out);
-
-	if(tag)
-	{
-		std::list<WokXMLTag *>::iterator iter;
-		bool stamp = false;
-		WokXMLTag &tag_body = tag->GetFirstTag("message");
-
-		for( iter = tag_body.GetTagList("x").begin() ; iter != tag_body.GetTagList("x").end() ; iter++)
-		{
-			if( (*iter)->GetAttr("xmlns") == "jabber:x:delay")
-				stamp = true;
-		}
-
-		if( !stamp )
-		{
-			char buf[20];
-			struct tm *tm;
-			time_t t = time(0);
-			tm = localtime (&t);
-			strftime (buf, sizeof (buf),"%Y%m%dT%T", tm);
-
-			WokXMLTag &xtag = tag_body.AddTag("x");
-			xtag.AddAttr("xmlns","jabber:x:delay");
-			xtag.AddAttr("stamp", buf);
-		}
-
-		XMLSpool->GetFirstTag("spool").AddTag(tag);
-	}
-
-	outfile << XMLSpool->GetFirstTag("spool") << std::endl;
-
-	outfile.close();
-}
-
-int
-GUIMessageHandler::GetSpool(WokXMLTag *tag)
-{
-	std::string jid = tag->GetAttr("jid");
-	WokXMLTag &spooltag = tag->GetFirstTag("spool");
-	std::list < WokXMLTag *>::iterator iter;
-	std::list < WokXMLTag *> *list;
-	std::list < WokXMLTag *> todelete;
-
-	list = &XMLSpool->GetFirstTag("spool").GetTags();
-
-	for( iter = list->begin() ; iter != list->end() ; iter++ )
-	{
-		if( (*iter)->GetFirstTag("message").GetAttr("from") == jid )
-		{
-			spooltag.AddTag(*iter);
-			todelete.push_back(*iter);
-		}
-	}
-
-	for ( iter = todelete.begin() ; iter != todelete.end() ; iter++)
-	{
-		XMLSpool->GetFirstTag("spool").RemoveTag(*iter);
-	}
-
-	WriteToSpool(NULL);
-	return true;
-}
-
 
 void
 GUIMessageHandler::TriggerEvent(WokXMLTag *tag)
@@ -219,7 +133,6 @@ GUIMessageHandler::new_message(WokXMLTag *tag)
 
 	if( tag->GetAttr("displayed") != "true")
 	{
-		WriteToSpool(tag);
 		TriggerEvent(tag);
 	}
 

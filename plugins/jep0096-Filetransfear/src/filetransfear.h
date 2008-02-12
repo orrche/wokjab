@@ -64,6 +64,8 @@ class jep96 : public WoklibPlugin
 		std::string autoproxy;
 		std::string autoproxytype;
 		std::string openwith;
+		std::string popup_ft_wid;
+	
 		int sidnum;
 		GladeXML *gxml;
 		GtkWidget *filewindow;

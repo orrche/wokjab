@@ -95,11 +95,17 @@ int
 History::GetLast(WokXMLTag *tag)
 {
 	char *zErrMsg;
+	std::string limit;
+	if ( tag->GetAttr("limit").empty() )
+		limit = "15";
+	else
+		limit = tag->GetAttr("limit");
+	
 	std::string query;
 	if( tag->GetAttr("relation").empty() )
-		query = "SELECT * FROM ( SELECT * FROM history ORDER BY time DESC LIMIT 15 ) ORDER BY time ASC";
+		query = "SELECT * FROM ( SELECT * FROM history ORDER BY time DESC LIMIT " + limit + " ) ORDER BY time ASC";
 	else
-		query = "SELECT * FROM ( SELECT * FROM history WHERE relation='" + tag->GetAttr("relation") + "' ORDER BY time DESC LIMIT 15 ) ORDER BY time ASC";
+		query = "SELECT * FROM ( SELECT * FROM history WHERE relation='" + tag->GetAttr("relation") + "' ORDER BY time DESC LIMIT " + limit + " ) ORDER BY time ASC";
 	
 	WokXMLTag &ret = tag->AddTag("history");
 	int rc = sqlite3_exec( db, query.c_str(), callback, &ret, &zErrMsg );
