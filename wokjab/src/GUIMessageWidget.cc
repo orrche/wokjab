@@ -870,25 +870,14 @@ GUIMessageWidget::DragDrop(GtkWidget *widget, GdkDragContext *dc, gint x, gint y
 gboolean
 GUIMessageWidget::DragDest(GtkWidget *widget, GdkDragContext *dc,gint x, gint y, GtkSelectionData *selection_data, guint info, guint t, GUIMessageWidget *c)
 {
-	if ( info == 1 )
+	gchar **list = gtk_selection_data_get_uris(selection_data);
+	if ( list )
 	{
-		std::string data((char*)selection_data->data);
-		while (!data.empty())
+		int x = 0;
+		while ( list[x] )
 		{
-			std::string line;
-			if ( data.find("\n") != std::string::npos )
-			{
-				line = data.substr(0, data.find("\r"));
-				data = data.substr(data.find("\r")+2);
-			}
-			else
-			{
-				line = data;
-				data = "";
-			}
-			
 			gchar *file;
-			file = g_filename_from_uri (line.c_str(), NULL, NULL);
+			file = g_filename_from_uri (list[x], NULL, NULL);
 			
 			WokXMLTag send(NULL, "send");
 			send.AddAttr("to", c->from);
@@ -897,9 +886,11 @@ GUIMessageWidget::DragDest(GtkWidget *widget, GdkDragContext *dc,gint x, gint y,
 			send.AddAttr("proxy_type", "auto");
 			c->wls->SendSignal("Jabber Stream File Send", send);
 			g_free(file);
-
+			x++;			
 		}
-		gtk_drag_finish(dc, TRUE, FALSE, t);
+	 
+		g_strfreev(list);
+	
 		return TRUE;
 	}
 	

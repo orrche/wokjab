@@ -220,6 +220,7 @@ UserTune::ReadConfig(WokXMLTag *tag)
 		tag->GetFirstTag("config").GetFirstTag("status").AddText("<status> ♫ <var name=\"artist\"/> - <var name=\"title\"/> ♪ ♩</status>");
 		tag->GetFirstTag("config").GetFirstTag("status").AddAttr("type", "text");
 		tag->GetFirstTag("config").GetFirstTag("status").AddAttr("label", _("Status string"));
+		tag->GetFirstTag("config").GetFirstTag("status").GetFirstTag("tooltip", "config").AddText("Possible variables are\ntitle\nartist\nlength\nsource\ntrack\nuri");
 	}
 	if ( tag->GetFirstTag("config").GetFirstTag("label").GetAttr("data").empty() )
 	{

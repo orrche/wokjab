@@ -355,35 +355,43 @@ GtkPreference::CreateConfig(GtkWidget *parant, WokXMLTag *tag)
 	list = &tag->GetTags();
 	for( iter = list->begin() ; iter != list->end() ; iter++)
 	{
+		GtkWidget *container = NULL;
 		if((*iter)->GetAttr("type") == "string")
 		{
 			GtkPString *str = new GtkPString((*iter));
-			gtk_box_pack_start(GTK_BOX(vbox), str->GetWidget(), FALSE, FALSE, 2);
+			container = str->GetWidget();
+			
 			widgets.push_back(str);
 			m++;
 		}
 		else if((*iter)->GetAttr("type") == "password")
 		{
 			GtkPPassword *pwd = new GtkPPassword((*iter));
-			gtk_box_pack_start(GTK_BOX(vbox), pwd->GetWidget(), FALSE, FALSE, 2);
+			container = pwd->GetWidget();
 			widgets.push_back(pwd);
 			m++;
 		}
 		else if((*iter)->GetAttr("type") == "text")
 		{
 			GtkPText *txt = new GtkPText((*iter));
-			gtk_box_pack_start(GTK_BOX(vbox), txt->GetWidget(), FALSE, FALSE, 2);
+			container = txt->GetWidget();
 			widgets.push_back(txt);
 			m++;
 		}
 		else if((*iter)->GetAttr("type") == "bool")
 		{
 			GtkPBool *b = new GtkPBool((*iter));
-			gtk_box_pack_start(GTK_BOX(vbox), b->GetWidget(), FALSE, FALSE, 2);
+			container = b->GetWidget();
 			widgets.push_back(b);
 			m++;
 		}
 		
+		if ( container ) 
+		{
+			gtk_box_pack_start(GTK_BOX(vbox), container, FALSE, FALSE, 2);
+			if ( !(*iter)->GetTagList("tooltip", "config").empty() )
+				gtk_widget_set_tooltip_markup(container,(*iter)->GetFirstTag("tooltip", "config").GetBody().c_str());
+		}
 		if( (*iter)->GetTags().size() )
 		{
 			std::string frame_name = (*iter)->GetAttr("label");
