@@ -48,9 +48,9 @@ static gboolean DNDDragMotionCB(
 	return(FALSE);
 }
 
-GUIMessageWidget::GUIMessageWidget(WLSignal *wls, std::string session, std::string from, int id) : WLSignalInstance(wls),
+GUIMessageWidget::GUIMessageWidget(WLSignal *wls, std::string session, std::string in_from, int id) : WLSignalInstance(wls),
 session(session),
-from(from)
+from(in_from)
 {
 	GtkTooltips *tooltip;
 	GtkWidget *eventbox;
@@ -90,7 +90,6 @@ from(from)
 	gtk_box_pack_start( GTK_BOX(tophbox), image, FALSE, FALSE, 5 );
 	jid_label = gtk_label_new("");
 	gtk_box_pack_start( GTK_BOX(tophbox), jid_label, TRUE, TRUE, 0);
-	SetLabel();
 	gtk_label_set_ellipsize(GTK_LABEL(jid_label), PANGO_ELLIPSIZE_END);
 	gtk_misc_set_alignment (GTK_MISC (jid_label), 0, 0);
 	/* Reading and writing area */
@@ -151,8 +150,6 @@ from(from)
 	gtk_signal_connect (GTK_OBJECT (textview2), "key_press_event",
 		    GTK_SIGNAL_FUNC (GUIMessageWidget::key_press_handler),
 			   this);
-
-	this->from = from;
 
 	focus = false;
 	msg_waiting = false;
@@ -318,10 +315,9 @@ from(from)
 	}		
 	
 	UnHookSignals();
-	if ( from.find("/") != std::string::npos )
-		from = from_no_resource;
+	from = from_no_resource;
 	hasresource = false;
-
+	
 	HookSignals();
 	SetLabel();
 }
@@ -452,7 +448,6 @@ GUIMessageWidget::SentMessage(WokXMLTag *tag)
 	GtkTextBuffer *buffer;
 	GtkTextIter iter;
 
-	MessageWithEmotions(str);
 
 	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(textview1));
 	gtk_text_buffer_get_iter_at_mark(buffer, &iter, end_mark);
@@ -1045,8 +1040,6 @@ GUIMessageWidget::PutText(GtkTextIter *iter, WokXMLTag &message)
 					if ( pic ) 
 						gtk_text_buffer_insert_pixbuf (buffer, iter, pic);
 					
-					std::cout << "Found image.." << std::endl;
-					std::cout << "Tag: " << *tag << std::endl;
 				}
 				if( tag->GetName() == "span")
 				{
@@ -1321,33 +1314,6 @@ GUIMessageWidget::own_message(std::string str, time_t t)
 
 	wls->SendSignal("Jabber XML Message Send", &msgtag);
 	
-}
-
-
-void
-GUIMessageWidget::MessageWithEmotions(std::string msg)
-{
-	std::string::size_type spos, epos;
-	spos = 0;
-
-	while( ( spos = msg.find("::",spos) ) != std::string::npos )
-	{
-		spos+=2;
-		if ( ( epos = msg.find("::", spos) ) != std::string::npos )
-		{
-			std::cout << "Should see if finding jabber emotion " << msg.substr( spos, epos-spos ) << std::endl;
-		}
-	}
-
-	while( ( spos = msg.find("(",spos) ) != std::string::npos )
-	{
-		spos++;
-		if ( ( epos = msg.find(")", spos) ) != std::string::npos )
-		{
-			std::cout << "Should see if finding msn emotion " << msg.substr( spos, epos-spos ) << std::endl;
-		}
-	}
-
 }
 
 gboolean

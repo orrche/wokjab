@@ -45,7 +45,6 @@ class GUIMessageWidget : public WLSignalInstance
 		static gboolean key_press_handler(GtkWidget * widget, GdkEventKey * event,
 						 gpointer user_data);
 		void own_message(std::string msg, time_t t = time (NULL));
-		void MessageWithEmotions(std::string msg);
 		int InsertCommand(WokXMLTag &tag);
 
 		int Config(WokXMLTag *tag);
