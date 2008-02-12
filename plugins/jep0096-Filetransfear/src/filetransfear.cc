@@ -167,7 +167,7 @@ jep96::RemoveStream(GtkButton *button, jep96 *c)
 		
 		if ( c->rows.find(sid) != c->rows.end() )
 		{
-			//g_free(c->rows[sid]);  // Shouldn't I do this ?!?
+			g_object_unref(c->rows[sid]);
 			c->rows.erase(sid);
 		}
 		if ( c->sessions.find(sid) != c->sessions.end() )
@@ -179,7 +179,10 @@ jep96::RemoveStream(GtkButton *button, jep96 *c)
 			c->sessions.erase(sid);
 		}
 		
-		gtk_list_store_remove(c->file_store, &iter);
+		if(gtk_list_store_remove(c->file_store, &iter) == TRUE)
+		{
+			gtk_tree_selection_select_iter(selection, &iter);	
+		}
 		g_free(sid);
 	}
 }
@@ -487,7 +490,7 @@ jep96::Finnished(WokXMLTag *fintag)
 			WokXMLTag &commands = item.AddTag("commands");
 			{
 				WokXMLTag &command = commands.AddTag("command");
-				command.AddAttr("name", "Ignore");
+				command.AddAttr("name", _("Close"));
 				WokXMLTag &signal = command.AddTag("signal");
 				signal.AddAttr("name", "Jabber Stream Event Finished Ignore");
 				signal.GetFirstTag("data").AddTag("sid").AddAttr("name", fintag->GetAttr("sid"));
