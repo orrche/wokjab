@@ -515,7 +515,7 @@ GUIMessageWidget::UserActivities(WokXMLTag *tag)
 	for( entry_iter = entries.GetTagList("item").begin() ; entry_iter != entries.GetTagList("item").end() ; entry_iter++)
 	{
 		GtkWidget *line = gtk_label_new((*entry_iter)->GetFirstTag("line").GetBody().c_str());
-		GtkWidget *type = gtk_label_new(((*entry_iter)->GetAttr("type_name")+":").c_str());
+		GtkWidget *type = gtk_label_new(((*entry_iter)->GetAttr("label")+":").c_str());
 			
 		gtk_misc_set_alignment (GTK_MISC (line), 0, 0);
 		gtk_misc_set_alignment (GTK_MISC (type), 0, 0);

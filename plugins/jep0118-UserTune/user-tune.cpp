@@ -24,6 +24,9 @@
 
 #include "user-tune.hpp"
 
+#ifndef _
+#define _(x) x
+#endif
 
 UserTune::UserTune(WLSignal *wls) : WoklibPlugin(wls)
 {
@@ -111,7 +114,8 @@ UserTune::ActivityLine(WokXMLTag *tag)
 	if ( user.find(tag->GetAttr("jid")) != user.end() )
 	{
 		WokXMLTag &item = tag->AddTag("item");
-		item.AddAttr("type_name", "User Tune");
+		item.AddAttr("type_name", "xep0118");
+		item.AddAttr("label", _("User Tune"));
 		WokXMLTag &line = item.AddTag("line");
 					
 		if ( status )
@@ -210,12 +214,18 @@ UserTune::ReadConfig(WokXMLTag *tag)
 {
 	
 	tag->GetFirstTag("config").GetFirstTag("change_status").AddAttr("type", "bool");
-	tag->GetFirstTag("config").GetFirstTag("change_status").AddAttr("label", "Influence status");
-	tag->GetFirstTag("config").GetFirstTag("status").AddAttr("type", "text");
-	tag->GetFirstTag("config").GetFirstTag("status").AddAttr("label", "Status string");
-	if ( tag->GetFirstTag("config").GetFirstTag("status").GetBody() == "" )
+	tag->GetFirstTag("config").GetFirstTag("change_status").AddAttr("label", _("Influence status"));
+	if ( tag->GetFirstTag("config").GetFirstTag("status").GetBody().empty() )
 	{
-		tag->GetFirstTag("config").GetFirstTag("status").AddText("<status><var name=\"artist\"/></status>");
+		tag->GetFirstTag("config").GetFirstTag("status").AddText("<status> ♫ <var name=\"artist\"/> - <var name=\"title\"/> ♪ ♩</status>");
+		tag->GetFirstTag("config").GetFirstTag("status").AddAttr("type", "text");
+		tag->GetFirstTag("config").GetFirstTag("status").AddAttr("label", _("Status string"));
+	}
+	if ( tag->GetFirstTag("config").GetFirstTag("label").GetAttr("data").empty() )
+	{
+		tag->GetFirstTag("config").GetFirstTag("label").AddAttr("type", "string");
+		tag->GetFirstTag("config").GetFirstTag("label").AddAttr("label", _("Label"));
+		tag->GetFirstTag("config").GetFirstTag("label").AddAttr("data", _("UserTunes"));
 	}
 	
 	delete config;

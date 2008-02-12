@@ -119,7 +119,7 @@ Tooltip::DispWindow (Tooltip * c)
 		statusmsg += (*entry_iter)->GetFirstTag("line").GetBody();	
 		*/
 		GtkWidget *line = gtk_label_new((*entry_iter)->GetFirstTag("line").GetBody().c_str());
-		GtkWidget *type = gtk_label_new(((*entry_iter)->GetAttr("type_name")+":").c_str());
+		GtkWidget *type = gtk_label_new(((*entry_iter)->GetAttr("label")+":").c_str());
 		
 		gtk_table_attach_defaults(GTK_TABLE(glade_xml_get_widget (c->xml, "table") ),
                                                          type,
