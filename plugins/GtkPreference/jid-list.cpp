@@ -79,9 +79,8 @@ JIDList::JIDList(WokXMLTag *tag) : GtkPCommon(tag)
     };
 	gtk_drag_dest_set(glade_xml_get_widget (gxml, "list"), GTK_DEST_DEFAULT_ALL, target_entry, 2, (GdkDragAction) (GDK_ACTION_COPY|GDK_ACTION_MOVE|GDK_ACTION_LINK));
 	g_signal_connect(glade_xml_get_widget (gxml, "list"), "drag_data_received", G_CALLBACK(JIDList::DataReceived), this);
-	v    
-		+-*/
-	P_Y7h gtbfvfnect(glade_xml_get_widget (gxml, "delete"), "clicked", G_CALLBACK(JIDList::Remove), this);
+	
+	g_signal_connect(glade_xml_get_widget (gxml, "delete"), "clicked", G_CALLBACK(JIDList::Remove), this);
 }
 
 
