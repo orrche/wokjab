@@ -168,7 +168,7 @@ jep96::Incomming(WokXMLTag *tag)
 	{
 		if ( (*jidlist)->GetAttr("data") == jid )
 		{
-			std::string filename = config->GetFirstTag("userfolder_root").GetAttr("data") + "/" + tag->GetFirstTag("iq").GetFirstTag("si", "http://jabber.org/protocol/si").GetFirstTag("file").GetAttr("name");
+			std::string filename = config->GetFirstTag("userfolder_root").GetAttr("data") + "/" + jid + "/" + tag->GetFirstTag("iq").GetFirstTag("si", "http://jabber.org/protocol/si").GetFirstTag("file").GetAttr("name");
 			
 			WokXMLTag msgtag(NULL, "message");
 			msgtag.AddAttr("session", tag->GetAttr("session"));
@@ -554,13 +554,13 @@ jep96::Finnished(WokXMLTag *fintag)
 	{
 		if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[fintag->GetAttr("sid")])))
 		{
-			gchar *session, *from, *to;
+			gchar *session, *from, *to, *filename;
 			gboolean sending;
 			WokXMLTag *eventtag;
 			eventtag = new WokXMLTag("event");
 			
 			gtk_list_store_set (file_store, &iter, 2, "Finished", 7, eventtag, -1);
-			gtk_tree_model_get(GTK_TREE_MODEL(file_store), &iter, 4, &from, 5, &to, 6, &session, 8, &sending, -1);
+			gtk_tree_model_get(GTK_TREE_MODEL(file_store), &iter, 0, &filename, 4, &from, 5, &to, 6, &session, 8, &sending, -1);
 			
 			
 			eventtag->AddAttr("type", "jep0096 FinishedFile");
@@ -569,12 +569,12 @@ jep96::Finnished(WokXMLTag *fintag)
 			item.AddAttr("session", session);
 			if ( sending == TRUE )
 			{
-				item.AddTag("description").AddText("File finished sending to " + std::string(to));
+				item.AddTag("description").AddText(_("File ") + std::string(filename) + _(" finished sending to ") + std::string(to));
 				item.AddAttr("jid", to);
 			}
 			else
 			{
-				item.AddTag("description").AddText("File finished reciving from " + std::string(from));
+				item.AddTag("description").AddText(_("File ") + std::string(filename) + _(" finished reciving from ") + std::string(from));
 				item.AddAttr("jid", from);
 			}
 			
@@ -597,6 +597,7 @@ jep96::Finnished(WokXMLTag *fintag)
 			}
 			
 			wls->SendSignal("Jabber Event Add", eventtag);
+			g_free(filename);
 			g_free(session);
 			g_free(from);
 			g_free(to);
