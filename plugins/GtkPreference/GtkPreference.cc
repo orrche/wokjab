@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2005-2008  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,7 @@
 #include "GtkPText.h"
 #include "GtkPBool.h"
 #include "GtkPPassword.h"
+#include "jid-list.hpp"
 
 #include <sstream>
 
@@ -88,7 +89,6 @@ GtkPreference::SaveConfig()
 	EXP_SIGUNHOOK("Config XML Change /preference", &GtkPreference::ReadConfig, 500);
 	wls->SendSignal("Config XML Store", &conftag);
 	EXP_SIGHOOK("Config XML Change /preference", &GtkPreference::ReadConfig, 500);
-	
 }
 
 int 
@@ -323,10 +323,7 @@ GtkPreference::CreateWid()
 	pos_x = atoi( myconfig->GetFirstTag("pos_x").GetAttr("data").c_str());
 	pos_y = atoi( myconfig->GetFirstTag("pos_y").GetAttr("data").c_str());
 	pan_pos = atoi( myconfig->GetFirstTag("pan_pos").GetAttr("data").c_str());
-		
-//  Think this is a bad idea but we keep it commented for a while and listen to the complains 
-//  gtk_window_move (GTK_WINDOW(window), pos_x, pos_y);
-	
+			
 	if(pan_pos == 0 ) 
 		pan_pos = 150;
 	
@@ -355,42 +352,27 @@ GtkPreference::CreateConfig(GtkWidget *parant, WokXMLTag *tag)
 	list = &tag->GetTags();
 	for( iter = list->begin() ; iter != list->end() ; iter++)
 	{
-		GtkWidget *container = NULL;
+		GtkPCommon *container = NULL;
 		if((*iter)->GetAttr("type") == "string")
-		{
-			GtkPString *str = new GtkPString((*iter));
-			container = str->GetWidget();
-			
-			widgets.push_back(str);
-			m++;
-		}
+			container = new GtkPString((*iter));
 		else if((*iter)->GetAttr("type") == "password")
-		{
-			GtkPPassword *pwd = new GtkPPassword((*iter));
-			container = pwd->GetWidget();
-			widgets.push_back(pwd);
-			m++;
-		}
+			container = new GtkPPassword((*iter));
 		else if((*iter)->GetAttr("type") == "text")
-		{
-			GtkPText *txt = new GtkPText((*iter));
-			container = txt->GetWidget();
-			widgets.push_back(txt);
-			m++;
-		}
+			container = new GtkPText((*iter));
 		else if((*iter)->GetAttr("type") == "bool")
-		{
-			GtkPBool *b = new GtkPBool((*iter));
-			container = b->GetWidget();
-			widgets.push_back(b);
-			m++;
-		}
+			container = new GtkPBool((*iter));
+		else if((*iter)->GetAttr("type") == "jidlist")
+			container = new JIDList((*iter));
 		
 		if ( container ) 
 		{
-			gtk_box_pack_start(GTK_BOX(vbox), container, FALSE, FALSE, 2);
+			GtkWidget *wid = container->GetWidget();
+			widgets.push_back(container);
+			m++;
+
+			gtk_box_pack_start(GTK_BOX(vbox), wid, FALSE, FALSE, 2);
 			if ( !(*iter)->GetTagList("tooltip", "config").empty() )
-				gtk_widget_set_tooltip_markup(container,(*iter)->GetFirstTag("tooltip", "config").GetBody().c_str());
+				gtk_widget_set_tooltip_markup(wid, (*iter)->GetFirstTag("tooltip", "config").GetBody().c_str());
 		}
 		if( (*iter)->GetTags().size() )
 		{

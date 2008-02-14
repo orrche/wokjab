@@ -1,13 +1,7 @@
 libdir = $(prefix)/lib/woklib-plugins/normal
 
-AM_CFLAGS =\
-	`pkg-config gtk+-2.0 --cflags`\
-	 -I.. \
-	 -Wall
-
 AM_CXXFLAGS =\
-	`pkg-config gtk+-2.0 --cflags`\
-	 -Wall -lwoklib
+	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -lwoklib -g -O3 -Wall
 	 
 	 
 lib_LTLIBRARIES = \
@@ -26,11 +20,19 @@ libgtkpreference_la_SOURCES = \
 	GtkPCommon.cc              \
 	GtkPCommon.h              \
 	GtkPPassword.h              \
-	GtkPPassword.cc 
+	GtkPPassword.cc              \
+	jid-list.hpp              \
+	jid-list.cpp
 
 libgtkpreference_la_LDFLAGS = \
 	`pkg-config libglade-2.0 gtk+-2.0 --libs`
 	
+datadir = $(prefix)/lib/woklib/glade
+pkgdata_DATA = \
+        preference.jidlist.glade
+
+EXTRA_DIST = ${pkgdata_DATA}
+
 ## File created by the gnome-build tools
 
 

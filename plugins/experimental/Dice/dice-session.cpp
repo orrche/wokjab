@@ -237,4 +237,6 @@ DiceSession::DataReceived(GtkWidget *wgt, GdkDragContext *context, int x, int y,
 	std::list <WokXMLTag *>::iterator iter;
 	for( iter = data.GetFirstTag("dice").GetTagList("die").begin() ; iter != data.GetFirstTag("dice").GetTagList("die").end(); iter++)
 		c->AddToSession(**iter);
+	
+	gtk_drag_finish (context, TRUE, FALSE, time);
 }

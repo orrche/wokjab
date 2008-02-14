@@ -287,7 +287,7 @@ Initiat::Version(WokXMLTag *tag)
 	iqtag.AddAttr("id", tag->GetFirstTag("iq").GetAttr("id"));
 	WokXMLTag &querytag = iqtag.AddTag("query");
 	querytag.AddAttr("xmlns", "jabber:iq:version");
-	querytag.AddTag("name").AddText("WokJab (http://wokjab.sf.net/)");
+	querytag.AddTag("name").AddText("WokJab (http://wokjab.nedo.se/)");
 
 #ifdef VERSION
 	querytag.AddTag("version").AddText(VERSION);

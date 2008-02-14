@@ -62,6 +62,10 @@ lsid(lsid)
 		}
 	}
 	
+	if ( default_question && ! config->GetFirstTag("userfolder_root").GetAttr("data").empty() )
+	{
+		
+	}
 	
 	eventtag = new WokXMLTag("event");
 	eventtag->AddAttr("type", "jep0096 IncommingFile");
@@ -197,13 +201,10 @@ jep96Widget::Open(WokXMLTag *tag)
 		
 		tag.AddAttr("to", from);
 		tag.AddAttr("id", id);
-		WokXMLTag &si_tag = tag.AddTag("si");
-		si_tag.AddAttr("xmlns", "http://jabber.org/protocol/si");
-		WokXMLTag &feature_tag = si_tag.AddTag("feature");
-		feature_tag.AddAttr("xmlns", "http://jabber.org/protocol/feature-neg");
+		WokXMLTag &si_tag = tag.AddTag("si", "http://jabber.org/protocol/si");
+		WokXMLTag &feature_tag = si_tag.AddTag("feature", "http://jabber.org/protocol/feature-neg");
 		
-		WokXMLTag &x_tag = feature_tag.AddTag("x");
-		x_tag.AddAttr("xmlns", "jabber:x:data");
+		WokXMLTag &x_tag = feature_tag.AddTag("x", "jabber:x:data");
 		x_tag.AddAttr("type", "submit");
 		WokXMLTag &field_tag = x_tag.AddTag("field");
 		field_tag.AddAttr("var", "stream-method");

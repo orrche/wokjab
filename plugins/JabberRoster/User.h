@@ -61,6 +61,7 @@ class User : public WLSignalInstance
 		int UpdateTicketEntries(WokXMLTag *tag);
 		int UpdateXML(WokXMLTag *tag);
 		int TickerUpdate(WokXMLTag *tag);
+		int DragGet(WokXMLTag *tag);
 	protected:
 		int tickerpos;
 		std::list <std::string>::iterator currentticker;

@@ -97,25 +97,25 @@ void
 DownloadFolder::DownloadFile(std::vector<std::string> vect)
 {
 
-			WokXMLTag msg(NULL, "message");
-			msg.AddAttr("session", session);
-			WokXMLTag &iq = msg.AddTag("iq");
-			iq.AddAttr("to", jid);
-			iq.AddAttr("type", "get");
-			WokXMLTag &fileshare = iq.AddTag("fileshare");
-			fileshare.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
-			WokXMLTag &file = fileshare.AddTag("file");
-			file.AddAttr("id", vect[0]);
-			
-			wls->SendSignal("Jabber XML IQ Send", msg);
-			
-			if ( vect[1].find("/") != std::string::npos )
-			{
-				f = new File(wls, msg, vect[1].substr(vect[1].rfind("/") + 1), vect[1].substr(0,vect[1].rfind("/")));
-			}
-			else
-			{
-				f = new File(wls, msg, vect[1].substr(vect[1].rfind("/") + 1),"");
-			}
+	WokXMLTag msg(NULL, "message");
+	msg.AddAttr("session", session);
+	WokXMLTag &iq = msg.AddTag("iq");
+	iq.AddAttr("to", jid);
+	iq.AddAttr("type", "get");
+	WokXMLTag &fileshare = iq.AddTag("fileshare");
+	fileshare.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
+	WokXMLTag &file = fileshare.AddTag("file");
+	file.AddAttr("id", vect[0]);
+	
+	wls->SendSignal("Jabber XML IQ Send", msg);
+	
+	if ( vect[1].find("/") != std::string::npos )
+	{
+		f = new File(wls, msg, vect[1].substr(vect[1].rfind("/") + 1), vect[1].substr(0,vect[1].rfind("/")));
+	}
+	else
+	{
+		f = new File(wls, msg, vect[1].substr(vect[1].rfind("/") + 1),"");
+	}
 }
 

@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2008  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@
 jep96::jep96(WLSignal *wls):
 WoklibPlugin(wls)
 {
+	config = new WokXMLTag("config");
 	gxml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/streams.glade", NULL, NULL);
 	GtkWidget *fileview = glade_xml_get_widget (gxml, "fileview");
 	filewindow = glade_xml_get_widget(gxml, "filewindow");
@@ -94,6 +95,9 @@ WoklibPlugin(wls)
 	
 	EXP_SIGHOOK("Jabber Stream Event Finished Ignore", &jep96::FinishIgnore, 1000);
 	EXP_SIGHOOK("Jabber Stream Event Finished OpenFolder", &jep96::FinishOpen, 1000);
+	EXP_SIGHOOK("Jabber Stream File Incomming", &jep96::Incomming,1000);
+	EXP_SIGHOOK("Jabber Stream File Incomming", &jep96::NoHandleIncomming,1100);
+	EXP_SIGHOOK("Jabber Stream RequestAuthorisation", &jep96::FileAuth, 1000);
 	sidnum = 0;
 	
 	EXP_SIGHOOK("Config XML Change /filetransfer", &jep96::ReadConfig, 500);
@@ -115,8 +119,93 @@ jep96::~jep96()
 }
 
 int
+jep96::NoHandleIncomming(WokXMLTag *tag)
+{
+	if ( tag->GetAttr("handled") != "true")
+	{
+		new jep96Widget(wls, tag, tag->GetFirstTag("filetransfer").GetAttr("lsid"));
+		sessions[tag->GetFirstTag("filetransfer").GetAttr("lsid")] = new WokXMLTag (*tag);
+	}
+	
+	return 0;
+}
+
+int
+jep96::FileAuth(WokXMLTag *tag)
+{
+	
+	std::map <std::string, WokXMLTag *>::iterator iter;
+	for( iter = sessions.begin() ; iter != sessions.end() ; iter++)
+	{
+		if ( tag->GetAttr("sid") == iter->second->GetFirstTag("iq").GetFirstTag("si", "http://jabber.org/protocol/si").GetAttr("id") &&
+			tag->GetAttr("initiator") == iter->second->GetFirstTag("iq").GetAttr("from") && 
+			tag->GetAttr("session") == iter->second->GetAttr("session") &&
+			iter->second->GetAttr("autoaccept") == "true" )
+		{
+			tag->GetFirstTag("file").AddAttr("lsid", iter->first);
+			tag->GetFirstTag("file").AddAttr("name", iter->second->GetAttr("filename"));			
+		}
+			
+	}		
+	return 1;
+}
+
+int
+jep96::Incomming(WokXMLTag *tag)
+{
+	if ( config->GetFirstTag("userfolder_root").GetAttr("data").empty() || tag->GetAttr("handled") == "true")
+		return 1;
+	
+	std::string jid = tag->GetFirstTag("iq").GetAttr("from");
+	if ( jid.find("/") != std::string::npos )
+		jid = jid.substr(0, jid.find("/"));
+	
+	std::list <WokXMLTag *>::iterator jidlist;
+	
+	for( 	jidlist = config->GetFirstTag("auto_accept").GetFirstTag("list").GetTagList("item").begin();
+			jidlist != config->GetFirstTag("auto_accept").GetFirstTag("list").GetTagList("item").end();
+			jidlist++)
+	{
+		if ( (*jidlist)->GetAttr("data") == jid )
+		{
+			std::string filename = config->GetFirstTag("userfolder_root").GetAttr("data") + "/" + tag->GetFirstTag("iq").GetFirstTag("si", "http://jabber.org/protocol/si").GetFirstTag("file").GetAttr("name");
+			
+			WokXMLTag msgtag(NULL, "message");
+			msgtag.AddAttr("session", tag->GetAttr("session"));
+			WokXMLTag &iqtag = msgtag.AddTag("iq");
+			
+			iqtag.AddAttr("type", "result");
+			
+			iqtag.AddAttr("to", tag->GetFirstTag("iq").GetAttr("from"));
+			iqtag.AddAttr("id", tag->GetFirstTag("iq").GetAttr("id"));
+			WokXMLTag &si_tag = iqtag.AddTag("si", "http://jabber.org/protocol/si");
+			WokXMLTag &feature_tag = si_tag.AddTag("feature", "http://jabber.org/protocol/feature-neg");
+			
+			WokXMLTag &x_tag = feature_tag.AddTag("x", "jabber:x:data");
+			x_tag.AddAttr("type", "submit");
+			WokXMLTag &field_tag = x_tag.AddTag("field");
+			field_tag.AddAttr("var", "stream-method");
+			field_tag.AddTag("value").AddText("http://jabber.org/protocol/bytestreams");
+			
+			wls->SendSignal("Jabber XML Send", &msgtag);
+			tag->AddAttr("handled", "true");
+			tag->AddAttr("autoaccept", "true");
+			tag->AddAttr("filename", filename);
+			sessions[tag->GetFirstTag("filetransfer").GetAttr("lsid")] = new WokXMLTag (*tag);
+			return 0;
+		}
+	}
+	
+	return 1;
+}
+
+int
 jep96::ReadConfig(WokXMLTag *tag)
 {
+	tag->GetFirstTag("config").GetFirstTag("auto_accept").AddAttr("label", _("Auto accept from"));
+	tag->GetFirstTag("config").GetFirstTag("auto_accept").AddAttr("type", "jidlist");
+	
+	
 	tag->GetFirstTag("config").GetFirstTag("openfoler_with").AddAttr("type", "string");
 	tag->GetFirstTag("config").GetFirstTag("openfoler_with").AddAttr("label", _("Open folder with"));
 	openwith = tag->GetFirstTag("config").GetFirstTag("openfoler_with").GetAttr("data");
@@ -137,6 +226,8 @@ jep96::ReadConfig(WokXMLTag *tag)
 	else
 		autoproxy = "";
 	
+	delete config;
+	config = new WokXMLTag(tag->GetFirstTag("config"));
 	return 1;
 }
 
@@ -218,15 +309,15 @@ jep96::Wid(WokXMLTag *xml)
 	
 	rows[sslsid.str()] = gtk_tree_row_reference_new(GTK_TREE_MODEL(file_store),gtk_tree_model_get_path(GTK_TREE_MODEL(file_store), &iter));
 
-	xml->AddTag("filetransfear").AddAttr("lsid", sslsid.str());
+	xml->AddTag("filetransfer").AddAttr("lsid", sslsid.str());
 	
 	std::stringstream signal;
-	signal << "Jabber Stream File Incomming " << xml->GetFirstTag("iq").GetFirstTag("si").GetAttr("id");
-	if ( ! wls->SendSignal(signal.str(), xml) )
-	{	
-		new jep96Widget(wls, xml, sslsid.str());
-		sessions[sslsid.str()] = new WokXMLTag (*xml);
-	}
+	signal << "Jabber Stream File Incomming " << XMLisize(xml->GetFirstTag("iq").GetFirstTag("si").GetAttr("id"));
+	
+	wls->SendSignal(signal.str(), xml);
+	if ( xml->GetAttr("handled") != "true")
+		wls->SendSignal("Jabber Stream File Incomming", xml);
+	
 	return 1;
 }
 

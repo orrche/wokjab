@@ -45,3 +45,9 @@ GtkPCommon::Save()
 {
 
 }
+
+GtkWidget *
+GtkPCommon::GetWidget()
+{
+	return NULL;
+}

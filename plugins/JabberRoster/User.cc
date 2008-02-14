@@ -446,6 +446,7 @@ User::Show()
 		EXP_SIGHOOK("GUIRoster RightButton " + iter->second, &User::RightButton, 500);
 		EXP_SIGHOOK("GUIRoster Tooltip Set " + iter->second, &User::Tooltip, 500);
 		EXP_SIGHOOK("GUIRoster Tooltip Reset " + iter->second, &User::TooltipReset, 500);
+		EXP_SIGHOOK("GUIRoster DragGet " + iter->second, &User::DragGet, 500);
 	}
 }
 
@@ -476,6 +477,14 @@ User::Hide()
 		EXP_SIGUNHOOK("GUIRoster Tooltip Reset " + iter->second, &User::TooltipReset, 500);
 	}
 	id.clear();
+}
+
+int
+User::DragGet(WokXMLTag *tag)
+{
+	tag->AddAttr("xmlns", "xmpp:jid");
+	tag->AddAttr("data", jid);
+	return 1;
 }
 
 int

@@ -54,6 +54,9 @@ class jep96 : public WoklibPlugin
 		int ReadConfig(WokXMLTag *tag);
 		int FinishIgnore(WokXMLTag *tag);
 		int FinishOpen(WokXMLTag *tag);
+		int Incomming(WokXMLTag *tag);
+		int NoHandleIncomming(WokXMLTag *tag);
+		int FileAuth(WokXMLTag *tag);
 	
 		std::string PrettySize(unsigned long long size);
 		static gboolean Delete( GtkWidget *widget, GdkEvent *event, jep96 *c);
@@ -65,6 +68,7 @@ class jep96 : public WoklibPlugin
 		std::string autoproxytype;
 		std::string openwith;
 		std::string popup_ft_wid;
+		WokXMLTag *config;
 	
 		int sidnum;
 		GladeXML *gxml;

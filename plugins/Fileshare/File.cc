@@ -77,7 +77,7 @@ File::Finished(WokXMLTag *tag)
 int
 File::Incomming(WokXMLTag *tag)
 {
-	lsid = tag->GetFirstTag("filetransfear").GetAttr("lsid");
+	lsid = tag->GetFirstTag("filetransfer").GetAttr("lsid");
 	std::cout << "Lsid: " << lsid << std::endl;
 	WokXMLTag msg(NULL, "message");
 	msg.AddAttr("session", tag->GetAttr("session"));

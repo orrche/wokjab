@@ -39,6 +39,7 @@ class GtkPCommon
 		GtkPCommon(WokXMLTag *c);
 		virtual ~GtkPCommon();
 	
+		virtual GtkWidget * GetWidget();
 		virtual void Save();
 	protected:
 		WokXMLTag *conf;		

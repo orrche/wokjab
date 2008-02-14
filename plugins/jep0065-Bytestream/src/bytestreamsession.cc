@@ -191,7 +191,7 @@ jep65Session::SOCKS_Data(WokXMLTag *tag)
 		file.open(filename.c_str(), std::ios::out);
 		if ( !file )
 		{
-			woklib_error(wls, "Coldn't open file " + filename);
+			woklib_error(wls, "Coldn't open file \"" + filename + "\"");
 			close ( socket_nr );
 			delete this;
 			return 1;

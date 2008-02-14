@@ -192,7 +192,7 @@ GUIRoster::DragGet(GtkWidget *wgt, GdkDragContext *context, GtkSelectionData *se
 {
 	GtkTreeIter iter;
 	
-	WokXMLTag data("data");
+	WokXMLTag data("dnd", "dnd");
 	GtkTreeModel *model;
 	
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(glade_xml_get_widget(c->xml, "view_roster")));
@@ -205,9 +205,9 @@ GUIRoster::DragGet(GtkWidget *wgt, GdkDragContext *context, GtkSelectionData *se
 		gtk_tree_model_get_iter(GTK_TREE_MODEL(model), &iter, (GtkTreePath *) list->data);
 		gtk_tree_model_get(GTK_TREE_MODEL(model), &iter, ID_COLUMN, &id, -1);
 	
-		WokXMLTag emptytag("item");
-		c->wls->SendSignal(std::string("GUIRoster DragGet ") + id, emptytag);
-		data.AddTag("emptytag");
+		WokXMLTag itemtag("item");
+		if ( c->wls->SendSignal(std::string("GUIRoster DragGet ") + id, itemtag) )
+			data.AddTag(&itemtag);
 		
 		g_free(id);
 	}
