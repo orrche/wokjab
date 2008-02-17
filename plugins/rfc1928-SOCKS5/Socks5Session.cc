@@ -88,10 +88,10 @@ void
 Socks5Session::Request()
 {
 	char sbuf[] = {5,
-										atoi(socktag->GetAttr("cmd").c_str()),
-										0,
-										atoi(socktag->GetAttr("atype").c_str()),
-										socktag->GetAttr("dst.addr").size() };
+				atoi(socktag->GetAttr("cmd").c_str()),
+				0,
+				atoi(socktag->GetAttr("atype").c_str()),
+				socktag->GetAttr("dst.addr").size() };
 	
 	if ( outbuffer )
 	{
@@ -245,7 +245,7 @@ Socks5Session::Read(WokXMLTag *tag)
 					return 1;
 				}
 				/*
-				         o  X'00' succeeded
+		     o  X'00' succeeded
              o  X'01' general SOCKS server failure
              o  X'02' connection not allowed by ruleset
              o  X'03' Network unreachable

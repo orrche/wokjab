@@ -218,7 +218,7 @@ XML_Input::end (const char *el)
 	}
 	else if ( depth == 1)
 	{
-		WokXMLTag msgtag(NULL, "message");
+		WokXMLTag msgtag(NULL, "message", "jabber:client");
 		msgtag.AddTag(current_xml_tag);
 		msgtag.AddAttr("session", session);
 

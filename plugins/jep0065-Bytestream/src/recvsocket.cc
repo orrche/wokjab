@@ -79,7 +79,9 @@ RecvSocket::ReadData(WokXMLTag *xml)
 	if( pos > 260 )
 	{
 		/* Someone is just fucking with us .. close quit and die */
+		xml->AddAttr("error","terminated");
 		delete this;
+		return 1; 
 	}
 	
 	if( stage == 0 && pos > 1 && pos == data[1] + 2 )

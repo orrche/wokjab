@@ -85,6 +85,7 @@ sport(sport)
 		hash += buf2;
 	}
 	
+	//EXP_SIGHOOK("Jabber Stream File Send Method http://jabber.org/protocol/bytestreams push hash:" + hash, &jep65send::FileTransfear, 1000);
 	EXP_SIGHOOK("Jabber Stream File Send Method http://jabber.org/protocol/bytestreams push hash:" + hash, &jep65send::FileTransfear, 1000);
 	
 	proxy = msgtag->GetAttr("proxy");

@@ -45,8 +45,7 @@ class Socks5 : public WoklibPlugin
 		 ~Socks5();
 	
 		int Connect(WokXMLTag *tag);
-	
-	
+		int Host(WokXMLTag *tag);
 	
 		virtual std::string GetInfo() {return "SOCKS5 Handling";};
 		virtual std::string GetVersion() {return VERSION;};
