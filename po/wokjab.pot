@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wokjab 0.9.2\n"
 "Report-Msgid-Bugs-To: nedo80@gmail.com\n"
-"POT-Creation-Date: 2008-02-24 18:31+0000\n"
+"POT-Creation-Date: 2008-02-24 19:10+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -45,4 +45,472 @@ msgstr ""
 
 #: wokjab/src/main.cpp:48
 msgid "Loading plugin "
+msgstr ""
+
+#: plugins/GtkPreference/preference.jidlist.glade:7
+msgid "DummyWindow"
+msgstr ""
+
+#: plugins/GtkPreference/preference.jidlist.glade:19
+msgid "label"
+msgstr ""
+
+#: plugins/GtkPreference/preference.jidlist.glade:68
+#: plugins/GroupManager/group-manager.glade:77
+#: plugins/Gtk-jep0060-PublishSubscribe/pubsub.glade:365
+msgid "gtk-delete"
+msgstr ""
+
+#: plugins/GtkPreference/preference.jidlist.glade:85
+#: plugins/GroupManager/group-manager.glade:62
+#: plugins/Gtk-jep0060-PublishSubscribe/pubsub.glade:379
+msgid "gtk-add"
+msgstr ""
+
+#: plugins/Fileshare/FileListWid.glade:7
+msgid "File List"
+msgstr ""
+
+#: plugins/Fileshare/FileListWid.glade:19
+msgid "user@server/resource"
+msgstr ""
+
+#: plugins/Fileshare/FileListWid.glade:77 plugins/Fileshare/SearchWid.glade:71
+msgid "Download"
+msgstr ""
+
+#: plugins/Fileshare/FileListWid.glade:83 plugins/Fileshare/SearchWid.glade:77
+#: plugins/Gtk-jep0060-PublishSubscribe/pubsub.glade:354
+#: plugins/AutoJoinGroupChat/AutoJoinWid.glade:123
+msgid "gtk-close"
+msgstr ""
+
+#: plugins/Fileshare/SearchWid.glade:7
+msgid "P2P Search"
+msgstr ""
+
+#: plugins/Fileshare/SearchWid.glade:33
+msgid "gtk-find"
+msgstr ""
+
+#: plugins/GroupManager/group-manager.glade:7
+msgid "Group Manager"
+msgstr ""
+
+#: plugins/GroupManager/group-manager.glade:99
+msgid "Hidden"
+msgstr ""
+
+#: plugins/Reversi/jabberreversi.glade:6
+msgid "Reversi"
+msgstr ""
+
+#: plugins/Reversi/jabberreversi.glade:28
+msgid "Hometeam"
+msgstr ""
+
+#: plugins/Reversi/jabberreversi.glade:40
+msgid " (white)"
+msgstr ""
+
+#: plugins/Reversi/jabberreversi.glade:66
+#: plugins/Reversi/jabberreversi.glade:116
+msgid "2"
+msgstr ""
+
+#: plugins/Reversi/jabberreversi.glade:82
+msgid "status"
+msgstr ""
+
+#: plugins/Reversi/jabberreversi.glade:97
+msgid "Awayteam"
+msgstr ""
+
+#: plugins/Reversi/jabberreversi.glade:155
+msgid "dialog1"
+msgstr ""
+
+#: plugins/DisplayGtk/displaygtk.glade:9
+msgid "Message Window"
+msgstr ""
+
+#: plugins/DisplayGtk/displaygtk.glade:83
+#: plugins/DisplayGtk/displaygtk.glade:205
+#: plugins/DisplayGtk/displaygtk.glade:339
+#: plugins/DisplayGtk/displaygtk.glade:461
+#: plugins/DisplayGtk/displaygtk.glade:577
+msgid "Clear"
+msgstr ""
+
+#: plugins/DisplayGtk/displaygtk.glade:129
+msgid "Messages"
+msgstr ""
+
+#: plugins/DisplayGtk/displaygtk.glade:217
+msgid "Input Data"
+msgstr ""
+
+#: plugins/DisplayGtk/displaygtk.glade:263
+msgid "In/Out"
+msgstr ""
+
+#: plugins/DisplayGtk/displaygtk.glade:385
+msgid "Error"
+msgstr ""
+
+#: plugins/DisplayGtk/displaygtk.glade:473
+msgid "Show Data"
+msgstr ""
+
+#: plugins/DisplayGtk/displaygtk.glade:485
+msgid "Make signal"
+msgstr ""
+
+#: plugins/DisplayGtk/displaygtk.glade:508
+msgid "Signals"
+msgstr ""
+
+#: plugins/DisplayGtk/displaygtk.glade:623
+msgid "Debug"
+msgstr ""
+
+#: plugins/DisplayGtk/displaygtk.inputdialog.glade:10
+msgid "Input Dialog"
+msgstr ""
+
+#: plugins/DisplayGtk/displaygtk.inputdialog.glade:91
+#: plugins/DisplayGtk/displaygtk.signalgen.glade:137
+#: plugins/CrashManager/cmgui.glade:145
+msgid "Send"
+msgstr ""
+
+#: plugins/DisplayGtk/displaygtk.signalgen.glade:10
+msgid "Input Signal Dialog"
+msgstr ""
+
+#: plugins/DisplayGtk/displaygtk.signalgen.glade:41
+msgid "Signal:"
+msgstr ""
+
+#: plugins/jep0050-AdHocCommands/AdHocSession.glade:8
+msgid "AdHocSession"
+msgstr ""
+
+#: plugins/jep0050-AdHocCommands/AdHocWid.glade:10
+msgid "AdHoc Commands"
+msgstr ""
+
+#: plugins/jep0096-Filetransfear/filepicker.glade:9
+msgid "Send fille"
+msgstr ""
+
+#: plugins/jep0096-Filetransfear/filepicker.glade:41
+msgid "Rate"
+msgstr ""
+
+#: plugins/jep0096-Filetransfear/filepicker.glade:62
+msgid "kB/s"
+msgstr ""
+
+#: plugins/jep0096-Filetransfear/filepicker.glade:119
+msgid ""
+"Proxy\n"
+"Forward"
+msgstr ""
+
+#: plugins/jep0096-Filetransfear/filepicker.glade:168
+msgid "Proxy"
+msgstr ""
+
+#: plugins/jep0096-Filetransfear/filepicker.glade:185
+msgid "Bytestream"
+msgstr ""
+
+#: plugins/jep0096-Filetransfear/streams.glade:7
+msgid "Streams"
+msgstr ""
+
+#: plugins/jep0096-Filetransfear/streams.glade:31
+msgid "Remove Finished"
+msgstr ""
+
+#: plugins/jep0096-Filetransfear/streams.glade:87
+#: plugins/jep0096-Filetransfear/src/filetransfear.cc:585
+msgid "Close"
+msgstr ""
+
+#: plugins/jep0096-Filetransfear/streams.glade:99
+msgid "Remove"
+msgstr ""
+
+#: plugins/GUIRoster/GUIRoster.glade:8
+msgid "Roster"
+msgstr ""
+
+#: plugins/ScriptLoader/scriptloader.glade:10
+#: plugins/experimental/Dice/groupchat.glade:9
+#: plugins/groupchat-plugin/glade/groupchat.glade:9
+#: plugins/groupchat-plugin/glade/groupchattooltip.glade:8
+#: plugins/normal/Tooltip/tooltip.glade:7
+msgid "window1"
+msgstr ""
+
+#: plugins/experimental/P2PRandomNumberMonitor/p2prandmonitor.glade:7
+msgid "P2P Random Number Monitor"
+msgstr ""
+
+#: plugins/experimental/P2PRandomNumberMonitor/p2prandmonitor.glade:19
+msgid "P2P Random Number Sessions"
+msgstr ""
+
+#: plugins/experimental/Dice/dice.glade:7
+msgid "Dice"
+msgstr ""
+
+#: plugins/experimental/Dice/dice.glade:20
+msgid "_New session"
+msgstr ""
+
+#: plugins/experimental/Dice/dice.glade:28
+msgid "_Collection"
+msgstr ""
+
+#: plugins/experimental/Dice/dice.glade:62
+msgid "Your dice collection"
+msgstr ""
+
+#: plugins/experimental/Dice/dice.glade:115
+msgid "Selected dice for next roll"
+msgstr ""
+
+#: plugins/experimental/Dice/dice.glade:174
+msgid "Clear _History"
+msgstr ""
+
+#: plugins/experimental/Dice/dice.glade:189
+msgid "_Clear Selected Dice"
+msgstr ""
+
+#: plugins/experimental/Dice/dice.glade:205
+msgid "_Roll"
+msgstr ""
+
+#: plugins/experimental/Dice/groupchat.glade:56
+#: plugins/groupchat-plugin/glade/groupchat.glade:56
+msgid "Topic"
+msgstr ""
+
+#: plugins/OpenDialogTo/dialogopener.glade:9
+msgid "ChatOpener"
+msgstr ""
+
+#: plugins/OpenDialogTo/dialogopener.glade:32
+msgid "Whit whoem do you wishes to speak ?"
+msgstr ""
+
+#: plugins/OpenDialogTo/dialogopener.glade:76
+#: plugins/Gtk-jep0060-PublishSubscribe/pubsub.glade:43
+#: plugins/normal/Tooltip/tooltip.glade:182
+msgid "JID:"
+msgstr ""
+
+#: plugins/groupchat-plugin/groupchatjoin.glade:8
+msgid "Joing Groupchat"
+msgstr ""
+
+#: plugins/groupchat-plugin/groupchatjoin.glade:129
+msgid "Nickname"
+msgstr ""
+
+#: plugins/groupchat-plugin/groupchatjoin.glade:157
+msgid "Room"
+msgstr ""
+
+#: plugins/groupchat-plugin/groupchatjoin.glade:185
+#: wokjab/glade/connect.window.glade:134
+msgid "Server"
+msgstr ""
+
+#: plugins/groupchat-plugin/groupchatjoin.glade:241
+msgid "Joing Room"
+msgstr ""
+
+#: plugins/CrashManager/cmgui.glade:78
+msgid "<b>Your comments</b>"
+msgstr ""
+
+#: plugins/CrashManager/cmgui.glade:97
+msgid "Developer reply allowed"
+msgstr ""
+
+#: plugins/CrashManager/cmgui.glade:114
+msgid "<b>Data to be sent</b>"
+msgstr ""
+
+#: plugins/CrashManager/cmgui.glade:144
+msgid "Send data to developer"
+msgstr ""
+
+#: plugins/CrashManager/cmgui.glade:154
+msgid "Open chat window to developer"
+msgstr ""
+
+#: plugins/CrashManager/cmgui.glade:155
+msgid "Chat"
+msgstr ""
+
+#: plugins/Gtk-jep0060-PublishSubscribe/pubsub.glade:7
+msgid "Publish Subscribe Manager"
+msgstr ""
+
+#: plugins/Gtk-jep0060-PublishSubscribe/pubsub.glade:108
+msgid "Node:"
+msgstr ""
+
+#: plugins/Gtk-jep0060-PublishSubscribe/pubsub.glade:191
+msgid "Register"
+msgstr ""
+
+#: plugins/Gtk-jep0060-PublishSubscribe/pubsub.glade:206
+msgid "Unregister"
+msgstr ""
+
+#: plugins/Gtk-jep0060-PublishSubscribe/pubsub.glade:231
+msgid "Config"
+msgstr ""
+
+#: plugins/Gtk-jep0060-PublishSubscribe/pubsub.glade:246
+msgid "Read"
+msgstr ""
+
+#: plugins/Gtk-jep0060-PublishSubscribe/pubsub.glade:271
+msgid "Subscribe"
+msgstr ""
+
+#: plugins/Gtk-jep0060-PublishSubscribe/pubsub.glade:286
+msgid "Unsubscribe"
+msgstr ""
+
+#: plugins/Gtk-jep0060-PublishSubscribe/pubsub.glade:393
+#: plugins/AutoJoinGroupChat/AutoJoinWid.glade:134
+msgid "gtk-apply"
+msgstr ""
+
+#: plugins/AutoJoinGroupChat/AutoJoinWid.glade:148
+msgid "gtk-ok"
+msgstr ""
+
+#: plugins/normal/Tooltip/tooltip.glade:97
+msgid "Status:"
+msgstr ""
+
+#: plugins/normal/Tooltip/tooltip.glade:154
+msgid "Show:"
+msgstr ""
+
+#: plugins/normal/Tooltip/tooltip.glade:168
+msgid "Nick:"
+msgstr ""
+
+#: wokjab/glade/main.window.glade:7 wokjab/glade/main.window.glade:20
+msgid "Wokjab"
+msgstr ""
+
+#: wokjab/glade/main.window.glade:81
+msgid ""
+"Online\n"
+"Away\n"
+"Not Available\n"
+"Do Not Disturbe\n"
+"Offline"
+msgstr ""
+
+#: wokjab/glade/connect.window.glade:8
+msgid "Connect Window"
+msgstr ""
+
+#: wokjab/glade/connect.window.glade:67
+msgid "Conections"
+msgstr ""
+
+#: wokjab/glade/connect.window.glade:106
+msgid "Username"
+msgstr ""
+
+#: wokjab/glade/connect.window.glade:162
+msgid "Password"
+msgstr ""
+
+#: wokjab/glade/connect.window.glade:190
+msgid "Resource"
+msgstr ""
+
+#: wokjab/glade/connect.window.glade:218
+msgid "Port"
+msgstr ""
+
+#: wokjab/glade/connect.window.glade:246
+msgid "Priority"
+msgstr ""
+
+#: wokjab/glade/plugin.glade:8
+msgid "Plugin List"
+msgstr ""
+
+#: plugins/DisplayGtk/src/DisplayWidget.cc~:296
+#: plugins/DisplayGtk/src/DisplayWidget.cc:296
+msgid "Signal XML"
+msgstr ""
+
+#: plugins/jep0096-Filetransfear/src/filetransfear.cc:206
+msgid "Auto accept from"
+msgstr ""
+
+#: plugins/jep0096-Filetransfear/src/filetransfear.cc:211
+msgid "Open folder with"
+msgstr ""
+
+#: plugins/jep0096-Filetransfear/src/filetransfear.cc:215
+msgid "Root for userfolders"
+msgstr ""
+
+#: plugins/jep0096-Filetransfear/src/filetransfear.cc:218
+msgid "Popup transfer window"
+msgstr ""
+
+#: plugins/jep0096-Filetransfear/src/filetransfear.cc:573
+#: plugins/jep0096-Filetransfear/src/filetransfear.cc:578
+msgid "File "
+msgstr ""
+
+#: plugins/jep0096-Filetransfear/src/filetransfear.cc:573
+msgid " finished sending to "
+msgstr ""
+
+#: plugins/jep0096-Filetransfear/src/filetransfear.cc:578
+msgid " finished reciving from "
+msgstr ""
+
+#: plugins/wokjab-jid-info/src/WokJabJIDInfoWidgetManager.cc:55
+msgid "Contact Information"
+msgstr ""
+
+#: plugins/toaster/toaster.cc:77
+msgid "BG color 1"
+msgstr ""
+
+#: plugins/toaster/toaster.cc:83
+msgid "BG color 2"
+msgstr ""
+
+#: plugins/toaster/toaster.cc:89
+msgid "Delay"
+msgstr ""
+
+#: plugins/toaster/toaster.cc:95
+msgid "Flashes"
+msgstr ""
+
+#: plugins/toaster/toaster.cc:101
+msgid "Flash speed (ms)"
 msgstr ""
