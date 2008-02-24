@@ -4,7 +4,6 @@ pkgdata_DATA = \
 				
 EXTRA_DIST = ${pkgdata_DATA}
 
-INCLUDES =
 libdir = $(prefix)/lib/woklib-plugins/normal
 
 

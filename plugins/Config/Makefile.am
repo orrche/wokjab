@@ -1,4 +1,4 @@
-INCLUDES =
+
 libdir = $(prefix)/lib/woklib-plugins/system
 
 AM_CXXFLAGS =\

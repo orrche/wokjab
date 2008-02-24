@@ -4,7 +4,7 @@ pkgdata_DATA = \
 
 EXTRA_DIST = ${pkgdata_DATA}
 				
-INCLUDES =
+
 libdir = $(prefix)/lib/woklib-plugins/normal
 
 AM_CXXFLAGS = `pkg-config libglade-2.0 gtk+-2.0 --cflags` -O3 -Wall -lwoklib

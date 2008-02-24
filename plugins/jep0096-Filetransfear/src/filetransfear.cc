@@ -31,9 +31,10 @@
 #  include <config.h>
 #endif
 
-#ifndef _
-#define _(x) x
-#endif
+
+#include "gettext.h"
+#define _(string) gettext (string)
+
 
 jep96::jep96(WLSignal *wls):
 WoklibPlugin(wls)

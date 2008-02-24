@@ -1,8 +1,8 @@
 libdir = $(prefix)/lib/woklib-plugins/secondary
-INCLUDES = $(PY_CFLAGS)
+
 AM_LDFLAGS = $(PY_LIBS) -ldl -lpthread -lm -lutil
 AM_CXXFLAGS =\
-	-O3 -Wall -lwoklib
+	-O3 -Wall -lwoklib $(PY_CFLAGS)
 lib_LTLIBRARIES = \
 	libwokpython.la 
 

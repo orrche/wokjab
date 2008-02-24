@@ -80,18 +80,23 @@ Config::Init(WokXMLTag *tag)
 	truebasetag = new WokXMLTag(NULL, "config");
 	std::ifstream file;
 	file.open(filename.c_str(),std::ios::in);
+	bool fromdefaultfile = false;
 	if(!file.is_open())
 	{
 		file.clear();
 		std::string datadir = PACKAGE_DATA_DIR;
 		datadir += "/wokjab/defaultconfig.xml";
 		file.open(datadir.c_str() ,std::ios::in);
+		fromdefaultfile = true;
 	}
 
 	file >> *truebasetag;
 	file.close();
 	basetag = &truebasetag->GetFirstTag("config");
 
+	if ( fromdefaultfile ) 
+		Save(basetag);
+	
 	return true;
 }
 

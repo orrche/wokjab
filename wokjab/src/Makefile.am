@@ -1,5 +1,5 @@
 #
-#  Copyright (C) 2003-2004  Kent Gustavsson <oden@gmx.net>
+#  Copyright (C) 2003-2008  Kent Gustavsson <nedo80@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,12 +15,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-INCLUDES = -I.. `pkg-config gtk+-2.0 libglade-2.0 --cflags` 
 AM_LDFLAGS = -lwoklib  `pkg-config gtk+-2.0 libglade-2.0 --libs`
 
 bin_PROGRAMS = wokjab
 
-wokjab_SOURCES = GUIAddJIDWidget.cc GUIConnectWindow.cc GUIMessageHandler.cc GUIMessageWidget.cc GUIPluginWindow.cc GUIPresentReqWidget.cc GUIRoster.cc GUIRosterItem.cc GUIWindow.cc GUIWindowDock.cc Group.cc Initiat.cc Resource.cc Roster.cc User.cc main.cc \
+wokjab_SOURCES = GUIAddJIDWidget.cc GUIConnectWindow.cc GUIMessageHandler.cc GUIMessageWidget.cc GUIPluginWindow.cc GUIPresentReqWidget.cc GUIRoster.cc GUIRosterItem.cc GUIWindow.cc GUIWindowDock.cc Group.cc Initiat.cc Resource.cc Roster.cc User.cc main.cpp \
 	plugin-loader.hpp plugin-loader.cpp 
-AM_CFLAGS =
-AM_CXXFLAGS =
+	
+AM_CXXFLAGS = -I.. `pkg-config gtk+-2.0 libglade-2.0 --cflags` -DLOCALEDIR=\"$(localedir)\"

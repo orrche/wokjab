@@ -1,0 +1,49 @@
+# Swedish translations for wokjab package
+# Svenska översättningar för paket wokjab.
+# Copyright (C) 2008 Kent Gustavsson
+# This file is distributed under the same license as the wokjab package.
+#  <nedo80@gmail.com>, 2008.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: wokjab 0.9.2\n"
+"Report-Msgid-Bugs-To: nedo80@gmail.com\n"
+"POT-Creation-Date: 2008-02-24 18:31+0000\n"
+"PO-Revision-Date: 2008-02-24 18:42+0000\n"
+"Last-Translator:  <nedo80@gmail.com>\n"
+"Language-Team: Swedish\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: plugins/jep0118-UserTune/user-tune.cpp:215
+msgid "Influence status"
+msgstr ""
+
+#: plugins/jep0118-UserTune/user-tune.cpp:220
+msgid "Status string"
+msgstr ""
+
+#: plugins/jep0118-UserTune/user-tune.cpp:221
+msgid ""
+"Possible variables are\n"
+"title\n"
+"artist\n"
+"length\n"
+"source\n"
+"track\n"
+"uri"
+msgstr ""
+
+#: plugins/jep0118-UserTune/user-tune.cpp:226
+msgid "Label"
+msgstr ""
+
+#: plugins/jep0118-UserTune/user-tune.cpp:227
+msgid "UserTunes"
+msgstr ""
+
+#: wokjab/src/main.cpp:48
+msgid "Loading plugin "
+msgstr "Laddar plugin "

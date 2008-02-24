@@ -57,7 +57,14 @@ Toaster::Toaster(WLSignal *wls) : WoklibPlugin(wls)
 
 Toaster::~Toaster()
 {
-
+	std::list<ToasterWindow *>::iterator iter;
+	
+	for( iter = twlist.begin() ; iter != twlist.end() ; iter++ )
+	{
+		delete (*iter);
+		twlist.erase(iter);
+		break;
+	}
 }
 
 int

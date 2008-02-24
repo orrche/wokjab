@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2003-2008  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,6 +17,10 @@
 
 #include "include/WokJabJIDInfoWidgetManager.h"
 #include "include/WokJabJIDInfoWidget.h"
+
+#ifndef _
+#define _(x) x
+#endif
 
 WokJabJIDInfoWidgetManager::WokJabJIDInfoWidgetManager(WLSignal *wls):
 WoklibPlugin(wls)
@@ -48,7 +52,7 @@ WokJabJIDInfoWidgetManager::InfoMenu(WokXMLTag *tag)
 {
 	WokXMLTag *item;
 	item = &tag->AddTag("item");
-	item->AddAttr("name", "Constact Information");
+	item->AddAttr("name", _("Contact Information"));
 	item->AddAttr("signal", "Jabber GUI Roster JIDInfo");
 	
 	return 1;
