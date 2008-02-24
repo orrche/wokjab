@@ -32,7 +32,7 @@
 #endif
 
 
-#include "gettext.h"
+#include "../../../gettext.h"
 #define _(string) gettext (string)
 
 
