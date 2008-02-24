@@ -16,16 +16,17 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-AC_INIT(wokjab/src/main.cc)
-AM_INIT_AUTOMAKE(wokjab,0.9.1.20070803)
-AM_CONFIG_HEADER(config.h)
-AC_PROG_CC
+AC_INIT([wokjab], [0.9.2], [nedo80@gmail.com])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CXX
+AM_CONFIG_HEADER([config.h])
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 #AC_PROG_RANLIB
 AM_PATH_GTK_2_0
 AM_PROG_LIBTOOL
+AM_GNU_GETTEXT_VERSION([0.17])
+AM_GNU_GETTEXT([external])
 
 dnl Set PACKAGE PREFIX
 if test "x${prefix}" = "xNONE"; then
@@ -90,7 +91,8 @@ AC_DEFINE_UNQUOTED([PACKAGE_PLUGIN_DIR], ["${prefix}/lib/woklib-plugins"], ["Whe
 AC_DEFINE_UNQUOTED([PACKAGE_GLADE_DIR], ["${prefix}/lib/woklib/glade"], ["Where the system UI gets stored"])
 
 
-AC_OUTPUT(Makefile \
+AC_CONFIG_FILES(Makefile \
+	po/Makefile.in \
 	plugins/Makefile  \
 	plugins/normal/Makefile \
 	plugins/normal/GnomeStatusIcon/Makefile  \
@@ -175,3 +177,5 @@ AC_OUTPUT(Makefile \
 	wokjab/pixmaps/Makefile \
 	wokjab/glade/Makefile \
 )
+
+AC_OUTPUT
