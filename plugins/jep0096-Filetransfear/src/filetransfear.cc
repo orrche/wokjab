@@ -193,6 +193,30 @@ jep96::Incomming(WokXMLTag *tag)
 			tag->AddAttr("autoaccept", "true");
 			tag->AddAttr("filename", filename);
 			sessions[tag->GetFirstTag("filetransfer").GetAttr("lsid")] = new WokXMLTag (*tag);
+			
+			WokXMLTag eventtag ("event");
+			eventtag.AddAttr("type", "jep0096 AutoAcceptFile");
+			
+			WokXMLTag &item = eventtag.AddTag("item");
+			item.AddAttr("icon", PACKAGE_DATA_DIR"/wokjab/filetransfer.png");
+			item.AddAttr("session", tag->GetAttr("session"));
+			item.AddAttr("timeout", "5000");
+			
+			item.AddTag("description").AddText(_("File ") + std::string(filename) + _(" autoaccepted  from ") + tag->GetFirstTag("iq").GetAttr("from"));
+			item.AddAttr("jid", tag->GetFirstTag("iq").GetAttr("from"));
+		
+			/*
+			WokXMLTag &commands = item.AddTag("commands");
+			{
+				WokXMLTag &command = commands.AddTag("command");
+				command.AddAttr("name", _("Close"));
+				WokXMLTag &signal = command.AddTag("signal");
+				signal.AddAttr("name", "Jabber Stream Event Finished Ignore");
+				signal.GetFirstTag("data").AddTag("sid").AddAttr("name", fintag->GetAttr("sid"));
+			}*/
+			
+			wls->SendSignal("Jabber Event Add", eventtag);
+			
 			return 0;
 		}
 	}
@@ -557,12 +581,12 @@ jep96::Finnished(WokXMLTag *fintag)
 		{
 			gchar *session, *from, *to, *filename;
 			gboolean sending;
+			
 			WokXMLTag *eventtag;
 			eventtag = new WokXMLTag("event");
 			
 			gtk_list_store_set (file_store, &iter, 2, "Finished", 7, eventtag, -1);
 			gtk_tree_model_get(GTK_TREE_MODEL(file_store), &iter, 0, &filename, 4, &from, 5, &to, 6, &session, 8, &sending, -1);
-			
 			
 			eventtag->AddAttr("type", "jep0096 FinishedFile");
 			WokXMLTag &item = eventtag->AddTag("item");

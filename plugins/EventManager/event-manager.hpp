@@ -40,6 +40,8 @@ public:
 	
 	int Remove(WokXMLTag *tag);
 	int Add(WokXMLTag *tag);
+	int Timeout(WokXMLTag *tag);
+	
 protected:
 	int id;
 private:

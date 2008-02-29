@@ -41,16 +41,15 @@ using namespace Woklib;
 
 class GtkTimerSession:public WLSignalInstance
 {
-      public:
-	GtkTimerSession (WLSignal * wls, int timeout, std::string signal);
+public:
+	GtkTimerSession (WLSignal * wls, int timeout, WokXMLTag *tag);
 	 ~GtkTimerSession ();
 
 	static gboolean Exec (GtkTimerSession * c);
 
-      protected:
-
+protected:
+	WokXMLTag origxml;
 	int timeout;
-	  std::string signal;
 
 };
 

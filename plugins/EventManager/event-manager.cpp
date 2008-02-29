@@ -65,14 +65,35 @@ EventManager::Add(WokXMLTag *tag)
 	
 	for( iter = tag->GetTagList("item").begin() ; iter != tag->GetTagList("item").end() ; iter++)
 	{
-		if ( (*iter)->GetAttr("id") == "") 
+		if ( (*iter)->GetAttr("id").empty()) 
 		{
 			std::stringstream str;
 			str << id++;
 		
 			(*iter)->AddAttr("id", "EventManager " + str.str());		
 		}
+		if ( !(*iter)->GetAttr("timeout").empty() )
+		{
+			WokXMLTag timer("timer");
+			WokXMLTag &datatag = timer.AddTag("data");
+			datatag.AddAttr("id", (*iter)->GetAttr("id"));
+			timer.AddAttr("time", (*iter)->GetAttr("timeout"));
+			
+			wls->SendSignal("Woklib Timmer Add", timer);
+			
+			EXP_SIGHOOK(timer.GetAttr("signal"), &EventManager::Timeout, 1000);
+		}
 	}
 	
 	return 1;
+}
+
+int
+EventManager::Timeout(WokXMLTag *tag)
+{
+	WokXMLTag remove("remove");
+	remove.AddTag("item").AddAttr("id", tag->GetAttr("id"));
+	
+	wls->SendSignal("Jabber Event Remove", remove);
+	return 1;	
 }

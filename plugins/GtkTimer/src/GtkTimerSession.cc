@@ -30,13 +30,11 @@
 
 #include "GtkTimerSession.h"
 
-GtkTimerSession::GtkTimerSession (WLSignal * wls, int timeout,
-				  std::string signal):
+GtkTimerSession::GtkTimerSession (WLSignal * wls, int timeout, WokXMLTag *tag):
 WLSignalInstance (wls),
-signal (signal)
+origxml (*tag)
 {
-	g_timeout_add (timeout,
-		       (gboolean (*)(void *)) (GtkTimerSession::Exec), this);
+	g_timeout_add (timeout, (gboolean (*)(void *)) (GtkTimerSession::Exec), this);
 }
 
 
@@ -47,9 +45,8 @@ GtkTimerSession::~GtkTimerSession ()
 gboolean 
 GtkTimerSession::Exec (GtkTimerSession * c)
 {
-	WokXMLTag
-	tag (NULL, "timer");
-	if (c->wls->SendSignal (c->signal, tag) == 0)
+	WokXMLTag tag (c->origxml.GetFirstTag("data"));
+	if (c->wls->SendSignal (c->origxml.GetAttr("signal"), tag) == 0)
 	{
 		delete c;
 		return FALSE;

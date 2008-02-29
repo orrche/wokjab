@@ -58,7 +58,7 @@ GtkTimer::Add (WokXMLTag * tag)
 		id++;
 	}
 	
-	new GtkTimerSession (wls, time, tag->GetAttr ("signal"));
+	new GtkTimerSession (wls, time, tag);
 
 	return 1;
 }
