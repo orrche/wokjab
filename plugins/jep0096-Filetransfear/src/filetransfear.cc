@@ -811,6 +811,7 @@ jep96::SendReply(WokXMLTag *msgtag)
 			filesend.AddAttr("proxy_type", sessions[id]->GetAttr("proxy_type"));
 			filesend.AddAttr("sid", sid);
 			filesend.AddAttr("session", msgtag->GetAttr("session"));
+			filesend.AddTag(&iqtag);
 			wls->SendSignal("Jabber Stream File Send Method " + method, filesend);
 		}
 	}

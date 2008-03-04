@@ -41,7 +41,14 @@ parant_gxml(parant_gxml)
 	wls->SendSignal("Jabber GroupChat Whoami '" + XMLisize(session) + "' '" + XMLisize(roomjid) + "'", whoami);
 	mynick = whoami.GetAttr("nick");
 	
-	gtk_notebook_append_page(GTK_NOTEBOOK(glade_xml_get_widget (parant_gxml, "notebook")), glade_xml_get_widget (gxml, "mainbox"), gtk_label_new((session + ":" + roomjid).c_str()));
+	GtkWidget *labelbox = gtk_hbox_new(FALSE, 2);
+	gtk_box_pack_start(GTK_BOX(labelbox), gtk_label_new((session + ":" + roomjid).c_str()), FALSE, FALSE, 0);
+	GtkWidget *closebutton = gtk_button_new_with_label("x");
+	gtk_box_pack_end(GTK_BOX(labelbox), closebutton, FALSE, FALSE, 0);
+	
+	gtk_widget_show_all(labelbox);
+	
+	gtk_notebook_append_page(GTK_NOTEBOOK(glade_xml_get_widget (parant_gxml, "notebook")), glade_xml_get_widget (gxml, "mainbox"), labelbox);
 			
 	GtkCellRenderer *renderer;
 	
@@ -78,7 +85,7 @@ parant_gxml(parant_gxml)
 	g_signal_connect (G_OBJECT (glade_xml_get_widget (gxml, "roll_button")), "clicked" , G_CALLBACK(DiceSession::StartRoll), this);
 	g_signal_connect (G_OBJECT (glade_xml_get_widget (gxml, "clear_history_button")), "clicked" , G_CALLBACK(DiceSession::ClearHistory), this);
 	g_signal_connect (G_OBJECT (glade_xml_get_widget (gxml, "clear_button")), "clicked" , G_CALLBACK(DiceSession::ClearSelection), this);
-	
+	g_signal_connect (G_OBJECT (closebutton), "clicked" , G_CALLBACK(DiceSession::Close), this);
     enum
     {
       TARGET_STRING,
@@ -90,7 +97,7 @@ parant_gxml(parant_gxml)
       { "text/plain",    0, TARGET_STRING },
     };
 	gtk_drag_dest_set(glade_xml_get_widget (gxml, "current_roll"), GTK_DEST_DEFAULT_ALL, target_entry, 2, (GdkDragAction) (GDK_ACTION_COPY|GDK_ACTION_MOVE|GDK_ACTION_LINK));
-	//gtk_icon_view_enable_model_drag_dest(GTK_ICON_VIEW(glade_xml_get_widget (c->session_gxml[session][roomjid], "current_roll")), target_entry, 3, (GdkDragAction) (GDK_ACTION_COPY));
+	
 	g_signal_connect(glade_xml_get_widget (gxml, "current_roll"), "drag_data_received", G_CALLBACK(DiceSession::DataReceived), this);
 	
 	
@@ -98,9 +105,8 @@ parant_gxml(parant_gxml)
 
 DiceSession::~DiceSession()
 {
-	
-	
-	
+	gtk_widget_destroy(glade_xml_get_widget (gxml, "mainbox"));
+	g_object_unref(gxml);	
 }
 
 void
@@ -212,6 +218,16 @@ void
 DiceSession::StartRoll(GtkButton *button, DiceSession *c)
 {
 	c->Roll();
+}
+
+void
+DiceSession::Close(GtkButton *button, DiceSession *c)
+{
+	WokXMLTag removetag("remove");
+	removetag.AddAttr("session", c->session);
+	removetag.AddAttr("roomjid", c->roomjid);
+	
+	c->wls->SendSignal("Dice Remove Session", removetag);
 }
 
 void

@@ -57,6 +57,7 @@ Dice::Dice(WLSignal *wls): WoklibPlugin(wls)
 	EXP_SIGHOOK("Get Main Menu", &Dice::MainMenu, 999);
 	EXP_SIGHOOK("GUI Dice Open", &Dice::DiceWid, 999);
 	EXP_SIGHOOK("Jabber XML Message xmlns http://wokjab.sf.net/dice", &Dice::Message, 1000);
+	EXP_SIGHOOK("Dice Remove Session", &Dice::RemoveSession, 1000);
 	
 	gxml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/dice.glade", "dice_window", NULL);
 	collection_store = gtk_list_store_new (3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER);
@@ -139,6 +140,24 @@ Dice::DragGet(GtkWidget *wgt, GdkDragContext *context, GtkSelectionData *selecti
 	std::string data;
 	data = dice.GetStr();
 	gtk_selection_data_set_text(selection, data.c_str(), data.size());
+}
+
+int
+Dice::RemoveSession(WokXMLTag *tag)
+{
+	if ( session_dice.find(tag->GetAttr("session")) != session_dice.end() )
+	{
+		if ( session_dice[tag->GetAttr("session")].find(tag->GetAttr("roomjid")) != session_dice[tag->GetAttr("session")].end() )
+		{
+			delete session_dice[tag->GetAttr("session")][tag->GetAttr("roomjid")];
+			session_dice[tag->GetAttr("session")].erase(tag->GetAttr("roomjid"));
+			if ( session_dice[tag->GetAttr("session")].empty() )
+				session_dice.erase(tag->GetAttr("session"));
+		}
+	}
+	
+	
+	return 1;
 }
 
 void

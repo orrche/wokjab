@@ -55,6 +55,7 @@ public:
 	static void StartRoll(GtkButton *button, DiceSession *c);
 	static void ClearHistory(GtkButton *button, DiceSession *c);
 	static void ClearSelection(GtkButton *button, DiceSession *c);
+	static void Close(GtkButton *button, DiceSession *c);
 protected:
 
 private:

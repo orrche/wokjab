@@ -34,6 +34,9 @@ sid(msgtag->GetAttr("sid")),
 to(msgtag->GetAttr("to")),
 sport(sport)
 {
+	
+	std::cout << "XML:" << *msgtag << std::endl;
+	
 	EXP_SIGHOOK("Jabber Stream File Send Abort " + sid, &jep65send::Abort, 1000);
 	listening = false;
 	WokXMLTag querytag(NULL, "query");

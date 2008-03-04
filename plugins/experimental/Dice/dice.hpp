@@ -55,7 +55,8 @@ public:
 	
 	// Should be migrated to a non gui plugin...
 	int Message(WokXMLTag *tag);
-		
+	int RemoveSession(WokXMLTag *tag);
+	
 	void CreateWid();
 	void AddToCollection(WokXMLTag &xml);
 	
