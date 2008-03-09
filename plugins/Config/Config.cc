@@ -109,7 +109,19 @@ Config::GetPosition(std::string path)
 	while( path.size() )
 	{
 		std::string substr = path.substr(0, path.find("/"));
-		place = &place->GetFirstTag(substr);
+		std::string folder;
+		
+		for( unsigned int i = 0 ; i < substr.size() ; i++)
+		{
+			if( substr[i] == '@' )
+				folder += "_a";
+			else if( substr[i] == '_' )
+				folder += "__";
+			else
+				folder += substr[i];
+		}				
+							
+		place = &place->GetFirstTag(folder);
 		if( path.size() == substr.size() )
 			break;
 
