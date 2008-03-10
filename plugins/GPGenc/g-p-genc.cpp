@@ -51,7 +51,7 @@ std::string rungpg ( const std::string &data, const std::string &arg, const std:
 		std::stringstream str;
 		str << fd[2][0];
 		
-		std::string cmd = "gpg --armor --batch --passphrase-fd " + str.str() + " " + arg;
+		std::string cmd = "gpg -q --armor --batch --always-trust --passphrase-fd " + str.str() + " " + arg;
 		
 		close ( fd[1][1] );
 		close ( fd[0][0] );
@@ -360,8 +360,6 @@ GPGenc::OutMessage(WokXMLTag *tag)
 	wls->SendSignal("Config XML GetConfig", &conftag);			
 	
 	
-	std::cout << "conftag: " << conftag << std::endl;
-	
 	if ( !conftag.GetFirstTag("config").GetTagList("key").empty() )
 	{
 		std::string key = conftag.GetFirstTag("config").GetFirstTag("key").GetAttr("data");
@@ -371,7 +369,7 @@ GPGenc::OutMessage(WokXMLTag *tag)
 		
 		while( key.find(" ") != std::string::npos )
 			key.erase(key.find(" "), 1);
-		std::string encdata = rungpg(body, "-ase -r " + key, passphrase);
+		std::string encdata = rungpg(body, "-ae -r " + key, passphrase);
 		
 		
 		if ( ! encdata.empty() )
