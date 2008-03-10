@@ -29,7 +29,7 @@
 #  include <config.h>
 #endif
 
-// #include <gpgme.h>
+#include <gpgme.h>
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
@@ -41,22 +41,33 @@ class GPGenc: public WoklibPlugin
 {
 public:
 	GPGenc(WLSignal *wls);
-	/*
+	~GPGenc();
+	
 	int Presence(WokXMLTag *tag);
 	int Message(WokXMLTag *tag);
-	int Encrypted(WokXMLTag *tag);
 	int InPresence(WokXMLTag *tag);
 	int OutMessage(WokXMLTag *tag);	
 	int Setup(WokXMLTag *tag);
+	int Menu(WokXMLTag *tag);
+	int AssignKey(WokXMLTag *tag);
+	int AssignKeyData(WokXMLTag *tag);
+	int ReadConfig(WokXMLTag *tag);
+	int ProgramStart(WokXMLTag *tag);
+	int StoreKey(WokXMLTag *tag);
+	
+	void SaveConfig();
 	
 	virtual std::string GetInfo() {return "GPG Enc/Dec";};
 	virtual std::string GetVersion() {return VERSION;};
 
 	std::map<std::string, std::map<std::string, std::string> > fingerprints;
 protected:
+	WokXMLTag *config;
 	std::string passphrase;
 	gpgme_ctx_t ctx;
-	*/
+	
+	std::string jid_store, key_store;
+	
 private:
 
 };

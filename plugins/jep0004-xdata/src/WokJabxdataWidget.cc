@@ -149,8 +149,7 @@ void
 WokJabxdataWidget::CancelButton (GtkWidget * widget, WokJabxdataWidget *c)
 {
 	WokXMLTag repltag(NULL, "data");
-	WokXMLTag &xtag = repltag.AddTag("x");
-	xtag.AddAttr("xmlns", "jabber:x:data");
+	WokXMLTag &xtag = repltag.AddTag("x", "jabber:x:data");
 	xtag.AddAttr("type", "cancel");
 	
 	c->wls->SendSignal(c->replsig, &repltag);
@@ -174,8 +173,7 @@ WokJabxdataWidget::GetData(WokXMLTag *repltag)
 {
 	std::list<xdatabase *>::iterator iter;
 
-	WokXMLTag &xtag = repltag->AddTag("x");
-	xtag.AddAttr("xmlns", "jabber:x:data");
+	WokXMLTag &xtag = repltag->AddTag("x", "jabber:x:data");
 	xtag.AddAttr("type", "submit");
 	
 	for( iter = widget_list.begin() ; iter != widget_list.end() ; iter++)

@@ -23,144 +23,303 @@
  */
 
 #include "g-p-genc.hpp"
+#include <sstream>
+#include <sys/wait.h>
+#include <unistd.h>
 
-/*
-#define fail_if_err(err)					\
-  do								\
-    {								\
-      if (err)							\
-        {							\
-          fprintf (stderr, "%s:%d: %s: %s\n",			\
-                   __FILE__, __LINE__, gpgme_strsource (err),	\
-		   gpgme_strerror (err));			\
-          return (1);						\
-        }							\
-    }								\
-  while (0)
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+
+#include "../../gettext.h"
+#define _(string) gettext (string)
 
 
 
-gpgme_error_t
-passphrase_cb (void *c, const char *uid_hint, const char *passphrase_info,
-	       int last_was_bad, int fd)
+std::string rungpg ( const std::string &data, const std::string &arg, const std::string &password)
 {
-	std::string *s;
-	s = (std::string*)c;
-	std::cout << "######" << s << std::endl;
-  write (fd, (*s+"\n").data(), s->size()+1);
-  return 0;
+	int fd[3][2];
+	
+	pipe ( fd[0] );
+	pipe ( fd[1] );
+	pipe ( fd[2] );
+	
+	int pid = fork();
+	if ( pid == 0 )
+	{
+		std::stringstream str;
+		str << fd[2][0];
+		
+		std::string cmd = "gpg --armor --batch --passphrase-fd " + str.str() + " " + arg;
+		
+		close ( fd[1][1] );
+		close ( fd[0][0] );
+		close ( fd[2][1] );
+		
+		dup2( fd[0][1], fileno(stdout) );
+		dup2( fd[1][0], fileno(stdin) );
+		
+		system(cmd.c_str());
+		
+		close ( fd[1][0] );
+		close ( fd[0][1] );
+		close ( fd[2][0] );
+		
+		exit(1);
+	}
+	if ( pid < 0 )
+	{
+		std::cout << "Fork problem" << std::endl;
+		return "";
+	}
+
+	close ( fd[1][0] );
+	close ( fd[0][1] );
+	close ( fd[2][0] );
+		
+	
+	int status;
+	write(fd[2][1], (password + "\n").c_str(), password.size()+1);
+	close(fd[2][1]);
+	write(fd[1][1], data.c_str(), data.size());
+	close(fd[1][1]);
+	
+	waitpid(pid, &status, 0);
+
+#define BUFLEN 200
+	int len;
+	char buf[BUFLEN+1];
+	std::string ret;
+	
+	while ( ( len = read(fd[0][0], buf, BUFLEN) ) != 0 )
+	{
+	
+		if ( len > 0 )
+		{
+			buf[len] = 0;
+			ret += buf;
+		}
+		else 
+			break;
+	}
+
+	close ( fd[0][0] );
+	return ret;
 }
-*/
+
 
 GPGenc::GPGenc(WLSignal *wls) : WoklibPlugin(wls)
 {
-	/* DISABLED FOR NOW */
-#if 0
-	gpgme_check_version (NULL);
-	setlocale (LC_ALL, "");
-	gpgme_set_locale (NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
-#ifndef HAVE_W32_SYSTEM
-	gpgme_set_locale (NULL, LC_MESSAGES, setlocale (LC_MESSAGES, NULL));
-#endif
-	gpgme_error_t err;
-	err = gpgme_engine_check_version (GPGME_PROTOCOL_OpenPGP);
-	if ( err ) 
+	EXP_SIGHOOK("Program Start", &GPGenc::ProgramStart, 1500);
+	EXP_SIGHOOK("Jabber GUI GetJIDMenu", &GPGenc::Menu, 1500);
+	EXP_SIGHOOK("GPGenc AssignKey", &GPGenc::AssignKey, 1000);
+	EXP_SIGHOOK("GPGenc AssignKey Data", &GPGenc::AssignKeyData, 1000);
+	
+	config = new WokXMLTag ("config");
+	EXP_SIGHOOK("Config XML Change /GPGenc", &GPGenc::ReadConfig, 500);
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/GPGenc");
+	wls->SendSignal("Config XML Trigger", &conftag);
+}
+
+GPGenc::~GPGenc()
+{
+	delete config;	
+	SaveConfig();
+	
+}
+
+int
+GPGenc::ProgramStart(WokXMLTag *tag)
+{
+	WokXMLTag form("form");
+	WokXMLTag &x = form.AddTag("x");
+	x.AddAttr("xmlns", "jabber:x:data");
+	x.AddAttr("type", "submit");
+	
+	WokXMLTag &ppfield = x.AddTag("field");
+	ppfield.AddAttr("type", "text-private");
+	ppfield.AddAttr("var", "passphrase");
+	
+	WokXMLTag &keyfield = x.AddTag("field");
+	keyfield.AddAttr("type", "list-single");
+	keyfield.AddAttr("var", "key");
+	
+	WokXMLTag &option = keyfield.AddTag("option");
+	option.AddTag("value").AddText("default");
+	
+	wls->SendSignal("Jabber jabber:x:data Init", form);
+	EXP_SIGHOOK(form.GetAttr("signal"), &GPGenc::Setup, 500);
+	return 1;	
+}
+
+int
+GPGenc::StoreKey(WokXMLTag *tag)
+{
+	WokXMLTag &key = tag->GetFirstTag("config").GetFirstTag("key");
+	tag->GetFirstTag("config").AddAttr("path", "/jid/" + jid_store + "/gpgkey");
+	key.AddAttr("type", "string");
+	key.AddAttr("data", key_store);
+	
+	return 1;
+}
+
+int
+GPGenc::AssignKeyData(WokXMLTag *tag)
+{
+	std::string jid,key;
+	
+	std::list <WokXMLTag *>::iterator iter;
+	
+	for(  iter = tag->GetFirstTag("x", "jabber:x:data").GetTagList("field").begin() ;
+		  iter != tag->GetFirstTag("x", "jabber:x:data").GetTagList("field").end() ;
+		  iter++)
 	{
-		fprintf (stderr, "%s:%d: %s: %s\n", __FILE__, __LINE__, gpgme_strsource (err), gpgme_strerror(err));
+		if ( (*iter)->GetAttr("var") == "jid")
+			jid = (*iter)->GetFirstTag("value").GetBody();
+		if ( (*iter)->GetAttr("var") == "key")
+			key = (*iter)->GetFirstTag("value").GetBody();
 	}
-	else
+	
+
+				
+				
+	if ( (!key.empty()) && (!jid.empty()) )
 	{
-		WokXMLTag form("form");
-		WokXMLTag &x = form.AddTag("x");
-		x.AddAttr("xmlns", "jabber:x:data");
-		x.AddAttr("type", "submit");
+		jid_store = jid;
+		key_store = key;
 		
-		WokXMLTag &ppfield = x.AddTag("field");
-		ppfield.AddAttr("type", "text-private");
-		ppfield.AddAttr("var", "passphrase");
+		EXP_SIGHOOK("Config XML Change /jid/" + jid + "/gpgkey", &GPGenc::StoreKey, 500);
+		WokXMLTag conftag(NULL, "config");
+		conftag.AddAttr("path", "/jid/" + jid + "/gpgkey");
+		wls->SendSignal("Config XML Trigger", &conftag);			
+		EXP_SIGUNHOOK("Config XML Change /jid/" + jid + "/gpgkey", &GPGenc::StoreKey, 500);
+	}			
+	/*
+	<data>
+		<x type='submit' xmlns='jabber:x:data'>
+			<field var='jid'><value>schmidtm524@googlemail.com</value></field>
+			<field var='key'><value>B6CD 75FC 2F40 D626 C6E8  165A F95E 36C5 6D7F 2E7C</value></field>
+		</x>
+	</data>
+	*/
+	return 1;
+}
+
+int
+GPGenc::ReadConfig(WokXMLTag *tag)
+{
+	if ( config )
+		delete config;
+	config = new WokXMLTag(tag->GetFirstTag("config"));
+	
+	
+	return 1;
+}
+
+void
+GPGenc::SaveConfig()
+{	
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/GPGenc");
+	conftag.AddTag(config);
+
+	EXP_SIGUNHOOK("Config XML Change /GPGenc", &GPGenc::ReadConfig, 500);
+	wls->SendSignal("Config XML Store", &conftag);
+	EXP_SIGHOOK("Config XML Change /GPGenc", &GPGenc::ReadConfig, 500);
+	
+}
+
+int
+GPGenc::AssignKey(WokXMLTag *tag)
+{
+	WokXMLTag form("form");
+	WokXMLTag &x = form.AddTag("x");
+	x.AddAttr("xmlns", "jabber:x:data");
+	x.AddAttr("type", "submit");
+	
+	WokXMLTag &jidlabel = x.AddTag("field");
+	jidlabel.AddAttr("type", "fixed");
+	jidlabel.AddTag("value").AddText(_("JID:") + tag->GetAttr("jid"));
+	
+	
+	std::string noresource = tag->GetAttr("jid");
+	if ( noresource.find("/") != std::string::npos )
+		noresource.substr(0, noresource.find("/"));
+	
+	WokXMLTag &jid = x.AddTag("field");
+	jid.AddAttr("type", "hidden");
+	jid.AddAttr("var", "jid");
+	jid.AddTag("value").AddText(tag->GetAttr("jid"));
+	
+	
+	WokXMLTag &keyfield = x.AddTag("field");
+	keyfield.AddAttr("type", "list-single");
+	keyfield.AddAttr("var", "key");
+	
+	std::string data = rungpg("", "--fingerprint -k", "");
+	for(;;)
+	{
+		std::string fp;
+		std::string name;
 		
-		WokXMLTag &keyfield = x.AddTag("field");
-		keyfield.AddAttr("type", "list-single");
-		keyfield.AddAttr("var", "key");
+		std::size_t pos;
+		pos = data.find("pub");
+		
+		if ( pos == std::string::npos ) break;
+		pos = data.find("\n", pos);
+		if ( pos == std::string::npos ) break;
+		pos = data.find(" = ", pos);
+		if ( pos == std::string::npos ) break;
+		pos += 3;
+		
+		std::size_t endline;
+		endline = data.find("\n", pos);
+		if ( endline == std::string::npos ) break;
+
+		fp = data.substr(pos, endline-pos);
+		pos = endline + 1;
+//		if( data.substr(pos, pos+3) == "uid" )
+		{
+			name = data.substr(pos+3, data.find("\n", pos+3)-pos-3);
+			unsigned int i = 0;
+			
+			while ( name[i] == ' ' && name.size() > i )
+				i++;
+			
+			name = name.substr(i);
+		}
+			
+		pos = data.find("\n\n", pos);
+		if ( pos == std::string::npos ) break;
+		
+		data = data.substr(pos);
+		
 		WokXMLTag &option = keyfield.AddTag("option");
-		option.AddTag("value").AddText("default");
-		
-		wls->SendSignal("Jabber jabber:x:data Init", form);
-		
-		EXP_SIGHOOK(form.GetAttr("signal"), &GPGenc::Setup, 500);
+		option.AddTag("value").AddText(fp);
+		option.AddAttr("label", name + "\n" + fp);
 	}
-#endif
+	
+	WokXMLTag &option = keyfield.AddTag("option");
+	option.AddTag("value").AddText("default");
+	
+	
+	form.AddAttr("signal", "GPGenc AssignKey Data");
+	wls->SendSignal("Jabber jabber:x:data Init", form);
+	
+	
+	return 1;
 }
 
-#if 0
-static void
-check_result (gpgme_sign_result_t result, gpgme_sig_mode_t type)
+int
+GPGenc::Menu(WokXMLTag *tag)
 {
-  if (result->invalid_signers)
-    {
-      fprintf (stderr, "Invalid signer found: %s\n",
-	       result->invalid_signers->fpr);
-      exit (1);
-    }
-  if (!result->signatures || result->signatures->next)
-    {
-      fprintf (stderr, "Unexpected number of signatures created\n");
-      exit (1);
-    }
-  if (result->signatures->type != type)
-    {
-      fprintf (stderr, "Wrong type of signature created\n");
-      exit (1);
-    }
-  if (result->signatures->pubkey_algo != GPGME_PK_DSA)
-    {
-      fprintf (stderr, "Wrong pubkey algorithm reported: %i\n",
-	       result->signatures->pubkey_algo);
-      exit (1);
-    }
-  if (result->signatures->hash_algo != GPGME_MD_SHA1)
-    {
-      fprintf (stderr, "Wrong hash algorithm reported: %i\n",
-	       result->signatures->hash_algo);
-      exit (1);
-    }
-  if (result->signatures->sig_class != 1)
-    {
-      fprintf (stderr, "Wrong signature class reported: %u\n",
-	       result->signatures->sig_class);
-      exit (1);
-    }
-  //~ if (strcmp ("A0FF4590BB6122EDEF6E3C542D727CC768697734",
-	      //~ result->signatures->fpr))
-    //~ {
-      //~ fprintf (stderr, "Wrong fingerprint reported: %s\n",
-	       //~ result->signatures->fpr);
-      //~ exit (1);
-    //~ }
-}
+	WokXMLTag &item = tag->AddTag("item");
+	item.AddAttr("name", "Assign GPG key");
+	item.AddAttr("signal" , "GPGenc AssignKey");
 
-std::string
-print_data (gpgme_data_t dh)
-{
-#define BUF_SIZE 512
-	char buf[BUF_SIZE + 1];
-	int ret;
-	std::string to_ret;
-	
-	ret = gpgme_data_seek (dh, 0, SEEK_SET);
-//  if (ret)
- //   fail_if_err (gpgme_err_code_from_errno (errno));
-	while ((ret = gpgme_data_read (dh, buf, BUF_SIZE)) > 0)
-	{
-		to_ret += std::string(buf, ret);
-	}
-	to_ret = to_ret.substr(to_ret.find("\n\n")+1);
-	to_ret = to_ret.substr(0, to_ret.find("-----END PGP"));
-	
-	
-	return to_ret;
-//  if (ret < 0)
- //   fail_if_err (gpgme_err_code_from_errno (errno));
+	return 1;
 }
 
 int
@@ -180,20 +339,10 @@ GPGenc::Setup(WokXMLTag *tag)
 		}
 	}
 	
-	
-	gpgme_error_t err;
-	err = gpgme_new (&ctx);
-	fail_if_err(err);
-	gpgme_set_protocol (ctx, GPGME_PROTOCOL_OpenPGP);
-	gpgme_set_textmode (ctx, 1);
-	gpgme_set_armor (ctx, 1);
-	gpgme_set_passphrase_cb (ctx, passphrase_cb, (void*)(&passphrase));
-	
 	EXP_SIGHOOK("Jabber XML Presence Send", &GPGenc::Presence, 950);
 	EXP_SIGHOOK("Jabber XML Message Send", &GPGenc::OutMessage, 950);
 	EXP_SIGHOOK("Jabber XML Object message", &GPGenc::Message, 1);
 	EXP_SIGHOOK("Jabber XML Presence", &GPGenc::InPresence, 1);
-//	EXP_SIGHOOK("Jabber XML Message xmlns jabber:x:encrypted", &GPGenc::Encrypted, 1);
 	
 	return 1;
 }
@@ -201,48 +350,46 @@ GPGenc::Setup(WokXMLTag *tag)
 int
 GPGenc::OutMessage(WokXMLTag *tag)
 {
-	if ( fingerprints.find(tag->GetAttr("session")) != fingerprints.end() )
+	std::string body = tag->GetFirstTag("message").GetFirstTag("body").GetBody();
+	std::string jid = tag->GetFirstTag("message").GetAttr("to");
+	if ( jid.find("/") != std::string::npos )
+		jid = jid.substr(0, jid.find("/"));
+	
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/jid/" + jid + "/gpgkey");
+	wls->SendSignal("Config XML GetConfig", &conftag);			
+	
+	
+	std::cout << "conftag: " << conftag << std::endl;
+	
+	if ( !conftag.GetFirstTag("config").GetTagList("key").empty() )
 	{
-		if ( fingerprints[tag->GetAttr("session")].find(tag->GetFirstTag("message").GetAttr("to")) != fingerprints[tag->GetAttr("session")].end() )
+		std::string key = conftag.GetFirstTag("config").GetFirstTag("key").GetAttr("data");
+		
+		if ( key.empty() ) 
+			return 1;
+		
+		while( key.find(" ") != std::string::npos )
+			key.erase(key.find(" "), 1);
+		std::string encdata = rungpg(body, "-ase -r " + key, passphrase);
+		
+		
+		if ( ! encdata.empty() )
 		{
-			gpgme_error_t err;
-			gpgme_data_t in, out;
-			gpgme_key_t key[2] = { NULL, NULL };
-			gpgme_encrypt_result_t result;
-
-			std::string body = tag->GetFirstTag("message").GetFirstTag("body").GetBody();
-			err = gpgme_data_new_from_mem (&in, body.data(), body.size(), 0);
-			fail_if_err (err);
-
-			err = gpgme_data_new (&out);
-			fail_if_err (err);
-
-			err = gpgme_get_key (ctx, fingerprints[tag->GetAttr("session")][tag->GetFirstTag("message").GetAttr("to")].c_str(), &key[0], 0);
-			fail_if_err (err);
-
-			err = gpgme_op_encrypt_sign (ctx, key, GPGME_ENCRYPT_ALWAYS_TRUST, in, out);
-			fail_if_err (err);
-			result = gpgme_op_encrypt_result (ctx);
+			if ( encdata.find("\n\n") == std::string::npos )
+				return 1;
+			encdata = encdata.substr(encdata.find("\n\n")+2);
+	
+			if ( encdata.find("\n-----END PGP MESSAGE-----\n") == std::string::npos )
+				return 1;
+			encdata = encdata.substr(0, encdata.rfind("\n-----END PGP MESSAGE-----\n"));
 			
-			if (result->invalid_recipients)
-			{
-				fprintf (stderr, "Invalid recipient encountered: %s\n",
-				result->invalid_recipients->fpr);
-				exit (1);
-			}
-			WokXMLTag &xtag = tag->GetFirstTag("message").AddTag("x");
-			xtag.AddAttr("xmlns", "jabber:x:encrypted");
-			xtag.AddText(print_data(out));
+			WokXMLTag &xtag = tag->GetFirstTag("message").AddTag("x", "jabber:x:encrypted");
+			xtag.AddText(encdata);
 			tag->GetFirstTag("message").GetFirstTag("body").RemoveBody();
 			tag->GetFirstTag("message").GetFirstTag("body").AddText("This message is encrypted");
-			gpgme_key_unref (key[0]);
-			gpgme_key_unref (key[1]);
-			gpgme_data_release (in);
-			gpgme_data_release (out);
-
 		}
 	}
-	
 	return 1;
 }
 
@@ -255,6 +402,7 @@ GPGenc::InPresence(WokXMLTag *tag)
 	{
 		if ( (*xiter)->GetAttr("xmlns") == "jabber:x:signed")
 		{
+#if 0
 			gpgme_error_t err;
 			gpgme_data_t sig, text;
 			gpgme_verify_result_t result;
@@ -273,17 +421,17 @@ GPGenc::InPresence(WokXMLTag *tag)
 			
 			fingerprints[tag->GetAttr("session")][tag->GetFirstTag("presence").GetAttr("from")] = result->signatures->fpr;
 //			check_result (result, 0, "A0FF4590BB6122EDEF6E3C542D727CC768697734", GPG_ERR_NO_ERROR, 1);
-
+#endif
 		}
 	}
 	
 	return 1;	
 }
 
-
 int
 GPGenc::Presence(WokXMLTag *tag)
 {
+/*
 #warning need to read up on how to check for errors here ...
 	gpgme_error_t err;
 	gpgme_data_t in, out;
@@ -307,6 +455,21 @@ GPGenc::Presence(WokXMLTag *tag)
 	
 	gpgme_data_release (out);
 	
+*/
+	std::string childstr = tag->GetFirstTag("presence").GetFirstTag("status").GetChildrenStr();
+	std::string sign = rungpg(childstr, " -s ", passphrase );
+	
+	if ( sign.find("\n\n") == std::string::npos )
+		return 1;
+	sign = sign.substr(sign.find("\n\n")+2);
+	
+	if ( sign.find("\n-----END PGP MESSAGE-----\n") == std::string::npos )
+		return 1;
+	sign = sign.substr(0, sign.rfind("\n-----END PGP MESSAGE-----\n"));
+	
+	if ( !sign.empty() )
+		tag->GetFirstTag("presence").AddTag("x", "jabber:x:signed").AddText(sign);
+	
 	return 1;
 }
 
@@ -316,49 +479,14 @@ GPGenc::Message(WokXMLTag *tag)
 {
 	std::list <WokXMLTag *>::iterator xiter;
 	
-	for( xiter = tag->GetFirstTag("message").GetTagList("x").begin() ; xiter != tag->GetFirstTag("message").GetTagList("x").end() ; xiter++)
+	for( xiter = tag->GetFirstTag("message").GetTagList("x", "jabber:x:encrypted").begin() ; xiter != tag->GetFirstTag("message").GetTagList("x", "jabber:x:encrypted").end() ; xiter++)
 	{
-		if ( (*xiter)->GetAttr("xmlns") == "jabber:x:encrypted")
-		{
-			gpgme_error_t err;
-			gpgme_data_t in, out;
-			gpgme_decrypt_result_t result;
-
-			std::string body = "-----BEGIN PGP MESSAGE-----\nVersion: GnuPG v2.0.7 (GNU/Linux)\n\n" + (*xiter)->GetBody()+ "\n-----END PGP MESSAGE-----\n";
-			err = gpgme_data_new_from_mem (&in, body.data(), body.size(), 0);
-			fail_if_err (err);
-
-			err = gpgme_data_new (&out);
-			fail_if_err (err);
-
-			err = gpgme_op_decrypt (ctx, in, out);
-			fail_if_err (err);
-			result = gpgme_op_decrypt_result (ctx);
-			if (result->unsupported_algorithm)
-			{
-				fprintf (stderr, "%s:%i: unsupported algorithm: %s\n",
-					__FILE__, __LINE__, result->unsupported_algorithm);
-				return 1;
-			}
-			
-			tag->GetFirstTag("message").GetFirstTag("body").RemoveBody();
-			tag->GetFirstTag("message").GetFirstTag("body").AddText(print_data (out));
-			
-			gpgme_data_release (in);
-			gpgme_data_release (out);
-			
-			
-		}
+		std::string body = "-----BEGIN PGP MESSAGE-----\nVersion: GnuPG v2.0.7 (GNU/Linux)\n\n" + (*xiter)->GetBody()+ "\n-----END PGP MESSAGE-----\n";
+		
+		std::string decrypt = rungpg(body, "-d", passphrase);
+		
+		tag->GetFirstTag("message").GetFirstTag("body").RemoveBody();
+		tag->GetFirstTag("message").GetFirstTag("body").AddText(decrypt);
 	}
 	return 1;
 }
-
-
-int
-GPGenc::Encrypted(WokXMLTag *tag)
-{
-	tag->GetFirstTag("message").GetFirstTag("body").AddText("... wokjab not yet able to decrypt");
-	
-	return 1;
-}
-#endif

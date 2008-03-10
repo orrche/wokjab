@@ -61,7 +61,8 @@ Config::Init(WokXMLTag *tag)
 	EXP_SIGHOOK("Config XML Trigger", &Config::Trigger, 999);
 	EXP_SIGHOOK("Config XML Save", &Config::Save, 999);
 	EXP_SIGHOOK("Config XML GetTree", &Config::GetTree, 999);
-
+	EXP_SIGHOOK("Config XML GetConfig", &Config::GetConfig, 999);
+	
 	filename = tag->GetFirstTag("filename").GetAttr("data");
 
 	std::string::size_type pos = filename.find("/");
@@ -129,6 +130,16 @@ Config::GetPosition(std::string path)
 	}
 
 	return place;
+}
+
+int
+Config::GetConfig(WokXMLTag *tag)
+{
+	std::string path = tag->GetAttr("path");
+	WokXMLTag *place = GetPosition(path);
+	tag->AddTag(&place->GetFirstTag("config").GetFirstTag("config"));
+	
+	return 1;
 }
 
 int

@@ -57,6 +57,7 @@ class Config : public WoklibPlugin
 		int Store(WokXMLTag *tag);
 		int Trigger(WokXMLTag *tag);
 		int Save(WokXMLTag *tag);
+		int GetConfig(WokXMLTag *tag);
 		int GetTree(WokXMLTag *tag);
 	protected:
 		WokXMLTag *basetag;

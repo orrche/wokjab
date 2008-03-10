@@ -144,12 +144,31 @@ GtkPreference::CleanWidgetList()
 void
 GtkPreference::LocalActivate(std::string strpath)
 {
-	EXP_SIGHOOK(std::string("Config XML Change ") + strpath, &GtkPreference::CreateWindow, 500);
+	std::string folder;
+		
+	for( unsigned int i = 0 ; i < strpath.size() ; i++)
+	{
+		if( strpath.substr(i,2) == "_a" )
+		{
+			folder += "@";
+			i++;
+		}
+		else if( strpath.substr(i,2) == "__" )
+		{
+			folder += "_";
+			i++;
+		}
+		else
+			folder += strpath[i];
+	}			
+
+	
+	EXP_SIGHOOK(std::string("Config XML Change ") + folder, &GtkPreference::CreateWindow, 500);
 	WokXMLTag conftag(NULL, "config");
-	conftag.AddAttr("path", strpath);
+	conftag.AddAttr("path", folder);
 	conf_path = strpath;
 	wls->SendSignal("Config XML Trigger", &conftag);
-	EXP_SIGUNHOOK(std::string("Config XML Change ") + strpath, &GtkPreference::CreateWindow, 500);
+	EXP_SIGUNHOOK(std::string("Config XML Change ") + folder, &GtkPreference::CreateWindow, 500);
 }
 
 void

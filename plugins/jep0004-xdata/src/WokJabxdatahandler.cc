@@ -32,10 +32,14 @@ void
 WokJabxdatahandler::init(WokXMLTag *tag)
 {
 	char buf[20];
-	sprintf(buf, "%d", id++);
-	std::string signal("Jabber jabber:x:data ID ");
-	signal += buf;
-	tag->AddAttr("signal", signal);
+	
+	if ( tag->GetAttr("signal").empty() )
+	{
+		sprintf(buf, "%d", id++);
+		std::string signal("Jabber jabber:x:data ID ");
+		signal += buf;
+		tag->AddAttr("signal", signal);
+	}
 	tag->AddAttr("id", buf);
 	new WokJabxdataWidget(wls, tag);	
 }
