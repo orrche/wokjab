@@ -39,7 +39,7 @@ JabberRoster::JabberRoster(WLSignal *wls) : WoklibPlugin(wls)
 	EXP_SIGHOOK("Jabber Connection Connect" , &JabberRoster::SignIn, 1000);
 	
 	
-	if ( config->GetFirstTag("ticker").GetAttr("data") != "false" )
+	if ( config->GetFirstTag("ticker").GetAttr("data") == "false" )
 	{
 		WokXMLTag tag("timer");
 		tag.AddAttr("time", "500");
@@ -59,7 +59,7 @@ JabberRoster::~JabberRoster()
 int
 JabberRoster::KeepAlive(WokXMLTag *tag)
 {
-	if ( config->GetFirstTag("ticker").GetAttr("data") == "false" )
+	if ( config->GetFirstTag("ticker").GetAttr("data") != "false" )
 	{
 		tag->AddAttr("stop", "no longer needed");
 		return 1;
@@ -71,7 +71,7 @@ int
 JabberRoster::ReadConfig(WokXMLTag *tag)
 {
 	tag->GetFirstTag("config").GetFirstTag("ticker").AddAttr("type", "bool");
-	tag->GetFirstTag("config").GetFirstTag("ticker").AddAttr("label", "Ticker");
+	tag->GetFirstTag("config").GetFirstTag("ticker").AddAttr("label", "Disable Ticker");
 	
 	tag->GetFirstTag("config").GetFirstTag("ticker_single").AddAttr("type", "bool");
 	tag->GetFirstTag("config").GetFirstTag("ticker_single").AddAttr("label", "Tick single items");

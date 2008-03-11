@@ -121,8 +121,16 @@ Config::GetPosition(std::string path)
 			else
 				folder += substr[i];
 		}				
-							
-		place = &place->GetFirstTag(folder);
+		
+		if ( place->GetTagList(folder).empty() )
+		{
+			WokXMLTag *pre = place;
+			place = &place->GetFirstTag(folder);
+			pre->AddText("\n");
+		}
+		else
+			place = &place->GetFirstTag(folder);
+			
 		if( path.size() == substr.size() )
 			break;
 
