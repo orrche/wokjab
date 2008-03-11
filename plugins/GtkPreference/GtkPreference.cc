@@ -166,7 +166,7 @@ GtkPreference::LocalActivate(std::string strpath)
 	EXP_SIGHOOK(std::string("Config XML Change ") + folder, &GtkPreference::CreateWindow, 500);
 	WokXMLTag conftag(NULL, "config");
 	conftag.AddAttr("path", folder);
-	conf_path = strpath;
+	conf_path = folder;
 	wls->SendSignal("Config XML Trigger", &conftag);
 	EXP_SIGUNHOOK(std::string("Config XML Change ") + folder, &GtkPreference::CreateWindow, 500);
 }
@@ -236,11 +236,29 @@ GtkPreference::AddTreeItem(GtkTreeIter *parant, WokXMLTag &tag, std::string path
 		if((*tagiter)->GetName() != "config")
 		{
 			GtkTreeIter iter;
+			std::string folder;
+			
+			for( unsigned int i = 0 ; i < (*tagiter)->GetName().size() ; i++)
+			{
+				if( (*tagiter)->GetName().substr(i,2) == "_a" )
+				{
+					folder += "@";
+					i++;
+				}
+				else if( (*tagiter)->GetName().substr(i,2) == "__" )
+				{
+					folder += "_";
+					i++;
+				}
+				else
+					folder += (*tagiter)->GetName()[i];
+			}
+			
 			
 			gtk_tree_store_append (treestore, &iter, parant);
 			gtk_tree_store_set (treestore, &iter,
-						1, (path + "/" + (*tagiter)->GetName()).c_str(),
-				    0, (*tagiter)->GetName().c_str(),
+						1, (path + "/" + folder).c_str(),
+				    0, folder.c_str(),
 				    -1);
 						
 			if ( AddTreeItem(&iter, **tagiter, path + "/" + (*tagiter)->GetName()) == 0 )
