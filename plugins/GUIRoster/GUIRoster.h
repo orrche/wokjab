@@ -65,8 +65,8 @@ class GUIRoster : public WoklibPlugin
 		
 		
 		GtkTreeViewColumn *pre_pix_column;
-		/*GtkTreeViewColumn *text_column;
-		GtkTreeViewColumn *post_pix_column;*/
+		GtkTreeViewColumn *text_column;
+		GtkTreeViewColumn *post_pix_column;
 };
 
 
