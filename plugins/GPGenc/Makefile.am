@@ -2,7 +2,7 @@
 libdir = $(prefix)/lib/woklib-plugins/normal
 
 AM_CXXFLAGS =\
-	-O3 -Wall -lwoklib `gpgme-config --cflags --libs` 
+	-O3 -Wall -lwoklib
 
 lib_LTLIBRARIES = \
 	libgpgenc.la
@@ -12,8 +12,8 @@ libgpgenc_la_SOURCES = \
 	g-p-genc.hpp                \
 	g-p-genc.cpp
 
-libgpgenc_la_LDFLAGS = \
-	`gpgme-config --libs`
+libgpgenc_la_LDFLAGS = 
+	
 
 ## File created by the gnome-build tools
 

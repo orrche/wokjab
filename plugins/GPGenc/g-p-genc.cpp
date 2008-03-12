@@ -37,34 +37,40 @@
 
 
 
-std::string rungpg ( const std::string &data, const std::string &arg, const std::string &password)
+std::string rungpg ( const std::string &data, const std::string &arg, const std::string &password, std::string *status = NULL)
 {
-	int fd[3][2];
+	int fd[4][2];
 	
 	pipe ( fd[0] );
 	pipe ( fd[1] );
 	pipe ( fd[2] );
+	pipe ( fd[3] );
 	
 	int pid = fork();
 	if ( pid == 0 )
 	{
-		std::stringstream str;
-		str << fd[2][0];
+		std::stringstream pfd;
+		pfd << fd[2][0];
 		
-		std::string cmd = "gpg -q --armor --batch --always-trust --passphrase-fd " + str.str() + " " + arg;
+		std::stringstream sfd;
+		sfd << fd[3][1];
 		
-		close ( fd[1][1] );
+		std::string cmd = "gpg -q --armor --batch --always-trust --passphrase-fd " + pfd.str() + " --status-fd " + sfd.str() + " " + arg;
+		
 		close ( fd[0][0] );
+		close ( fd[1][1] );
 		close ( fd[2][1] );
+		close ( fd[3][0] );
 		
 		dup2( fd[0][1], fileno(stdout) );
 		dup2( fd[1][0], fileno(stdin) );
 		
 		system(cmd.c_str());
 		
-		close ( fd[1][0] );
 		close ( fd[0][1] );
+		close ( fd[1][0] );
 		close ( fd[2][0] );
+		close ( fd[3][1] );
 		
 		exit(1);
 	}
@@ -74,18 +80,19 @@ std::string rungpg ( const std::string &data, const std::string &arg, const std:
 		return "";
 	}
 
-	close ( fd[1][0] );
 	close ( fd[0][1] );
+	close ( fd[1][0] );
 	close ( fd[2][0] );
-		
+	close ( fd[3][1] );	
 	
-	int status;
 	write(fd[2][1], (password + "\n").c_str(), password.size()+1);
 	close(fd[2][1]);
-	write(fd[1][1], data.c_str(), data.size());
+	if ( data.size() != write(fd[1][1], data.c_str(), data.size())) 
+		std::cout << "ohh fuck..." << std::endl;
 	close(fd[1][1]);
 	
-	waitpid(pid, &status, 0);
+	int pid_status;
+	waitpid(pid, &pid_status, 0);
 
 #define BUFLEN 200
 	int len;
@@ -103,8 +110,25 @@ std::string rungpg ( const std::string &data, const std::string &arg, const std:
 		else 
 			break;
 	}
-
+	
 	close ( fd[0][0] );
+	
+	if ( status )
+	{
+		while ( ( len = read(fd[3][0], buf, BUFLEN) ) != 0 )
+		{
+		
+			if ( len > 0 )
+			{
+				buf[len] = 0;
+				*status += buf;
+			}
+			else 
+				break;
+		}
+	}
+	
+	close ( fd[3][0] );
 	return ret;
 }
 
@@ -339,8 +363,8 @@ GPGenc::Setup(WokXMLTag *tag)
 		}
 	}
 	
-	EXP_SIGHOOK("Jabber XML Presence Send", &GPGenc::Presence, 950);
-	EXP_SIGHOOK("Jabber XML Message Send", &GPGenc::OutMessage, 950);
+	EXP_SIGHOOK("Jabber XML Presence Send", &GPGenc::Presence, 960);
+	EXP_SIGHOOK("Jabber XML Message Send", &GPGenc::OutMessage, 960);
 	EXP_SIGHOOK("Jabber XML Object message", &GPGenc::Message, 1);
 	EXP_SIGHOOK("Jabber XML Presence", &GPGenc::InPresence, 1);
 	
@@ -400,26 +424,70 @@ GPGenc::InPresence(WokXMLTag *tag)
 	{
 		if ( (*xiter)->GetAttr("xmlns") == "jabber:x:signed")
 		{
-#if 0
-			gpgme_error_t err;
-			gpgme_data_t sig, text;
-			gpgme_verify_result_t result;
-
-			std::string sig_data = "-----BEGIN PGP MESSAGE-----\nVersion: GnuPG v2.0.7 (GNU/Linux)\n\n" + (*xiter)->GetBody()+ "-----END PGP MESSAGE-----\n";
 			std::string sig_text = tag->GetFirstTag("presence").GetFirstTag("status").GetChildrenStr();
+			std::string sig_data = "\n-----BEGIN PGP SIGNATURE-----\nVersion: GnuPG v2.0.7 (GNU/Linux)\n\n" + (*xiter)->GetBody()+ "\n-----END PGP SIGNATURE-----\n";
 			
-			/* Checking a valid message.  */
-			err = gpgme_data_new_from_mem (&text, sig_text.data(), sig_text.size(), 0);
-			fail_if_err (err);
-			err = gpgme_data_new_from_mem (&sig, sig_data.data(), sig_data.size(), 0);
-			fail_if_err (err);
-			err = gpgme_op_verify (ctx, sig, text, NULL);
-			fail_if_err (err);
-			result = gpgme_op_verify_result (ctx);
+			char buf[20];
+			strcpy(buf, "/tmp/woksig.XXXXXX");
+			int fd = mkstemp(buf);
+			if ( fd > 0 )
+			{
+				write(fd, sig_text.c_str(), sig_text.size());
+				lseek(fd,SEEK_SET, 0 );
+				
+				std::stringstream test;
+				test << fd;
+				
+				std::string status;
+				std::string data = rungpg(sig_data, std::string(" --verify --enable-special-filenames - -\\&") + test.str(), passphrase,  &status);
+				
+				std::string fp = "";
+				bool goodsig = false;;
+				if ( status.find("\n[GNUPG:] GOODSIG") != std::string::npos )
+				{
+					std::size_t pos;
+					if ( ( pos = status.find("\n[GNUPG:] VALIDSIG ")) != std::string::npos )
+					{
+						pos += 19;
+						if ( status.size() - pos - 40 > 0 )	
+							fp = status.substr(pos, 40);
+						
+						goodsig = true;
+					}
+				}
+				close(fd);
+				unlink(buf);
+				
+				
+				if ( !goodsig )
+					woklib_debug(wls, "GPG bad signature for " + tag->GetFirstTag("presence").GetAttr("from"));
+				
+				
+				std::string jid = tag->GetFirstTag("presence").GetAttr("from");
+				if ( jid.find("/") != std::string::npos )
+				{
+					jid = jid.substr(0, jid.find("/"));	
+				}
+				
+				WokXMLTag conftag(NULL, "config");
+				conftag.AddAttr("path", "/jid/" + jid + "/gpgkey");
+				wls->SendSignal("Config XML GetConfig", &conftag);			
+				
+				std::string key;
+				if ( !conftag.GetFirstTag("config").GetTagList("key").empty() )
+				{
+					key = conftag.GetFirstTag("config").GetFirstTag("key").GetAttr("data");
+					
+					while( key.find(" ") != std::string::npos )
+						key.erase(key.find(" "), 1);
+				}
+				
+				if ( key != fp )
+					woklib_debug(wls, "GPG key mismatch for " + tag->GetFirstTag("presence").GetAttr("from"));
+				
+			}
 			
-			fingerprints[tag->GetAttr("session")][tag->GetFirstTag("presence").GetAttr("from")] = result->signatures->fpr;
-//			check_result (result, 0, "A0FF4590BB6122EDEF6E3C542D727CC768697734", GPG_ERR_NO_ERROR, 1);
-#endif
+
 		}
 	}
 	
@@ -429,41 +497,20 @@ GPGenc::InPresence(WokXMLTag *tag)
 int
 GPGenc::Presence(WokXMLTag *tag)
 {
-/*
-#warning need to read up on how to check for errors here ...
-	gpgme_error_t err;
-	gpgme_data_t in, out;
-	gpgme_sign_result_t result;
-	
-	
 	std::string childstr = tag->GetFirstTag("presence").GetFirstTag("status").GetChildrenStr();
+	std::string sign = rungpg(childstr, " -bs ", passphrase );
 	
-	err = gpgme_data_new_from_mem (&in, childstr.data(), childstr.size(), 0);
-	fail_if_err(err);
-	
-	err = gpgme_data_new (&out);
-	fail_if_err (err);
-	err = gpgme_op_sign (ctx, in, out, GPGME_SIG_MODE_DETACH);
-	fail_if_err (err);
-	result = gpgme_op_sign_result (ctx);
-	check_result (result, GPGME_SIG_MODE_DETACH);
-	WokXMLTag &xtag = tag->GetFirstTag("presence").AddTag("x");
-	xtag.AddAttr("xmlns", "jabber:x:signed");
-	xtag.AddText(print_data(out));
-	
-	gpgme_data_release (out);
-	
-*/
-	std::string childstr = tag->GetFirstTag("presence").GetFirstTag("status").GetChildrenStr();
-	std::string sign = rungpg(childstr, " -s ", passphrase );
+	std::cout << "Sign: " << sign << std::endl;
 	
 	if ( sign.find("\n\n") == std::string::npos )
 		return 1;
 	sign = sign.substr(sign.find("\n\n")+2);
+	std::cout << "Sign: " << sign << std::endl;
 	
-	if ( sign.find("\n-----END PGP MESSAGE-----\n") == std::string::npos )
+	if ( sign.find("\n-----END PGP SIGNATURE-----\n") == std::string::npos )
 		return 1;
-	sign = sign.substr(0, sign.rfind("\n-----END PGP MESSAGE-----\n"));
+	sign = sign.substr(0, sign.rfind("\n-----END PGP SIGNATURE-----\n"));
+	std::cout << "Sign: " << sign << std::endl;
 	
 	if ( !sign.empty() )
 		tag->GetFirstTag("presence").AddTag("x", "jabber:x:signed").AddText(sign);

@@ -29,7 +29,6 @@
 #  include <config.h>
 #endif
 
-#include <gpgme.h>
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
@@ -64,7 +63,6 @@ public:
 protected:
 	WokXMLTag *config;
 	std::string passphrase;
-	gpgme_ctx_t ctx;
 	
 	std::string jid_store, key_store;
 	

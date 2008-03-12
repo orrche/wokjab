@@ -79,8 +79,8 @@ History::History(WLSignal *wls): WoklibPlugin(wls)
 
 		// Here we then hook the signals since there is no problem with the database.
 		
-		EXP_SIGHOOK("Jabber XML Message Send", &History::Outgoing , 1000);
-		EXP_SIGHOOK("Jabber XML Message Normal", &History::Incomming , 1000);
+		EXP_SIGHOOK("Jabber XML Message Send", &History::Outgoing , 950);
+		EXP_SIGHOOK("Jabber XML Message Normal", &History::Incomming , 950);
 		EXP_SIGHOOK("Jabber History GetLast", &History::GetLast, 1000);
 	}
 }
