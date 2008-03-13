@@ -46,7 +46,7 @@ public:
 protected:
 	sqlite3 *db;
 private:
-
+	int pid;
 };
 
 #endif // _HISTORY_HPP_

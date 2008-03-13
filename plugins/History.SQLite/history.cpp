@@ -23,9 +23,7 @@
  */
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-
+#include <sys/wait.h>
 
 #include "history.hpp"
 static int callback(void *NotUsed, int argc, char **argv, char **azColName){
@@ -48,6 +46,7 @@ static int callback(void *NotUsed, int argc, char **argv, char **azColName){
 
 History::History(WLSignal *wls): WoklibPlugin(wls)
 {		
+	pid = 0;
 	{
 		std::string filename = (std::string(g_get_home_dir()) + "/.wokjab/history/history.db");
 		std::string::size_type pos = filename.find("/");
@@ -108,13 +107,14 @@ History::GetLast(WokXMLTag *tag)
 		query = "SELECT * FROM ( SELECT * FROM history WHERE relation='" + tag->GetAttr("relation") + "' ORDER BY time DESC LIMIT " + limit + " ) ORDER BY time ASC";
 	
 	WokXMLTag &ret = tag->AddTag("history");
+	
 	int rc = sqlite3_exec( db, query.c_str(), callback, &ret, &zErrMsg );
 	if( rc!=SQLITE_OK )
 	{
 		fprintf( stderr, "SQL error: %s\n", zErrMsg );
 		sqlite3_free( zErrMsg );
 	}
-	
+
 	return 1;	
 }
 
@@ -131,15 +131,28 @@ History::Outgoing(WokXMLTag *tag)
 	}
 	else
 		resource = "";
-		
-	int rc = sqlite3_exec( db, ("INSERT INTO history (relation, resource, to_jid, from_jid, xml, time) VALUES ('"+ jid +"', '" + resource + "', '" + tag->GetFirstTag("message").GetAttr("to") + 
-					  		"', '" + tag->GetFirstTag("message").GetAttr("from") + "' , '" + XMLisize(tag->GetStr()) + "', strftime('%s','now'))").c_str(), callback, 0, &zErrMsg );
-	if( rc!=SQLITE_OK )
+	
+	
+	if ( pid )
 	{
-		fprintf( stderr, "SQL error: %s\n", zErrMsg );
-		sqlite3_free( zErrMsg );
+		int status;
+		waitpid( pid, &status, 0);
+		pid = 0;
 	}
-
+	
+	pid = fork();
+	if ( pid == 0 )
+	{
+		int rc = sqlite3_exec( db, ("INSERT INTO history (relation, resource, to_jid, from_jid, xml, time) VALUES ('"+ jid +"', '" + resource + "', '" + tag->GetFirstTag("message").GetAttr("to") + 
+					  		"', '" + tag->GetFirstTag("message").GetAttr("from") + "' , '" + XMLisize(tag->GetStr()) + "', strftime('%s','now'))").c_str(), callback, 0, &zErrMsg );
+		if( rc!=SQLITE_OK )
+		{
+			fprintf( stderr, "SQL error: %s\n", zErrMsg );
+			sqlite3_free( zErrMsg );
+		}
+		
+		_exit(0);
+	}
 	return 1;
 }
 
@@ -158,14 +171,25 @@ History::Incomming(WokXMLTag *tag)
 	else
 		resource = "";
 	
-	int rc = sqlite3_exec( db, ("INSERT INTO history (relation, resource, to_jid, from_jid, xml, time) VALUES ('"+ jid +"', '" + resource + "', '" + tag->GetFirstTag("message").GetAttr("to") + 
-					  		"', '" + tag->GetFirstTag("message").GetAttr("from") + "' , '" + XMLisize(tag->GetStr()) + "', strftime('%s','now'))").c_str(), callback, 0, &zErrMsg );
-	if( rc!=SQLITE_OK )
+	if ( pid )
 	{
-		fprintf( stderr, "SQL error: %s\n", zErrMsg );
-		sqlite3_free( zErrMsg );
+		int status;
+		waitpid( pid, &status, 0);
+		pid = 0;
 	}
-
+	
+	pid = fork();
+	if ( pid == 0 )
+	{
+		int rc = sqlite3_exec( db, ("INSERT INTO history (relation, resource, to_jid, from_jid, xml, time) VALUES ('"+ jid +"', '" + resource + "', '" + tag->GetFirstTag("message").GetAttr("to") + 
+								"', '" + tag->GetFirstTag("message").GetAttr("from") + "' , '" + XMLisize(tag->GetStr()) + "', strftime('%s','now'))").c_str(), callback, 0, &zErrMsg );
+		if( rc!=SQLITE_OK )
+		{
+			fprintf( stderr, "SQL error: %s\n", zErrMsg );
+			sqlite3_free( zErrMsg );
+		}
+		_exit(0);
+	}
 	
 	return 1;
 }
