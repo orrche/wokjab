@@ -19,7 +19,8 @@
 #include "filetransfearwid.h"
 
 #include <sys/stat.h>
-#include "iostream"
+#include <iostream>
+#include <iomanip>
 #include "filepicker.h"
 #include <sstream>
 
@@ -124,6 +125,7 @@ jep96::NoHandleIncomming(WokXMLTag *tag)
 {
 	if ( tag->GetAttr("handled") != "true")
 	{
+		tag->AddAttr("strsize", PrettySize (atoi(tag->GetFirstTag("iq").GetFirstTag("si", "http://jabber.org/protocol/si").GetFirstTag("file", "http://jabber.org/protocol/si/profile/file-transfer").GetAttr("size").c_str())));
 		new jep96Widget(wls, tag, tag->GetFirstTag("filetransfer").GetAttr("lsid"));
 		sessions[tag->GetFirstTag("filetransfer").GetAttr("lsid")] = new WokXMLTag (*tag);
 	}
@@ -192,6 +194,7 @@ jep96::Incomming(WokXMLTag *tag)
 			tag->AddAttr("handled", "true");
 			tag->AddAttr("autoaccept", "true");
 			tag->AddAttr("filename", filename);
+			tag->AddAttr("strsize", PrettySize (atoi(tag->GetFirstTag("iq").GetFirstTag("si", "http://jabber.org/protocol/si").GetFirstTag("file", "http://jabber.org/protocol/si/profile/file-transfer").GetAttr("size").c_str())));
 			sessions[tag->GetFirstTag("filetransfer").GetAttr("lsid")] = new WokXMLTag (*tag);
 			
 			WokXMLTag eventtag ("event");
@@ -447,10 +450,11 @@ jep96::SendFile(WokXMLTag *xml)
 	std::string myjid;
 	WokXMLTag jiddata("session");
 	jiddata.AddTag("item").AddAttr("session", xml->GetAttr("session"));
-	wls->SendSignal("Jabber GetUserData", jiddata);
+	wls->SendSignal("Jabber Connection GetUserData", jiddata);
 	myjid = jiddata.GetFirstTag("item").GetFirstTag("username").GetBody() + "@" +
 			jiddata.GetFirstTag("item").GetFirstTag("server").GetBody() + "/" +
 			jiddata.GetFirstTag("item").GetFirstTag("resource").GetBody();
+	
 	
 	gtk_list_store_append (file_store, &iter);
 	gtk_list_store_set (file_store, &iter, 0, filename.c_str(),
@@ -522,7 +526,7 @@ jep96::SendFile(WokXMLTag *xml)
 	data->AddTag(&file_tag);
 	
 	sessions[iqtag.GetAttr("id")] = data;
-	
+	sessions[sid] = new WokXMLTag (*data);
 	EXP_SIGHOOK("Jabber XML IQ ID "  + iqtag.GetAttr("id"), &jep96::SendReply, 500);
 	return 1;
 }
@@ -706,7 +710,7 @@ jep96::PrettySize(unsigned long long size)
 	}
 	
 	std::stringstream msg;
-	msg << double(size)/double(divider) << ending;
+	msg << std::fixed << std::setprecision(2) << double(size)/double(divider) << ending;
 	
 	return msg.str();
 }
@@ -714,6 +718,7 @@ jep96::PrettySize(unsigned long long size)
 int
 jep96::Position(WokXMLTag *postag)
 {
+	std::cout << "Position " << postag->GetAttr("pos") << std::endl;
 	std::string sid = postag->GetAttr("sid");
 	
 	if ( rows.find(sid) != rows.end() )

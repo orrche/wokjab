@@ -111,6 +111,7 @@ DisplayWidget::Show()
 {
 	gtk_widget_show(glade_xml_get_widget (xml, "messagewindow"));
 	gtk_window_present (GTK_WINDOW(glade_xml_get_widget (xml, "messagewindow")));
+	
 }
 
 void
