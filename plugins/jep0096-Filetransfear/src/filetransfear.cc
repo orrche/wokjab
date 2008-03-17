@@ -164,7 +164,7 @@ jep96::Incomming(WokXMLTag *tag)
 		jid = jid.substr(0, jid.find("/"));
 	
 	std::list <WokXMLTag *>::iterator jidlist;
-	
+
 	for( 	jidlist = config->GetFirstTag("auto_accept").GetFirstTag("list").GetTagList("item").begin();
 			jidlist != config->GetFirstTag("auto_accept").GetFirstTag("list").GetTagList("item").end();
 			jidlist++)
@@ -205,6 +205,13 @@ jep96::Incomming(WokXMLTag *tag)
 			item.AddAttr("session", tag->GetAttr("session"));
 			item.AddAttr("timeout", "5000");
 			
+			std::string filen = filename;
+
+			if ( filen.find("/") != std::string::npos )
+			{
+				filen = filen.substr(file.rfind("/"));
+			}
+
 			item.AddTag("description").AddText(_("File ") + std::string(filename) + _(" autoaccepted  from ") + tag->GetFirstTag("iq").GetAttr("from"));
 			item.AddAttr("jid", tag->GetFirstTag("iq").GetAttr("from"));
 		
