@@ -50,6 +50,7 @@ public:
 protected:
 	WokXMLTag origxml;
 	int timeout;
+	guint gtimid;
 
 };
 

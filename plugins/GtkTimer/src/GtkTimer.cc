@@ -26,7 +26,6 @@
 //
 
 #include "GtkTimer.h"
-#include "GtkTimerSession.h"
 
 #include <sstream>
 
@@ -35,7 +34,7 @@ WoklibPlugin (wls)
 {
 	id = 0;
 	EXP_SIGHOOK ("Woklib Timmer Add", &GtkTimer::Add, 999);
-
+	EXP_SIGHOOK ("Woklib Timmer Remove", &GtkTimer::Remove, 999);
 }
 
 
@@ -44,21 +43,36 @@ GtkTimer::~GtkTimer ()
 }
 
 int
+GtkTimer::Remove(WokXMLTag *tag)
+{
+	if ( sess.find(tag->GetAttr("id")) != sess.end() )
+	{
+		delete sess[tag->GetAttr("id")];
+		sess.erase(tag->GetAttr("id"));
+	}
+	
+	return 1;
+}
+
+int
 GtkTimer::Add (WokXMLTag * tag)
 {
 	int time = atoi(tag->GetAttr ("time").c_str());
-
+	id++;
+	
+	std::stringstream idstr;
+	idstr << id;
+	tag->AddAttr("id", idstr.str());
+	
 	if( tag->GetAttr("signal").empty() )
 	{
 		std::stringstream str;
 		
 		str << "Woklib Timmer ID" << id;
 		tag->AddAttr("signal", str.str() );
-		
-		id++;
 	}
 	
-	new GtkTimerSession (wls, time, tag);
+	sess[idstr.str()] = new GtkTimerSession (wls, time, tag);
 
 	return 1;
 }

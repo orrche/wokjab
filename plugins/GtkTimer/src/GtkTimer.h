@@ -35,6 +35,8 @@
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
+#include "GtkTimerSession.h"
+
 using namespace Woklib;
 
 /**
@@ -54,9 +56,10 @@ class GtkTimer:public WoklibPlugin
 		
 	
 	int Add (WokXMLTag * tag);
-
+	int Remove(WokXMLTag *tag);
       protected:
 		unsigned int id;
+		std::map < std::string, GtkTimerSession * > sess;
 
 };
 

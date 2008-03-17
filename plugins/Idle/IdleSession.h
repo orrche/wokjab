@@ -48,6 +48,9 @@ class IdleSession : public WLSignalInstance
 		std::string session;
 		unsigned int t;
 		bool death;
+		
+		std::string tickid;
+		std::string deathid;
 	
 };
 

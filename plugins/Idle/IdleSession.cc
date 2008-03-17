@@ -66,25 +66,21 @@ IdleSession::DeathWatch(WokXMLTag *tag)
 int
 IdleSession::Tick(WokXMLTag *tag)
 {
-
+	WokXMLTag mtag(NULL, "message");
+	mtag.AddAttr("session", session);
+	mtag.AddText(" ");
 	
-	if ( (time(0) - t) > 59 )
-	{		
-		WokXMLTag mtag(NULL, "message");
-		mtag.AddAttr("session", session);
-		mtag.AddText(" ");
-		
-		wls->SendSignal("Jabber XML Send", mtag);
-		
-		WokXMLTag timmertag(NULL, "timer");
-		timmertag.AddAttr("time", "120000");
-		timmertag.AddAttr("signal", "Jabber Idle Tick DeathWatch " + session);
-
-		wls->SendSignal("Woklib Timmer Add",timmertag);
-	}
-	else
-		tag->AddAttr("stop","stop");
+	wls->SendSignal("Jabber XML Send", mtag);
 	
+	WokXMLTag timmertag(NULL, "timer");
+	timmertag.AddAttr("time", "120000");
+	timmertag.AddAttr("signal", "Jabber Idle Tick DeathWatch " + session);
+
+	wls->SendSignal("Woklib Timmer Add",timmertag);
+	deathid = timmertag.GetAttr("id");
+
+	tag->AddAttr("stop","stop");
+	tickid = "";
 	return 1;
 }
 
@@ -93,11 +89,24 @@ IdleSession::Active(WokXMLTag *tag)
 {
 	t = time(0);
 
+	if ( !tickid.empty() )
+	{
+		WokXMLTag remove("remove");
+		remove.AddAttr("id", tickid);
+		wls->SendSignal("Woklib Timmer Remove", remove);
+	}
+	if ( !deathid.empty() )
+	{
+		WokXMLTag remove("remove");
+		remove.AddAttr("id", deathid);
+		wls->SendSignal("Woklib Timmer Remove", remove);
+	}
+	
 	WokXMLTag timmertag(NULL, "timer");
 	timmertag.AddAttr("time", "60000");
 	timmertag.AddAttr("signal", "Jabber Idle Tick Normal " + session);
 
 	wls->SendSignal("Woklib Timmer Add",timmertag);
-
+	tickid = timmertag.GetAttr("id");
 	return 1;
 }
