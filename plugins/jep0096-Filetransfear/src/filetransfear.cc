@@ -209,7 +209,7 @@ jep96::Incomming(WokXMLTag *tag)
 
 			if ( filen.find("/") != std::string::npos )
 			{
-				filen = filen.substr(file.rfind("/"));
+				filen = filen.substr(filen.rfind("/"));
 			}
 
 			item.AddTag("description").AddText(_("File ") + std::string(filename) + _(" autoaccepted  from ") + tag->GetFirstTag("iq").GetAttr("from"));
