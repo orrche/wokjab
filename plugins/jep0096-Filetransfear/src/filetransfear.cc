@@ -75,7 +75,7 @@ WoklibPlugin(wls)
 	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
 
 	renderer = gtk_cell_renderer_text_new ();
-	column = gtk_tree_view_column_new_with_attributes ("Sender/Reciver", renderer, "markup", 4, NULL);
+	column = gtk_tree_view_column_new_with_attributes ("Sender/Receiver", renderer, "markup", 4, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
 /*	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes ("Reciver", renderer, "text", 5, NULL);
@@ -369,7 +369,7 @@ jep96::Wid(WokXMLTag *xml)
 			1, "--",
 			2, "Negotiating" , 
 			3, sslsid.str().c_str(), 
-			4, ("<b>Sender:</b>" + xml->GetFirstTag("iq").GetAttr("from") + "\n<b>Reciver:</b>" + xml->GetFirstTag("iq").GetAttr("to")).c_str(),
+			4, ("<b>Sender:</b>" + xml->GetFirstTag("iq").GetAttr("from") + "\n<b>Receiver:</b>" + xml->GetFirstTag("iq").GetAttr("to")).c_str(),
 			6, xml->GetAttr("session").c_str(), 
 			7, NULL,
 			8, FALSE, 
@@ -509,7 +509,7 @@ jep96::SendFile(WokXMLTag *xml)
 			1, "--",
 			2, "Negotiating" , 
 			3, sid.c_str(),
-			4, ("<b>Sender:</b>" + myjid + "\n<b>Reciver:</b>" + to).c_str(),
+			4, ("<b>Sender:</b>" + myjid + "\n<b>Receiver:</b>" + to).c_str(),
 			6, xml->GetAttr("session").c_str(), 
 			7, NULL,
 			8, TRUE, 
