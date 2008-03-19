@@ -135,10 +135,13 @@ std::string rungpg ( const std::string &data, const std::string &arg, const std:
 
 GPGenc::GPGenc(WLSignal *wls) : WoklibPlugin(wls)
 {
+	cought = false;
+	
 	EXP_SIGHOOK("Program Start", &GPGenc::ProgramStart, 1500);
 	EXP_SIGHOOK("Jabber GUI GetJIDMenu", &GPGenc::Menu, 1500);
 	EXP_SIGHOOK("GPGenc AssignKey", &GPGenc::AssignKey, 1000);
 	EXP_SIGHOOK("GPGenc AssignKey Data", &GPGenc::AssignKeyData, 1000);
+	EXP_SIGHOOK("Jabber AutoConnect", &GPGenc::AutoConnectInhibiter, 100);
 	
 	config = new WokXMLTag ("config");
 	EXP_SIGHOOK("Config XML Change /GPGenc", &GPGenc::ReadConfig, 500);
@@ -152,6 +155,13 @@ GPGenc::~GPGenc()
 	delete config;	
 	SaveConfig();
 	
+}
+
+int
+GPGenc::AutoConnectInhibiter(WokXMLTag *tag)
+{
+	cought = true;	
+	return 0;
 }
 
 int
@@ -368,6 +378,12 @@ GPGenc::Setup(WokXMLTag *tag)
 	EXP_SIGHOOK("Jabber XML Object message", &GPGenc::Message, 1);
 	EXP_SIGHOOK("Jabber XML Presence", &GPGenc::InPresence, 1);
 	
+	EXP_SIGUNHOOK("Jabber AutoConnect", &GPGenc::AutoConnectInhibiter, 100);
+	if ( cought )
+	{
+		WokXMLTag dummy("xml");
+		wls->SendSignal("Jabber AutoConnect", dummy);
+	}
 	return 1;
 }
 

@@ -55,7 +55,7 @@ WoklibPlugin(wls)
 			G_CALLBACK (jep96::RemoveStream), this);
 	
 	file_store = gtk_list_store_new (9, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
-									 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_BOOLEAN, G_TYPE_STRING);
+			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_BOOLEAN, G_TYPE_STRING);
   	gtk_tree_view_set_model (GTK_TREE_VIEW(fileview), GTK_TREE_MODEL(file_store));
 	
 	renderer = gtk_cell_renderer_text_new ();
@@ -324,15 +324,15 @@ jep96::Wid(WokXMLTag *xml)
 	
 	gtk_list_store_append (file_store, &iter);  /* Acquire a top-level iterator */
 	gtk_list_store_set (file_store, &iter, 0, xml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("file").GetAttr("name").c_str(),
-											1, "--",
-											2, "Negotiating" , 
-											3, sslsid.str().c_str(), 
-											4, xml->GetFirstTag("iq").GetAttr("from").c_str(), 
-											5, xml->GetFirstTag("iq").GetAttr("to").c_str(),
-											6, xml->GetAttr("session").c_str(), 
-											7, NULL,
-											8, FALSE, 
-											-1);
+			1, "--",
+			2, "Negotiating" , 
+			3, sslsid.str().c_str(), 
+			4, xml->GetFirstTag("iq").GetAttr("from").c_str(), 
+			5, xml->GetFirstTag("iq").GetAttr("to").c_str(),
+			6, xml->GetAttr("session").c_str(), 
+			7, NULL,
+			8, FALSE, 
+			-1);
 	
 	if ( popup_ft_wid != "false" )
 	{
@@ -465,15 +465,15 @@ jep96::SendFile(WokXMLTag *xml)
 	
 	gtk_list_store_append (file_store, &iter);
 	gtk_list_store_set (file_store, &iter, 0, filename.c_str(),
-											1, "--",
-											2, "Negotiating" , 
-											3, sid.c_str(),
-											4, myjid.c_str(),
-											5, to.c_str(),
-											6, xml->GetAttr("session").c_str(), 
-											7, NULL,
-											8, TRUE, 
-											-1);
+			1, "--",
+			2, "Negotiating" , 
+			3, sid.c_str(),
+			4, myjid.c_str(),
+			5, to.c_str(),
+			6, xml->GetAttr("session").c_str(), 
+			7, NULL,
+			8, TRUE, 
+			-1);
 	
 	if ( popup_ft_wid != "false" && xml->GetAttr("popup") != "false" )
 	{

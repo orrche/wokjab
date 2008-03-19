@@ -53,6 +53,7 @@ public:
 	int ReadConfig(WokXMLTag *tag);
 	int ProgramStart(WokXMLTag *tag);
 	int StoreKey(WokXMLTag *tag);
+	int AutoConnectInhibiter(WokXMLTag *tag);
 	
 	void SaveConfig();
 	
@@ -63,6 +64,7 @@ public:
 protected:
 	WokXMLTag *config;
 	std::string passphrase;
+	bool cought;
 	
 	std::string jid_store, key_store;
 	

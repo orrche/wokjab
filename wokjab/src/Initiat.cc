@@ -88,7 +88,8 @@ sj(sj)
 	wls->SendSignal("Config XML Trigger", &conftag);
 	*/
 	
-	EXP_SIGHOOK("GUI Window Init", &Initiat::Ready, 500);
+	EXP_SIGHOOK("Jabber AutoConnect", &Initiat::AccountConfig, 500);
+	EXP_SIGHOOK("Program Start", &Initiat::Ready, 500);
 }
 
 
@@ -116,21 +117,21 @@ Initiat::Plugins(WokXMLTag *xml)
 int
 Initiat::Ready(WokXMLTag *tag)
 {
-	EXP_SIGHOOK("Config XML Change /connect/window", &Initiat::AccountConfig, 500);
-	WokXMLTag conftag(NULL, "config");
-	conftag.AddAttr("path", "/connect/window");
-	wls->SendSignal("Config XML Trigger", &conftag);
-	EXP_SIGUNHOOK("Config XML Change /connect/window", &Initiat::AccountConfig, 500);
-
+	wls->SendSignal("Jabber AutoConnect", tag);
 	return 1;	
 }
 
 int
-Initiat::AccountConfig(WokXMLTag *tag)
+Initiat::AccountConfig(WokXMLTag *unimportanttag)
 {
+	WokXMLTag tag("config");
+	tag.AddAttr("path", "/connect/window");
+	wls->SendSignal("Config XML GetConfig", tag);
+	
+	
 	std::list <WokXMLTag *>::iterator iter;
 
-	for( iter = tag->GetFirstTag("config").GetTagList("account").begin() ; iter != tag->GetFirstTag("config").GetTagList("account").end() ; iter++)
+	for( iter = tag.GetFirstTag("config").GetTagList("account").begin() ; iter != tag.GetFirstTag("config").GetTagList("account").end() ; iter++)
 	{
 		if ( (*iter)->GetFirstTag("no_auto").GetAttr("data") == "false" )
 		{
