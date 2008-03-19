@@ -54,28 +54,37 @@ WoklibPlugin(wls)
 	g_signal_connect (G_OBJECT (glade_xml_get_widget(gxml, "removebutton")), "clicked",
 			G_CALLBACK (jep96::RemoveStream), this);
 	
-	file_store = gtk_list_store_new (9, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
-			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_BOOLEAN, G_TYPE_STRING);
+	file_store = gtk_list_store_new (10, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
+			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_BOOLEAN, G_TYPE_INT);
   	gtk_tree_view_set_model (GTK_TREE_VIEW(fileview), GTK_TREE_MODEL(file_store));
 	
 	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes ("File/ID", renderer, "text", 0, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
+	/*
 	renderer = gtk_cell_renderer_text_new ();
-	column = gtk_tree_view_column_new_with_attributes ("Data Transfeard", renderer, "text", 1, NULL);
+	column = gtk_tree_view_column_new_with_attributes ("Data Transferd", renderer, "text", 1, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
+	*/
+	renderer = gtk_cell_renderer_progress_new ();
+	column = gtk_tree_view_column_new_with_attributes ("Data Transferd", renderer, "text", 1 , "value" , 9, NULL);
+	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
+	
 	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes ("Status", renderer, "text", 2, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
+
+	renderer = gtk_cell_renderer_text_new ();
+	column = gtk_tree_view_column_new_with_attributes ("Sender/Reciver", renderer, "markup", 4, NULL);
+	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
+/*	renderer = gtk_cell_renderer_text_new ();
+	column = gtk_tree_view_column_new_with_attributes ("Reciver", renderer, "text", 5, NULL);
+	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
+*/
 	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes ("sid", renderer, "text", 3, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
-	renderer = gtk_cell_renderer_text_new ();
-	column = gtk_tree_view_column_new_with_attributes ("Sender", renderer, "text", 4, NULL);
-	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
-	renderer = gtk_cell_renderer_text_new ();
-	column = gtk_tree_view_column_new_with_attributes ("Reciver", renderer, "text", 5, NULL);
-	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
+	
 	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes ("Session", renderer, "text", 6, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
@@ -107,6 +116,8 @@ WoklibPlugin(wls)
 	conftag.AddAttr("path", "/filetransfer");
 	wls->SendSignal("Config XML Trigger", &conftag);
  
+				
+	g_timeout_add (1000, (gboolean (*)(void *)) (jep96::SpeedCalc), this);
 }
 
 jep96::~jep96()
@@ -120,12 +131,39 @@ jep96::~jep96()
 	g_object_unref(gxml);
 }
 
+gboolean 
+jep96::SpeedCalc (jep96 * c)
+{
+	std::map <std::string, WokXMLTag *>::iterator iter;
+	
+	for( iter = c->sessions.begin() ; iter != c->sessions.end() ; iter++)
+	{
+		if( iter->second->GetAttr("lastpos").empty() )
+		{
+			iter->second->AddAttr("speed", c->PrettySize(atoll(iter->second->GetAttr("position").c_str())));
+		}
+		else
+		{
+			long long int progress;
+			progress = atoll(iter->second->GetAttr("position").c_str()) - atoll(iter->second->GetAttr("lastpos").c_str());
+			iter->second->AddAttr("speed", c->PrettySize(progress));
+		}
+		iter->second->AddAttr("lastpos", iter->second->GetAttr("position"));
+	}
+	
+	
+	
+	return TRUE;
+}
+
+
 int
 jep96::NoHandleIncomming(WokXMLTag *tag)
 {
 	if ( tag->GetAttr("handled") != "true")
 	{
-		tag->AddAttr("strsize", PrettySize (atoi(tag->GetFirstTag("iq").GetFirstTag("si", "http://jabber.org/protocol/si").GetFirstTag("file", "http://jabber.org/protocol/si/profile/file-transfer").GetAttr("size").c_str())));
+		tag->AddAttr("strsize", PrettySize (atoll(tag->GetFirstTag("iq").GetFirstTag("si", "http://jabber.org/protocol/si").GetFirstTag("file", "http://jabber.org/protocol/si/profile/file-transfer").GetAttr("size").c_str())));
+		tag->AddAttr("size", tag->GetFirstTag("iq").GetFirstTag("si", "http://jabber.org/protocol/si").GetFirstTag("file", "http://jabber.org/protocol/si/profile/file-transfer").GetAttr("size"));
 		new jep96Widget(wls, tag, tag->GetFirstTag("filetransfer").GetAttr("lsid"));
 		sessions[tag->GetFirstTag("filetransfer").GetAttr("lsid")] = new WokXMLTag (*tag);
 	}
@@ -194,7 +232,8 @@ jep96::Incomming(WokXMLTag *tag)
 			tag->AddAttr("handled", "true");
 			tag->AddAttr("autoaccept", "true");
 			tag->AddAttr("filename", filename);
-			tag->AddAttr("strsize", PrettySize (atoi(tag->GetFirstTag("iq").GetFirstTag("si", "http://jabber.org/protocol/si").GetFirstTag("file", "http://jabber.org/protocol/si/profile/file-transfer").GetAttr("size").c_str())));
+			tag->AddAttr("strsize", PrettySize (atoll(tag->GetFirstTag("iq").GetFirstTag("si", "http://jabber.org/protocol/si").GetFirstTag("file", "http://jabber.org/protocol/si/profile/file-transfer").GetAttr("size").c_str())));
+			tag->AddAttr("size", tag->GetFirstTag("iq").GetFirstTag("si", "http://jabber.org/protocol/si").GetFirstTag("file", "http://jabber.org/protocol/si/profile/file-transfer").GetAttr("size").c_str());
 			sessions[tag->GetFirstTag("filetransfer").GetAttr("lsid")] = new WokXMLTag (*tag);
 			
 			WokXMLTag eventtag ("event");
@@ -323,12 +362,11 @@ jep96::Wid(WokXMLTag *xml)
 	GtkTreeIter iter;
 	
 	gtk_list_store_append (file_store, &iter);  /* Acquire a top-level iterator */
-	gtk_list_store_set (file_store, &iter, 0, xml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("file").GetAttr("name").c_str(),
+	gtk_list_store_set (file_store, &iter, 0, (xml->GetFirstTag("iq").GetFirstTag("si").GetFirstTag("file").GetAttr("name")).c_str(),
 			1, "--",
 			2, "Negotiating" , 
 			3, sslsid.str().c_str(), 
-			4, xml->GetFirstTag("iq").GetAttr("from").c_str(), 
-			5, xml->GetFirstTag("iq").GetAttr("to").c_str(),
+			4, ("<b>Sender:</b>" + xml->GetFirstTag("iq").GetAttr("from") + "\n<b>Reciver:</b>" + xml->GetFirstTag("iq").GetAttr("to")).c_str(),
 			6, xml->GetAttr("session").c_str(), 
 			7, NULL,
 			8, FALSE, 
@@ -464,12 +502,11 @@ jep96::SendFile(WokXMLTag *xml)
 	
 	
 	gtk_list_store_append (file_store, &iter);
-	gtk_list_store_set (file_store, &iter, 0, filename.c_str(),
+	gtk_list_store_set (file_store, &iter, 0, (filename).c_str(),
 			1, "--",
 			2, "Negotiating" , 
 			3, sid.c_str(),
-			4, myjid.c_str(),
-			5, to.c_str(),
+			4, ("<b>Sender:</b>" + myjid + "\n<b>Reciver:</b>" + to).c_str(),
 			6, xml->GetAttr("session").c_str(), 
 			7, NULL,
 			8, TRUE, 
@@ -530,6 +567,7 @@ jep96::SendFile(WokXMLTag *xml)
 	data->AddAttr("rate", xml->GetAttr("rate"));
 	data->AddAttr("file", file);
 	data->AddAttr("strsize", PrettySize(size));
+	data->AddAttr("size", ssize);
 	data->AddTag(&file_tag);
 	
 	sessions[iqtag.GetAttr("id")] = data;
@@ -590,14 +628,14 @@ jep96::Finnished(WokXMLTag *fintag)
 	{
 		if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[fintag->GetAttr("sid")])))
 		{
-			gchar *session, *from, *to, *filename;
+			gchar *session, *filename;
 			gboolean sending;
 			
 			WokXMLTag *eventtag;
 			eventtag = new WokXMLTag("event");
 			
 			gtk_list_store_set (file_store, &iter, 2, "Finished", 7, eventtag, -1);
-			gtk_tree_model_get(GTK_TREE_MODEL(file_store), &iter, 0, &filename, 4, &from, 5, &to, 6, &session, 8, &sending, -1);
+			gtk_tree_model_get(GTK_TREE_MODEL(file_store), &iter, 0, &filename, 6, &session, 8, &sending, -1);
 			
 			eventtag->AddAttr("type", "jep0096 FinishedFile");
 			WokXMLTag &item = eventtag->AddTag("item");
@@ -605,13 +643,13 @@ jep96::Finnished(WokXMLTag *fintag)
 			item.AddAttr("session", session);
 			if ( sending == TRUE )
 			{
-				item.AddTag("description").AddText(_("File ") + std::string(filename) + _(" finished sending to ") + std::string(to));
-				item.AddAttr("jid", to);
+				item.AddTag("description").AddText(_("File ") + std::string(filename) + _(" finished sending to ") + sessions[fintag->GetAttr("sid")]->GetFirstTag("iq").GetAttr("to"));
+				item.AddAttr("jid", sessions[fintag->GetAttr("sid")]->GetFirstTag("iq").GetAttr("to"));
 			}
 			else
 			{
-				item.AddTag("description").AddText(_("File ") + std::string(filename) + _(" finished reciving from ") + std::string(from));
-				item.AddAttr("jid", from);
+				item.AddTag("description").AddText(_("File ") + std::string(filename) + _(" finished reciving from ") + sessions[fintag->GetAttr("sid")]->GetFirstTag("iq").GetAttr("from"));
+				item.AddAttr("jid", sessions[fintag->GetAttr("sid")]->GetFirstTag("iq").GetAttr("from"));
 			}
 			
 			WokXMLTag &commands = item.AddTag("commands");
@@ -635,8 +673,6 @@ jep96::Finnished(WokXMLTag *fintag)
 			wls->SendSignal("Jabber Event Add", eventtag);
 			g_free(filename);
 			g_free(session);
-			g_free(from);
-			g_free(to);
 		}
 	}
 
@@ -722,24 +758,34 @@ jep96::PrettySize(unsigned long long size)
 	return msg.str();
 }
 
+void
+jep96::UpdateRowPosition(std::string sid)
+{
+	std::stringstream msg;
+	msg << PrettySize(atol(sessions[sid]->GetAttr("position").c_str())) << "/" << sessions[sid]->GetAttr("strsize") << "\n" << sessions[sid]->GetAttr("speed") << "/s";
+	
+	GtkTreeIter iter;
+	if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[sid])))
+	{
+		long long int size = atoll(sessions[sid]->GetAttr("size").c_str());
+		if ( size )
+		{
+			int progress = 100 * atoll(sessions[sid]->GetAttr("position").c_str()) / size;
+			gtk_list_store_set (file_store, &iter, 1, msg.str().c_str() , 9, progress, -1);
+		}
+		else
+			gtk_list_store_set (file_store, &iter, 1, msg.str().c_str() , 9, 100, -1);
+
+	}
+}
+
 int
 jep96::Position(WokXMLTag *postag)
 {
-	std::cout << "Position " << postag->GetAttr("pos") << std::endl;
-	std::string sid = postag->GetAttr("sid");
-	
-	if ( rows.find(sid) != rows.end() )
+	if ( sessions.find(postag->GetAttr("sid")) != sessions.end())
 	{
-		std::stringstream msg;
-		msg << PrettySize(atol(postag->GetAttr("pos").c_str()));// << sessions[sid]->GetAttr("strsize");
-		if ( sessions.find(sid) != sessions.end() )
-			msg << "/" << sessions[sid]->GetAttr("strsize");
-		
-		GtkTreeIter iter;
-		if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[sid])))
-		{
-			gtk_list_store_set (file_store, &iter, 1, msg.str().c_str() , -1);
-		}
+		sessions[postag->GetAttr("sid")]->AddAttr("position", postag->GetAttr("pos"));
+		UpdateRowPosition(postag->GetAttr("sid"));
 	}
 	
 	return true;

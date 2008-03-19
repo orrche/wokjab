@@ -59,11 +59,13 @@ class jep96 : public WoklibPlugin
 		int FileAuth(WokXMLTag *tag);
 	
 		std::string PrettySize(unsigned long long size);
+		void UpdateRowPosition(std::string sid);
+		
 		static gboolean Delete( GtkWidget *widget, GdkEvent *event, jep96 *c);
 		static void CloseWindow(GtkButton *button, jep96 *c);
 		static void RemoveStream(GtkButton *button, jep96 *c);
+		static gboolean SpeedCalc (jep96 * c);
 	protected:
-		std::map <std::string, WokXMLTag *> sessions;
 		std::string autoproxy;
 		std::string autoproxytype;
 		std::string openwith;
@@ -74,7 +76,10 @@ class jep96 : public WoklibPlugin
 		GladeXML *gxml;
 		GtkWidget *filewindow;
 		GtkListStore *file_store;
+		
 		std::map <std::string, GtkTreeRowReference*> rows;
+		std::map <std::string, WokXMLTag *> sessions;
+		
 };
 
 #endif // __BROWSER_H
