@@ -81,6 +81,8 @@ WoklibPlugin(wls)
 	column = gtk_tree_view_column_new_with_attributes ("Reciver", renderer, "text", 5, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
 */
+	
+	/*
 	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes ("sid", renderer, "text", 3, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
@@ -88,6 +90,7 @@ WoklibPlugin(wls)
 	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes ("Session", renderer, "text", 6, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
+	*/
 	
 	EXP_SIGHOOK("Jabber XML IQ New si set xmlns:http://jabber.org/protocol/si", &jep96::Wid, 999);
 	EXP_SIGHOOK("Jabber Stream File Send", &jep96::SendFile, 999);
