@@ -1,5 +1,5 @@
 #
-#  Copyright (C) 2003-2005 Kent Gustavsson <oden@gmx.net>
+#  Copyright (C) 2003-2008 Kent Gustavsson <oden@gmx.net>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,11 +18,15 @@
 
 libdir = $(prefix)/lib/woklib-plugins/normal
 
+datadir = $(prefix)/lib/woklib/glade
+pkgdata_DATA = \
+        vcardavatar.glade
+        
 AM_CFLAGS =\
 	`pkg-config gtk+-2.0 --cflags`
 
 AM_CXXFLAGS =\
-	`pkg-config gtk+-2.0 --cflags` -lwoklib
+	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -lwoklib
 
 	
 lib_LTLIBRARIES = libjep0153-vcardavatar.la 

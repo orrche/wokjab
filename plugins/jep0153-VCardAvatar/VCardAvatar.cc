@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2006  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2006-2008  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
@@ -31,21 +31,28 @@
 #include <fstream>
 #include <sstream>
 
+#include <gtk/gtk.h>
+
 #include "openssl/sha.h"
 const char* base64char = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 
 VCardAvatar::VCardAvatar(WLSignal *wls) : WoklibPlugin(wls)
 {
-	EXP_SIGHOOK("Jabber Avatar SetMy", &VCardAvatar::SetMy, 50);
+	EXP_SIGHOOK("Jabber Avatar SetMy", &VCardAvatar::GetMyCard, 50);
 	EXP_SIGHOOK("Jabber XML Presence", &VCardAvatar::Presence, 50);
-	EXP_SIGHOOK("Jabber GUI GetIcon", &VCardAvatar::GetIcon, 50);
 	EXP_SIGHOOK("Jabber XML Presence Send", &VCardAvatar::SendPresence, 50);
+	EXP_SIGHOOK("Jabber GUI GetIcon", &VCardAvatar::GetIcon, 50);
 	EXP_SIGHOOK("Jabber Connection Authenticated", &VCardAvatar::NewSession, 50);
+	
+	EXP_SIGHOOK("GetMenu", &VCardAvatar::MainMenu, 999);
+	EXP_SIGHOOK("Jabber Avatar MenuSet", &VCardAvatar::MenuSet, 50);
 	
 	mkdir((std::string(std::getenv("HOME")) + "/.wokjab").c_str(), 0700);
 	mkdir((std::string(std::getenv("HOME")) + "/.wokjab/avatar").c_str(), 0700);
 	
+	mypictag = NULL;
+	gxml = NULL;
 	ready = false;
 }
 
@@ -53,6 +60,85 @@ VCardAvatar::VCardAvatar(WLSignal *wls) : WoklibPlugin(wls)
 VCardAvatar::~VCardAvatar()
 {
 
+}
+
+int
+VCardAvatar::MenuSet(WokXMLTag *tag)
+{
+	if ( !gxml )
+	{
+		gxml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/vcardavatar.glade", NULL, NULL);
+		g_signal_connect (G_OBJECT (glade_xml_get_widget (gxml, "ok_button")), "clicked",
+			G_CALLBACK (VCardAvatar::OK_Button), this);
+		g_signal_connect (G_OBJECT (glade_xml_get_widget (gxml, "close_button")), "clicked",
+			G_CALLBACK (VCardAvatar::Close_Button), this);
+		g_signal_connect (G_OBJECT (glade_xml_get_widget (gxml, "window")), "destroy", 
+			G_CALLBACK (VCardAvatar::Window_Destroy), this);
+	
+	}
+
+	gtk_window_present(GTK_WINDOW(glade_xml_get_widget(gxml, "window")));
+}
+
+void
+VCardAvatar::Window_Destroy (GtkObject *object, VCardAvatar *c)
+{
+	g_object_unref(c->gxml);
+	c->gxml = NULL;
+}
+
+void
+VCardAvatar::OK_Button(GtkButton *button, VCardAvatar *c)
+{
+	gchar *file_name = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER(glade_xml_get_widget (c->gxml, "file")));
+	gtk_widget_destroy(glade_xml_get_widget (c->gxml, "window"));
+	
+	if ( file_name )
+	{
+		WokXMLTag avatar("avatar");
+		avatar.AddAttr("file", file_name);
+		c->wls->SendSignal("Jabber Avatar SetMy", avatar);
+		/*
+	<signal name="Jabber Avatar SetMy">
+		<avatar file="/home/nedo/Desktop/drawing/Goblin Forager.fun.svg.png" />
+	</signal>
+		*/
+	
+		g_free(file_name);
+	}
+}
+
+void
+VCardAvatar::Close_Button(GtkButton *button, VCardAvatar *c)
+{
+	gtk_widget_destroy(glade_xml_get_widget (c->gxml, "window"));
+}
+
+int
+VCardAvatar::MainMenu(WokXMLTag *tag)
+{
+	std::list <WokXMLTag *>::iterator iter;
+	WokXMLTag *settingstag = NULL;
+	for ( iter = tag->GetTagList("item").begin() ; iter != tag->GetTagList("item").end() ; iter++)
+	{
+		if ( (*iter)->GetAttr("name") == "Settings")
+		{
+			settingstag = *iter;
+			break;
+		}
+	}
+	if( !settingstag )
+	{
+		settingstag = &tag->AddTag("item");
+		settingstag->AddAttr("name", "Settings");
+	}
+	
+	WokXMLTag *xml;
+	xml = &settingstag->AddTag("item");
+	xml->AddAttr("name", "Set Avatar");
+	xml->AddAttr("signal", "Jabber Avatar MenuSet");
+	
+	return 1;
 }
 
 std::string
@@ -105,8 +191,8 @@ int
 VCardAvatar::MyVcard(WokXMLTag *tag)
 {
 	/*
-	<iq from='thorsten@xmppnet.de/Gajim' to='nedo@jabber.se/laptop' id='wokjab166' type='result'>
-		<vCard xmlns='vcard-temp'><TEL><HOME/><NUMBER>018050211217589</NUMBER></TEL><NICKNAME>Thorsten</NICKNAME><FN>Thorsten</FN><PHOTO><TYPE>image/png</TYPE><BINVAL>
+	<iq from='mjau@xmpp.net/Gajim' to='nedo@jabber.se/laptop' id='wokjab166' type='result'>
+		<vCard xmlns='vcard-temp'><TEL><HOME/><NUMBER>0180517589</NUMBER></TEL><NICKNAME>joho</NICKNAME><FN>....</FN><PHOTO><TYPE>image/png</TYPE><BINVAL>
 	*/
 	
 	if ( tag->GetFirstTag("iq").GetAttr("type") != "result" )
@@ -117,7 +203,22 @@ VCardAvatar::MyVcard(WokXMLTag *tag)
 	if ( binval.GetBody().empty() )
 		return 1;
 		
+	unsigned char buffer[binval.GetBody().size()];
+	int len = binval.GetBodyAsBase64((char*)buffer, binval.GetBody().size());
 	
+	unsigned char buf[30];
+	SHA1(buffer,len,buf);
+	
+	myhash.clear();
+	for( int i = 0 ; i < 20 ; i++)
+	{
+		char buf2[3];
+		if(buf[i] < 16)
+			sprintf(buf2, "0%x", buf[i]);
+		else
+			sprintf(buf2, "%x", buf[i]);
+		myhash += buf2;
+	}
 	
 	return 1;
 }
@@ -125,50 +226,91 @@ VCardAvatar::MyVcard(WokXMLTag *tag)
 int
 VCardAvatar::NewSession(WokXMLTag *tag)
 {
-	woklib_message(wls, tag->GetStr());
 	std::string session = tag->GetAttr("session");
 	
 	WokXMLTag data("data");
 	data.AddTag("item").AddAttr("session", session);
+	wls->SendSignal("Jabber Connection GetUserData", data);
 	
 	WokXMLTag msgtag("message");
 	msgtag.AddAttr("session", session);
 	WokXMLTag &iqtag = msgtag.AddTag("iq");
-	iqtag.AddAttr("to", data.GetFirstTag("session").GetAttr("username") + "@" + data.GetFirstTag("session").GetAttr("server"));
+	iqtag.AddAttr("type", "get");
+	iqtag.AddAttr("to", data.GetFirstTag("item").GetFirstTag("username").GetBody() + "@" + data.GetFirstTag("item").GetFirstTag("server").GetBody());
 	
 	WokXMLTag &vcard = iqtag.AddTag("vCard", "vcard-temp");
 	vcard.AddAttr("prodid", "-//HandGen//NONSGML vGen v1.0//EN");
 	vcard.AddAttr("version", "2.0");
 	
 	
-	wls->SendSignal("Jabber XML IQ Send", &msgtag);signal = std::string("Jabber XML IQ ID ") + id;
-	EXP_SIGUNHOOK("Jabber XML IQ ID " + msgtag.GetFirstTag("iq").GetAttr("id"), &VCardAvatar::MyVcard, 1000);
-	
-	/*
-	<iq id='wokjab5' to='nedo@jabber.se/laptop' type='get'>
-		<vCard prodid='-//HandGen//NONSGML vGen v1.0//EN' version='2.0' xmlns='vcard-temp'>
-		</vCard>
-	</iq>
-	*/
+	wls->SendSignal("Jabber XML IQ Send", &msgtag);
+	EXP_SIGHOOK("Jabber XML IQ ID " + msgtag.GetFirstTag("iq").GetAttr("id"), &VCardAvatar::MyVcard, 1000);
+
 	return 1;
+}
+
+int
+VCardAvatar::GetMyCard(WokXMLTag *tag)
+{
+	delete mypictag;
+	mypictag = new WokXMLTag(*tag);
+		
+	WokXMLTag sess("session");
+	wls->SendSignal("Jabber GetSessions", &sess);
+	        
+	std::list <WokXMLTag *>::iterator iter;
+	
+	for ( iter = sess.GetTagList("item").begin() ; iter != sess.GetTagList("item").end(); iter++)
+	{
+		std::string session = (*iter)->GetAttr("name");
+	
+		WokXMLTag data("data");
+		data.AddTag("item").AddAttr("session", session);
+		wls->SendSignal("Jabber Connection GetUserData", data);
+	
+		WokXMLTag msgtag("message");
+		msgtag.AddAttr("session", session);
+		WokXMLTag &iqtag = msgtag.AddTag("iq");
+		iqtag.AddAttr("type", "get");
+		iqtag.AddAttr("to", data.GetFirstTag("item").GetFirstTag("username").GetBody() + "@" + data.GetFirstTag("item").GetFirstTag("server").GetBody());
+	
+		WokXMLTag &vcard = iqtag.AddTag("vCard", "vcard-temp");
+		vcard.AddAttr("prodid", "-//HandGen//NONSGML vGen v1.0//EN");
+		vcard.AddAttr("version", "2.0");
+	
+	
+		wls->SendSignal("Jabber XML IQ Send", &msgtag);
+		EXP_SIGHOOK("Jabber XML IQ ID " + msgtag.GetFirstTag("iq").GetAttr("id"), &VCardAvatar::SetMy, 1000);
+	}
+
+	
+	return 1;	
 }
 
 int
 VCardAvatar::SetMy(WokXMLTag *tag)
 {
-	std::string filename = tag->GetAttr("file");
-	std::ifstream file(filename.c_str(), std::ios::in|std::ios::binary|std::ios::ate);
-	if ( !file.is_open() )
-		return 1;
-	int len = file.tellg();
-	file.seekg (0, std::ios::beg);
-	unsigned char *str = new unsigned char [len];
-	file.read((char*)str, len);
-	file.close();
+	GError* err;
+	GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file (mypictag->GetAttr("file").c_str(), NULL);
 	
+	if ( pixbuf == NULL )
+		return 1;
+	
+	GdkPixbuf *scaled = gdk_pixbuf_scale_simple (pixbuf, 128, 128, GDK_INTERP_BILINEAR);
+
+	if ( scaled == NULL )
+	{
+		g_object_unref(pixbuf);
+		return 1;
+	}
+	
+	gchar *str;
+	gsize len; 
+	gboolean ret = gdk_pixbuf_save_to_buffer (scaled, &str, &len, "png", NULL, NULL);
+		
 	unsigned char buf[30];
 	SHA1((unsigned char*)str, len, buf);
-	ready = false;
+	
 	myhash.clear();
 	for( int i = 0 ; i < 20 ; i++)
 	{
@@ -180,36 +322,33 @@ VCardAvatar::SetMy(WokXMLTag *tag)
 		myhash += buf2;
 	}
 
+	
+	/*
+		<iq from="nedo@jabber.se/home" to="nedo80@gmail.com/debug3DFD2025" id="wokjab6" type="result">
+			<vCard xmlns="vcard-temp">
+				<NICKNAME>nedo</NICKNAME>
+				<FN>Kent Gustavsson</FN>
+			</vCard>
+		</iq>
+	 */
+	
 	WokXMLTag msgtag(NULL,"message");
 	msgtag.AddAttr("session", "jabber0");
 	WokXMLTag &iqtag = msgtag.AddTag("iq");
 	iqtag.AddAttr("type", "set");
-	WokXMLTag &vtag = iqtag.AddTag("vCard");
-	vtag.AddAttr("xmlns", "vcard-temp");
-	vtag.GetFirstTag("FN").AddText("Kent Gustavsson");
-	WokXMLTag &ptag = vtag.AddTag("PHOTO");
-	ptag.AddTag("TYPE").AddText("image/jpeg");
-	ptag.AddTag("BINVAL").AddText(Base64encode(str,len));
+	WokXMLTag &vtag = iqtag.AddTag(&tag->GetFirstTag("iq").GetFirstTag("vCard", "vcard-temp"));
 	
-	delete[] str;
+	WokXMLTag &ptag = vtag.GetFirstTag("PHOTO");
+	ptag.GetFirstTag("TYPE").RemoveBody();
+	ptag.GetFirstTag("TYPE").AddText("image/png");
+	ptag.GetFirstTag("BINVAL").RemoveBody();
+	ptag.GetFirstTag("BINVAL").AddText(Base64encode(( const unsigned char *)str,len));
+	
 	wls->SendSignal("Jabber XML IQ Send", &msgtag);
 
-	if ( !signal.empty() )
-	{
-		EXP_SIGUNHOOK(signal, &VCardAvatar::result, 1000);
-	}
-	std::string id = iqtag.GetAttr("id");
-	signal = std::string("Jabber XML IQ ID ") + id;
-	EXP_SIGHOOK(signal.c_str(), &VCardAvatar::result, 1000);
-	
-	return 1;
-}
-
-int
-VCardAvatar::result(WokXMLTag *tag)
-{
-	ready = true;
-	signal = "";
+	g_object_unref(pixbuf);
+	g_object_unref(scaled);
+	g_free(str);
 	
 	return 1;
 }
@@ -328,7 +467,7 @@ VCardAvatar::vcard(WokXMLTag *tag)
 	jid = jid.substr(0, jid.find("/"));
 	if ( user.find(jid) == user.end() )
 	{
-		woklib_error(wls, "What the fuck");
+		woklib_error(wls, "-------");
 		return 1;	
 	}
 	
@@ -337,6 +476,7 @@ VCardAvatar::vcard(WokXMLTag *tag)
 
 	WokXMLTag &photo = vcard.GetFirstTag("PHOTO");
 	std::string data = photo.GetFirstTag("BINVAL").GetBody();
+	
 	std::stringstream file;
 	
 	unsigned int c = 0;

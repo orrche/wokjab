@@ -38,6 +38,9 @@
 #include <map>
 #include "User.h"
 
+#include <glade/glade.h>
+#include <gtk/gtk.h>
+
 using namespace Woklib;
 
 class VCardAvatar : public WoklibPlugin
@@ -51,17 +54,28 @@ class VCardAvatar : public WoklibPlugin
 		int Presence(WokXMLTag *tag);
 		int vcard(WokXMLTag *tag);
 		int GetIcon(WokXMLTag *tag);
-		int result(WokXMLTag *tag);
 		int NewSession(WokXMLTag *tag);
-	
+		int MyVcard(WokXMLTag *tag);
+		int GetMyCard(WokXMLTag *tag);
+		
+		int MainMenu(WokXMLTag *tag);
+		int MenuSet(WokXMLTag *tag);
+		
+		static void OK_Button(GtkButton *button, VCardAvatar *c);
+		static void Close_Button(GtkButton *button, VCardAvatar *c);
+		static void Window_Destroy (GtkObject *object, VCardAvatar *c);
+		
 		virtual std::string GetInfo() {return "VCardAvatars";};
 		virtual std::string GetVersion() {return VERSION;};
 	protected:
+		GladeXML *gxml;
+	
 		std::string Base64encode(const unsigned char *buf, int len);
 		
 		std::map <std::string, User *> user;
 		std::string myhash;
 		std::string signal;
+		WokXMLTag *mypictag;
 		bool ready;
 };
 
