@@ -52,6 +52,7 @@ class VCardAvatar : public WoklibPlugin
 		int vcard(WokXMLTag *tag);
 		int GetIcon(WokXMLTag *tag);
 		int result(WokXMLTag *tag);
+		int NewSession(WokXMLTag *tag);
 	
 		virtual std::string GetInfo() {return "VCardAvatars";};
 		virtual std::string GetVersion() {return VERSION;};

@@ -41,6 +41,8 @@ VCardAvatar::VCardAvatar(WLSignal *wls) : WoklibPlugin(wls)
 	EXP_SIGHOOK("Jabber XML Presence", &VCardAvatar::Presence, 50);
 	EXP_SIGHOOK("Jabber GUI GetIcon", &VCardAvatar::GetIcon, 50);
 	EXP_SIGHOOK("Jabber XML Presence Send", &VCardAvatar::SendPresence, 50);
+	EXP_SIGHOOK("Jabber Connection Authenticated", &VCardAvatar::NewSession, 50);
+	
 	mkdir((std::string(std::getenv("HOME")) + "/.wokjab").c_str(), 0700);
 	mkdir((std::string(std::getenv("HOME")) + "/.wokjab/avatar").c_str(), 0700);
 	
@@ -99,6 +101,57 @@ VCardAvatar::Base64encode(const unsigned char *buf, int len)
 	return ret;
 }
 
+int
+VCardAvatar::MyVcard(WokXMLTag *tag)
+{
+	/*
+	<iq from='thorsten@xmppnet.de/Gajim' to='nedo@jabber.se/laptop' id='wokjab166' type='result'>
+		<vCard xmlns='vcard-temp'><TEL><HOME/><NUMBER>018050211217589</NUMBER></TEL><NICKNAME>Thorsten</NICKNAME><FN>Thorsten</FN><PHOTO><TYPE>image/png</TYPE><BINVAL>
+	*/
+	
+	if ( tag->GetFirstTag("iq").GetAttr("type") != "result" )
+		return 1;
+	
+	WokXMLTag &binval = tag->GetFirstTag("iq").GetFirstTag("vCard", "vcard-temp").GetFirstTag("PHOTO").GetFirstTag("BINVAL");
+	
+	if ( binval.GetBody().empty() )
+		return 1;
+		
+	
+	
+	return 1;
+}
+
+int
+VCardAvatar::NewSession(WokXMLTag *tag)
+{
+	woklib_message(wls, tag->GetStr());
+	std::string session = tag->GetAttr("session");
+	
+	WokXMLTag data("data");
+	data.AddTag("item").AddAttr("session", session);
+	
+	WokXMLTag msgtag("message");
+	msgtag.AddAttr("session", session);
+	WokXMLTag &iqtag = msgtag.AddTag("iq");
+	iqtag.AddAttr("to", data.GetFirstTag("session").GetAttr("username") + "@" + data.GetFirstTag("session").GetAttr("server"));
+	
+	WokXMLTag &vcard = iqtag.AddTag("vCard", "vcard-temp");
+	vcard.AddAttr("prodid", "-//HandGen//NONSGML vGen v1.0//EN");
+	vcard.AddAttr("version", "2.0");
+	
+	
+	wls->SendSignal("Jabber XML IQ Send", &msgtag);signal = std::string("Jabber XML IQ ID ") + id;
+	EXP_SIGUNHOOK("Jabber XML IQ ID " + msgtag.GetFirstTag("iq").GetAttr("id"), &VCardAvatar::MyVcard, 1000);
+	
+	/*
+	<iq id='wokjab5' to='nedo@jabber.se/laptop' type='get'>
+		<vCard prodid='-//HandGen//NONSGML vGen v1.0//EN' version='2.0' xmlns='vcard-temp'>
+		</vCard>
+	</iq>
+	*/
+	return 1;
+}
 
 int
 VCardAvatar::SetMy(WokXMLTag *tag)
