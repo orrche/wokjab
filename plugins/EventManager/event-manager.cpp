@@ -95,5 +95,6 @@ EventManager::Timeout(WokXMLTag *tag)
 	remove.AddTag("item").AddAttr("id", tag->GetAttr("id"));
 	
 	wls->SendSignal("Jabber Event Remove", remove);
+	tag->AddAttr("stop","not needed")
 	return 1;	
 }

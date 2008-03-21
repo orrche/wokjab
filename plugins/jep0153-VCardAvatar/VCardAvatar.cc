@@ -98,11 +98,6 @@ VCardAvatar::OK_Button(GtkButton *button, VCardAvatar *c)
 		WokXMLTag avatar("avatar");
 		avatar.AddAttr("file", file_name);
 		c->wls->SendSignal("Jabber Avatar SetMy", avatar);
-		/*
-	<signal name="Jabber Avatar SetMy">
-		<avatar file="/home/nedo/Desktop/drawing/Goblin Forager.fun.svg.png" />
-	</signal>
-		*/
 	
 		g_free(file_name);
 	}
