@@ -185,11 +185,6 @@ VCardAvatar::Base64encode(const unsigned char *buf, int len)
 int
 VCardAvatar::MyVcard(WokXMLTag *tag)
 {
-	/*
-	<iq from='mjau@xmpp.net/Gajim' to='nedo@jabber.se/laptop' id='wokjab166' type='result'>
-		<vCard xmlns='vcard-temp'><TEL><HOME/><NUMBER>0180517589</NUMBER></TEL><NICKNAME>joho</NICKNAME><FN>....</FN><PHOTO><TYPE>image/png</TYPE><BINVAL>
-	*/
-	
 	if ( tag->GetFirstTag("iq").GetAttr("type") != "result" )
 		return 1;
 	
@@ -318,15 +313,6 @@ VCardAvatar::SetMy(WokXMLTag *tag)
 	}
 
 	
-	/*
-		<iq from="nedo@jabber.se/home" to="nedo80@gmail.com/debug3DFD2025" id="wokjab6" type="result">
-			<vCard xmlns="vcard-temp">
-				<NICKNAME>nedo</NICKNAME>
-				<FN>Kent Gustavsson</FN>
-			</vCard>
-		</iq>
-	 */
-	
 	WokXMLTag msgtag(NULL,"message");
 	msgtag.AddAttr("session", "jabber0");
 	WokXMLTag &iqtag = msgtag.AddTag("iq");
@@ -391,26 +377,32 @@ VCardAvatar::Presence(WokXMLTag *tag)
 				}
 				file.close();
 				
-				WokXMLTag querytag(NULL, "query");
-				WokXMLTag &itemtag = querytag.AddTag("item");
-				itemtag.AddAttr("jid", tag->GetFirstTag("presence").GetAttr("from"));
-				itemtag.AddAttr("session", tag->GetAttr("session"));
-				
-				wls->SendSignal("Jabber Roster GetResource", &querytag);
-					
-				std::string jidresource;
 				std::string jid = tag->GetFirstTag("presence").GetAttr("from");
-				jid = jid.substr(0, jid.find("/"));
-				if(itemtag.GetTagList("resource").size() == 0)
-					jidresource =jid;
+				std::string jidresource;
+				if ( jid.find("/") != std::string::npos ) 
+				{
+					jidresource = jid;
+					jid = jid.substr(0, jid.find("/"));
+				}
 				else
 				{
-					if ( itemtag.GetFirstTag("resource").GetAttr("name").size() )
-						jidresource = jid + '/' + itemtag.GetFirstTag("resource").GetAttr("name");
+					WokXMLTag querytag(NULL, "query");
+					WokXMLTag &itemtag = querytag.AddTag("item");
+					itemtag.AddAttr("jid", jid);
+					itemtag.AddAttr("session", tag->GetAttr("session"));
+				
+					wls->SendSignal("Jabber Roster GetResource", &querytag);
+					
+					if(itemtag.GetTagList("resource").size() == 0)
+						jidresource =jid;
 					else
-						jidresource = jid;
+					{
+						if ( itemtag.GetFirstTag("resource").GetAttr("name").size() )
+							jidresource = jid + '/' + itemtag.GetFirstTag("resource").GetAttr("name");
+						else
+							jidresource = jid;
+					}
 				}
-//				jidresource = jidresource.substr(0,jidresource.rfind("/"));
 				
 				WokXMLTag msgtag(NULL, "message");
 				msgtag.AddAttr("session", tag->GetAttr("session"));
