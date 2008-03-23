@@ -92,6 +92,21 @@ WoklibPlugin(wls)
 	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
 	*/
 	
+	
+	g_signal_connect (G_OBJECT (fileview), "drag_data_get", G_CALLBACK (jep96::DragGet), this);
+	enum
+    {
+      TARGET_STRING,
+      TARGET_URL
+    };
+	static GtkTargetEntry target_entry[] =
+    {      
+	  { "text/uri-list",        0, TARGET_URL },
+    };
+	
+	gtk_tree_view_enable_model_drag_source(GTK_TREE_VIEW(fileview), (GdkModifierType) 0, target_entry, 1, (GdkDragAction) (GDK_ACTION_COPY));
+	
+	
 	EXP_SIGHOOK("Jabber XML IQ New si set xmlns:http://jabber.org/protocol/si", &jep96::Wid, 999);
 	EXP_SIGHOOK("Jabber Stream File Send", &jep96::SendFile, 999);
 	EXP_SIGHOOK("Jabber Stream File Menu", &jep96::JidMenuActivated, 999);
@@ -132,6 +147,14 @@ jep96::~jep96()
 	
 	gtk_widget_destroy(filewindow);
 	g_object_unref(gxml);
+}
+
+void
+jep96::DragGet(GtkWidget *wgt, GdkDragContext *context, GtkSelectionData *selection, guint info, guint time, jep96 *c)
+{
+	
+	
+	
 }
 
 gboolean 

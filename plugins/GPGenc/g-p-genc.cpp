@@ -519,9 +519,9 @@ GPGenc::InPresence(WokXMLTag *tag)
 		jid = jid.substr(0, jid.find("/"));	
 	}
 
+	bool remove_fp = false;
 	for( xiter = tag->GetFirstTag("presence").GetTagList("x").begin() ; xiter != tag->GetFirstTag("presence").GetTagList("x").end() ; xiter++)
 	{
-		bool remove_fp = false;
 		
 		if ( (*xiter)->GetAttr("xmlns") == "jabber:x:signed")
 		{
@@ -586,19 +586,16 @@ GPGenc::InPresence(WokXMLTag *tag)
 				
 			}
 		}
-		else
-			remove_fp = true;
+	}
+	if ( tag->GetFirstTag("presence").GetAttr("type") == "unavailable" )
+		remove_fp = true;
 
-		if ( tag->GetFirstTag("presence").GetAttr("type") == "unavailable" )
-			remove_fp = true;
-
-		if ( remove_fp )
+	if ( remove_fp )
+	{
+		fingerprints[tag->GetAttr("session")].erase(jid);
+		if ( fingerprints[tag->GetAttr("session")].empty())
 		{
-			fingerprints[tag->GetAttr("session")].erase(jid);
-			if ( fingerprints[tag->GetAttr("session")].empty())
-			{
-				fingerprints.erase(tag->GetAttr("session"));
-			}
+			fingerprints.erase(tag->GetAttr("session"));
 		}
 	}
 	

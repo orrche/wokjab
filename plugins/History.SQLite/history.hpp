@@ -45,6 +45,7 @@ public:
 	int GetLast(WokXMLTag *tag);
 protected:
 	sqlite3 *db;
+	std::string lingering_command;
 private:
 	int pid;
 };

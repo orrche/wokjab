@@ -132,27 +132,30 @@ History::Outgoing(WokXMLTag *tag)
 	else
 		resource = "";
 	
+	lingering_command += "INSERT INTO history (relation, resource, to_jid, from_jid, xml, time) VALUES ('"+ jid +"', '" + resource + "', '" + tag->GetFirstTag("message").GetAttr("to") + 
+					  		"', '" + tag->GetFirstTag("message").GetAttr("from") + "' , '" + XMLisize(tag->GetStr()) + "', strftime('%s','now'));";
 	
+	int status;
 	if ( pid )
+		waitpid( pid, &status, WNOHANG);
+
+	if ( WIFEXITED(status) || WTERMSIG(status) || !pid)
 	{
-		int status;
-		waitpid( pid, &status, 0);
-		pid = 0;
+		pid = fork();
+		if ( pid == 0 )
+		{
+			int rc = sqlite3_exec( db, (lingering_command).c_str(), callback, 0, &zErrMsg );
+			if( rc!=SQLITE_OK )
+			{
+				fprintf( stderr, "SQL error: %s\n", zErrMsg );
+				sqlite3_free( zErrMsg );
+			}
+	
+			_exit(0);
+		}
+		lingering_command = "";
 	}
 	
-	pid = fork();
-	if ( pid == 0 )
-	{
-		int rc = sqlite3_exec( db, ("INSERT INTO history (relation, resource, to_jid, from_jid, xml, time) VALUES ('"+ jid +"', '" + resource + "', '" + tag->GetFirstTag("message").GetAttr("to") + 
-					  		"', '" + tag->GetFirstTag("message").GetAttr("from") + "' , '" + XMLisize(tag->GetStr()) + "', strftime('%s','now'))").c_str(), callback, 0, &zErrMsg );
-		if( rc!=SQLITE_OK )
-		{
-			fprintf( stderr, "SQL error: %s\n", zErrMsg );
-			sqlite3_free( zErrMsg );
-		}
-		
-		_exit(0);
-	}
 	return 1;
 }
 
@@ -171,24 +174,27 @@ History::Incomming(WokXMLTag *tag)
 	else
 		resource = "";
 	
+	lingering_command += "INSERT INTO history (relation, resource, to_jid, from_jid, xml, time) VALUES ('"+ jid +"', '" + resource + "', '" + tag->GetFirstTag("message").GetAttr("to") + 
+								"', '" + tag->GetFirstTag("message").GetAttr("from") + "' , '" + XMLisize(tag->GetStr()) + "', strftime('%s','now'))";
+	int status;
 	if ( pid )
+		waitpid( pid, &status, WNOHANG);
+
+	if ( WIFEXITED(status) || WTERMSIG(status) || !pid)
 	{
-		int status;
-		waitpid( pid, &status, 0);
-		pid = 0;
-	}
-	
-	pid = fork();
-	if ( pid == 0 )
-	{
-		int rc = sqlite3_exec( db, ("INSERT INTO history (relation, resource, to_jid, from_jid, xml, time) VALUES ('"+ jid +"', '" + resource + "', '" + tag->GetFirstTag("message").GetAttr("to") + 
-								"', '" + tag->GetFirstTag("message").GetAttr("from") + "' , '" + XMLisize(tag->GetStr()) + "', strftime('%s','now'))").c_str(), callback, 0, &zErrMsg );
-		if( rc!=SQLITE_OK )
+		pid = fork();
+		if ( pid == 0 )
 		{
-			fprintf( stderr, "SQL error: %s\n", zErrMsg );
-			sqlite3_free( zErrMsg );
+			int rc = sqlite3_exec( db, (lingering_command).c_str(), callback, 0, &zErrMsg );
+			if( rc!=SQLITE_OK )
+			{
+				fprintf( stderr, "SQL error: %s\n", zErrMsg );
+				sqlite3_free( zErrMsg );
+			}
+	
+			_exit(0);
 		}
-		_exit(0);
+		lingering_command = "";
 	}
 	
 	return 1;

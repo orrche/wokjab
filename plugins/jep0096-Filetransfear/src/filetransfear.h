@@ -65,6 +65,7 @@ class jep96 : public WoklibPlugin
 		static void CloseWindow(GtkButton *button, jep96 *c);
 		static void RemoveStream(GtkButton *button, jep96 *c);
 		static gboolean SpeedCalc (jep96 * c);
+		static void DragGet(GtkWidget *wgt, GdkDragContext *context, GtkSelectionData *selection, guint info, guint time, jep96 *c);
 	protected:
 		std::string autoproxy;
 		std::string autoproxytype;
