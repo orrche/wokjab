@@ -88,7 +88,7 @@ std::string rungpg ( const std::string &data, const std::string &arg, const std:
 	write(fd[2][1], (password + "\n").c_str(), password.size()+1);
 	close(fd[2][1]);
 	if ( data.size() != write(fd[1][1], data.c_str(), data.size())) 
-		std::cout << "ohh fuck..." << std::endl;
+		std::cout << "ohh ..." << std::endl;
 	close(fd[1][1]);
 	
 	int pid_status;
@@ -142,6 +142,7 @@ GPGenc::GPGenc(WLSignal *wls) : WoklibPlugin(wls)
 	EXP_SIGHOOK("GPGenc AssignKey", &GPGenc::AssignKey, 1000);
 	EXP_SIGHOOK("GPGenc AssignKey Data", &GPGenc::AssignKeyData, 1000);
 	EXP_SIGHOOK("Jabber AutoConnect", &GPGenc::AutoConnectInhibiter, 100);
+	EXP_SIGHOOK("Jabber XML Presence", &GPGenc::InPresence, 1);
 	
 	config = new WokXMLTag ("config");
 	EXP_SIGHOOK("Config XML Change /GPGenc", &GPGenc::ReadConfig, 500);
@@ -152,9 +153,8 @@ GPGenc::GPGenc(WLSignal *wls) : WoklibPlugin(wls)
 
 GPGenc::~GPGenc()
 {
-	delete config;	
 	SaveConfig();
-	
+	delete config;	
 }
 
 int
@@ -243,7 +243,18 @@ GPGenc::AssignKeyData(WokXMLTag *tag)
 
 int
 GPGenc::ReadConfig(WokXMLTag *tag)
-{
+{		
+	if ( tag->GetFirstTag("config").GetTagList("send_warning_message_mismatch").empty() )
+	{
+		tag->GetFirstTag("config").GetFirstTag("send_warning_message_mismatch").AddAttr("type", "bool");
+		tag->GetFirstTag("config").GetFirstTag("send_warning_message_mismatch").AddAttr("label", _("Warn on key mismatch"));
+		tag->GetFirstTag("config").GetFirstTag("send_warning_message_mismatch").AddAttr("tooltip", _("Warn if your encrypting to diffrent key\nthen annaunced in users presence"));
+		
+		tag->GetFirstTag("config").GetFirstTag("send_message_message_mismatch").AddAttr("type", "bool");
+		tag->GetFirstTag("config").GetFirstTag("send_message_message_mismatch").AddAttr("label", _("Send unencrypted on key mismatch"));
+		tag->GetFirstTag("config").GetFirstTag("send_message_message_mismatch").AddAttr("tooltip", _("Send unencrypted on key mismatch\nYou are really suposed to KNOW WHAT YOUR DOING if you disable this"));
+	}
+	
 	if ( config )
 		delete config;
 	config = new WokXMLTag(tag->GetFirstTag("config"));
@@ -292,6 +303,8 @@ GPGenc::AssignKey(WokXMLTag *tag)
 	keyfield.AddAttr("type", "list-single");
 	keyfield.AddAttr("var", "key");
 	
+	WokXMLTag holder("holder");
+	
 	std::string data = rungpg("", "--fingerprint -k", "");
 	for(;;)
 	{
@@ -330,15 +343,57 @@ GPGenc::AssignKey(WokXMLTag *tag)
 		
 		data = data.substr(pos);
 		
-		WokXMLTag &option = keyfield.AddTag("option");
-		option.AddTag("value").AddText(fp);
-		option.AddAttr("label", name + "\n" + fp);
+		bool found_default = false;
+		
+		std::string key = fp;
+		while( key.find(" ") != std::string::npos )
+			key.erase(key.find(" "), 1);
+		
+		std::map<std::string, std::map < std::string, std::string > >::iterator sessiter;
+		for ( sessiter = fingerprints.begin() ; sessiter != fingerprints.end() ; sessiter++)
+		{
+			if ( sessiter->second.find(tag->GetAttr("jid")) != sessiter->second.end() )
+			{
+				if ( key == sessiter->second[tag->GetAttr("jid")] )
+				{
+					found_default = true;
+					WokXMLTag &option = keyfield.AddTag("option");
+					option.AddTag("value").AddText(fp);
+					option.AddAttr("label", name + "\n" + fp);
+				}
+			}
+		}
+		
+		if ( !found_default )
+		{
+			WokXMLTag &option = holder.AddTag("option");
+			option.AddTag("value").AddText(fp);
+			option.AddAttr("label", name + "\n" + fp);
+		}
 	}
 	
+	if ( !keyfield.GetTagList("option").empty() )
+	{
+		WokXMLTag &option = keyfield.AddTag("option");
+		option.AddTag("value").AddText("");
+		option.AddAttr("label", "---------------------------");
+	}
 	WokXMLTag &option = keyfield.AddTag("option");
-	option.AddTag("value").AddText("default");
+	option.AddTag("value").AddText("");
+	option.AddAttr("label", "No key");
 	
+	if ( !holder.GetTagList("option").empty())
+	{
+		WokXMLTag &option = keyfield.AddTag("option");
+		option.AddTag("value").AddText("");
+		option.AddAttr("label", "---------------------------");
 	
+		std::list <WokXMLTag *>::iterator tagiter;
+		
+		for ( tagiter = holder.GetTagList("option").begin() ; tagiter != holder.GetTagList("option").end() ; tagiter++ )
+			keyfield.AddTag(*tagiter);			
+	}
+		
 	form.AddAttr("signal", "GPGenc AssignKey Data");
 	wls->SendSignal("Jabber jabber:x:data Init", form);
 	
@@ -373,17 +428,25 @@ GPGenc::Setup(WokXMLTag *tag)
 		}
 	}
 	
-	EXP_SIGHOOK("Jabber XML Presence Send", &GPGenc::Presence, 960);
-	EXP_SIGHOOK("Jabber XML Message Send", &GPGenc::OutMessage, 960);
-	EXP_SIGHOOK("Jabber XML Object message", &GPGenc::Message, 1);
-	EXP_SIGHOOK("Jabber XML Presence", &GPGenc::InPresence, 1);
-	
-	EXP_SIGUNHOOK("Jabber AutoConnect", &GPGenc::AutoConnectInhibiter, 100);
-	if ( cought )
-	{
-		WokXMLTag dummy("xml");
-		wls->SendSignal("Jabber AutoConnect", dummy);
+	std::string status;
+	rungpg("", " -bs ", passphrase, &status);
+		
+	if ( status.find("\n[GNUPG:] GOOD_PASSPHRASE") != std::string::npos )
+	{	
+		EXP_SIGHOOK("Jabber XML Presence Send", &GPGenc::Presence, 960);
+		EXP_SIGHOOK("Jabber XML Message Send", &GPGenc::OutMessage, 960);
+		EXP_SIGHOOK("Jabber XML Object message", &GPGenc::Message, 1);
+		
+		EXP_SIGUNHOOK("Jabber AutoConnect", &GPGenc::AutoConnectInhibiter, 100);
+		if ( cought )
+		{
+			WokXMLTag dummy("xml");
+			wls->SendSignal("Jabber AutoConnect", dummy);
+		}
 	}
+	else
+		woklib_error(wls, "Bad passphrase");
+	
 	return 1;
 }
 
@@ -409,6 +472,19 @@ GPGenc::OutMessage(WokXMLTag *tag)
 		
 		while( key.find(" ") != std::string::npos )
 			key.erase(key.find(" "), 1);
+		
+		if ( fingerprints[tag->GetAttr("session")][jid] != key )
+		{
+			if ( config->GetFirstTag("send_warning_message_mismatch").GetAttr("data") != "false" )
+				woklib_message(wls, _("Key mismatch while sending message to ") + jid);
+			if ( config->GetFirstTag("send_message_message_mismatch").GetAttr("data") != "false" )
+			{
+				woklib_message(wls, _("Sending unencrypted messages to ") + jid);
+				return 1;
+			}
+			
+		}
+	
 		std::string encdata = rungpg(body, "-ae -r " + key, passphrase);
 		
 		
@@ -436,8 +512,16 @@ GPGenc::InPresence(WokXMLTag *tag)
 {
 	std::list <WokXMLTag *>::iterator xiter;
 	
+	std::string jid = tag->GetFirstTag("presence").GetAttr("from");
+	if ( jid.find("/") != std::string::npos )
+	{
+		jid = jid.substr(0, jid.find("/"));	
+	}
+
 	for( xiter = tag->GetFirstTag("presence").GetTagList("x").begin() ; xiter != tag->GetFirstTag("presence").GetTagList("x").end() ; xiter++)
 	{
+		bool remove_fp = false;
+		
 		if ( (*xiter)->GetAttr("xmlns") == "jabber:x:signed")
 		{
 			std::string sig_text = tag->GetFirstTag("presence").GetFirstTag("status").GetChildrenStr();
@@ -476,14 +560,12 @@ GPGenc::InPresence(WokXMLTag *tag)
 				
 				
 				if ( !goodsig )
-					woklib_debug(wls, "GPG bad signature for " + tag->GetFirstTag("presence").GetAttr("from"));
-				
-				
-				std::string jid = tag->GetFirstTag("presence").GetAttr("from");
-				if ( jid.find("/") != std::string::npos )
 				{
-					jid = jid.substr(0, jid.find("/"));	
+					woklib_debug(wls, _("GPG bad signature for ") + tag->GetFirstTag("presence").GetAttr("from"));
+					remove_fp = false;
 				}
+				else
+					fingerprints[tag->GetAttr("session")][jid] = fp;
 				
 				WokXMLTag conftag(NULL, "config");
 				conftag.AddAttr("path", "/jid/" + jid + "/gpgkey");
@@ -499,11 +581,23 @@ GPGenc::InPresence(WokXMLTag *tag)
 				}
 				
 				if ( key != fp )
-					woklib_debug(wls, "GPG key mismatch for " + tag->GetFirstTag("presence").GetAttr("from"));
+					woklib_debug(wls, _("GPG key mismatch for ") + tag->GetFirstTag("presence").GetAttr("from"));
 				
 			}
-			
+		}
+		else
+			remove_fp = true;
 
+		if ( tag->GetFirstTag("presence").GetAttr("type") == "unavailable" )
+			remove_fp = true;
+
+		if ( remove_fp )
+		{
+			fingerprints[tag->GetAttr("session")].erase(jid);
+			if ( fingerprints[tag->GetAttr("session")].empty())
+			{
+				fingerprints.erase(tag->GetAttr("session"));
+			}
 		}
 	}
 	
@@ -515,18 +609,14 @@ GPGenc::Presence(WokXMLTag *tag)
 {
 	std::string childstr = tag->GetFirstTag("presence").GetFirstTag("status").GetChildrenStr();
 	std::string sign = rungpg(childstr, " -bs ", passphrase );
-	
-	std::cout << "Sign: " << sign << std::endl;
-	
+		
 	if ( sign.find("\n\n") == std::string::npos )
 		return 1;
 	sign = sign.substr(sign.find("\n\n")+2);
-	std::cout << "Sign: " << sign << std::endl;
 	
 	if ( sign.find("\n-----END PGP SIGNATURE-----\n") == std::string::npos )
 		return 1;
 	sign = sign.substr(0, sign.rfind("\n-----END PGP SIGNATURE-----\n"));
-	std::cout << "Sign: " << sign << std::endl;
 	
 	if ( !sign.empty() )
 		tag->GetFirstTag("presence").AddTag("x", "jabber:x:signed").AddText(sign);
@@ -544,10 +634,14 @@ GPGenc::Message(WokXMLTag *tag)
 	{
 		std::string body = "-----BEGIN PGP MESSAGE-----\nVersion: GnuPG v2.0.7 (GNU/Linux)\n\n" + (*xiter)->GetBody()+ "\n-----END PGP MESSAGE-----\n";
 		
-		std::string decrypt = rungpg(body, "-d", passphrase);
+		std::string status;
+		std::string decrypt = rungpg(body, "-d", passphrase, &status);
 		
-		tag->GetFirstTag("message").GetFirstTag("body").RemoveBody();
-		tag->GetFirstTag("message").GetFirstTag("body").AddText(decrypt);
+		if ( status.find("\n[GNUPG:] DECRYPTION_OKAY") != std::string::npos )
+		{
+			tag->GetFirstTag("message").GetFirstTag("body").RemoveBody();
+			tag->GetFirstTag("message").GetFirstTag("body").AddText(decrypt);
+		}
 	}
 	return 1;
 }

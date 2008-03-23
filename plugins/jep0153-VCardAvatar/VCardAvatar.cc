@@ -210,6 +210,12 @@ VCardAvatar::MyVcard(WokXMLTag *tag)
 		myhash += buf2;
 	}
 	
+	WokXMLTag mess("message");
+	mess.AddAttr("session", tag->GetAttr("session"));
+	WokXMLTag &ptag = mess.AddTag("presence");
+
+	wls->SendSignal("Jabber XML Presence Send", mess);
+	
 	return 1;
 }
 
@@ -286,7 +292,22 @@ VCardAvatar::SetMy(WokXMLTag *tag)
 	if ( pixbuf == NULL )
 		return 1;
 	
-	GdkPixbuf *scaled = gdk_pixbuf_scale_simple (pixbuf, 128, 128, GDK_INTERP_BILINEAR);
+	int pwidth = gdk_pixbuf_get_width(pixbuf);
+	int pheight = gdk_pixbuf_get_height(pixbuf);
+	int w,h;
+	
+	if ( pwidth > pheight )
+	{
+		w = 128;
+		h = int(pheight / ( ((double)pwidth) / 128 ));
+	}
+	else
+	{
+		w = int(pwidth / ( ((double)pheight) / 128 ));
+		h = 128;
+	}
+	
+	GdkPixbuf *scaled = gdk_pixbuf_scale_simple (pixbuf, w, h, GDK_INTERP_BILINEAR);
 
 	if ( scaled == NULL )
 	{
