@@ -215,11 +215,8 @@ GPGenc::AssignKeyData(WokXMLTag *tag)
 		if ( (*iter)->GetAttr("var") == "key")
 			key = (*iter)->GetFirstTag("value").GetBody();
 	}
-	
-
-				
-				
-	if ( (!key.empty()) && (!jid.empty()) )
+					
+	if ( !jid.empty() )
 	{
 		jid_store = jid;
 		key_store = key;
@@ -279,6 +276,17 @@ GPGenc::SaveConfig()
 int
 GPGenc::AssignKey(WokXMLTag *tag)
 {
+	std::string jid = tag->GetAttr("jid");
+	
+	if ( jid.find("/"))
+		jid = jid.substr(0, jid.find("/"));
+	
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/jid/" + jid + "/gpgkey");
+	wls->SendSignal("Config XML GetConfig", &conftag);	
+	
+	std::string key = conftag.GetFirstTag("config").GetFirstTag("key").GetAttr("data");
+	
 	WokXMLTag form("form");
 	WokXMLTag &x = form.AddTag("x");
 	x.AddAttr("xmlns", "jabber:x:data");
@@ -286,22 +294,18 @@ GPGenc::AssignKey(WokXMLTag *tag)
 	
 	WokXMLTag &jidlabel = x.AddTag("field");
 	jidlabel.AddAttr("type", "fixed");
-	jidlabel.AddTag("value").AddText(_("JID:") + tag->GetAttr("jid"));
-	
-	
-	std::string noresource = tag->GetAttr("jid");
-	if ( noresource.find("/") != std::string::npos )
-		noresource.substr(0, noresource.find("/"));
-	
-	WokXMLTag &jid = x.AddTag("field");
-	jid.AddAttr("type", "hidden");
-	jid.AddAttr("var", "jid");
-	jid.AddTag("value").AddText(tag->GetAttr("jid"));
+	jidlabel.AddTag("value").AddText(_("JID:") + jid);
+		
+	WokXMLTag &f_jid = x.AddTag("field");
+	f_jid.AddAttr("type", "hidden");
+	f_jid.AddAttr("var", "jid");
+	f_jid.AddTag("value").AddText(jid);
 	
 	
 	WokXMLTag &keyfield = x.AddTag("field");
 	keyfield.AddAttr("type", "list-single");
 	keyfield.AddAttr("var", "key");
+	keyfield.AddTag("value").AddText(key);
 	
 	WokXMLTag holder("holder");
 	
@@ -375,8 +379,7 @@ GPGenc::AssignKey(WokXMLTag *tag)
 	if ( !keyfield.GetTagList("option").empty() )
 	{
 		WokXMLTag &option = keyfield.AddTag("option");
-		option.AddTag("value").AddText("");
-		option.AddAttr("label", "---------------------------");
+		option.AddTag("value").AddText("---------------------------");
 	}
 	WokXMLTag &option = keyfield.AddTag("option");
 	option.AddTag("value").AddText("");
@@ -385,8 +388,7 @@ GPGenc::AssignKey(WokXMLTag *tag)
 	if ( !holder.GetTagList("option").empty())
 	{
 		WokXMLTag &option = keyfield.AddTag("option");
-		option.AddTag("value").AddText("");
-		option.AddAttr("label", "---------------------------");
+		option.AddTag("value").AddText("---------------------------");
 	
 		std::list <WokXMLTag *>::iterator tagiter;
 		
@@ -466,13 +468,12 @@ GPGenc::OutMessage(WokXMLTag *tag)
 	if ( !conftag.GetFirstTag("config").GetTagList("key").empty() )
 	{
 		std::string key = conftag.GetFirstTag("config").GetFirstTag("key").GetAttr("data");
-		
-		if ( key.empty() ) 
-			return 1;
-		
 		while( key.find(" ") != std::string::npos )
 			key.erase(key.find(" "), 1);
 		
+		if ( key.empty() )
+			return 1;
+
 		if ( fingerprints[tag->GetAttr("session")][jid] != key )
 		{
 			if ( config->GetFirstTag("send_warning_message_mismatch").GetAttr("data") != "false" )
