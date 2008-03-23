@@ -81,6 +81,21 @@ class jep96 : public WoklibPlugin
 		std::map <std::string, GtkTreeRowReference*> rows;
 		std::map <std::string, WokXMLTag *> sessions;
 		
+	
+		enum 
+		{
+			FILE_ID_COLUMN,
+			DATA_TRANSFEARED_COLUMN,
+			STATUS_COLUMN,
+			SID_COLUMN,
+			SENDER_RECEIVER_COLUMN,
+			RECEIVER_COLUMN,   // Unused
+			SESSION_COLUMN, 
+			EVENT_DATA_COLUMN,      // What is this ?!
+			SENDING_COLUMN,   // True/False
+			DATA_PROGRESS,
+			NUM_COLUMNS
+		};
 };
 
 #endif // __BROWSER_H

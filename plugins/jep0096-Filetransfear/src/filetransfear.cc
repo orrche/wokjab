@@ -24,6 +24,8 @@
 #include "filepicker.h"
 #include <sstream>
 
+#include <vector>
+
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -52,48 +54,30 @@ WoklibPlugin(wls)
 	g_signal_connect (G_OBJECT (glade_xml_get_widget(gxml, "closebutton")), "clicked",
 			G_CALLBACK (jep96::CloseWindow), this);
 	g_signal_connect (G_OBJECT (glade_xml_get_widget(gxml, "removebutton")), "clicked",
-			G_CALLBACK (jep96::RemoveStream), this);
+			G_CALLBACK (jep96::RemoveStream), this);	
+	g_signal_connect (G_OBJECT (fileview), "drag_data_get", 
+			G_CALLBACK (jep96::DragGet), this);
 	
-	file_store = gtk_list_store_new (10, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
+	file_store = gtk_list_store_new (NUM_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_BOOLEAN, G_TYPE_INT);
   	gtk_tree_view_set_model (GTK_TREE_VIEW(fileview), GTK_TREE_MODEL(file_store));
 	
 	renderer = gtk_cell_renderer_text_new ();
-	column = gtk_tree_view_column_new_with_attributes ("File/ID", renderer, "text", 0, NULL);
+	column = gtk_tree_view_column_new_with_attributes ("File/ID", renderer, "text", FILE_ID_COLUMN, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
-	/*
-	renderer = gtk_cell_renderer_text_new ();
-	column = gtk_tree_view_column_new_with_attributes ("Data Transferd", renderer, "text", 1, NULL);
-	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
-	*/
+
 	renderer = gtk_cell_renderer_progress_new ();
-	column = gtk_tree_view_column_new_with_attributes ("Data Transferd", renderer, "text", 1 , "value" , 9, NULL);
+	column = gtk_tree_view_column_new_with_attributes ("Data Transferd", renderer, "text", DATA_TRANSFEARED_COLUMN , "value" , 9, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
 	
 	renderer = gtk_cell_renderer_text_new ();
-	column = gtk_tree_view_column_new_with_attributes ("Status", renderer, "text", 2, NULL);
+	column = gtk_tree_view_column_new_with_attributes ("Status", renderer, "text", STATUS_COLUMN, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
 
 	renderer = gtk_cell_renderer_text_new ();
-	column = gtk_tree_view_column_new_with_attributes ("Sender/Receiver", renderer, "markup", 4, NULL);
+	column = gtk_tree_view_column_new_with_attributes ("Sender/Receiver", renderer, "markup", SENDER_RECEIVER_COLUMN, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
-/*	renderer = gtk_cell_renderer_text_new ();
-	column = gtk_tree_view_column_new_with_attributes ("Reciver", renderer, "text", 5, NULL);
-	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
-*/
-	
-	/*
-	renderer = gtk_cell_renderer_text_new ();
-	column = gtk_tree_view_column_new_with_attributes ("sid", renderer, "text", 3, NULL);
-	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
-	
-	renderer = gtk_cell_renderer_text_new ();
-	column = gtk_tree_view_column_new_with_attributes ("Session", renderer, "text", 6, NULL);
-	gtk_tree_view_append_column (GTK_TREE_VIEW (fileview), column);
-	*/
-	
-	
-	g_signal_connect (G_OBJECT (fileview), "drag_data_get", G_CALLBACK (jep96::DragGet), this);
+
 	enum
     {
       TARGET_STRING,
@@ -101,10 +85,10 @@ WoklibPlugin(wls)
     };
 	static GtkTargetEntry target_entry[] =
     {      
-	  { "text/uri-list",        0, TARGET_URL },
+	  { "text/uri-list",        0, TARGET_URL },	
     };
 	
-	gtk_tree_view_enable_model_drag_source(GTK_TREE_VIEW(fileview), (GdkModifierType) 0, target_entry, 1, (GdkDragAction) (GDK_ACTION_COPY));
+	gtk_tree_view_enable_model_drag_source(GTK_TREE_VIEW(fileview), (GdkModifierType) GDK_BUTTON1_MASK, target_entry, 1, (GdkDragAction) (GDK_ACTION_COPY));
 	
 	
 	EXP_SIGHOOK("Jabber XML IQ New si set xmlns:http://jabber.org/protocol/si", &jep96::Wid, 999);
@@ -152,7 +136,50 @@ jep96::~jep96()
 void
 jep96::DragGet(GtkWidget *wgt, GdkDragContext *context, GtkSelectionData *selection, guint info, guint time, jep96 *c)
 {
+	GtkTreeIter iter;
+	std::vector <std::string> data;
 	
+	GtkTreeSelection* select =  gtk_tree_view_get_selection(GTK_TREE_VIEW(glade_xml_get_widget(c->gxml, "fileview")));
+	GList *list =  gtk_tree_selection_get_selected_rows(select, (GtkTreeModel**) &c->file_store);
+	int listlen = g_list_length(list);
+	gchar *uris[listlen+1];
+	
+	for(;list; list = list->next)
+	{
+		gchar *sid;
+		gboolean sending;
+		
+		gtk_tree_model_get_iter (GTK_TREE_MODEL(c->file_store), &iter, (GtkTreePath *) list->data);
+		gtk_tree_model_get(GTK_TREE_MODEL(c->file_store), &iter, SID_COLUMN, &sid, SENDING_COLUMN, &sending, -1);
+		
+		std::cout << "SID: " << sid << " xml data:\n" << *c->sessions[sid]  << std::endl;
+		
+		if ( sending == TRUE )
+			data.push_back("file://" + c->sessions[sid]->GetAttr("file"));
+		else
+			data.push_back("file://" + c->sessions[sid]->GetAttr("filename"));
+		
+		g_free(sid);
+	}
+	
+	int i;
+	for(i = 0 ; i<listlen; i++)
+	{
+		uris[i] = static_cast<gchar*>(g_malloc(sizeof(char)*data[i].size()));
+		strcpy(uris[i], data[i].c_str());
+		std::cout << "GRR " << data[i] << std::endl;
+	}
+	uris[i] = NULL;
+	
+	gtk_selection_data_set_uris(selection, uris);
+	
+	for(i = 0; uris[i] ; i++ )
+	{
+		g_free(uris[i]);
+	}
+	
+	g_list_foreach (list, ( void(*)(void*, void*)) gtk_tree_path_free, NULL);
+	g_list_free (list);
 	
 	
 }
