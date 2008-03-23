@@ -36,11 +36,8 @@ xdatasinglelist::xdatasinglelist(WLSignal *wls, WLSignalData* wlsd, GtkWidget *v
 		std::string menu_label;
 		
 		menu_value = (*iter)->GetFirstTag("value").GetBody();
-		if(menu_value.size() == 0)
-			menu_value = (*iter)->GetAttr("label");
-		
 		menu_label = (*iter)->GetAttr("label");
-		if(menu_label.size() == 0)
+		if(menu_label.empty())
 			menu_label = (*iter)->GetFirstTag("value").GetBody();
 		
 		
