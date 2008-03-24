@@ -415,6 +415,7 @@ jep96Widget::xdataresp(WokXMLTag *xml)
 	
 		
 	WokXMLTag rejtag(NULL, "Accepted");
+	rejtag.AddAttr("file", filename);
 	rejtag.AddAttr("sid", lsid);
 	wls->SendSignal("Jabber Stream File Status", &rejtag);
 	wls->SendSignal("Jabber Stream File Status Accepted", &rejtag);

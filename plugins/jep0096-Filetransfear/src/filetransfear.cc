@@ -154,16 +154,16 @@ jep96::DragGet(GtkWidget *wgt, GdkDragContext *context, GtkSelectionData *select
 		
 		std::cout << "SID: " << sid << " xml data:\n" << *c->sessions[sid]  << std::endl;
 		
-		if ( sending == TRUE )
-			data.push_back("file://" + c->sessions[sid]->GetAttr("file"));
-		else
-			data.push_back("file://" + c->sessions[sid]->GetAttr("filename"));
+		std::string file = c->sessions[sid]->GetAttr("file");
+		
+		if ( !file.empty() )
+			data.push_back("file://" + file);
 		
 		g_free(sid);
 	}
 	
 	int i;
-	for(i = 0 ; i<listlen; i++)
+	for(i = 0 ; i<data.size(); i++)
 	{
 		uris[i] = static_cast<gchar*>(g_malloc(sizeof(char)*data[i].size()));
 		strcpy(uris[i], data[i].c_str());
@@ -237,7 +237,7 @@ jep96::FileAuth(WokXMLTag *tag)
 			iter->second->GetAttr("autoaccept") == "true" )
 		{
 			tag->GetFirstTag("file").AddAttr("lsid", iter->first);
-			tag->GetFirstTag("file").AddAttr("name", iter->second->GetAttr("filename"));			
+			tag->GetFirstTag("file").AddAttr("name", iter->second->GetAttr("file"));			
 		}
 			
 	}		
@@ -284,7 +284,7 @@ jep96::Incomming(WokXMLTag *tag)
 			wls->SendSignal("Jabber XML Send", &msgtag);
 			tag->AddAttr("handled", "true");
 			tag->AddAttr("autoaccept", "true");
-			tag->AddAttr("filename", filename);
+			tag->AddAttr("file", filename);
 			tag->AddAttr("strsize", PrettySize (atoll(tag->GetFirstTag("iq").GetFirstTag("si", "http://jabber.org/protocol/si").GetFirstTag("file", "http://jabber.org/protocol/si/profile/file-transfer").GetAttr("size").c_str())));
 			tag->AddAttr("size", tag->GetFirstTag("iq").GetFirstTag("si", "http://jabber.org/protocol/si").GetFirstTag("file", "http://jabber.org/protocol/si/profile/file-transfer").GetAttr("size").c_str());
 			sessions[tag->GetFirstTag("filetransfer").GetAttr("lsid")] = new WokXMLTag (*tag);
@@ -677,6 +677,13 @@ int
 jep96::Finnished(WokXMLTag *fintag)
 {
 	GtkTreeIter iter;
+	
+	if ( sessions.find(fintag->GetAttr("sid")) != sessions.end() )
+	{
+		if ( ! fintag->GetAttr("filename").empty() )
+			sessions[fintag->GetAttr("sid")]->AddAttr("file", fintag->GetAttr("filename"));
+		
+	}
 	if ( rows.find(fintag->GetAttr("sid")) != rows.end() )
 	{
 		if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[fintag->GetAttr("sid")])))
@@ -747,6 +754,12 @@ jep96::Accepted(WokXMLTag *acctag)
 				gtk_list_store_set (file_store, &iter, 2, "Accepted" , -1);
 			}
 		}
+	}
+	std::cout << "ACCEPTED" << *acctag << std::endl;
+	if ( !acctag->GetAttr("file").empty())
+	{
+		if ( sessions.find(acctag->GetAttr("sid")) != sessions.end() )
+			sessions[acctag->GetAttr("sid")]->AddAttr("file", acctag->GetAttr("file"));
 	}
 	
 	if ( popup_ft_wid != "false" && acctag->GetAttr("popup") != "false" )

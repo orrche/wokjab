@@ -41,7 +41,7 @@ sj(sj)
 		std::string arg = argv[i];
 		if ( !arg.empty() )
 		{
-			if ( arg[0] == '-'		)
+			if ( arg[0] == '-' )
 			{
 				if ( arg.size() > 1 && arg[1] == '-' )
 				{
