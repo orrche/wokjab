@@ -1,5 +1,4 @@
-AM_CXXFLAGS = -lwoklib
-
+	
 libdir = $(prefix)/lib/woklib-plugins/normal
 
 lib_LTLIBRARIES = \
@@ -17,6 +16,9 @@ libjabber_la_SOURCES = \
 	MessageHook.h       \
 	Presence.h       \
 	Presence.cc 
+
+libjabber_la_LDFLAGS = \
+	-lwoklib
 
 ## File created by the gnome-build tools
 

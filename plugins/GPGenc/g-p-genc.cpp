@@ -1,7 +1,7 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
 /*
  * wokjab
- * Copyright (C) Kent Gustavsson 2007 <nedo80@gmail.com>
+ * Copyright (C) Kent Gustavsson 2007-2008 <nedo80@gmail.com>
  * 
  * wokjab is free software.
  * 
@@ -189,17 +189,6 @@ GPGenc::ProgramStart(WokXMLTag *tag)
 }
 
 int
-GPGenc::StoreKey(WokXMLTag *tag)
-{
-	WokXMLTag &key = tag->GetFirstTag("config").GetFirstTag("key");
-	tag->GetFirstTag("config").AddAttr("path", "/jid/" + jid_store + "/gpgkey");
-	key.AddAttr("type", "string");
-	key.AddAttr("data", key_store);
-	
-	return 1;
-}
-
-int
 GPGenc::AssignKeyData(WokXMLTag *tag)
 {
 	std::string jid,key;
@@ -218,23 +207,20 @@ GPGenc::AssignKeyData(WokXMLTag *tag)
 					
 	if ( !jid.empty() )
 	{
-		jid_store = jid;
-		key_store = key;
-		
-		EXP_SIGHOOK("Config XML Change /jid/" + jid + "/gpgkey", &GPGenc::StoreKey, 500);
 		WokXMLTag conftag(NULL, "config");
-		conftag.AddAttr("path", "/jid/" + jid + "/gpgkey");
-		wls->SendSignal("Config XML Trigger", &conftag);			
-		EXP_SIGUNHOOK("Config XML Change /jid/" + jid + "/gpgkey", &GPGenc::StoreKey, 500);
-	}			
-	/*
-	<data>
-		<x type='submit' xmlns='jabber:x:data'>
-			<field var='jid'><value>schmidtm524@googlemail.com</value></field>
-			<field var='key'><value>B6CD 75FC 2F40 D626 C6E8  165A F95E 36C5 6D7F 2E7C</value></field>
-		</x>
-	</data>
-	*/
+		conftag.AddAttr("path", "/gpgkey");
+		conftag.AddAttr("name", jid);
+		wls->SendSignal("Jabber JIDConfig Get", &conftag);
+		conftag.GetFirstTag("config").GetFirstTag("key").AddAttr("data",key);
+		wls->SendSignal("Jabber JIDConfig Store", &conftag);
+		
+		
+		WokXMLTag testtag("config");
+		testtag.AddAttr("path", "/gpgkey");
+		testtag.AddAttr("name", jid);
+		wls->SendSignal("Jabber JIDConfig Get", testtag);
+	}		
+	
 	return 1;
 }
 
@@ -282,8 +268,9 @@ GPGenc::AssignKey(WokXMLTag *tag)
 		jid = jid.substr(0, jid.find("/"));
 	
 	WokXMLTag conftag(NULL, "config");
-	conftag.AddAttr("path", "/jid/" + jid + "/gpgkey");
-	wls->SendSignal("Config XML GetConfig", &conftag);	
+	conftag.AddAttr("path", "/gpgkey");
+	conftag.AddAttr("name", jid);
+	wls->SendSignal("Jabber JIDConfig Get", &conftag);	
 	
 	std::string key = conftag.GetFirstTag("config").GetFirstTag("key").GetAttr("data");
 	
@@ -356,9 +343,9 @@ GPGenc::AssignKey(WokXMLTag *tag)
 		std::map<std::string, std::map < std::string, std::string > >::iterator sessiter;
 		for ( sessiter = fingerprints.begin() ; sessiter != fingerprints.end() ; sessiter++)
 		{
-			if ( sessiter->second.find(tag->GetAttr("jid")) != sessiter->second.end() )
+			if ( sessiter->second.find(jid) != sessiter->second.end() )
 			{
-				if ( key == sessiter->second[tag->GetAttr("jid")] )
+				if ( key == sessiter->second[jid] )
 				{
 					found_default = true;
 					WokXMLTag &option = keyfield.AddTag("option");
@@ -416,9 +403,14 @@ GPGenc::Menu(WokXMLTag *tag)
 int
 GPGenc::Setup(WokXMLTag *tag)
 {	
+	if ( tag->GetFirstTag("x", "jabber:x:data").GetAttr("type") == "cancel") 
+	{
+		return 1;		
+	}
+	
 	std::list <WokXMLTag *>::iterator xiter;
 	
-	for( xiter = tag->GetFirstTag("x").GetTagList("field").begin() ; xiter != tag->GetFirstTag("x").GetTagList("field").end() ; xiter++)
+	for( xiter = tag->GetFirstTag("x", "jabber:x:data").GetTagList("field").begin() ; xiter != tag->GetFirstTag("x", "jabber:x:data").GetTagList("field").end() ; xiter++)
 	{
 		if ( (*xiter)->GetAttr("var") == "passphrase")
 		{
@@ -440,6 +432,20 @@ GPGenc::Setup(WokXMLTag *tag)
 		EXP_SIGHOOK("Jabber XML Object message", &GPGenc::Message, 1);
 		
 		EXP_SIGUNHOOK("Jabber AutoConnect", &GPGenc::AutoConnectInhibiter, 100);
+		
+		WokXMLTag sesstag("sessions");
+		wls->SendSignal("Jabber GetSessions", sesstag);
+		
+		std::list <WokXMLTag *>::iterator sessiter;
+		for( sessiter = sesstag.GetTagList("item").begin() ; sessiter != sesstag.GetTagList("item").end() ; sessiter++)
+		{
+			WokXMLTag msgp("message");
+			msgp.AddAttr("session", (*sessiter)->GetAttr("name"));
+			msgp.AddTag("presence");
+			
+			wls->SendSignal("Jabber XML Presence Send", msgp);
+		}
+				
 		if ( cought )
 		{
 			WokXMLTag dummy("xml");
@@ -461,8 +467,9 @@ GPGenc::OutMessage(WokXMLTag *tag)
 		jid = jid.substr(0, jid.find("/"));
 	
 	WokXMLTag conftag(NULL, "config");
-	conftag.AddAttr("path", "/jid/" + jid + "/gpgkey");
-	wls->SendSignal("Config XML GetConfig", &conftag);			
+	conftag.AddAttr("path", "/gpgkey");
+	conftag.AddAttr("name", jid);
+	wls->SendSignal("Jabber JIDConfig Get", &conftag);			
 	
 	
 	if ( !conftag.GetFirstTag("config").GetTagList("key").empty() )
@@ -569,8 +576,9 @@ GPGenc::InPresence(WokXMLTag *tag)
 					fingerprints[tag->GetAttr("session")][jid] = fp;
 				
 				WokXMLTag conftag(NULL, "config");
-				conftag.AddAttr("path", "/jid/" + jid + "/gpgkey");
-				wls->SendSignal("Config XML GetConfig", &conftag);			
+				conftag.AddAttr("path", "/gpgkey");
+				conftag.AddAttr("name", jid);
+				wls->SendSignal("Jabber JIDConfig Get", &conftag);			
 				
 				std::string key;
 				if ( !conftag.GetFirstTag("config").GetTagList("key").empty() )

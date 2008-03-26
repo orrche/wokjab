@@ -301,6 +301,11 @@ from(in_from)
 	history.AddAttr("relation", from_no_resource);
 	
 	focus = true;
+	
+	std::string old_from_no_resource = from_no_resource;
+	std::string old_from = from;
+	bool old_hasresource = hasresource;
+	
 	wls->SendSignal("Jabber History GetLast", history);
 	std::list<WokXMLTag *>::iterator hist_iter;
 	for( hist_iter = history.GetFirstTag("history").GetTagList("row").begin() ; hist_iter != history.GetFirstTag("history").GetTagList("row").end() ; hist_iter++ )
@@ -315,9 +320,11 @@ from(in_from)
 	}		
 	
 	UnHookSignals();
-	from = from_no_resource;
-	hasresource = false;
 	
+	from = old_from;
+	from_no_resource = old_from_no_resource;
+	hasresource = old_hasresource;
+
 	HookSignals();
 	SetLabel();
 }
@@ -473,6 +480,12 @@ GUIMessageWidget::SentMessage(WokXMLTag *tag)
 
 	secondmessageme = true;
 	
+	std::list <WokXMLTag *>::iterator citer;
+	for( citer = tag->GetTagList("command").begin() ; citer != tag->GetTagList("command").end() ; citer++)
+	{
+		InsertCommand(**citer);
+	}
+	
 	return 1;
 }
 
@@ -543,6 +556,12 @@ GUIMessageWidget::InsertCommand(WokXMLTag &tag)
 	GtkTextIter treeiter;
 	gtk_text_buffer_get_iter_at_mark(buffer1, &treeiter, end_mark);
 	gtk_text_buffer_insert_with_tags (buffer1, &treeiter, tag.GetAttr("name").c_str(), tag.GetAttr("name").length(), tags["forreign_text"], NULL);
+	if ( !tag.GetTagList("message").empty() )
+	{
+		if ( !tag.GetFirstTag("message").GetBody().empty() )
+			gtk_text_buffer_insert_with_tags (buffer1, &treeiter, tag.GetFirstTag("message").GetBody().c_str(), tag.GetFirstTag("message").GetBody().length(), tags["forreign_text"], NULL);
+	
+	}
 	
 	std::list<WokXMLTag *>::iterator iter;
 	

@@ -100,6 +100,7 @@ AC_CONFIG_FILES(Makefile \
 	plugins/normal/GnomeStatusIcon/include/Makefile  \
 	plugins/normal/Jabber/Makefile \
         plugins/normal/JabberConnection/Makefile  \
+        plugins/normal/JIDConfig/Makefile  \
 	plugins/normal/Tooltip/Makefile  \
 	plugins/system/Makefile \
 	plugins/experimental/Makefile  \

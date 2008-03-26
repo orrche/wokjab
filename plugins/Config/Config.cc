@@ -171,8 +171,8 @@ int
 Config::Store(WokXMLTag *tag)
 {
 	std::string path = tag->GetAttr("path");
-	if(!path.size())
-		return true;
+	if(path.empty())
+		return 1;
 	WokXMLTag *place;
 	WokXMLTag *parant = GetPosition(path);
 

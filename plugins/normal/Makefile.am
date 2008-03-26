@@ -23,5 +23,6 @@ SUBDIRS= \
 	GnomeStatusIcon \
 	Jabber \
 	JabberConnection \
-	Tooltip
+	Tooltip \
+	JIDConfig
 

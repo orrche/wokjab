@@ -1,7 +1,7 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
 /*
  * wokjab
- * Copyright (C) Kent Gustavsson 2007 <nedo80@gmail.com>
+ * Copyright (C) Kent Gustavsson 2008 <nedo80@gmail.com>
  * 
  * wokjab is free software.
  * 
@@ -22,50 +22,33 @@
  * 	Boston, MA  02110-1301, USA.
  */
 
-#ifndef _G_P_GENC_HPP_
-#define _G_P_GENC_HPP_
-
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
+#ifndef _J_I_D_CONFIG_HPP_
+#define _J_I_D_CONFIG_HPP_
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
 using namespace Woklib;
-
-class GPGenc: public WoklibPlugin 
+class JIDConfig: public WoklibPlugin 
 {
 public:
-	GPGenc(WLSignal *wls);
-	~GPGenc();
+	JIDConfig(WLSignal *wls);
 	
-	int Presence(WokXMLTag *tag);
-	int Message(WokXMLTag *tag);
-	int InPresence(WokXMLTag *tag);
-	int OutMessage(WokXMLTag *tag);	
-	int Setup(WokXMLTag *tag);
-	int Menu(WokXMLTag *tag);
-	int AssignKey(WokXMLTag *tag);
-	int AssignKeyData(WokXMLTag *tag);
+	
+	int Get(WokXMLTag *tag);
+	int Store(WokXMLTag *tag);
+	int Trigger(WokXMLTag *tag);
 	int ReadConfig(WokXMLTag *tag);
-	int ProgramStart(WokXMLTag *tag);
-	int AutoConnectInhibiter(WokXMLTag *tag);
-	
-	void SaveConfig();
-	
-	virtual std::string GetInfo() {return "GPG Enc/Dec";};
-	virtual std::string GetVersion() {return VERSION;};
 
-	std::map<std::string, std::map<std::string, std::string> > fingerprints;
+	void SaveConfig();
+	WokXMLTag * GetPosition(std::string path, std::string jid);
+	
 protected:
 	WokXMLTag *config;
-	std::string passphrase;
-	bool cought;	
-private:
+	std::map<std::string, WokXMLTag *> jidconfig;
 
+private:
 };
 
-#endif // _G_P_GENC_HPP_
+#endif // _J_I_D_CONFIG_HPP_
