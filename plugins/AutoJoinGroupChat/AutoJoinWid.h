@@ -53,6 +53,8 @@ class AutoJoinWid : public WLSignalInstance
 		static void button_ok ( GtkButton *button, AutoJoinWid *c);
 		static void button_cancel ( GtkButton *button, AutoJoinWid *c);
 		static void button_reload ( GtkButton *button, AutoJoinWid *c);
+		static void button_join ( GtkButton *button, AutoJoinWid *c);
+	
 		static gboolean destroy( GtkWidget *widget, GdkEvent *event, AutoJoinWid *c);
 	protected:
 		GladeXML *xml;

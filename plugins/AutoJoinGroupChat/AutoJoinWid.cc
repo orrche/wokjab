@@ -98,6 +98,7 @@ parent(parent)
 	g_signal_connect (glade_xml_get_widget(xml, "button_close"), "clicked", G_CALLBACK (AutoJoinWid::button_cancel), this);
 	g_signal_connect (glade_xml_get_widget(xml, "button_ok"), "clicked", G_CALLBACK (AutoJoinWid::button_ok), this);
 	g_signal_connect (glade_xml_get_widget(xml, "button_reload"), "clicked", G_CALLBACK (AutoJoinWid::button_reload), this);
+	g_signal_connect (glade_xml_get_widget(xml, "button_join"), "clicked", G_CALLBACK (AutoJoinWid::button_join), this);
 	g_signal_connect (glade_xml_get_widget(xml, "window"), "delete-event", G_CALLBACK (AutoJoinWid::destroy), this);
 
 	gtk_window_set_default_size(GTK_WINDOW(glade_xml_get_widget(xml,"window")), 
@@ -166,6 +167,40 @@ AutoJoinWid::button_ok ( GtkButton *button, AutoJoinWid *c)
 {
 	c->SaveList();
 	delete c;
+}
+
+void
+AutoJoinWid::button_join ( GtkButton *button, AutoJoinWid *c)
+{
+	GtkTreeIter tIter;
+	GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(glade_xml_get_widget(c->xml, "treeview")));
+	
+	if(gtk_tree_selection_get_selected(selection,  NULL, &tIter));
+	{
+		gchar *nick, *room, *server, *password;
+		gtk_tree_model_get(GTK_TREE_MODEL(c->model), &tIter, 0, &nick, 1, &room, 2, &server, 3, &password, -1);
+			
+		if ( nick[0] && room[0] && server[0] )
+		{
+			WokXMLTag jointag(NULL, "groupchat");
+			jointag.AddAttr("nick", nick);
+			jointag.AddAttr("room", room);
+			jointag.AddAttr("server", server);
+			jointag.AddAttr("session", c->session);
+
+			if ( !password[0] )
+				jointag.AddAttr("password", password);
+			
+			
+			c->wls->SendSignal("Jabber GroupChat Join", &jointag);
+		}
+
+		g_free(nick);
+		g_free(room);
+		g_free(server);
+		g_free(password);	
+	}
+	
 }
 
 void
