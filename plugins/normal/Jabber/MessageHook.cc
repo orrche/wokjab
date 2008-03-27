@@ -70,6 +70,11 @@ int
 MessageHook::send(WokXMLTag *tag)
 {
 	if ( tag->GetAttr("send") != "false" )
-		wls->SendSignal("Jabber XML Send", tag);
+	{
+		WokXMLTag tosend("message");
+		tosend.AddAttr("session", tag->GetAttr("session"));
+		tosend.AddTag(& tag->GetFirstTag("message"));
+		wls->SendSignal("Jabber XML Send", tosend);
+	}
 	return 1;
 }

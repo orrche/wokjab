@@ -53,7 +53,9 @@ public:
 	int ReadConfig(WokXMLTag *tag);
 	int ProgramStart(WokXMLTag *tag);
 	int AutoConnectInhibiter(WokXMLTag *tag);
-	
+	int RemoveKey(WokXMLTag *tag);
+	int NagUser(WokXMLTag *tag);
+	int PreOutMessage(WokXMLTag *tag);
 	void SaveConfig();
 	
 	virtual std::string GetInfo() {return "GPG Enc/Dec";};

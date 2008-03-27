@@ -144,6 +144,9 @@ GPGenc::GPGenc(WLSignal *wls) : WoklibPlugin(wls)
 	EXP_SIGHOOK("Jabber AutoConnect", &GPGenc::AutoConnectInhibiter, 100);
 	EXP_SIGHOOK("Jabber XML Presence", &GPGenc::InPresence, 1);
 	
+	EXP_SIGHOOK("GPGenc NagUser", &GPGenc::NagUser, 500);
+	EXP_SIGHOOK("GPGenc RemoveKey", &GPGenc::RemoveKey, 500);
+	
 	config = new WokXMLTag ("config");
 	EXP_SIGHOOK("Config XML Change /GPGenc", &GPGenc::ReadConfig, 500);
 	WokXMLTag conftag(NULL, "config");
@@ -156,6 +159,35 @@ GPGenc::~GPGenc()
 	SaveConfig();
 	delete config;	
 }
+
+int
+GPGenc::NagUser(WokXMLTag *tag)
+{
+	WokXMLTag mtag("message");
+	mtag.AddAttr("GPGenc", "false");
+	mtag.AddAttr("session", tag->GetAttr("session"));
+	WokXMLTag &msg = mtag.AddTag("message");
+	msg.AddAttr("to", tag->GetAttr("name"));
+	msg.AddTag("body").AddText(_("[GPGenc Nag] You should activate your GPG encryption, people are trying to steal my thoughts !"));
+	
+	wls->SendSignal("Jabber XML Message Send", mtag);
+	
+	return 1;
+}
+
+int
+GPGenc::RemoveKey(WokXMLTag *tag)
+{
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/gpgkey");
+	conftag.AddAttr("name", tag->GetAttr("name"));
+	wls->SendSignal("Jabber JIDConfig Get", &conftag);
+	conftag.GetFirstTag("config").GetFirstTag("key").AddAttr("data","");
+	wls->SendSignal("Jabber JIDConfig Store", &conftag);
+
+	return 1;
+}
+
 
 int
 GPGenc::AutoConnectInhibiter(WokXMLTag *tag)
@@ -213,12 +245,6 @@ GPGenc::AssignKeyData(WokXMLTag *tag)
 		wls->SendSignal("Jabber JIDConfig Get", &conftag);
 		conftag.GetFirstTag("config").GetFirstTag("key").AddAttr("data",key);
 		wls->SendSignal("Jabber JIDConfig Store", &conftag);
-		
-		
-		WokXMLTag testtag("config");
-		testtag.AddAttr("path", "/gpgkey");
-		testtag.AddAttr("name", jid);
-		wls->SendSignal("Jabber JIDConfig Get", testtag);
 	}		
 	
 	return 1;
@@ -429,6 +455,7 @@ GPGenc::Setup(WokXMLTag *tag)
 	{	
 		EXP_SIGHOOK("Jabber XML Presence Send", &GPGenc::Presence, 960);
 		EXP_SIGHOOK("Jabber XML Message Send", &GPGenc::OutMessage, 960);
+		EXP_SIGHOOK("Jabber XML Message Send", &GPGenc::PreOutMessage, 499);
 		EXP_SIGHOOK("Jabber XML Object message", &GPGenc::Message, 1);
 		
 		EXP_SIGUNHOOK("Jabber AutoConnect", &GPGenc::AutoConnectInhibiter, 100);
@@ -459,9 +486,11 @@ GPGenc::Setup(WokXMLTag *tag)
 }
 
 int
-GPGenc::OutMessage(WokXMLTag *tag)
+GPGenc::PreOutMessage(WokXMLTag *tag)
 {
-	std::string body = tag->GetFirstTag("message").GetFirstTag("body").GetBody();
+	if ( tag->GetAttr("GPGenc") == "false")
+		return 1;
+	
 	std::string jid = tag->GetFirstTag("message").GetAttr("to");
 	if ( jid.find("/") != std::string::npos )
 		jid = jid.substr(0, jid.find("/"));
@@ -483,6 +512,59 @@ GPGenc::OutMessage(WokXMLTag *tag)
 
 		if ( fingerprints[tag->GetAttr("session")][jid] != key )
 		{
+			WokXMLTag &cmdtag = tag->AddTag("command");
+			cmdtag.AddTag("message").AddText(_("Key mismatch while sending"));
+
+			WokXMLTag &remove = cmdtag.AddTag("command");
+			remove.AddAttr("name", _("Remove key"));
+			WokXMLTag &rsig = remove.AddTag("signal");
+			rsig.AddAttr("name", "GPGenc RemoveKey");
+			rsig.AddTag("jid").AddAttr("name", jid);
+			
+			if ( fingerprints[tag->GetAttr("session")][jid].empty())
+			{
+				WokXMLTag &nag = cmdtag.AddTag("command");
+				nag.AddAttr("name", _("Nag user"));
+				WokXMLTag &nsig = nag.AddTag("signal");
+				nsig.AddAttr("name", "GPGenc NagUser");
+				nsig.AddTag("jid").AddAttr("name", jid);
+				nsig.GetFirstTag("jid").AddAttr("session", tag->GetAttr("session"));
+			}		
+		}
+	}
+	
+	
+	return 1;
+}
+
+int
+GPGenc::OutMessage(WokXMLTag *tag)
+{
+	if ( tag->GetAttr("GPGenc") == "false")
+		return 1;
+	
+	std::string body = tag->GetFirstTag("message").GetFirstTag("body").GetBody();
+	std::string jid = tag->GetFirstTag("message").GetAttr("to");
+	if ( jid.find("/") != std::string::npos )
+		jid = jid.substr(0, jid.find("/"));
+	
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/gpgkey");
+	conftag.AddAttr("name", jid);
+	wls->SendSignal("Jabber JIDConfig Get", &conftag);			
+	
+	
+	if ( !conftag.GetFirstTag("config").GetTagList("key").empty() )
+	{
+		std::string key = conftag.GetFirstTag("config").GetFirstTag("key").GetAttr("data");
+		while( key.find(" ") != std::string::npos )
+			key.erase(key.find(" "), 1);
+		
+		if ( key.empty() )
+			return 1;
+
+		if ( fingerprints[tag->GetAttr("session")][jid] != key )
+		{			
 			if ( config->GetFirstTag("send_warning_message_mismatch").GetAttr("data") != "false" )
 				woklib_message(wls, _("Key mismatch while sending message to ") + jid);
 			if ( config->GetFirstTag("send_message_message_mismatch").GetAttr("data") != "false" )
@@ -518,6 +600,7 @@ GPGenc::OutMessage(WokXMLTag *tag)
 int
 GPGenc::InPresence(WokXMLTag *tag)
 {
+	
 	std::list <WokXMLTag *>::iterator xiter;
 	
 	std::string jid = tag->GetFirstTag("presence").GetAttr("from");

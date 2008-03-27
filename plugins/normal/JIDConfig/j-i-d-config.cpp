@@ -51,7 +51,7 @@ JIDConfig::ReadConfig(WokXMLTag *tag)
 	
 	jidconfig.clear();
 	std::list <WokXMLTag *>::iterator tagiter;
-	for ( tagiter = config->GetTagList("jid").begin() ; tagiter != config->GetTagList("jid").end() ; tagiter++)
+	for ( tagiter = config->GetTagList("config").begin() ; tagiter != config->GetTagList("config").end() ; tagiter++)
 	{
 		jidconfig[(*tagiter)->GetAttr("name")] = *tagiter;
 		wls->SendSignal("Jabber JIDConfig Change " + (*tagiter)->GetAttr("name"), jidconfig[(*tagiter)->GetAttr("name")]);
@@ -77,7 +77,10 @@ WokXMLTag *
 JIDConfig::GetPosition(std::string path, std::string jid)
 {
 	if  ( jidconfig.find(jid) == jidconfig.end() )
+	{
 		jidconfig[jid] = &config->AddTag("config");
+		jidconfig[jid]->AddAttr("name", jid);
+	}
 		
 	WokXMLTag *place = jidconfig[jid];
 	path = path.substr(1, path.size()-1);

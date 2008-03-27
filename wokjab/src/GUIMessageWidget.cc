@@ -420,6 +420,7 @@ GUIMessageWidget::tw1_event_after (GtkWidget *text_view, GdkEvent  *ev, GUIMessa
 int
 GUIMessageWidget::SentMessage(WokXMLTag *tag)
 {
+	std::cout << "Shit.." << *tag << std::endl;
 	std::string str = tag->GetFirstTag("message").GetFirstTag("body").GetBody();
 	
 	WokXMLTag querytag(NULL, "nick");
