@@ -118,10 +118,60 @@ History::GetLast(WokXMLTag *tag)
 	return 1;	
 }
 
+void
+History::PushToSQL(std::string command)
+{
+	char *zErrMsg;
+	
+	int status;
+	if ( pid )
+		waitpid( pid, &status, WNOHANG);
+
+	if ( WIFEXITED(status) || WTERMSIG(status) || !pid)
+	{
+		if ( !WEXITSTATUS(status) )
+			lingering_command = "";
+		
+		lingering_command += command;
+		
+		pid = fork();
+		if ( pid == 0 )
+		{
+			sqlite3 *fork_db;
+			int rc = sqlite3_open((std::string(g_get_home_dir()) + "/.wokjab/history/history.db").c_str(), &fork_db);
+			if( rc ){
+				fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(fork_db));
+				sqlite3_close(fork_db);
+				_exit(-1);
+			}
+			
+			std::cout << "CMD: " << lingering_command << std::endl;
+			rc = sqlite3_exec( fork_db, (lingering_command).c_str(), callback, 0, &zErrMsg );
+			if( rc!=SQLITE_OK )
+			{
+				fprintf( stderr, "SQL error: %s\n", zErrMsg );
+				sqlite3_free( zErrMsg );
+				sqlite3_close(fork_db);
+				_exit(-1);
+			}
+			sqlite3_close(fork_db);
+			
+			_exit(0);
+		}
+		
+		std::cout << ":::" << WEXITSTATUS(status) << std::endl;
+		
+	}
+	
+	
+	
+	
+}
+
+
 int
 History::Outgoing(WokXMLTag *tag)
 {
-	char *zErrMsg;
 	std::string jid = tag->GetFirstTag("message").GetAttr("to");
 	std::string resource;
 	if ( jid.find("/") != std::string::npos )
@@ -132,30 +182,9 @@ History::Outgoing(WokXMLTag *tag)
 	else
 		resource = "";
 	
-	lingering_command += "INSERT INTO history (relation, resource, to_jid, from_jid, xml, time) VALUES ('"+ jid +"', '" + resource + "', '" + tag->GetFirstTag("message").GetAttr("to") + 
-					  		"', '" + tag->GetFirstTag("message").GetAttr("from") + "' , '" + XMLisize(tag->GetStr()) + "', strftime('%s','now'));";
-	
-	int status;
-	if ( pid )
-		waitpid( pid, &status, WNOHANG);
+	PushToSQL("INSERT INTO history (relation, resource, to_jid, from_jid, xml, time) VALUES ('"+ jid +"', '" + resource + "', '" + tag->GetFirstTag("message").GetAttr("to") + 
+					  		"', '" + tag->GetFirstTag("message").GetAttr("from") + "' , '" + XMLisize(tag->GetStr()) + "', strftime('%s','now'));");
 
-	if ( WIFEXITED(status) || WTERMSIG(status) || !pid)
-	{
-		pid = fork();
-		if ( pid == 0 )
-		{
-			int rc = sqlite3_exec( db, (lingering_command).c_str(), callback, 0, &zErrMsg );
-			if( rc!=SQLITE_OK )
-			{
-				fprintf( stderr, "SQL error: %s\n", zErrMsg );
-				sqlite3_free( zErrMsg );
-			}
-	
-			_exit(0);
-		}
-		lingering_command = "";
-	}
-	
 	return 1;
 }
 
@@ -163,7 +192,6 @@ History::Outgoing(WokXMLTag *tag)
 int
 History::Incomming(WokXMLTag *tag)
 {
-	char *zErrMsg;
 	std::string jid = tag->GetFirstTag("message").GetAttr("from");
 	std::string resource;	
 	if ( jid.find("/") != std::string::npos )
@@ -174,28 +202,9 @@ History::Incomming(WokXMLTag *tag)
 	else
 		resource = "";
 	
-	lingering_command += "INSERT INTO history (relation, resource, to_jid, from_jid, xml, time) VALUES ('"+ jid +"', '" + resource + "', '" + tag->GetFirstTag("message").GetAttr("to") + 
-								"', '" + tag->GetFirstTag("message").GetAttr("from") + "' , '" + XMLisize(tag->GetStr()) + "', strftime('%s','now'))";
-	int status;
-	if ( pid )
-		waitpid( pid, &status, WNOHANG);
-
-	if ( WIFEXITED(status) || WTERMSIG(status) || !pid)
-	{
-		pid = fork();
-		if ( pid == 0 )
-		{
-			int rc = sqlite3_exec( db, (lingering_command).c_str(), callback, 0, &zErrMsg );
-			if( rc!=SQLITE_OK )
-			{
-				fprintf( stderr, "SQL error: %s\n", zErrMsg );
-				sqlite3_free( zErrMsg );
-			}
+	PushToSQL("INSERT INTO history (relation, resource, to_jid, from_jid, xml, time) VALUES ('"+ jid +"', '" + resource + "', '" + tag->GetFirstTag("message").GetAttr("to") + 
+								"', '" + tag->GetFirstTag("message").GetAttr("from") + "' , '" + XMLisize(tag->GetStr()) + "', strftime('%s','now'));");
 	
-			_exit(0);
-		}
-		lingering_command = "";
-	}
 	
 	return 1;
 }

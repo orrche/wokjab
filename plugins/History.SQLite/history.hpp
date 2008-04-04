@@ -43,6 +43,8 @@ public:
 	int Outgoing(WokXMLTag *tag);
 	int Incomming(WokXMLTag *tag);
 	int GetLast(WokXMLTag *tag);
+	void PushToSQL(std::string command);
+	
 protected:
 	sqlite3 *db;
 	std::string lingering_command;
