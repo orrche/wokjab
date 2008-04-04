@@ -21,9 +21,6 @@ libdir = $(prefix)/lib/woklib-plugins/normal
 datadir = $(prefix)/lib/woklib/glade
 pkgdata_DATA = \
         vcardavatar.glade
-        
-AM_CFLAGS =\
-	`pkg-config gtk+-2.0 --cflags`
 
 AM_CXXFLAGS =\
 	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -lwoklib
@@ -41,4 +38,4 @@ libjep0153_vcardavatar_la_SOURCES = \
 
 
 libjep0153_vcardavatar_la_LDFLAGS = \
-	`pkg-config gtk+-2.0 openssl --libs` 
+	`pkg-config libglade-2.0 gtk+-2.0 openssl --libs` 
