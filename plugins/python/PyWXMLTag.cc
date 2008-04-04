@@ -25,23 +25,24 @@
 #include "PyWXMLTag.h"
 
 static PyMethodDef PyWXMLTag_methods[] = {
-    {"name", 							(PyCFunction)PyWXMLTag_name, 					METH_NOARGS, "Return the name" },
-		{"GetAttr", 					(PyCFunction)PyWXMLTag_GetAttr, 			METH_VARARGS, "Retrieving attributes" },
-    {"AddAttr", 					(PyCFunction)PyWXMLTag_AddAttr, 			METH_VARARGS, "Setting attributes" },
-    {"GetFirstTag", 			(PyCFunction)PyWXMLTag_GetFirstTag, 	METH_VARARGS, "Setting attributes" },
-		{"In", 								(PyCFunction)PyWXMLTag_In, 						METH_VARARGS, "Check if the XMLTag exists in another one" },
-		{"RemoveChildrenTags",(PyCFunction)PyWXMLTag_RemoveChildrenTags, METH_NOARGS, "Removes all children" },
-		{"RemoveBody",				(PyCFunction)PyWXMLTag_RemoveBody, 		METH_NOARGS, "Removes all children" },
-		{"AddText", 					(PyCFunction)PyWXMLTag_AddText, 			METH_VARARGS, "Adding text" },
-		{"GetBody", 					(PyCFunction)PyWXMLTag_GetBody, 			METH_NOARGS, "Getting the body" },
-		{"RemoveAttr", 				(PyCFunction)PyWXMLTag_RemoveAttr, 		METH_VARARGS, "Removing an attribute" },
-		{"RemoveTag", 				(PyCFunction)PyWXMLTag_RemoveTag, 		METH_VARARGS, "Removing a specific tag" },
-		{"GetChildrenStr", 		(PyCFunction)PyWXMLTag_GetChildrenStr,METH_NOARGS, "Retrieving attributes" },
-		{"AddTagName", 				(PyCFunction)PyWXMLTag_AddTagName, 		METH_VARARGS, "Adding a new tag with name" },
-		{"AddTagTag", 				(PyCFunction)PyWXMLTag_AddTagTag, 		METH_VARARGS, "Adding a new tag from another tag" },
-		{"GetTags", 					(PyCFunction)PyWXMLTag_GetTags, 			METH_NOARGS, "Get a list of all children tags" },
-		{"GetTagList",				(PyCFunction)PyWXMLTag_GetTagList,		METH_VARARGS, "Get a list of children tags with a specific name" },
-		{"GetObjects",				(PyCFunction)PyWXMLTag_GetObjects,	METH_VARARGS, "Get a list of text and tag children" },
+	    {"name", 					(PyCFunction)PyWXMLTag_name, 				METH_NOARGS, "Return the name" },
+		{"GetAttr", 				(PyCFunction)PyWXMLTag_GetAttr, 			METH_VARARGS, "Retrieving attributes" },
+		{"AddAttr", 				(PyCFunction)PyWXMLTag_AddAttr, 			METH_VARARGS, "Setting attributes" },
+	    {"GetFirstTag", 			(PyCFunction)PyWXMLTag_GetFirstTag, 		METH_VARARGS, "Setting attributes" },
+		{"In", 						(PyCFunction)PyWXMLTag_In, 					METH_VARARGS, "Check if the XMLTag exists in another one" },
+		{"RemoveChildrenTags",		(PyCFunction)PyWXMLTag_RemoveChildrenTags,  METH_NOARGS, "Removes all children" },
+		{"RemoveBody",				(PyCFunction)PyWXMLTag_RemoveBody, 			METH_NOARGS, "Removes all children" },
+		{"AddText", 				(PyCFunction)PyWXMLTag_AddText, 			METH_VARARGS, "Adding text" },
+		{"GetBody", 				(PyCFunction)PyWXMLTag_GetBody, 			METH_NOARGS, "Getting the body" },
+		{"RemoveAttr", 				(PyCFunction)PyWXMLTag_RemoveAttr, 			METH_VARARGS, "Removing an attribute" },
+		{"RemoveTag", 				(PyCFunction)PyWXMLTag_RemoveTag, 			METH_VARARGS, "Removing a specific tag" },
+		{"GetChildrenStr", 			(PyCFunction)PyWXMLTag_GetChildrenStr,		METH_NOARGS, "Retrieving attributes" },
+		{"AddTagName", 				(PyCFunction)PyWXMLTag_AddTagName, 			METH_VARARGS, "Adding a new tag with name" },
+		{"AddTagTag", 				(PyCFunction)PyWXMLTag_AddTagTag, 			METH_VARARGS, "Adding a new tag from another tag" },
+		{"Add",		 				(PyCFunction)PyWXMLTag_Add, 				METH_VARARGS, "Add data to the tag both text and other tags in text" },
+		{"GetTags", 				(PyCFunction)PyWXMLTag_GetTags, 			METH_NOARGS, "Get a list of all children tags" },
+		{"GetTagList",				(PyCFunction)PyWXMLTag_GetTagList,			METH_VARARGS, "Get a list of children tags with a specific name" },
+		{"GetObjects",				(PyCFunction)PyWXMLTag_GetObjects,			METH_VARARGS, "Get a list of text and tag children" },
 		{NULL}  /* Sentinel */
 };
 
@@ -105,7 +106,7 @@ void PyWXMLTagInit(PyObject* module )
 	tt = &PyWXMLTagType;
 	PyModule_AddObject(module, "XMLTag", (PyObject *)tt);
 }
-
+ 
 int
 PyWXMLTag_compare( PyWXMLTagHolder *o1, PyWXMLTagHolder *o2 )
 {
@@ -132,14 +133,15 @@ PyObject *
 PyWXMLTag_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     PyWXMLTagHolder *self;
-		char *name=NULL;
-		
-		static char *kwlist[] = {"name", NULL};
-		if (! PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-                                      &name))
-        return NULL;
+	char *name=NULL;
+	
+	static char *kwlist[] = {"name", NULL};
+	if (! PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
+                                  &name))
+		return NULL;
     self = (PyWXMLTagHolder *)type->tp_alloc(type, 0);
-    if (self != NULL) {
+    if (self != NULL) 
+	{
         self->c = new WokXMLTag(NULL,name);
 				self->pyowned = true;
     }
@@ -219,6 +221,21 @@ PyWXMLTag_AddTagTag(PyWXMLTagHolder* self, PyObject *args, PyObject *kwds)
 	
 	return PyCWXMLTag_wrap(&self->c->AddTag(other->c));
 }
+
+PyObject *
+PyWXMLTag_Add(PyWXMLTagHolder* self, PyObject *args, PyObject *kwds)
+{
+	char* data = NULL;
+	
+	if (! PyArg_ParseTuple(args, "s", &data))
+	{
+		return NULL;
+	}
+	self->c->Add(data);
+	
+	return PyInt_FromLong(0);
+}
+
 
 PyObject *
 PyWXMLTag_GetBody(PyWXMLTagHolder* self, PyObject *args, PyObject *kwds)
@@ -382,7 +399,7 @@ PyWXMLTag_AddAttr(PyWXMLTagHolder* self, PyObject *args, PyObject *kwds)
 	
 	self->c->AddAttr(name, value);
 	
-	return args;
+	return PyInt_FromLong(0);
 }
 
 PyObject *

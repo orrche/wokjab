@@ -49,6 +49,7 @@ class PyScript : public WLSignalInstance
 {
 	public:
 		PyScript(WLSignal *wls, const std::string &filename);
+		PyScript();
 		 ~PyScript();
 	
 		static PyObject *HookSignal(PluginObject *self, PyObject *args);

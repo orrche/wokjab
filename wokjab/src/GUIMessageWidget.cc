@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2008  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -310,6 +310,20 @@ from(in_from)
 	std::list<WokXMLTag *>::iterator hist_iter;
 	for( hist_iter = history.GetFirstTag("history").GetTagList("row").begin() ; hist_iter != history.GetFirstTag("history").GetTagList("row").end() ; hist_iter++ )
 	{
+		if ( (*hist_iter)->GetFirstTag("xml").GetFirstTag("message").GetFirstTag("message").GetFirstTag("x", "jabber:x:delay").GetAttr("stamp").empty() )
+		{
+			time_t t;
+			struct tm tm;
+			strptime ((*hist_iter)->GetFirstTag("time").GetBody().c_str(), "%s", &tm);
+
+			char      buf[128];
+			buf[0] = 0;
+			strftime (buf, sizeof (buf),"%Y%m%dT%T", &tm);
+			
+			(*hist_iter)->GetFirstTag("xml").GetFirstTag("message").GetFirstTag("message").GetFirstTag("x", "jabber:x:delay").AddAttr("stamp", buf);
+		}
+		
+		
 		if ( (*hist_iter)->GetFirstTag("xml").GetFirstTag("message").GetFirstTag("message").GetAttr("from") == "" )
 			SentMessage(&((*hist_iter)->GetFirstTag("xml").GetFirstTag("message")));
 		else
@@ -420,7 +434,6 @@ GUIMessageWidget::tw1_event_after (GtkWidget *text_view, GdkEvent  *ev, GUIMessa
 int
 GUIMessageWidget::SentMessage(WokXMLTag *tag)
 {
-	std::cout << "Shit.." << *tag << std::endl;
 	std::string str = tag->GetFirstTag("message").GetFirstTag("body").GetBody();
 	
 	WokXMLTag querytag(NULL, "nick");
@@ -460,12 +473,10 @@ GUIMessageWidget::SentMessage(WokXMLTag *tag)
 	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(textview1));
 	gtk_text_buffer_get_iter_at_mark(buffer, &iter, end_mark);
 	
-#warning this is not a good fix...
-	time_t t = time(NULL);
 	
 	gtk_text_buffer_insert_with_tags (
 					buffer, &iter,
-					GetTimeStamp(t).c_str(), -1,
+					GetTimeStamp(tag).c_str(), -1,
 					tags["timestamp"],
 					NULL);
 
@@ -612,20 +623,7 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 
 		std::string stamp = "";
 		WokXMLTag tag_body = tag->GetFirstTag("message");
-
-		stamp = tag_body.GetFirstTag("x", "jabber:x:delay").GetAttr("stamp");
-
-		if( stamp.size() )
-		{
-			struct tm tp;
-	#if __WIN32
-	#else
-			strptime (stamp.c_str(), "%Y%m%dT%T", &tp);
-	#endif
-			Message(*tag, msgtag.GetAttr("from"), mktime(&tp));
-		}
-		else
-			Message(*tag, msgtag.GetAttr("from"));
+		Message(*tag, msgtag.GetAttr("from"));
 
 		tag->AddAttr("displayed", "true");
 
@@ -1118,7 +1116,7 @@ GUIMessageWidget::PutText(GtkTextIter *iter, WokXMLTag &message)
 
 
 int
-GUIMessageWidget::Message(WokXMLTag &message, time_t t)
+GUIMessageWidget::Message(WokXMLTag &message)
 {
 	GtkTextBuffer *buffer;
 	GtkTextIter iter;
@@ -1128,7 +1126,7 @@ GUIMessageWidget::Message(WokXMLTag &message, time_t t)
 
 	gtk_text_buffer_insert_with_tags (
 					buffer, &iter,
-					GetTimeStamp(t).c_str(), -1,
+					GetTimeStamp(&message).c_str(), -1,
 					tags["timestamp"],
 					NULL);
 	if ( ! message.GetTagList("body").empty() )
@@ -1150,7 +1148,7 @@ GUIMessageWidget::Message(WokXMLTag &message, time_t t)
 }
 
 int
-GUIMessageWidget::Message(WokXMLTag &message, std::string jid, time_t t)
+GUIMessageWidget::Message(WokXMLTag &message, std::string jid)
 {
 	int i = 0;
 
@@ -1193,7 +1191,7 @@ GUIMessageWidget::Message(WokXMLTag &message, std::string jid, time_t t)
 
 	gtk_text_buffer_insert_with_tags (
 					buffer, &iter,
-					GetTimeStamp(t).c_str(), -1,
+					GetTimeStamp(&message).c_str(), -1,
 					tags["timestamp"],
 					NULL);
 
@@ -1216,103 +1214,8 @@ GUIMessageWidget::Message(WokXMLTag &message, std::string jid, time_t t)
 	return 1;
 }
 
-#if 0
-int
-GUIMessageWidget::Message(std::string str, time_t t)
-{
-	GtkTextBuffer *buffer;
-	GtkTextIter iter;
-
-	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(textview1));
-	gtk_text_buffer_get_iter_at_mark(buffer, &iter, end_mark);
-	str += '\n';
-
-	gtk_text_buffer_insert_with_tags (
-					buffer, &iter,
-					GetTimeStamp(t).c_str(), -1,
-					tags["timestamp"],
-					NULL);
-	gtk_text_buffer_insert_with_tags (
-					buffer, &iter,
-					str.c_str(), str.length(),
-					tags["notice"],
-					NULL);
-
-	gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (textview1),
-				      end_mark, .4, TRUE, 1, 1);
-	return 1;
-}
-
-int
-GUIMessageWidget::Message(std::string str, std::string jid, time_t t)
-{
-	int i = 0;
-	if( str == "" )
-		return 1;
-
-	secondmessageme = false;
-
-	if(!focus)
-	{
-		gtk_widget_modify_fg(GTK_WIDGET(label_label), GTK_STATE_ACTIVE, &color_red);
-		gtk_widget_modify_fg(GTK_WIDGET(label_label), GTK_STATE_NORMAL, &color_red);
-		gtk_image_set_from_pixbuf(GTK_IMAGE(label_image), pix_msg);
-		msg_waiting = true;
-	}
-
-	std::string nick;
-	std::string msg;
-
-	if( str.substr(0,4) == "/me " )
-	{
-		nick += config->GetFirstTag("display").GetFirstTag("forreignname").GetFirstTag("pre_me").GetBody();
-		nick += this->nick;
-		nick += config->GetFirstTag("display").GetFirstTag("forreignname").GetFirstTag("post_me").GetBody();
-
-		msg = str.substr(3) + '\n';
-	}
-	else
-	{
-		nick += config->GetFirstTag("display").GetFirstTag("forreignname").GetFirstTag("pre").GetBody();
-		nick += this->nick;
-		nick += config->GetFirstTag("display").GetFirstTag("forreignname").GetFirstTag("post").GetBody();
-
-		if(secondmessageother)
-			nick += config->GetFirstTag("display").GetFirstTag("forreignname").GetFirstTag("continuing").GetBody();
-
-		msg = str + '\n';
-	}
-
-	GtkTextBuffer *buffer;
-	GtkTextIter iter;
-
-	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(textview1));
-	gtk_text_buffer_get_iter_at_mark(buffer, &iter, end_mark);
-
-
-	gtk_text_buffer_insert_with_tags (
-					buffer, &iter,
-					GetTimeStamp(t).c_str(), -1,
-					tags["timestamp"],
-					NULL);
-
-	gtk_text_buffer_insert_with_tags (
-					buffer, &iter,
-					nick.c_str(), nick.length(),
-					tags["forreign_name"],
-					NULL);
-
-	gtk_text_buffer_insert_with_tags (buffer, &iter, msg.c_str(), msg.length(), tags["forreign_text"], NULL);
-	gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (textview1),
-				      end_mark, .4, TRUE, 1, 1);
-
-	secondmessageother = true;
-	return 1;
-}
-#endif
-
 void
-GUIMessageWidget::own_message(std::string str, time_t t)
+GUIMessageWidget::own_message(std::string str)
 {
 	secondmessageother = false;
 
@@ -1370,11 +1273,26 @@ GUIMessageWidget::key_press_handler(GtkWidget * widget, GdkEventKey * event,
 }
 
 std::string
-GUIMessageWidget::GetTimeStamp(time_t t)
+GUIMessageWidget::GetTimeStamp(WokXMLTag *tag)
 {
 	struct tm *tm;
 	char      buf[128];
+	std::string stamp;
+	time_t t;
+	
+	if ( !tag->GetFirstTag("message").GetTagList("x", "jabber:x:delay").empty())
+		stamp = tag->GetFirstTag("message").GetFirstTag("x", "jabber:x:delay").GetAttr("stamp");
 
+	if ( stamp.empty() )
+		t = time(0);
+	else
+	{
+		struct tm tp;
+		strptime (stamp.c_str(), "%Y%m%dT%T", &tp);
+
+		t = mktime(&tp);
+	}
+	
 	tm = localtime (&t);
 
 	buf[0] = 0;

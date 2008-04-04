@@ -151,7 +151,6 @@ PyScript::PyScript(WLSignal *wls, const std::string &filename) : WLSignalInstanc
 	PyEval_ReleaseLock();
 }
 
-
 PyScript::~PyScript()
 {
 	std::list <PySig *>::iterator iter;
@@ -167,6 +166,20 @@ PyScript::~PyScript()
 	PyEval_ReleaseLock();
 	fclose(fp);
 	
+}
+
+extern "C" {
+PyMethodDef Foo_methods[] = {
+{ NULL }
+};
+
+void initWoklib()
+{
+	PyObject* module = Py_InitModule("Woklib", Foo_methods);	
+	Py_INCREF(module);
+	
+	PyWXMLTagInit(module);
+}
 }
 
 

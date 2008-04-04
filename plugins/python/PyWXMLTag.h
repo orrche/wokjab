@@ -54,6 +54,7 @@ extern "C" PyObject * PyWXMLTag_RemoveTag(PyWXMLTagHolder* self, PyObject *args,
 extern "C" PyObject * PyWXMLTag_GetChildrenStr(PyWXMLTagHolder* self, PyObject *args, PyObject *kwds);
 extern "C" PyObject * PyWXMLTag_AddTagName(PyWXMLTagHolder* self, PyObject *args, PyObject *kwds);
 extern "C" PyObject * PyWXMLTag_AddTagTag(PyWXMLTagHolder* self, PyObject *args, PyObject *kwds);
+extern "C" PyObject * PyWXMLTag_Add(PyWXMLTagHolder* self, PyObject *args, PyObject *kwds);
 extern "C" PyObject * PyWXMLTag_GetTags(PyWXMLTagHolder* self, PyObject *args, PyObject *kwds);
 extern "C" PyObject * PyWXMLTag_GetTagList(PyWXMLTagHolder* self, PyObject *args, PyObject *kwds);
 extern "C" PyObject * PyWXMLTag_GetObjects(PyWXMLTagHolder* self, PyObject *args, PyObject *kwds);

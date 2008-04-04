@@ -64,6 +64,7 @@ WLDbushook::exec(WokXMLTag *tag)
 		g_printerr ("Failed to open connection to bus: %s\n",
 		error->message);
 		g_error_free (error);
+		parant->DeleteHook(this);
 		return 1;
     }
 	
@@ -75,13 +76,14 @@ WLDbushook::exec(WokXMLTag *tag)
 	{
 		woklib_debug(wls, error->message);
 		g_error_free (error);
+		parant->DeleteHook(this);
 		return 1;
 	}
 	/* Call ListNames method, wait for reply */
 	error = NULL;
 	gchar *return_xml = NULL;
 	
-	if (dbus_g_proxy_call (proxy, method.c_str(), &error, 
+	if (!dbus_g_proxy_call (proxy, method.c_str(), &error, 
 							G_TYPE_STRING, tag->GetStr().c_str(), G_TYPE_INVALID,  
 							G_TYPE_INT, &return_value, G_TYPE_STRING, &return_xml, G_TYPE_INVALID) == FALSE)
 	{
@@ -93,9 +95,13 @@ WLDbushook::exec(WokXMLTag *tag)
 			else
 				g_printerr ("Error: %s\n", error->message);
 			g_error_free (error);
+			
+
 		}
 		parant->DeleteHook(this);
+		
 		return 1;
+
 	}
 	else
 	{
@@ -107,5 +113,6 @@ WLDbushook::exec(WokXMLTag *tag)
 		}
 	}
 	
+	return 1;
 	return return_value;	
 }
