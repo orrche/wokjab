@@ -77,8 +77,9 @@ WoklibPlugin(wls)
 		woklib_debug(wls, "New listening port " + sport);
 	}
 	/* Listen on the server socket */
-	if (listen(serversock, MAXPENDING) < 0) {
+	if (listen(serversock, MAXPENDING) != 0) {
 		woklib_error(wls, "Failed to listen on server socket");
+		return;
 		//Die("Failed to listen on server socket");
 	}
 	
@@ -123,7 +124,11 @@ jep65::ReadData(WokXMLTag *xml)
 	unsigned int clientlen = sizeof(echoclient);
 	
 	if ((clientsock = accept(serversock, (struct sockaddr *) &echoclient, &clientlen)) < 0)
-		Die("Failed to accept client connection");
+	{
+		woklib_error(wls, "Failed to accept client connection");
+//		Die("Failed to accept client connection");
+		return 1;
+	}
 
 	new RecvSocket(wls, clientsock);
 	

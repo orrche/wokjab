@@ -280,6 +280,8 @@ jep65send::ProxyReply(WokXMLTag *tag)
 			EXP_SIGHOOK(sigtag.GetAttr("signal"), &jep65send::SocketAvailibule, 1000);
 		}
 		ffile.open(file.c_str(), std::ios::in);
+		if ( !ffile.is_open() )
+			woklib_error(wls, "file not opening " + file);
 	}
 	else
 	{
@@ -362,6 +364,9 @@ jep65send::TransfearStart(WokXMLTag *tag)
 			EXP_SIGHOOK(sigtag.GetAttr("signal"), &jep65send::SocketAvailibule, 1000);
 		}
 		ffile.open(file.c_str(), std::ios::in);
+		if ( !ffile.is_open() )
+			woklib_error(wls, "file not opening " + file);
+
 	}
 	
 	return 1;
@@ -475,6 +480,8 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 		{
 			for (;;)
 			{
+				std::cout << "::::" << fbend - fbpos << std::endl;
+				
 				sent = send ( socket, filebuf + fbpos, fbend - fbpos, MSG_DONTWAIT);
 				if ( sent == -1 )
 				{
@@ -500,6 +507,7 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 				fbend = maxsize;
 			else
 				fbend = ffile.gcount();
+			std::cout << ":::: else" << fbend << " " << maxsize << std::endl;
 			sent = send ( socket, filebuf, fbend, 0 );
 			if ( sent == -1 )
 			{
@@ -509,6 +517,8 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 			fbpos = sent;
 		}
 	}
+	else
+		std::cout << "Confusing.." << std::endl;
 	
 	
 	if( fbpos == fbend)
@@ -529,18 +539,28 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 		}
 	}
 	
-	WokXMLTag postag(NULL, "position");
-	std::stringstream pos;
-	if ( fbpos == fbend )
-		pos << fsize - size;
+	if ( sent != 0 )
+	{
+		WokXMLTag postag(NULL, "position");
+		std::stringstream pos;
+		if ( fbpos == fbend )
+			pos << fsize - size;
+		else
+			pos << fsize - size + fbpos;
+	
+		postag.AddAttr("sid", sid);
+		postag.AddAttr("pos", pos.str());
+		wls->SendSignal("Jabber Stream File Status", &postag);
+		wls->SendSignal("Jabber Stream File Status Position", &postag);
+	}
 	else
-		pos << fsize - size + fbpos;
-	
-	postag.AddAttr("sid", sid);
-	postag.AddAttr("pos", pos.str());
-	wls->SendSignal("Jabber Stream File Status", &postag);
-	wls->SendSignal("Jabber Stream File Status Position", &postag);
-	
+	{
+		std::stringstream ssock;
+		ssock << socket;
+		woklib_debug(wls,"Not sure whats happening here " + ssock.str());
+		delete this;
+		return 1;
+	}
 	
 	if(size == 0)
 	{

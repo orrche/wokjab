@@ -24,7 +24,7 @@
 
 #include "fstream"
 
-#define SHUNKSIZE 1000000
+#define SHUNKSIZE 100000
 //#define SHUNKSIZE 10
 
 using namespace Woklib;
