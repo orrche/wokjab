@@ -59,7 +59,8 @@ Disco::RequestItem(WokXMLTag *tag)
 	iqtag.AddAttr("to", tag->GetFirstTag("iq").GetAttr("from"));
 	iqtag.AddAttr("id", tag->GetFirstTag("iq").GetAttr("id"));
 	querytag.AddAttr("xmlns", "http://jabber.org/protocol/disco#items");
-	
+	querytag.AddAttr("node", node);
+					 
 	std::list < WokXMLTag * > ::iterator iter;
 	std::list < WokXMLTag * > *list;
 	
