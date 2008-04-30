@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2008  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@ WLSignalInstance ( wls ),
 jid(jid),
 session(session)
 {
-	GtkWidget *scrollinstr;
 	GtkWidget *button;
 	
 	instructions = gtk_text_view_new();
@@ -83,29 +82,23 @@ RegisterServiceWidget::ButtonPress (GtkButton *button, RegisterServiceWidget *c)
 	response.AddAttr("id", c->signalid);
 	query.AddAttr("xmlns", "jabber:iq:register");
 	
-	std::map<std::string, GtkWidget*>::iterator iter;
-	
-	for(iter = c->entryfields.begin() ; iter != c->entryfields.end() ; iter++)
+	if ( c->xdata_id.empty() )
 	{
-		query.AddTag(iter->first).AddText(gtk_entry_get_text(GTK_ENTRY(iter->second)));
-	}
-
+		std::map<std::string, GtkWidget*>::iterator iter;
 	
+		for(iter = c->entryfields.begin() ; iter != c->entryfields.end() ; iter++)
+		{
+			query.AddTag(iter->first).AddText(gtk_entry_get_text(GTK_ENTRY(iter->second)));
+		}
+	}
+	else
+	{
+		WokXMLTag xdata(NULL, "empty");
+		c->wls->SendSignal("Jabber jabber:x:data Get " + c->xdata_id, xdata);
+		query.AddTag(&xdata.GetFirstTag("x"));
+	}
+		
 	c->wls->SendSignal("Jabber XML Send", &msgtag);
-	//#warning FIXME
-	//SendXMLData sig_data(response.GetStr());
-	//c->wls->SendSignal("send raw xml", sig_data);
-	//c->wls->SendSignal("send raw xml", response.GetStr());
-	/*
-	<iq type='result' id='reg1'>
-		<query xmlns='jabber:iq:register'>
-			<registered/>
-			<username>juliet</username>
-			<password>R0m30</password>
-			<email>juliet@capulet.com</email>
-		</query>
-	</iq>
-	*/
 }
 
 void
@@ -131,35 +124,48 @@ RegisterServiceWidget::RegisterField(std::string field, std::string value)
 
 int
 RegisterServiceWidget::RegisterData(WokXMLTag *tag)
-{
-	/* Because I haven't seen any jabber:x:data registration form for the moment I dont use it */
-	
+{	
 	WokXMLTag *querytag;
 	std::list <WokXMLTag *> *list;
 	std::list <WokXMLTag *>::iterator iter;
 	
 	querytag = &tag->GetFirstTag("iq").GetFirstTag("query");
 	
-	list = &querytag->GetTagList("x");
-	for( iter = list->begin() ; iter != list->end() ; iter++)
+	list = &querytag->GetTagList("x", "jabber:x:data");
+	
+	if( !list->empty() )
 	{
-		if( (*iter)->GetAttr("xmlns") == "jabber:x:data")
-		{
-			std::cout << "Should use x:data instead..." << std::endl;
-		}
+		WokXMLTag xdata("xdata");
+		xdata.AddTag(*list->begin());
+		xdata.AddTag("plug");
+		wls->SendSignal("Jabber jabber:x:data Init", xdata);
+		xdata_id = xdata.GetAttr("id");
+		
+		GtkWidget *socket;
+		socket = gtk_socket_new();
+	
+		gtk_box_pack_start(GTK_BOX(hbox), socket, TRUE, TRUE, 0);
+		
+		gtk_socket_add_id(GTK_SOCKET(socket), atoi(xdata.GetFirstTag("plug").GetAttr("id").c_str()));
+		gtk_widget_show_all(window);
+		gtk_widget_hide(instructions);
+		gtk_widget_hide(scrollinstr);
+	}
+	else
+	{
+		std::string instr = querytag->GetFirstTag("instructions").GetBody();
+		gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(instructions)), instr.c_str(), instr.length());
+	
+		if( !querytag->GetTagList("username").empty() )
+			RegisterField("username", querytag->GetFirstTag("username").GetBody());
+		if( !querytag->GetTagList("password").empty() )
+			RegisterField("password", querytag->GetFirstTag("password").GetBody());
+		if( !querytag->GetTagList("email").empty() )
+			RegisterField("email", querytag->GetFirstTag("email").GetBody());
+		
+		gtk_widget_show_all(window);
 	}
 	
-	std::string instr = querytag->GetFirstTag("instructions").GetBody();
-	gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(instructions)), instr.c_str(), instr.length());
-	
-	if( !querytag->GetTagList("username").empty() )
-		RegisterField("username", querytag->GetFirstTag("username").GetBody());
-	if( !querytag->GetTagList("password").empty() )
-		RegisterField("password", querytag->GetFirstTag("password").GetBody());
-	if( !querytag->GetTagList("email").empty() )
-		RegisterField("email", querytag->GetFirstTag("email").GetBody());
-	
-	gtk_widget_show_all(window);
 	
 	return true;
 }

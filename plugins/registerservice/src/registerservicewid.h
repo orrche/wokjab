@@ -44,10 +44,13 @@ class RegisterServiceWidget : public WLSignalInstance
 		static void ButtonPress (GtkButton *button, RegisterServiceWidget *c);
 	protected:
 		std::map <std::string, GtkWidget*> entryfields;
-	
+		std::string xdata_id;
+		
 		GtkWidget *window;
-	  GtkWidget *instructions;
+		GtkWidget *instructions;
 		GtkWidget *hbox;
+		GtkWidget *scrollinstr;
+	
 		std::string fetchsignal;
 		std::string signalid;
 		std::string jid;
