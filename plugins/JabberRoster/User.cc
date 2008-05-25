@@ -570,6 +570,7 @@ User::AddEvent(WokXMLTag *tag)
 int
 User::RemoveEvent(WokXMLTag *tag)
 {
+	EXP_SIGUNHOOK("Jabber Event Remove " +  tag->GetAttr("id"), &User::RemoveEvent, 1000);
 	std::list <WokXMLTag *>::iterator iter;
 	std::list <WokXMLTag *>::iterator tmpiter;
 	for( iter = Events.begin() ; iter != Events.end() ;)

@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2008  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -51,6 +51,7 @@ session(session)
 	EXP_SIGHOOK("Jabber Connection SetJID " + session, &Connection::SetJID, 500);
 	
 	EXP_SIGHOOK("Jabber GetMyNick", &Connection::GetMyNick, 1);
+	
 	socket_nr = 0;
 	ssl = NULL;
 

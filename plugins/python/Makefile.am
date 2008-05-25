@@ -1,5 +1,5 @@
 libdir = $(prefix)/lib/woklib-plugins/secondary
-kentmoduledir = $(prefix)/lib
+moduledir = $(prefix)/lib
 
 AM_CXXFLAGS =\
 	-O3 -Wall -lwoklib $(PY_CFLAGS)
@@ -18,14 +18,14 @@ libwokpython_la_SOURCES = \
 	PySig.cc 
 
 libwokpython_la_LDFLAGS = \
-        `pkg-config gtk+-2.0 --libs` $(PY_LIBS) -ldl -lpthread -lm -lutil -lwoklib
+    `pkg-config gtk+-2.0 --libs` $(PY_LIBS) -ldl -lpthread -lm -lutil -lwoklib
 
 
-#kentmodule_LTLIBRARIES = \
-#	libwoklibmodule.la
+module_LTLIBRARIES = \
+	Woklibmodule.la
 	
-#libwoklibmodule_la_SOURCE = $(libwokpython_la_SOURCES)
-#libwoklibmodule_la_LDFLAGS = $(libwokpython_la_LDFLAGS)
+Woklibmodule_la_SOURCES = $(libwokpython_la_SOURCES)
+Woklibmodule_la_LDFLAGS = $(libwokpython_la_LDFLAGS) -module
 
 SUBDIRS = \
 	preloader 
