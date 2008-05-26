@@ -23,6 +23,7 @@
  */
 
 #include "pub-sub-manager.hpp"
+#include <algorithm>
 
 
 PubSubManager::PubSubManager(WLSignal *wls) : WoklibPlugin(wls)

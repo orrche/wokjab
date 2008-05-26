@@ -31,6 +31,7 @@
 #include <fstream>
 #include <sstream>
 
+#include <cstdlib>
 #include <gtk/gtk.h>
 
 #include "openssl/sha.h"

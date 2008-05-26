@@ -31,6 +31,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sstream>
+#include <algorithm>
 
 using std::string;
 

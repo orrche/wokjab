@@ -19,6 +19,7 @@
 
 #include <dirent.h>
 #include <sstream>
+#include <algorithm>
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>

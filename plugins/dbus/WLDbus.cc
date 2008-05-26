@@ -18,6 +18,7 @@
 
 #include "WLDbus.h"
 #include "wokjab-dbus-glue.h"
+#include <algorithm>
 
 G_DEFINE_TYPE(WLDbus_obj, wokjab, G_TYPE_OBJECT);
 

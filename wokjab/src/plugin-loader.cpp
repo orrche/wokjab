@@ -23,6 +23,7 @@
  */
 
 #include "plugin-loader.hpp"
+#include <algorithm>
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif

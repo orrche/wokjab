@@ -24,6 +24,7 @@
 
 #include "p-e-p-widget.hpp"
 #include <sstream>
+#include <algorithm>
 
 PEP_Widget::PEP_Widget(WLSignal *wls, PEPManager *pm): WLSignalInstance(wls), pm(pm)
 {

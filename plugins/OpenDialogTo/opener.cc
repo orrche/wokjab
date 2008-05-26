@@ -22,6 +22,7 @@
 
 #include "opener.h"
 #include "dopener.h"
+#include <algorithm>
 
 Opener::Opener(WLSignal *wls) : WoklibPlugin(wls)
 {

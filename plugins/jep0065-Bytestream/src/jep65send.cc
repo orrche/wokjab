@@ -25,7 +25,7 @@
 #include "openssl/sha.h"
 
 #include "jep65send.h"
-
+#include <string.h>
 
 jep65send::jep65send(WLSignal *wls,  WokXMLTag *msgtag, std::string sport):
 WLSignalInstance ( wls ),

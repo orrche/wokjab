@@ -23,6 +23,7 @@
 //
 
 #include "RosterItem.h"
+#include <algorithm>
 
 
 RosterItem::RosterItem(WLSignal *wls, GladeXML *xml, std::string id, WokXMLTag *tag, RosterItem *parant) : WLSignalInstance(wls),

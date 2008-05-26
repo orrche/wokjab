@@ -28,6 +28,7 @@
 #include "Socks5Session.h"
 #include <sstream>
 #include <fcntl.h> 
+#include <string.h>
 
 Socks5Session::Socks5Session(WLSignal *wls, WokXMLTag *tag, int id) : WLSignalInstance(wls),
 socktag(new WokXMLTag(*tag)),

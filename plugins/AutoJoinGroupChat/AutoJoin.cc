@@ -17,6 +17,7 @@
 
 
 #include "AutoJoin.h"
+#include <algorithm>
 
 
 AutoJoin::AutoJoin(WLSignal *wls) : WoklibPlugin(wls)

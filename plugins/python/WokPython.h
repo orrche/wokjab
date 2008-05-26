@@ -31,6 +31,7 @@
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
+#include <time.h>
 #include "Python.h"
 #include "pythread.h"
 #include "PyScript.h"

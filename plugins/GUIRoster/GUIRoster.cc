@@ -28,6 +28,7 @@
 #endif
 
 #include <sstream>
+#include <string.h>
 
 GUIRoster::GUIRoster(WLSignal *wls) : WoklibPlugin(wls)
 {

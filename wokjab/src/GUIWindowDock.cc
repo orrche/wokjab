@@ -21,6 +21,7 @@
 #include <Woklib/WokXMLTag.h>
 #include <sstream>
 #include <gtk/gtkprivate.h>
+#include <algorithm>
 using std::list;
 using std::string;
 

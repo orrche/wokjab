@@ -23,6 +23,7 @@
  */
 
 #include "group-manager.hpp"
+#include <algorithm>
 
 GroupManager::GroupManager(WLSignal *wls) : WoklibPlugin(wls)
 {

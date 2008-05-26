@@ -23,6 +23,7 @@
  */
 
 #include "p-e-p-manager.hpp"
+#include <algorithm>
 
 
 PEPManager::PEPManager(WLSignal *wls) : WoklibPlugin(wls)

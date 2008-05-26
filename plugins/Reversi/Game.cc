@@ -27,6 +27,7 @@
 
 #include "Game.h"
 #include <sstream>
+#include <string.h>
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>

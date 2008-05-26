@@ -26,6 +26,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sstream>
+#include <algorithm>
 
 #include <gtk/gtk.h>
 
