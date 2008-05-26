@@ -24,9 +24,10 @@
 #ifndef _PYWXMLTAG_H_
 #define _PYWXMLTAG_H_
 
-#include <Woklib/WokXMLTag.h>
 #include "Python.h"
 #include "pythread.h"
+
+#include <Woklib/WokXMLTag.h>
 
 using namespace Woklib;
 

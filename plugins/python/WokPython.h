@@ -27,12 +27,13 @@
 #ifndef _WOKPYTHON_H_
 #define _WOKPYTHON_H_
 
+
+#include "Python.h"
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
-#include <time.h>
-#include "Python.h"
 #include "pythread.h"
 #include "PyScript.h"
 #include <map>

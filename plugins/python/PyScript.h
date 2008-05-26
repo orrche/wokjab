@@ -24,11 +24,13 @@
 #ifndef _PYSCRIPT_H_
 #define _PYSCRIPT_H_
 
+
+#include "Python.h"
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
-#include "Python.h"
 #include "pythread.h"
 #include "PySig.h"
 

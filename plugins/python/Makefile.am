@@ -2,7 +2,7 @@ libdir = $(prefix)/lib/woklib-plugins/secondary
 moduledir = $(prefix)/lib
 
 AM_CXXFLAGS =\
-	-O3 -Wall -lwoklib $(PY_CFLAGS)
+	`python-config --cflags`
 lib_LTLIBRARIES = \
 	libwokpython.la
 	
