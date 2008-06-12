@@ -1,5 +1,5 @@
 libdir = $(prefix)/lib/woklib-plugins/secondary
-moduledir = $(prefix)/lib
+moduledir = $(PY_EXEC_PREFIX)/lib/python$(PY_VER)/site-packages
 
 AM_CXXFLAGS =\
 	`python-config --cflags`

@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2008  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ session(xml->GetAttr("session"))
 	pos = 0;
 	stage = 0;
 	iqmsg = "";
+	socket_nr = -1;
 	
 	orig = new WokXMLTag(*xml);
 	
@@ -83,16 +84,15 @@ session(xml->GetAttr("session"))
 			if ( sockettag.GetAttr("result") != "error")
 			{
 				s5id = sockettag.GetAttr("id");
-				usedstreamhost = (*hostiter)->GetAttr("jid");
+				streamhost[s5id] = (*hostiter)->GetAttr("jid");
+
+				EXP_SIGHOOK("SOCKS5 Connection Established " + s5id, &jep65Session::SOCKS_Established, 1000);
+				EXP_SIGHOOK("SOCKS5 Connection Data " + s5id, &jep65Session::SOCKS_Data, 1000);
+				EXP_SIGHOOK("SOCKS5 Connection Failed " + s5id, &jep65Session::SOCKS_Fail, 1000);
 			}
 		}
-		if ( !s5id.empty() )
-		{
-			EXP_SIGHOOK("SOCKS5 Connection Established " + s5id, &jep65Session::SOCKS_Established, 1000);
-			EXP_SIGHOOK("SOCKS5 Connection Data " + s5id, &jep65Session::SOCKS_Data, 1000);
-			EXP_SIGHOOK("SOCKS5 Connection Failed " + s5id, &jep65Session::SOCKS_Fail, 1000);
-		}
-		else
+
+		if ( streamhost.empty() )
 			delete this;
 	}
 	else
@@ -126,26 +126,32 @@ jep65Session::~jep65Session()
 int
 jep65Session::SOCKS_Fail(WokXMLTag *tag)
 {
-	socket_nr = atoi(tag->GetAttr("socket").c_str());
-		
-	WokXMLTag contag(NULL, "Terminated");
-	contag.AddAttr("sid", lsid);
-	wls->SendSignal("Jabber Stream File Status", &contag);
-	wls->SendSignal("Jabber Stream File Status Terminated", &contag);
-		
-	WokXMLTag msgtag(NULL, "message");
-	msgtag.AddAttr("session", session);
-	WokXMLTag &repiq = msgtag.AddTag("iq");
-	repiq.AddAttr("type", "error");
-	repiq.AddAttr("to", orig->GetFirstTag("iq").GetAttr("from"));
-	repiq.AddAttr("id", orig->GetFirstTag("iq").GetAttr("id"));
-	WokXMLTag &errortag = repiq.AddTag("error");
-	errortag.AddAttr("code", "406");
-	errortag.AddAttr("type", "auth");
-	errortag.AddTag("not-acceptable").AddAttr("xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas");
+	streamhost.erase(tag->GetAttr("id"));
 	
-	wls->SendSignal("Jabber XML Send", &msgtag);
+	if ( streamhost.empty() ) 
+	{
+		socket_nr = atoi(tag->GetAttr("socket").c_str());
+		
+		WokXMLTag contag(NULL, "Terminated");
+		contag.AddAttr("sid", lsid);
+		wls->SendSignal("Jabber Stream File Status", &contag);
+		wls->SendSignal("Jabber Stream File Status Terminated", &contag);
+		
+		WokXMLTag msgtag(NULL, "message");
+		msgtag.AddAttr("session", session);
+		WokXMLTag &repiq = msgtag.AddTag("iq");
+		repiq.AddAttr("type", "error");
+		repiq.AddAttr("to", orig->GetFirstTag("iq").GetAttr("from"));
+		repiq.AddAttr("id", orig->GetFirstTag("iq").GetAttr("id"));
+		WokXMLTag &errortag = repiq.AddTag("error");
+		errortag.AddAttr("code", "406");
+		errortag.AddAttr("type", "auth");
+		errortag.AddTag("not-acceptable").AddAttr("xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas");
 	
+		wls->SendSignal("Jabber XML Send", &msgtag);
+		
+		delete this;
+	}
 	
 	/*
 	<iq type='error' 
@@ -158,7 +164,6 @@ jep65Session::SOCKS_Fail(WokXMLTag *tag)
 </iq>
 	*/
 	
-	delete this;
 	return 1;	
 }
 
@@ -236,23 +241,26 @@ jep65Session::SOCKS_Data(WokXMLTag *tag)
 int 
 jep65Session::SOCKS_Established(WokXMLTag *tag)
 {
-	socket_nr = atoi(tag->GetAttr("socket").c_str());
+	if ( socket_nr == -1 )
+	{
+		socket_nr = atoi(tag->GetAttr("socket").c_str());
 		
-	WokXMLTag contag(NULL, "Connected");
-	contag.AddAttr("sid", lsid);
-	wls->SendSignal("Jabber Stream File Status", &contag);
-	wls->SendSignal("Jabber Stream File Status Connected", &contag);
+		WokXMLTag contag(NULL, "Connected");
+		contag.AddAttr("sid", lsid);
+		wls->SendSignal("Jabber Stream File Status", &contag);
+		wls->SendSignal("Jabber Stream File Status Connected", &contag);
 		
-	WokXMLTag msgtag(NULL, "message");
-	msgtag.AddAttr("session", session);
-	WokXMLTag &repiq = msgtag.AddTag("iq");
-	repiq.AddAttr("type", "result");
-	repiq.AddAttr("to", orig->GetFirstTag("iq").GetAttr("from"));
-	repiq.AddAttr("id", orig->GetFirstTag("iq").GetAttr("id"));
-	WokXMLTag &querytag = repiq.AddTag("query");
-	querytag.AddAttr("xmlns", "http://jabber.org/protocol/bytestreams");
-	querytag.AddTag("streamhost-used").AddAttr("jid",usedstreamhost);
-	wls->SendSignal("Jabber XML Send", &msgtag);
+		WokXMLTag msgtag(NULL, "message");
+		msgtag.AddAttr("session", session);
+		WokXMLTag &repiq = msgtag.AddTag("iq");
+		repiq.AddAttr("type", "result");
+		repiq.AddAttr("to", orig->GetFirstTag("iq").GetAttr("from"));
+		repiq.AddAttr("id", orig->GetFirstTag("iq").GetAttr("id"));
+		WokXMLTag &querytag = repiq.AddTag("query");
+		querytag.AddAttr("xmlns", "http://jabber.org/protocol/bytestreams");
+		querytag.AddTag("streamhost-used").AddAttr("jid",streamhost[tag->GetAttr("id")]);
+		wls->SendSignal("Jabber XML Send", &msgtag);
+	}
 	return 1;
 }
 

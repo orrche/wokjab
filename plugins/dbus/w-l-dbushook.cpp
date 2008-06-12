@@ -34,6 +34,36 @@ method(method),
 prio(prio)
 {
 	EXP_SIGHOOK(signal, &WLDbushook::exec, prio);
+	
+	
+	DBusGConnection *connection;
+	GError *error = NULL;
+	
+	error = NULL;
+	connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
+	
+	if (connection == NULL)
+	{
+		g_printerr ("Failed to open connection to bus: %s\n",
+		error->message);
+		g_error_free (error);
+		parant->DeleteHook(this);
+		return;
+    }
+	
+	proxy = dbus_g_proxy_new_for_name_owner (connection,
+							interface.c_str(),
+							path.c_str(),
+							interface.c_str(), &error);
+	
+	
+	if ( !proxy ) 
+	{
+		woklib_debug(wls, error->message);
+		g_error_free (error);
+		parant->DeleteHook(this);
+		return;
+	}
 }
 
 WLDbushook::~WLDbushook()
@@ -51,27 +81,9 @@ WLDbushook::is(std::string signal, std::string path, std::string interface, std:
 int
 WLDbushook::exec(WokXMLTag *tag)
 {
-	DBusGConnection *connection;
 	GError *error = NULL;
-	DBusGProxy *proxy;
 	int return_value = 1;
 	
-	error = NULL;
-	connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
-	
-	if (connection == NULL)
-	{
-		g_printerr ("Failed to open connection to bus: %s\n",
-		error->message);
-		g_error_free (error);
-		parant->DeleteHook(this);
-		return 1;
-    }
-	
-	proxy = dbus_g_proxy_new_for_name_owner (connection,
-							interface.c_str(),
-							path.c_str(),
-							interface.c_str(), &error);
 	if ( !proxy ) 
 	{
 		woklib_debug(wls, error->message);
@@ -83,7 +95,7 @@ WLDbushook::exec(WokXMLTag *tag)
 	error = NULL;
 	gchar *return_xml = NULL;
 	
-	if (!dbus_g_proxy_call (proxy, method.c_str(), &error, 
+	if (dbus_g_proxy_call (proxy, method.c_str(), &error, 
 							G_TYPE_STRING, tag->GetStr().c_str(), G_TYPE_INVALID,  
 							G_TYPE_INT, &return_value, G_TYPE_STRING, &return_xml, G_TYPE_INVALID) == FALSE)
 	{
@@ -105,6 +117,7 @@ WLDbushook::exec(WokXMLTag *tag)
 	}
 	else
 	{
+		
 		if ( return_xml && return_xml[0])
 		{
 			WokXMLTag dataxml("data");

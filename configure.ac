@@ -83,6 +83,8 @@ fi
 dnl make these visible to all Makefiles
 AC_SUBST(PY_CFLAGS)
 AC_SUBST(PY_LIBS)
+AC_SUBST(PY_VER)
+AC_SUBST(PY_EXEC_PREFIX)
 
 AM_CONDITIONAL(DO_PYTHON, test "x$python" = "xyes")
 

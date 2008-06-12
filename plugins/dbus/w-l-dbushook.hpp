@@ -34,6 +34,7 @@ using namespace Woklib;
 class WLDbushook;
 
 #include "WLDbus.h"
+#include <dbus/dbus-glib-bindings.h>
 
 class WLDbushook: public WLSignalInstance 
 {
@@ -45,6 +46,7 @@ public:
 	int exec(WokXMLTag *tag);
 protected:
 	WLDbus *parant;
+	DBusGProxy *proxy;
 	std::string signal, path, method,interface;
 	int prio;
 private:
