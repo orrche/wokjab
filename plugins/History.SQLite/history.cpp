@@ -145,7 +145,6 @@ History::PushToSQL(std::string command)
 				_exit(-1);
 			}
 			
-			std::cout << "CMD: " << lingering_command << std::endl;
 			rc = sqlite3_exec( fork_db, (lingering_command).c_str(), callback, 0, &zErrMsg );
 			if( rc!=SQLITE_OK )
 			{
@@ -157,10 +156,7 @@ History::PushToSQL(std::string command)
 			sqlite3_close(fork_db);
 			
 			_exit(0);
-		}
-		
-		std::cout << ":::" << WEXITSTATUS(status) << std::endl;
-		
+		}		
 	}
 	
 	

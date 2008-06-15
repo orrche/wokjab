@@ -38,7 +38,8 @@ UserTune::UserTune(WLSignal *wls) : WoklibPlugin(wls)
 	EXP_SIGHOOK("Jabber PubSub Registration GetNodes", &UserTune::GetNode, 1000);
 	
 	EXP_SIGHOOK("Jabber Connection Authenticated", &UserTune::NewConnection, 1000);
-	
+	EXP_SIGHOOK("Jabber XML Message Command utget", &UserTune::SongRequest, 1000);
+				
 	config = new WokXMLTag(NULL, "NULL");
 	EXP_SIGHOOK("Config XML Change /pubsub/usertune", &UserTune::ReadConfig, 500);
 	WokXMLTag conftag(NULL, "config");
@@ -54,6 +55,44 @@ UserTune::~UserTune()
 	
 	
 	
+}
+
+int 
+UserTune::SongRequest(WokXMLTag *tag)
+{
+	std::string from = tag->GetFirstTag("message").GetAttr("from");
+	if ( from.find("/") != std::string::npos )
+	{
+		from = from.substr(0, from.find("/"));
+	}
+	
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/usertune");
+	conftag.AddAttr("name", from);
+	wls->SendSignal("Jabber JIDConfig Get", &conftag);
+	if ( conftag.GetFirstTag("config").GetFirstTag("download_allowed").GetAttr("data") != "false" )
+	{
+		/*
+		 <signal level='0' name='Jabber Stream File Send'>
+		 	<send name='/home/nedo/bin.py' proxy='vattnadal.mine.nu' proxy_type='forward' session='jabber1' to='nedo@jabber.org/Home'>
+		 	</send>
+		 </signal>
+		*/
+		
+		
+		WokXMLTag send("send");
+		send.AddAttr("name", active_file);
+		send.AddAttr("session", tag->GetAttr("session"));
+		send.AddAttr("to", tag->GetFirstTag("message").GetAttr("from"));
+		
+		wls->SendSignal("Jabber Stream File Send", send);
+		
+	}			
+			
+	
+	
+	
+	return 1;
 }
 
 int
@@ -256,7 +295,9 @@ UserTune::SetTune(WokXMLTag *tag)
 	wls->SendSignal("Jabber GetSessions", sessions);
 	std::list <WokXMLTag *>::iterator session;
 
-		
+	
+	active_file = tag->GetFirstTag("file").GetBody();
+	
 	if( !past_sig.empty() ) 
 	{
 		EXP_SIGUNHOOK(past_sig, &UserTune::Blank, 1000);
