@@ -54,7 +54,8 @@ class GUIWindow : public WLSignalInstance
 		static gboolean SetPresence(GUIWindow * c);
 		static void EntryStatusActivate(GtkEntry *entry, GUIWindow *c);
 		static gboolean EntryStatusLeft(GtkWidget *widget, GdkEventFocus *event, GUIWindow *c);
-
+		static gboolean StorePresence(GUIWindow *c);
+			
 		int AddWidget(WokXMLTag *tag);
 		int Connect (WLSignalData *wlsd);
 		int PluginWin (WLSignalData *wlsd);
@@ -70,15 +71,16 @@ class GUIWindow : public WLSignalInstance
 		int GUIWindowInit(WokXMLTag *tag);
 
 		void UpdateStruts();
-
+		void PopulateShowEntry();
 	protected:
 		GladeXML *xml;
 		GladeXML *preferencexml;
 		GtkWidget *mainwindowplug;
-
+		
 		gulong connected;
 		guint priotimeid;
-
+		guint storetimeid;
+		
 		int ReadConfig(WokXMLTag *tag);
 		void SaveConfig ();
 		void SetStatusTo(const std::string &status);
@@ -88,7 +90,8 @@ class GUIWindow : public WLSignalInstance
 		std::list <std::string> ActiveSessions;
 		std::vector <int> Widgets;
 		std::string current_status;
-
+		std::string status_show;
+		
 		GUIMessageHandler *gmsghandler;
 		int connect_win_open;
 		int plugin_win_open;

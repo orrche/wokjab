@@ -32,7 +32,7 @@ parent(c)
 	EXP_SIGHOOK("Jabber Roster Update " + session , &JabberSession::UpdateRoster, 1000);
 	
 	serverjid = tag->GetAttr("server");
-	std::string name = tag->GetAttr("username") + "@" + tag->GetAttr("server") + "/" + tag->GetAttr("resource");
+	std::string name = "<b>" + tag->GetAttr("username") + "@" + tag->GetAttr("server") + "/" + tag->GetAttr("resource") + "</b>";
 	
 	WokXMLTag itemtag(NULL, "item");
 	WokXMLTag &columntag =  itemtag.AddTag("columns");

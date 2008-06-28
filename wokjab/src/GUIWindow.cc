@@ -35,13 +35,12 @@ WLSignalInstance(wls)
 	priotimeid = 0;
 
 	g_signal_connect ((gpointer) glade_xml_get_widget(xml,"window"), "destroy",
-										G_CALLBACK (GUIWindow::Destroy), this);
+					G_CALLBACK (GUIWindow::Destroy), this);
 	g_signal_connect ((gpointer) glade_xml_get_widget(xml,"window"), "delete_event",
-										G_CALLBACK (GUIWindow::Delete), this);
-
+					G_CALLBACK (GUIWindow::Delete), this);
 	g_signal_connect ((gpointer) glade_xml_get_widget(xml,"wokjabmenu"), "button_press_event",
                     G_CALLBACK (GUIWindow::MainMenu), this);
-
+	
 	config = new WokXMLTag(NULL, "NULL");
 	EXP_SIGHOOK("Config XML Change /main/window", &GUIWindow::ReadConfig, 500);
 	WokXMLTag conftag(NULL, "config");
@@ -76,9 +75,25 @@ GUIWindow::~GUIWindow()
 	
 }
 
+static gboolean
+is_separator (GtkTreeModel *model,
+	      GtkTreeIter  *iter,
+	      gpointer      data)
+{
+  GtkTreePath *path;
+  gboolean result;
+
+  path = gtk_tree_model_get_path (model, iter);
+  result = gtk_tree_path_get_indices (path)[0] == 5;
+  gtk_tree_path_free (path);
+
+  return result;
+}
+
 int
 GUIWindow::GUIWindowInit(WokXMLTag *tag)
 {
+	GtkCellRenderer *renderer;
 	preferencexml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/main.window.glade", "mainbox.presence", NULL);
 	GtkWidget *main_vbox = glade_xml_get_widget (preferencexml, "mainbox.presence");
 	char buf[40];
@@ -101,6 +116,19 @@ GUIWindow::GUIWindowInit(WokXMLTag *tag)
 	sig << "GUI Window Close " << gtk_plug_get_id(GTK_PLUG(mainwindowplug));
 	EXP_SIGHOOK(sig.str(), &GUIWindow::PresenceClose, 500);
 	
+	showmenu = gtk_list_store_new (5, G_TYPE_STRING, GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+	gtk_combo_box_set_model (GTK_COMBO_BOX(glade_xml_get_widget(preferencexml,"showentry")), GTK_TREE_MODEL(showmenu));
+	
+	renderer = gtk_cell_renderer_pixbuf_new ();
+    gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (glade_xml_get_widget(preferencexml,"showentry")), renderer, FALSE);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (glade_xml_get_widget(preferencexml,"showentry")), renderer, "pixbuf", 1,NULL);
+
+	renderer = gtk_cell_renderer_text_new ();
+    gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (glade_xml_get_widget(preferencexml,"showentry")), renderer, TRUE);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (glade_xml_get_widget(preferencexml,"showentry")), renderer,"text", 0, NULL);
+	   
+	
+	PopulateShowEntry();
 	gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(preferencexml,"showentry")), 4);
 
 	g_signal_connect ((gpointer) glade_xml_get_widget(preferencexml,"prioentry"), "value-changed",
@@ -111,9 +139,82 @@ GUIWindow::GUIWindowInit(WokXMLTag *tag)
 										G_CALLBACK (GUIWindow::EntryStatusLeft), this);
 	g_signal_connect ((gpointer) glade_xml_get_widget(preferencexml,"showentry"), "changed",
                     G_CALLBACK (GUIWindow::MenuActivate), this);
-
+    gtk_combo_box_set_row_separator_func (GTK_COMBO_BOX (glade_xml_get_widget(preferencexml,"showentry")), 
+					  is_separator, NULL, NULL);
 	return 1;
 }
+
+void
+GUIWindow::PopulateShowEntry()
+{
+	//gtk_list_store_clear(showmenu);
+	
+	GtkTreeIter iter;
+	GdkPixbuf *pixbuf;
+	
+	if ( gtk_tree_model_get_iter_first (GTK_TREE_MODEL(showmenu), &iter) == FALSE)
+	{
+		gtk_list_store_append (showmenu, &iter);
+		pixbuf = gdk_pixbuf_new_from_file (PACKAGE_DATA_DIR"/wokjab/online.png", NULL);
+		gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, "Online", -1);
+		gtk_list_store_append (showmenu, &iter);
+		pixbuf = gdk_pixbuf_new_from_file (PACKAGE_DATA_DIR"/wokjab/away.png", NULL);
+		gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, "Away", -1);
+		gtk_list_store_append (showmenu, &iter);
+		pixbuf = gdk_pixbuf_new_from_file (PACKAGE_DATA_DIR"/wokjab/xa.png", NULL);
+		gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, "Not Available", -1);
+		gtk_list_store_append (showmenu, &iter);
+		pixbuf = gdk_pixbuf_new_from_file (PACKAGE_DATA_DIR"/wokjab/dnd.png", NULL);
+		gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, "Do Not Disturbe", -1);
+		gtk_list_store_append (showmenu, &iter);
+		pixbuf = gdk_pixbuf_new_from_file (PACKAGE_DATA_DIR"/wokjab/offline.png", NULL);
+		gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, "Offline", -1);
+	}
+	
+	if ( gtk_tree_model_get_iter_first (GTK_TREE_MODEL(showmenu), &iter) == TRUE )
+	{
+		gboolean cont = TRUE;
+		
+		for ( int i = 0 ; i < 5 ; i++ )
+		{
+			if ( cont == TRUE )
+				cont = gtk_tree_model_iter_next(GTK_TREE_MODEL(showmenu), &iter);
+		}
+		
+		
+		if (cont)
+			while ( gtk_list_store_remove (showmenu, &iter) == TRUE );
+	}
+	
+	gtk_list_store_append (showmenu, &iter);
+	gtk_list_store_set (showmenu, &iter,
+			      0, "separator",
+			      -1);
+	
+	std::list <WokXMLTag *>::iterator witer;
+	if ( config ) 
+	{
+		for ( witer = config->GetFirstTag("stored_presence").GetTagList("item").begin() ; witer != config->GetFirstTag("stored_presence").GetTagList("item").end() ; witer++ )
+		{
+			gtk_list_store_insert (showmenu, &iter, 6);
+			pixbuf = NULL;
+			if ( (*witer)->GetAttr("show") == "xa" )
+				pixbuf = gdk_pixbuf_new_from_file (PACKAGE_DATA_DIR"/wokjab/xa.png", NULL);
+			else if ( (*witer)->GetAttr("show") == "away" )
+				pixbuf = gdk_pixbuf_new_from_file (PACKAGE_DATA_DIR"/wokjab/away.png", NULL);
+			else if ( (*witer)->GetAttr("show") == "dnd" )
+				pixbuf = gdk_pixbuf_new_from_file (PACKAGE_DATA_DIR"/wokjab/dnd.png", NULL);
+			else if ( (*witer)->GetAttr("show") == "" )
+				pixbuf = gdk_pixbuf_new_from_file (PACKAGE_DATA_DIR"/wokjab/online.png", NULL);
+			
+			gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, (*witer)->GetAttr("status").c_str(), 
+								2, (*witer)->GetAttr("status").c_str(),
+								3, (*witer)->GetAttr("show").c_str(),
+								4, (*witer)->GetAttr("prio").c_str(), -1);
+		}
+	}
+}
+
 
 int 
 GUIWindow::PresenceClose(WokXMLTag *tag)
@@ -232,6 +333,50 @@ GUIWindow::SendingPresence(WokXMLTag *tag)
 	return true;
 }
 
+void
+GUIWindow::SpinBtnPrio(GtkSpinButton *spinbutton, GUIWindow *c)
+{
+	if( c->priotimeid )
+		g_source_remove(c->priotimeid);
+	c->priotimeid = g_timeout_add (1000, (gboolean (*)(void *)) (GUIWindow::SetPresence), c);
+
+}
+
+gboolean
+GUIWindow::StorePresence(GUIWindow *c)
+{
+	if ( c->current_status.empty() )
+		return FALSE;
+	
+	std::stringstream prio;
+
+	prio << gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON(glade_xml_get_widget(c->preferencexml,"prioentry")));
+	
+	std::list <WokXMLTag*>::iterator witer;
+	for ( witer = c->config->GetFirstTag("stored_presence").GetTagList("item").begin() ; witer != c->config->GetFirstTag("stored_presence").GetTagList("item").end() ; witer++)
+	{
+		if ( (*witer)->GetAttr("status") == c->current_status )
+		{
+			c->config->GetFirstTag("stored_presence").RemoveTag(*witer);
+			witer = c->config->GetFirstTag("stored_presence").GetTagList("item").begin();
+		}
+	}
+	
+	WokXMLTag &item = c->config->GetFirstTag("stored_presence").AddTag("item");
+	item.AddAttr("status", c->current_status);
+	item.AddAttr("show", c->status_show);
+	item.AddAttr("prio", prio.str());
+	
+	while( c->config->GetFirstTag("stored_presence").GetTagList("item").size() > 5 )
+	{
+		c->config->GetFirstTag("stored_presence").RemoveTag(*c->config->GetFirstTag("stored_presence").GetTagList("item").begin());
+	}
+	c->storetimeid = 0;
+	
+	c->PopulateShowEntry();
+	return FALSE;
+}
+
 gboolean
 GUIWindow::SetPresence(GUIWindow * c)
 {
@@ -252,16 +397,13 @@ GUIWindow::SetPresence(GUIWindow * c)
 		sendtag.AddAttr("session", *iter);
 		c->wls->SendSignal("Jabber XML Presence Send", &sendtag);
 	}
+	
+	if( c->storetimeid )
+		g_source_remove(c->storetimeid);
+	c->storetimeid = g_timeout_add (15000, (gboolean (*)(void *)) (GUIWindow::StorePresence), c);
+
+	
 	return FALSE;
-}
-
-void
-GUIWindow::SpinBtnPrio(GtkSpinButton *spinbutton, GUIWindow *c)
-{
-	if( c->priotimeid )
-		g_source_remove(c->priotimeid);
-	c->priotimeid = g_timeout_add (1000, (gboolean (*)(void *)) (GUIWindow::SetPresence), c);
-
 }
 
 void
@@ -281,6 +423,10 @@ GUIWindow::SetStatusTo(const std::string &status)
 		sendtag.AddAttr("session", *iter);
 		wls->SendSignal("Jabber XML Presence Send", &sendtag);
 	}
+	
+	if( storetimeid )
+		g_source_remove(storetimeid);
+	storetimeid = g_timeout_add (15000, (gboolean (*)(void *)) (GUIWindow::StorePresence), this);
 }
 
 void
@@ -308,22 +454,42 @@ GUIWindow::MenuActivate (GtkComboBox *widget, GUIWindow *c)
 {
 	WokXMLTag msgtag(NULL, "message");
 	WokXMLTag &ptag = msgtag.AddTag("presence");
-
+	
 	switch ( gtk_combo_box_get_active(GTK_COMBO_BOX(glade_xml_get_widget(c->preferencexml, "showentry"))) )
 	{
 		case 0:
-			ptag.AddTag("show");
+			c->status_show = "";
 			break;
 		case 1:
-			ptag.AddTag("show").AddText("away");
+			c->status_show = "away";
 			break;
 		case 2:
-			ptag.AddTag("show").AddText("xa");
+			c->status_show = "xa";
 			break;
 		case 3:
-			ptag.AddTag("show").AddText("dnd");
+			c->status_show = "dnd";
 			break;
+		default:
+			GtkTreeIter titer;
+			if ( gtk_combo_box_get_active_iter(GTK_COMBO_BOX(glade_xml_get_widget(c->preferencexml, "showentry")), &titer) == TRUE )
+			{
+				gchar *status, *show, *prio;
+				gtk_tree_model_get (GTK_TREE_MODEL(c->showmenu), &titer, 
+									2, &status, 
+									3, &show, 
+									4, &prio, 
+									-1);
+				
+				c->status_show = show;
+				ptag.AddTag("status").AddText(status);
+				ptag.AddTag("priority").AddText(prio);
+				g_free(show);
+				g_free(status);
+				g_free(prio);
+			}
 	}
+	ptag.AddTag("show").AddText(c->status_show);
+	
 	if ( c->ActiveSessions.empty() )
 	{
 		WokXMLTag connect("data");

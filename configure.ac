@@ -1,5 +1,5 @@
 #
-#  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
+#  Copyright (C) 2003-2008  Kent Gustavsson <nedo80@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-AC_INIT([wokjab], [0.9.2], [nedo80@gmail.com])
+AC_INIT([wokjab], [0.9.4], [nedo80@gmail.com])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CXX
 AM_CONFIG_HEADER([config.h])

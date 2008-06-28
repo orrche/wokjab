@@ -26,4 +26,5 @@ EXTRA_DIST = \
 	xdataunknown.h\
 	xdatabool.h\
 	xdatahidden.h\
-	xdatasinglelist.h
+	xdatasinglelist.h\
+	xdatamultilist.h
