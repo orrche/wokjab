@@ -98,6 +98,12 @@ VCardAvatar::OK_Button(GtkButton *button, VCardAvatar *c)
 	{
 		WokXMLTag avatar("avatar");
 		avatar.AddAttr("file", file_name);
+		
+		if ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(glade_xml_get_widget (c->gxml, "checkbuttonReformat"))) == TRUE)
+			avatar.AddAttr("reformat", "true");
+		else
+			avatar.AddAttr("reformat", "false");
+
 		c->wls->SendSignal("Jabber Avatar SetMy", avatar);
 	
 		g_free(file_name);
@@ -143,7 +149,7 @@ VCardAvatar::Base64encode(const unsigned char *buf, int len)
 	std::string ret("");
 	int n = 0;
 	
-	for ( int i = (2.99 + len)/3 ; i ; i-- )
+	for ( int i = (int)((2.99 + len)/3) ; i ; i-- )
 	{
 		int data=0;
 		
@@ -287,39 +293,52 @@ VCardAvatar::GetMyCard(WokXMLTag *tag)
 int
 VCardAvatar::SetMy(WokXMLTag *tag)
 {
-	GError* err;
-	GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file (mypictag->GetAttr("file").c_str(), NULL);
-	
-	if ( pixbuf == NULL )
-		return 1;
-	
-	int pwidth = gdk_pixbuf_get_width(pixbuf);
-	int pheight = gdk_pixbuf_get_height(pixbuf);
-	int w,h;
-	
-	if ( pwidth > pheight )
-	{
-		w = 128;
-		h = int(pheight / ( ((double)pwidth) / 128 ));
-	}
-	else
-	{
-		w = int(pwidth / ( ((double)pheight) / 128 ));
-		h = 128;
-	}
-	
-	GdkPixbuf *scaled = gdk_pixbuf_scale_simple (pixbuf, w, h, GDK_INTERP_BILINEAR);
-
-	if ( scaled == NULL )
-	{
-		g_object_unref(pixbuf);
-		return 1;
-	}
+	//GError* err;		
 	
 	gchar *str;
 	gsize len; 
-	gboolean ret = gdk_pixbuf_save_to_buffer (scaled, &str, &len, "png", NULL, NULL);
+	
+	if ( mypictag->GetAttr("reformat") != "false" )
+	{
+		GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file (mypictag->GetAttr("file").c_str(), NULL);
 		
+		if ( pixbuf == NULL )
+			return 1;
+		
+		int pwidth = gdk_pixbuf_get_width(pixbuf);
+		int pheight = gdk_pixbuf_get_height(pixbuf);
+		int w,h;
+		
+		if ( pwidth > pheight )
+		{
+			w = 128;
+			h = int(pheight / ( ((double)pwidth) / 128 ));
+		}
+		else
+		{
+			w = int(pwidth / ( ((double)pheight) / 128 ));
+			h = 128;
+		}
+		
+		GdkPixbuf *scaled = gdk_pixbuf_scale_simple (pixbuf, w, h, GDK_INTERP_BILINEAR);
+		g_object_unref(pixbuf);
+		
+		if ( scaled == NULL )
+		{
+			return 1;
+		}
+		
+		gboolean ret = gdk_pixbuf_save_to_buffer (scaled, &str, &len, "png", NULL, NULL);
+		g_object_unref(scaled);
+	}
+	else
+	{
+		FILE *f = fopen(mypictag->GetAttr("file").c_str(), "rb");
+		str = (gchar*) g_malloc(sizeof(char)*8000);
+		len = fread(str, 1, 8000, f);
+		fclose(f);		
+	}
+	
 	unsigned char buf[30];
 	SHA1((unsigned char*)str, len, buf);
 	
@@ -349,8 +368,6 @@ VCardAvatar::SetMy(WokXMLTag *tag)
 	
 	wls->SendSignal("Jabber XML IQ Send", &msgtag);
 
-	g_object_unref(pixbuf);
-	g_object_unref(scaled);
 	g_free(str);
 	
 	return 1;
