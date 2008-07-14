@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Sat Jul 12 15:32:05 2008 -->
+<!--Generated with glade3 3.4.5 on Sun Jul 13 12:29:24 2008 -->
 <glade-interface>
   <widget class="GtkWindow" id="window">
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
@@ -43,6 +43,7 @@
                 <property name="tooltip" translatable="yes">Uncheck and you will probably break jabber protocol if your not using a square image inside the size requirments and wokjab is always gona state that its an png image</property>
                 <property name="label" translatable="yes">Reformat</property>
                 <property name="response_id">0</property>
+                <property name="active">True</property>
                 <property name="draw_indicator">True</property>
               </widget>
               <packing>
