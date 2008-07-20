@@ -70,7 +70,7 @@ UserTune::SongRequest(WokXMLTag *tag)
 	conftag.AddAttr("path", "/usertune");
 	conftag.AddAttr("name", from);
 	wls->SendSignal("Jabber JIDConfig Get", &conftag);
-	if ( conftag.GetFirstTag("config").GetFirstTag("download_allowed").GetAttr("data") != "false" )
+	if ( conftag.GetFirstTag("download_allowed").GetAttr("data") == "false" )
 	{
 		/*
 		 <signal level='0' name='Jabber Stream File Send'>
@@ -82,6 +82,7 @@ UserTune::SongRequest(WokXMLTag *tag)
 		
 		WokXMLTag send("send");
 		send.AddAttr("name", active_file);
+		send.AddAttr("proxy_type", "auto");
 		send.AddAttr("session", tag->GetAttr("session"));
 		send.AddAttr("to", tag->GetFirstTag("message").GetAttr("from"));
 		
@@ -249,6 +250,12 @@ UserTune::Message(WokXMLTag *tag)
 int
 UserTune::ReadConfig(WokXMLTag *tag)
 {
+	tag->GetFirstTag("config").GetFirstTag("download_allowed").AddAttr("label", _("Disable !utget command to send songs"));
+	tag->GetFirstTag("config").GetFirstTag("download_allowed").AddAttr("type", _("bool"));
+	
+	/*tag->GetFirstTag("config").GetFirstTag("auto_accept").AddAttr("label", _("Auto accept from"));
+	tag->GetFirstTag("config").GetFirstTag("auto_accept").AddAttr("type", "jidlist");
+	*/
 	
 	tag->GetFirstTag("config").GetFirstTag("change_status").AddAttr("type", "bool");
 	tag->GetFirstTag("config").GetFirstTag("change_status").AddAttr("label", _("Influence status"));
@@ -282,6 +289,7 @@ UserTune::ReadConfig(WokXMLTag *tag)
 int
 UserTune::Blank(WokXMLTag *tag)
 {
+	std::cout << "Blanking...." << std::endl;
 	WokXMLTag empty("empty");
 	SetTune(&empty);
 	tag->AddAttr("stop", "stop");
@@ -326,6 +334,7 @@ UserTune::SetTune(WokXMLTag *tag)
 		WokXMLTag &publish = pubsub.AddTag("publish");
 		publish.AddAttr("node", "http://jabber.org/protocol/tune");
 		publish.AddTag(&tag->GetFirstTag("item"));
+		publish.GetFirstTag("item").GetFirstTag("tune", "http://jabber.org/protocol/tune");
 		wls->SendSignal("Jabber XML Send", msg);
 		
 		std::string statusmsg = "";

@@ -16,7 +16,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-AC_INIT([wokjab], [0.9.4], [nedo80@gmail.com])
+AC_INIT([wokjab], [0.9.6], [nedo80@gmail.com])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CXX
 AM_CONFIG_HEADER([config.h])
@@ -174,6 +174,7 @@ AC_CONFIG_FILES(Makefile \
         plugins/dbus/Makefile  \
         plugins/History.SQLite/Makefile  \
         plugins/HtmlLinkMessage/Makefile  \
+        plugins/normal/WokjabDockWindow/Makefile  \
 	wokjab/Makefile \
 	wokjab/src/Makefile \
 	wokjab/include/Makefile \

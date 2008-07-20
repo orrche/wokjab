@@ -142,8 +142,7 @@ from(in_from)
 
 
 	/* Message Icon */
-	std::string datadir = PACKAGE_DATA_DIR;
-	msgicon = datadir + "/wokjab/msg.png";
+	msgicon = PACKAGE_DATA_DIR"/wokjab/msg.png";
 	pix_msg = gdk_pixbuf_new_from_file(msgicon.c_str(),NULL);
 
 	gtk_widget_show_all( vbox );

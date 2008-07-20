@@ -40,9 +40,6 @@ ToasterWindow::ToasterWindow(WLSignal *wls, WokXMLTag *config, WokXMLTag *xml, i
 	gdk_color_parse (config->GetFirstTag("color1").GetAttr("data").c_str(), &noticable_color1);
 	gdk_color_parse (config->GetFirstTag("color2").GetAttr("data").c_str(), &noticable_color2);
 	
-	gtk_widget_modify_bg (port, GTK_STATE_NORMAL, &noticable_color1);
-																																																									
-																																																									
 	gtk_viewport_set_shadow_type (GTK_VIEWPORT (port), GTK_SHADOW_OUT);
 	
 	gtk_container_add(GTK_CONTAINER(window), port);
@@ -86,7 +83,11 @@ ToasterWindow::ToasterWindow(WLSignal *wls, WokXMLTag *config, WokXMLTag *xml, i
 	gtk_window_move(GTK_WINDOW(window), x - width, y - height);
 
 	t = atoi(config->GetFirstTag("flashes").GetAttr("data").c_str());
-	timeoutid = g_timeout_add (atoi(config->GetFirstTag("fspeed").GetAttr("data").c_str()), (gboolean (*)(void *)) (ToasterWindow::Timeout), this);
+	if ( t )
+	{
+		gtk_widget_modify_bg (port, GTK_STATE_NORMAL, &noticable_color1);
+		timeoutid = g_timeout_add (atoi(config->GetFirstTag("fspeed").GetAttr("data").c_str()), (gboolean (*)(void *)) (ToasterWindow::Timeout), this);
+	}
 		
 	int delay = 0;
 	if ( ( delay = atoi(config->GetFirstTag("delay").GetAttr("data").c_str())) < 1 )
@@ -193,7 +194,7 @@ ToasterWindow::Timeout(ToasterWindow *c)
 	
 
 	
-	if ( !c->t )
+	if ( c->t < 1 )
 	{
 		gtk_widget_modify_bg (c->port, GTK_STATE_NORMAL, NULL);
 		c->timeoutid = 0;

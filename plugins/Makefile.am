@@ -71,6 +71,5 @@ SUBDIRS= \
 	EventManager \
 	HtmlLinkMessage \
 	GPGenc \
-	P2PRandomNumber \
-	WokjabDockWindow
+	P2PRandomNumber 
 

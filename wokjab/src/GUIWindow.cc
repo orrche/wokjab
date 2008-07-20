@@ -110,11 +110,8 @@ GUIWindow::GUIWindowInit(WokXMLTag *tag)
 	widtag.AddAttr("id", buf);
 	widtag.AddAttr("expand", "false");
 	widtag.AddAttr("fill", "true");
+	contag.AddAttr("identifier", "Presence chooser");
 	
-	wls->SendSignal("GUI Window AddWidget",&contag);
-	std::stringstream sig;
-	sig << "GUI Window Close " << gtk_plug_get_id(GTK_PLUG(mainwindowplug));
-	EXP_SIGHOOK(sig.str(), &GUIWindow::PresenceClose, 500);
 	
 	showmenu = gtk_list_store_new (5, G_TYPE_STRING, GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	gtk_combo_box_set_model (GTK_COMBO_BOX(glade_xml_get_widget(preferencexml,"showentry")), GTK_TREE_MODEL(showmenu));
@@ -141,6 +138,11 @@ GUIWindow::GUIWindowInit(WokXMLTag *tag)
                     G_CALLBACK (GUIWindow::MenuActivate), this);
     gtk_combo_box_set_row_separator_func (GTK_COMBO_BOX (glade_xml_get_widget(preferencexml,"showentry")), 
 					  is_separator, NULL, NULL);
+	
+	wls->SendSignal("GUI Window AddWidget",&contag);
+	std::stringstream sig;
+	sig << "GUI Window Close " << gtk_plug_get_id(GTK_PLUG(mainwindowplug));
+	EXP_SIGHOOK(sig.str(), &GUIWindow::PresenceClose, 500);
 	return 1;
 }
 

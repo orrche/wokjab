@@ -39,6 +39,11 @@
 #ifdef __WIN32
 #include <io.h>
 #endif
+
+#ifndef _
+#define _(x) x
+#endif
+
 Config::Config(WLSignal *wls):
 WoklibPlugin(wls)
 {
@@ -82,12 +87,18 @@ Config::Init(WokXMLTag *tag)
 	std::ifstream file;
 	file.open(filename.c_str(),std::ios::in);
 	bool fromdefaultfile = false;
+	bool frombackfile = false;
+	
 	if(!file.is_open())
 	{
 		file.clear();
-		std::string datadir = PACKAGE_DATA_DIR;
-		datadir += "/wokjab/defaultconfig.xml";
-		file.open(datadir.c_str() ,std::ios::in);
+		file.open((filename + ".bak").c_str() ,std::ios::in);
+		frombackfile = true;
+	}
+	if(!file.is_open())
+	{
+		file.clear();
+		file.open(PACKAGE_DATA_DIR"/wokjab/defaultconfig.xml" ,std::ios::in);
 		fromdefaultfile = true;
 	}
 
@@ -95,7 +106,7 @@ Config::Init(WokXMLTag *tag)
 	file.close();
 	basetag = &truebasetag->GetFirstTag("config");
 
-	if ( fromdefaultfile ) 
+	if ( fromdefaultfile || frombackfile) 
 		Save(basetag);
 	
 	return true;
@@ -161,9 +172,40 @@ Config::GetTree(WokXMLTag *tag)
 int
 Config::Save(WokXMLTag *tag)
 {
-	std::ofstream file(filename.c_str(), std::ios::out);
-	file << *basetag << std::endl;
-	file.close();
+	std::ifstream ifile;
+	ifile.open(filename.c_str(),std::ios::in);
+	if(ifile.is_open())
+	{
+		rename(filename.c_str(), (filename + ".bak").c_str());
+		ifile.close();
+	}
+	
+	std::ofstream ofile(filename.c_str(), std::ios::out);
+	ofile << *basetag << std::endl;
+	ofile.close();
+	
+	bool saveok = false;
+	
+	ifile.clear();
+	ifile.open(filename.c_str(),std::ios::in);
+	
+	if(  ifile.is_open() )
+	{
+		WokXMLTag testtag("test");
+		
+		ifile >> testtag;
+		
+		if ( !testtag.GetTags().empty() )
+			saveok = true;
+		
+	}
+	
+	if ( saveok == false )
+	{
+		unlink(filename.c_str());
+		woklib_error(wls, _("Unable to save config"));
+	}
+	
 	return 1;
 }
 
