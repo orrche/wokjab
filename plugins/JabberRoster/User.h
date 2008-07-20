@@ -47,10 +47,12 @@ class User : public WLSignalInstance
 		void Hide();
 		void UpdateEntry();
 		void UpdateRow();
-		
+		void GenerateLine(WokXMLTag &tag);
+
 		void Update(WokXMLTag *tag);
 		void AddEvent(WokXMLTag *tag);
-		
+		int ParseXMLText(WokXMLTag *tag);
+			
 		int RemoveEvent(WokXMLTag *tag);
 		int Activate(WokXMLTag *tag);
 		int Presence(WokXMLTag *tag);

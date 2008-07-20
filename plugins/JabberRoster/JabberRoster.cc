@@ -24,6 +24,9 @@
 
 #include "JabberRoster.h"
 
+#ifndef _
+#define _(x) x
+#endif
 
 JabberRoster::JabberRoster(WLSignal *wls) : WoklibPlugin(wls)
 {
@@ -70,6 +73,12 @@ JabberRoster::KeepAlive(WokXMLTag *tag)
 int
 JabberRoster::ReadConfig(WokXMLTag *tag)
 {
+	tag->GetFirstTag("config").GetFirstTag("usermarkup").AddAttr("type", "text");
+	tag->GetFirstTag("config").GetFirstTag("usermarkup").AddAttr("label", _("Markup for jids in the roster"));
+	if ( tag->GetFirstTag("config").GetFirstTag("usermarkup").GetFirstTag("tooltip", "config").GetBody().empty() )
+		tag->GetFirstTag("config").GetFirstTag("usermarkup").GetFirstTag("tooltip", "config").AddText(_("Markup for the jids only style tag works, the syntax can be found at http://library.gnome.org/devel/pango/unstable/PangoMarkupFormat.html\nPossibly variables are\nnick\nstatus\nshow"));
+	if ( tag->GetFirstTag("config").GetFirstTag("usermarkup").GetBody().empty() )
+		tag->GetFirstTag("config").GetFirstTag("usermarkup").AddText("<var name='nick'/><condition type='not empty' var='show'> - <span style='italic' size='x-small' color='blue'><var name='show'/></span></condition><condition type='not empty' var='status'>\n<span style='italic' size='x-small'><var name='status'/></span></condition>");
 	tag->GetFirstTag("config").GetFirstTag("ticker").AddAttr("type", "bool");
 	tag->GetFirstTag("config").GetFirstTag("ticker").AddAttr("label", "Disable Ticker");
 	

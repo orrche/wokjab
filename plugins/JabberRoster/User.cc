@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2006  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2008  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,10 @@
 #include "User.h"
 #include "glib.h"
 #include <algorithm>
+
+#ifndef _
+#define _(x) x
+#endif
 
 User::User(WLSignal *wls, WokXMLTag *tag, JabberSession *ses) : WLSignalInstance(wls),
 ses(ses)
@@ -239,86 +243,7 @@ void
 User::UpdateRow()
 {
 	WokXMLTag itemtag(NULL, "item");
-	WokXMLTag &columntag =  itemtag.AddTag("columns");
-	WokXMLTag &texttag = columntag.AddTag("text");
-	columntag.AddTag("pre_pix").AddText(icon);
-	
-	texttag.AddText(XMLisize(name));
-			
-	std::string::size_type pos;
-	std::string stmsg = XMLisize(statusmsg);
-	while((pos = stmsg.find("\n")) != std::string::npos)
-		stmsg.erase(pos, 1);
-	std::string shmsg = XMLisize(showmsg);
-	while((pos = shmsg.find("\n")) != std::string::npos)
-		shmsg.erase(pos, 1);
-	
-	if ( ! shmsg.empty() ) 
-		texttag.AddText(" - <span style='italic' size='x-small' color='blue'>" + XMLisize(shmsg) + "</span>");
-	
-	if ( ses->parent->config->GetFirstTag("ticker").GetAttr("data") != "false" && 
-			( tickeritems.size() > 1 || ses->parent->config->GetFirstTag("ticker_single").GetAttr("data") != "false"))
-	{
-		if ( ! tickeritems.empty() )
-		{
-			if ( tickerpos > g_utf8_strlen (currentticker->c_str(), -1) + 4)
-			{
-				tickerpos = 0;
-				currentticker++;
-				
-				if ( currentticker == tickeritems.end() )
-					currentticker = tickeritems.begin();
-			}
-			
-			texttag.AddText("\n<span style='italic' size='x-small'>");
-			if ( tickerpos > g_utf8_strlen (currentticker->c_str(), -1) )
-				texttag.AddText(std::string(" --- ").substr(-g_utf8_strlen (currentticker->c_str(), -1) + tickerpos));
-			else
-				texttag.AddText(XMLisize(g_utf8_offset_to_pointer(currentticker->c_str(), tickerpos)));
-			
-			
-			std::list <std::string>::iterator runner(currentticker);
-			runner++;
-			int n = 0;
-			for (  ; runner != tickeritems.end() ; runner++ )
-			{
-				if ( n ||  tickerpos <= g_utf8_strlen (currentticker->c_str(), -1))
-					texttag.AddText(" --- ");
-				texttag.AddText(XMLisize(*runner));
-				n++;
-			}
-			
-			for( runner = tickeritems.begin() ; runner != currentticker ; runner++ )
-			{
-				if ( n ||  tickerpos <= g_utf8_strlen (currentticker->c_str(), -1))
-					texttag.AddText(" --- ");
-				texttag.AddText(XMLisize(*runner));
-				n++;
-			}
-			texttag.AddText(" --- ");
-			
-			texttag.AddText(XMLisize(currentticker->substr(0, g_utf8_offset_to_pointer(currentticker->c_str(), tickerpos) - currentticker->c_str())));
-			if ( tickerpos > g_utf8_strlen(currentticker->c_str(), -1) )
-				texttag.AddText(std::string(" --- ").substr(0, tickerpos - g_utf8_strlen(currentticker->c_str(), -1)));
-			
-			texttag.AddText("</span>");
-		}
-	}
-	else if ( !statusmsg.empty() )
-	{
-		texttag.AddText("\n<span style='italic' size='x-small'>");
-		texttag.AddText(XMLisize(statusmsg));
-		texttag.AddText("</span>");
-	}
-	else if ( tickeritems.size() == 1 )
-	{
-		texttag.AddText("\n<span style='italic' size='x-small'>");
-		texttag.AddText(XMLisize(*tickeritems.begin()));
-		texttag.AddText("</span>");
-	}
-	
-	if( ses->parent->config->GetFirstTag("display_avatar").GetAttr("data") != "false" )
-		columntag.AddTag("post_pix").AddText(avatar);
+	GenerateLine(itemtag);
 	
 	std::map <std::string, std::string>::iterator iter;
 	
@@ -329,18 +254,104 @@ User::UpdateRow()
 	}
 }
 
-void
-User::Show()
+int
+User::ParseXMLText(WokXMLTag *tag)
 {
-	if ( visible ) 
-		Hide();
-	visible = true;
+	std::cout << "Parsing " << *tag << std::endl;
 	
-	WokXMLTag itemtag(NULL, "item");
+	std::list <WokXMLObject *>::iterator oiter;
+	for ( oiter = tag->GetFirstTag("markup").GetItemList().begin() ; oiter != tag->GetFirstTag("markup").GetItemList().end() ; oiter++)
+	{
+		switch ( (*oiter)->GetType() )
+		{
+			case 1:
+				WokXMLTag *otag;
+				otag = (WokXMLTag *)(*oiter);
+				if ( otag->GetName() == "var" )
+				{
+					if ( !tag->GetFirstTag("variables").GetTagList(otag->GetAttr("name")).empty() )
+					{
+						tag->GetFirstTag("output").AddText(tag->GetFirstTag("variables").GetFirstTag(otag->GetAttr("name")).GetBody());
+					}
+					continue;
+				}
+				if ( otag->GetName() == "span" )
+				{
+					WokXMLTag parse("parse");
+					parse.Add("<markup>" + otag->GetChildrenStr() + "</markup>");
+					parse.AddTag(&tag->GetFirstTag("variables"));
+					ParseXMLText(&parse);
+					
+					std::string spantxt = "<span";
+					
+					char *sargs[] = {"color", "font_desc", "font_family", "face", "font_family", "size", "style", "weight", "variant", "stretch", "foreground", "background", 
+						"underline", "underline_col", "rise", "strikethrough", "strikethrough_color", "fallback", "lang", NULL };
+
+					int x = 0;
+					
+					for( int x = 0 ; sargs[x] ; x++ )
+					{
+						if ( !otag->GetAttr(sargs[x]).empty() )
+							spantxt += std::string(" ") + sargs[x] + "='" + XMLisize(otag->GetAttr(sargs[x])) + "'";
+					}
+					
+					spantxt +=">";
+					tag->GetFirstTag("output").AddText(spantxt + DeXMLisize(parse.GetFirstTag("output").GetChildrenStr()) + "</span>");
+				}
+				if ( otag->GetName() == "condition")
+				{
+					if ( otag->GetAttr("type") == "not empty" )
+					{
+						if ( !tag->GetFirstTag("variables").GetTagList(otag->GetAttr("var")).empty() )
+						{
+							if ( !tag->GetFirstTag("variables").GetFirstTag(otag->GetAttr("var")).GetBody().empty() )
+							{
+								WokXMLTag parse("parse");
+								parse.Add("<markup>" + otag->GetChildrenStr() + "</markup>");
+								parse.AddTag(&tag->GetFirstTag("variables"));
+								ParseXMLText(&parse);
+								
+								tag->GetFirstTag("output").AddText(DeXMLisize(parse.GetFirstTag("output").GetChildrenStr()));
+							}
+						}
+					}
+					
+					
+				}
+				break;
+			case 2:
+				
+				WokXMLText *tt;
+				tt = (WokXMLText *)(*oiter);
+				tag->GetFirstTag("output").AddText(tt->GetText());
+				break;
+		}
+	}
+}
+
+void
+User::GenerateLine(WokXMLTag &itemtag)
+{
+	//WokXMLTag itemtag(NULL, "item");
 	WokXMLTag &columntag =  itemtag.AddTag("columns");
 	WokXMLTag &texttag = columntag.AddTag("text");
 	columntag.AddTag("pre_pix").AddText(icon);
 	
+	WokXMLTag parse("parse");
+	std::string markup = ses->parent->config->GetFirstTag("usermarkup").GetBody();
+	parse.Add("<markup>"+markup+"</markup>");
+
+	
+	WokXMLTag &vars = parse.AddTag("variables");
+	vars.AddTag("nick").AddText(XMLisize(name));
+	vars.AddTag("show").AddText(XMLisize(showmsg));
+	vars.AddTag("status").AddText(XMLisize(statusmsg));
+	
+	ParseXMLText(&parse);
+	
+	texttag.AddText(parse.GetFirstTag("output").GetBody());
+	
+	/*
 	texttag.AddText(XMLisize(name));
 			
 	std::string::size_type pos;
@@ -408,11 +419,20 @@ User::Show()
 		texttag.AddText(XMLisize(statusmsg));
 		texttag.AddText("</span>");
 	}
-	
+	*/
 	if( ses->parent->config->GetFirstTag("display_avatar").GetAttr("data") != "false" )
 		columntag.AddTag("post_pix").AddText(avatar);
+}
+
+void
+User::Show()
+{
+	if ( visible ) 
+		Hide();
+	visible = true;
 	
-	
+	WokXMLTag itemtag("item");
+	GenerateLine (itemtag);
 	
 	if ( usertag->GetTagList("group").size() )
 	{
