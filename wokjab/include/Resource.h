@@ -37,13 +37,14 @@ class Resource
 		void SetShow( const std::string &show);
 		void SetResource( const std::string &resource);
 		void SetStatus( const std::string &status);
-		
+		std::string GetLogontime();
 	protected:
 		std::string resource;
 		std::string show;
 		std::string status;
 		int presence;
 		int priority;
+		int t;
 		
 	
 };

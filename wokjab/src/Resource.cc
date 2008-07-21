@@ -19,11 +19,11 @@
 #include "include/Resource.h"
 
 #include <iostream>
-
+#include <sstream>
 
 Resource::Resource()
 {
-
+	t = time(0);
 }
 
 
@@ -60,6 +60,14 @@ void
 Resource::SetPriority(const int & p)
 {
 	priority = p;
+}
+
+std::string
+Resource::GetLogontime ()
+{
+	std::stringstream str;
+	str << t;
+	return str.str();	
 }
 
 void

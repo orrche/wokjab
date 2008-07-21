@@ -496,7 +496,9 @@ GUIWindow::MenuActivate (GtkComboBox *widget, GUIWindow *c)
 	{
 		WokXMLTag connect("data");
 		c->wls->SendSignal("MainMenu Connect", &connect);
-		gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(c->preferencexml, "showentry")), 4);
+		
+		// For some odd reason this crashes wokjab, noo idea why that is
+		//gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(c->preferencexml, "showentry")), 4);
 	}
 	else
 	{

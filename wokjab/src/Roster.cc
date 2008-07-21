@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2006  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2008  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -97,6 +97,7 @@ Roster::SignalGetResource(WokXMLTag *tag)
 						rtag.AddAttr("priority", buf);
 						rtag.AddTag("show").AddText(rrunner->second->GetShow());
 						rtag.AddTag("status").AddText(rrunner->second->GetStatus());
+						rtag.AddTag("logintime").AddText(rrunner->second->GetLogontime());
 						
 					}
 				}
@@ -116,7 +117,7 @@ Roster::SignalGetResource(WokXMLTag *tag)
 						rtag.AddAttr("priority", buf);
 						rtag.AddTag("show").AddText(riter->second.GetShow());
 						rtag.AddTag("status").AddText(riter->second.GetStatus());
-						
+						rtag.AddTag("logintime").AddText(riter->second.GetLogontime());
 					}					
 				}
 			}
