@@ -92,7 +92,6 @@ void
 VCardAvatar::OK_Button(GtkButton *button, VCardAvatar *c)
 {
 	gchar *file_name = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER(glade_xml_get_widget (c->gxml, "file")));
-	gtk_widget_destroy(glade_xml_get_widget (c->gxml, "window"));
 	
 	if ( file_name )
 	{
@@ -103,11 +102,14 @@ VCardAvatar::OK_Button(GtkButton *button, VCardAvatar *c)
 			avatar.AddAttr("reformat", "true");
 		else
 			avatar.AddAttr("reformat", "false");
-
+		
 		c->wls->SendSignal("Jabber Avatar SetMy", avatar);
 	
 		g_free(file_name);
 	}
+	
+	gtk_widget_destroy(glade_xml_get_widget (c->gxml, "window"));
+
 }
 
 void

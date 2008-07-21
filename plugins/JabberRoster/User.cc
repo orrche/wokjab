@@ -254,81 +254,6 @@ User::UpdateRow()
 	}
 }
 
-int
-User::ParseXMLText(WokXMLTag *tag)
-{
-	std::cout << "Parsing " << *tag << std::endl;
-	
-	std::list <WokXMLObject *>::iterator oiter;
-	for ( oiter = tag->GetFirstTag("markup").GetItemList().begin() ; oiter != tag->GetFirstTag("markup").GetItemList().end() ; oiter++)
-	{
-		switch ( (*oiter)->GetType() )
-		{
-			case 1:
-				WokXMLTag *otag;
-				otag = (WokXMLTag *)(*oiter);
-				if ( otag->GetName() == "var" )
-				{
-					if ( !tag->GetFirstTag("variables").GetTagList(otag->GetAttr("name")).empty() )
-					{
-						tag->GetFirstTag("output").AddText(tag->GetFirstTag("variables").GetFirstTag(otag->GetAttr("name")).GetBody());
-					}
-					continue;
-				}
-				if ( otag->GetName() == "span" )
-				{
-					WokXMLTag parse("parse");
-					parse.Add("<markup>" + otag->GetChildrenStr() + "</markup>");
-					parse.AddTag(&tag->GetFirstTag("variables"));
-					ParseXMLText(&parse);
-					
-					std::string spantxt = "<span";
-					
-					char *sargs[] = {"color", "font_desc", "font_family", "face", "font_family", "size", "style", "weight", "variant", "stretch", "foreground", "background", 
-						"underline", "underline_col", "rise", "strikethrough", "strikethrough_color", "fallback", "lang", NULL };
-
-					int x = 0;
-					
-					for( int x = 0 ; sargs[x] ; x++ )
-					{
-						if ( !otag->GetAttr(sargs[x]).empty() )
-							spantxt += std::string(" ") + sargs[x] + "='" + XMLisize(otag->GetAttr(sargs[x])) + "'";
-					}
-					
-					spantxt +=">";
-					tag->GetFirstTag("output").AddText(spantxt + DeXMLisize(parse.GetFirstTag("output").GetChildrenStr()) + "</span>");
-				}
-				if ( otag->GetName() == "condition")
-				{
-					if ( otag->GetAttr("type") == "not empty" )
-					{
-						if ( !tag->GetFirstTag("variables").GetTagList(otag->GetAttr("var")).empty() )
-						{
-							if ( !tag->GetFirstTag("variables").GetFirstTag(otag->GetAttr("var")).GetBody().empty() )
-							{
-								WokXMLTag parse("parse");
-								parse.Add("<markup>" + otag->GetChildrenStr() + "</markup>");
-								parse.AddTag(&tag->GetFirstTag("variables"));
-								ParseXMLText(&parse);
-								
-								tag->GetFirstTag("output").AddText(DeXMLisize(parse.GetFirstTag("output").GetChildrenStr()));
-							}
-						}
-					}
-					
-					
-				}
-				break;
-			case 2:
-				
-				WokXMLText *tt;
-				tt = (WokXMLText *)(*oiter);
-				tag->GetFirstTag("output").AddText(tt->GetText());
-				break;
-		}
-	}
-}
-
 void
 User::GenerateLine(WokXMLTag &itemtag)
 {
@@ -347,7 +272,7 @@ User::GenerateLine(WokXMLTag &itemtag)
 	vars.AddTag("show").AddText(XMLisize(showmsg));
 	vars.AddTag("status").AddText(XMLisize(statusmsg));
 	
-	ParseXMLText(&parse);
+	wls->SendSignal("Wokjab XMLMarkup Parse", parse);
 	
 	texttag.AddText(parse.GetFirstTag("output").GetBody());
 	

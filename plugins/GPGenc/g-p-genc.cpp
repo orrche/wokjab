@@ -192,8 +192,13 @@ GPGenc::RemoveKey(WokXMLTag *tag)
 int
 GPGenc::AutoConnectInhibiter(WokXMLTag *tag)
 {
-	cought = true;	
-	return 0;
+	EXP_SIGUNHOOK("Jabber AutoConnect", &GPGenc::AutoConnectInhibiter, 100);
+	if ( config->GetFirstTag("enabled").GetAttr("data") != "false" )
+	{
+		cought = true;	
+		return 0;
+	}
+	return 1;
 }
 
 void
@@ -448,6 +453,11 @@ GPGenc::Setup(WokXMLTag *tag)
 {	
 	if ( tag->GetFirstTag("x", "jabber:x:data").GetAttr("type") == "cancel") 
 	{
+		if ( cought )
+		{
+			WokXMLTag dummy("xml");
+			wls->SendSignal("Jabber AutoConnect", dummy);
+		}
 		return 1;		
 	}
 	
@@ -474,8 +484,6 @@ GPGenc::Setup(WokXMLTag *tag)
 		EXP_SIGHOOK("Jabber XML Message Send", &GPGenc::OutMessage, 960);
 		EXP_SIGHOOK("Jabber XML Message Send", &GPGenc::PreOutMessage, 499);
 		EXP_SIGHOOK("Jabber XML Object message", &GPGenc::Message, 1);
-		
-		EXP_SIGUNHOOK("Jabber AutoConnect", &GPGenc::AutoConnectInhibiter, 100);
 		
 		WokXMLTag sesstag("sessions");
 		wls->SendSignal("Jabber GetSessions", sesstag);

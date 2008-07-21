@@ -30,16 +30,25 @@
 
 using namespace Woklib;
 
+class Group;
+
+#include "JabberSession.h"
+
 class Group : public WLSignalInstance
 {
 	public:
-		Group(WLSignal *wls, std::string name, std::string sessionid);
+		Group(WLSignal *wls, std::string name, std::string sessionid, JabberSession *ses);
 		 ~Group();
 	
 		std::string GetID();
 		void AddUser();
 		int RemoveUser();
+		void UpdateRow();
+		void GenerateLine(WokXMLTag &line);
 	protected:
+		JabberSession *ses;
+		std::string sessionid;
+		std::string name;
 		std::string id;
 		int usr;
 };

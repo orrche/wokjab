@@ -66,45 +66,84 @@
             <child>
               <widget class="GtkTable" id="table">
                 <property name="visible">True</property>
-                <property name="n_rows">5</property>
+                <property name="n_rows">6</property>
                 <property name="n_columns">2</property>
                 <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <widget class="GtkLabel" id="status_label">
+                  <widget class="GtkLabel" id="time_label">
                     <property name="visible">True</property>
                     <property name="xalign">0</property>
-                    <property name="wrap">True</property>
                   </widget>
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="right_attach">2</property>
-                    <property name="top_attach">3</property>
-                    <property name="bottom_attach">4</property>
+                    <property name="top_attach">4</property>
+                    <property name="bottom_attach">5</property>
                     <property name="x_options">GTK_FILL</property>
                     <property name="y_options"></property>
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkLabel" id="label5">
+                  <widget class="GtkLabel" id="label1">
                     <property name="visible">True</property>
                     <property name="xalign">0</property>
                     <property name="yalign">0</property>
-                    <property name="label" translatable="yes">Status:</property>
+                    <property name="label" translatable="yes">Time online: </property>
                   </widget>
                   <packing>
-                    <property name="top_attach">3</property>
-                    <property name="bottom_attach">4</property>
+                    <property name="top_attach">4</property>
+                    <property name="bottom_attach">5</property>
                     <property name="x_options">GTK_FILL</property>
                     <property name="y_options"></property>
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkLabel" id="show_label">
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="label2">
+                    <property name="visible">True</property>
+                    <property name="xalign">0</property>
+                    <property name="yalign">0</property>
+                    <property name="label" translatable="yes">JID:</property>
+                  </widget>
+                  <packing>
+                    <property name="x_options">GTK_FILL</property>
+                    <property name="y_options"></property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="label3">
+                    <property name="visible">True</property>
+                    <property name="xalign">0</property>
+                    <property name="yalign">0</property>
+                    <property name="label" translatable="yes">Nick:</property>
+                  </widget>
+                  <packing>
+                    <property name="top_attach">1</property>
+                    <property name="bottom_attach">2</property>
+                    <property name="x_options">GTK_FILL</property>
+                    <property name="y_options"></property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="label4">
+                    <property name="visible">True</property>
+                    <property name="xalign">0</property>
+                    <property name="yalign">0</property>
+                    <property name="label" translatable="yes">Show:</property>
+                  </widget>
+                  <packing>
+                    <property name="top_attach">2</property>
+                    <property name="bottom_attach">3</property>
+                    <property name="x_options">GTK_FILL</property>
+                    <property name="y_options"></property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="jid_label">
                     <property name="visible">True</property>
                     <property name="xalign">0</property>
                     <property name="wrap">True</property>
@@ -112,8 +151,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="right_attach">2</property>
-                    <property name="top_attach">2</property>
-                    <property name="bottom_attach">3</property>
                     <property name="x_options">GTK_FILL</property>
                     <property name="y_options"></property>
                   </packing>
@@ -134,7 +171,7 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkLabel" id="jid_label">
+                  <widget class="GtkLabel" id="show_label">
                     <property name="visible">True</property>
                     <property name="xalign">0</property>
                     <property name="wrap">True</property>
@@ -142,18 +179,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="right_attach">2</property>
-                    <property name="x_options">GTK_FILL</property>
-                    <property name="y_options"></property>
-                  </packing>
-                </child>
-                <child>
-                  <widget class="GtkLabel" id="label4">
-                    <property name="visible">True</property>
-                    <property name="xalign">0</property>
-                    <property name="yalign">0</property>
-                    <property name="label" translatable="yes">Show:</property>
-                  </widget>
-                  <packing>
                     <property name="top_attach">2</property>
                     <property name="bottom_attach">3</property>
                     <property name="x_options">GTK_FILL</property>
@@ -161,27 +186,30 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkLabel" id="label3">
+                  <widget class="GtkLabel" id="label5">
                     <property name="visible">True</property>
                     <property name="xalign">0</property>
                     <property name="yalign">0</property>
-                    <property name="label" translatable="yes">Nick:</property>
+                    <property name="label" translatable="yes">Status:</property>
                   </widget>
                   <packing>
-                    <property name="top_attach">1</property>
-                    <property name="bottom_attach">2</property>
+                    <property name="top_attach">3</property>
+                    <property name="bottom_attach">4</property>
                     <property name="x_options">GTK_FILL</property>
                     <property name="y_options"></property>
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkLabel" id="label2">
+                  <widget class="GtkLabel" id="status_label">
                     <property name="visible">True</property>
                     <property name="xalign">0</property>
-                    <property name="yalign">0</property>
-                    <property name="label" translatable="yes">JID:</property>
+                    <property name="wrap">True</property>
                   </widget>
                   <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">3</property>
+                    <property name="bottom_attach">4</property>
                     <property name="x_options">GTK_FILL</property>
                     <property name="y_options"></property>
                   </packing>

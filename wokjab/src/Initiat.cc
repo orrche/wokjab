@@ -128,6 +128,7 @@ Initiat::AccountConfig(WokXMLTag *unimportanttag)
 	tag.AddAttr("path", "/connect/window");
 	wls->SendSignal("Config XML GetConfig", tag);
 	
+	std::cout << "CONFIG: " << tag << std::endl;
 	
 	std::list <WokXMLTag *>::iterator iter;
 

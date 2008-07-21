@@ -149,8 +149,6 @@ GUIWindow::GUIWindowInit(WokXMLTag *tag)
 void
 GUIWindow::PopulateShowEntry()
 {
-	//gtk_list_store_clear(showmenu);
-	
 	GtkTreeIter iter;
 	GdkPixbuf *pixbuf;
 	

@@ -99,6 +99,22 @@ JabberSession::UpdateRoster(WokXMLTag *tag)
 	return 1;
 }
 
+int
+JabberSession::UpdateAll()
+{
+	std::map <std::string, User*>::iterator useriter;
+	for( useriter = user.begin(); useriter != user.end() ; useriter++)
+	{
+		useriter->second->UpdateRow();
+	}
+	std::map <std::string, Group*>::iterator groupiter;
+	for( groupiter = group.begin() ; groupiter != group.end() ; groupiter++)
+	{
+		groupiter->second->UpdateRow();
+	}
+	
+}
+
 std::string
 JabberSession::GetID()
 {
@@ -116,7 +132,7 @@ JabberSession::AddToGroup(std::string groupname, User *usr)
 {
 	if (group.find(groupname) == group.end() )
 	{
-		group[groupname] = new Group(wls, groupname, id);
+		group[groupname] = new Group(wls, groupname, id, this);
 	}
 	group[groupname]->AddUser();
 	return group[groupname]->GetID();

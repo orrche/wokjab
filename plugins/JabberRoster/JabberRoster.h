@@ -52,6 +52,7 @@ class JabberRoster : public WoklibPlugin
 		int SignIn(WokXMLTag *tag);
 		int KeepAlive(WokXMLTag *tag);
 		int ReadConfig(WokXMLTag *tag);
+		int ParseXMLText(WokXMLTag *tag);
 		
 		virtual std::string GetInfo() {return "Jabber Roster";};
 		virtual std::string GetVersion() {return VERSION;};

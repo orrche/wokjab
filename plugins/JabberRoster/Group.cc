@@ -32,7 +32,10 @@
 #endif
 
 
-Group::Group(WLSignal *wls, std::string name, std::string sessionid) : WLSignalInstance(wls)
+Group::Group(WLSignal *wls, std::string in_name, std::string in_sessionid, JabberSession *ses) : WLSignalInstance(wls),
+name(in_name),
+sessionid(in_sessionid),
+ses(ses)
 {	
 	if ( name[0] == '.' )
 	{
@@ -40,13 +43,9 @@ Group::Group(WLSignal *wls, std::string name, std::string sessionid) : WLSignalI
 	}
 	else
 	{
-		WokXMLTag itemtag(NULL, "item");
-		itemtag.AddAttr("parant", sessionid);
-		WokXMLTag &columntag =  itemtag.AddTag("columns");
-		WokXMLTag &texttag = columntag.AddTag("text");
-		columntag.AddTag("pre_pix").AddText(PACKAGE_DATA_DIR"/wokjab/group.png");
-		texttag.AddText(name);
-			
+		WokXMLTag itemtag("item");
+		GenerateLine (itemtag);
+		
 		wls->SendSignal("GUIRoster AddItem", itemtag);
 		id = itemtag.GetAttr("id");
 	}
@@ -68,6 +67,40 @@ std::string
 Group::GetID()
 {
 	return id;
+}
+
+void
+Group::GenerateLine(WokXMLTag &line)
+{
+	line.AddAttr("parant", sessionid);
+	WokXMLTag &columntag =  line.AddTag("columns");
+	WokXMLTag &texttag = columntag.AddTag("text");
+	columntag.AddTag("pre_pix").AddText(PACKAGE_DATA_DIR"/wokjab/group.png");
+
+	WokXMLTag parse("parse");
+	std::string markup = ses->parent->config->GetFirstTag("groupmarkup").GetBody();
+	parse.Add("<markup>"+markup+"</markup>");
+
+	
+	WokXMLTag &vars = parse.AddTag("variables");
+	vars.AddTag("name").AddText(XMLisize(name));
+	
+	wls->SendSignal("Wokjab XMLMarkup Parse", parse);
+	
+	texttag.AddText(parse.GetFirstTag("output").GetBody());
+}
+
+void
+Group::UpdateRow()
+{
+	WokXMLTag itemtag(NULL, "item");
+	GenerateLine(itemtag);
+	
+	std::map <std::string, std::string>::iterator iter;
+	
+	itemtag.AddAttr("id", id);
+	wls->SendSignal("GUIRoster UpdateItem", itemtag);
+	
 }
 
 void

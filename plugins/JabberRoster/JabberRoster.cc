@@ -42,6 +42,10 @@ JabberRoster::JabberRoster(WLSignal *wls) : WoklibPlugin(wls)
 	EXP_SIGHOOK("Jabber Connection Connect" , &JabberRoster::SignIn, 1000);
 	
 	
+	#warning should get a plugin of its own 
+	EXP_SIGHOOK("Wokjab XMLMarkup Parse", &JabberRoster::ParseXMLText, 1000);
+	
+	
 	if ( config->GetFirstTag("ticker").GetAttr("data") == "false" )
 	{
 		WokXMLTag tag("timer");
@@ -76,9 +80,17 @@ JabberRoster::ReadConfig(WokXMLTag *tag)
 	tag->GetFirstTag("config").GetFirstTag("usermarkup").AddAttr("type", "text");
 	tag->GetFirstTag("config").GetFirstTag("usermarkup").AddAttr("label", _("Markup for jids in the roster"));
 	if ( tag->GetFirstTag("config").GetFirstTag("usermarkup").GetFirstTag("tooltip", "config").GetBody().empty() )
-		tag->GetFirstTag("config").GetFirstTag("usermarkup").GetFirstTag("tooltip", "config").AddText(_("Markup for the jids only style tag works, the syntax can be found at http://library.gnome.org/devel/pango/unstable/PangoMarkupFormat.html\nPossibly variables are\nnick\nstatus\nshow"));
+		tag->GetFirstTag("config").GetFirstTag("usermarkup").GetFirstTag("tooltip", "config").AddText(_("Markup for the jids, only style tag works, the syntax can be found at http://library.gnome.org/devel/pango/unstable/PangoMarkupFormat.html\nPossibly variables are\nnick\nstatus\nshow"));
 	if ( tag->GetFirstTag("config").GetFirstTag("usermarkup").GetBody().empty() )
 		tag->GetFirstTag("config").GetFirstTag("usermarkup").AddText("<var name='nick'/><condition type='not empty' var='show'> - <span style='italic' size='x-small' color='blue'><var name='show'/></span></condition><condition type='not empty' var='status'>\n<span style='italic' size='x-small'><var name='status'/></span></condition>");
+
+	tag->GetFirstTag("config").GetFirstTag("groupmarkup").AddAttr("type", "text");
+	tag->GetFirstTag("config").GetFirstTag("groupmarkup").AddAttr("label", _("Markup for groups in the roster"));
+	if ( tag->GetFirstTag("config").GetFirstTag("groupmarkup").GetFirstTag("tooltip", "config").GetBody().empty() )
+		tag->GetFirstTag("config").GetFirstTag("groupmarkup").GetFirstTag("tooltip", "config").AddText(_("Markup for the groups, only style tag works, the syntax can be found at http://library.gnome.org/devel/pango/unstable/PangoMarkupFormat.html\nPossibly variables are\nnick\nstatus\nshow"));
+	if ( tag->GetFirstTag("config").GetFirstTag("groupmarkup").GetBody().empty() )
+		tag->GetFirstTag("config").GetFirstTag("groupmarkup").AddText("<var name='name'/>");
+																										
 	tag->GetFirstTag("config").GetFirstTag("ticker").AddAttr("type", "bool");
 	tag->GetFirstTag("config").GetFirstTag("ticker").AddAttr("label", "Disable Ticker");
 	
@@ -99,6 +111,90 @@ JabberRoster::ReadConfig(WokXMLTag *tag)
 	
 	delete config;
 	config = new WokXMLTag(tag->GetFirstTag("config"));
+
+	std::map <std::string, JabberSession *>::iterator sessiter;
+	
+	for ( sessiter = session.begin() ; sessiter != session.end() ; sessiter++ )
+	{
+		sessiter->second->UpdateAll();
+	}
+	return 1;
+}
+
+
+int
+JabberRoster::ParseXMLText(WokXMLTag *tag)
+{
+	std::cout << "Parsing " << *tag << std::endl;
+	
+	std::list <WokXMLObject *>::iterator oiter;
+	for ( oiter = tag->GetFirstTag("markup").GetItemList().begin() ; oiter != tag->GetFirstTag("markup").GetItemList().end() ; oiter++)
+	{
+		switch ( (*oiter)->GetType() )
+		{
+			case 1:
+				WokXMLTag *otag;
+				otag = (WokXMLTag *)(*oiter);
+				if ( otag->GetName() == "var" )
+				{
+					if ( !tag->GetFirstTag("variables").GetTagList(otag->GetAttr("name")).empty() )
+					{
+						tag->GetFirstTag("output").AddText(tag->GetFirstTag("variables").GetFirstTag(otag->GetAttr("name")).GetBody());
+					}
+					continue;
+				}
+				if ( otag->GetName() == "span" )
+				{
+					WokXMLTag parse("parse");
+					parse.Add("<markup>" + otag->GetChildrenStr() + "</markup>");
+					parse.AddTag(&tag->GetFirstTag("variables"));
+					ParseXMLText(&parse);
+					
+					std::string spantxt = "<span";
+					
+					char *sargs[] = {"color", "font_desc", "font_family", "face", "font_family", "size", "style", "weight", "variant", "stretch", "foreground", "background", 
+						"underline", "underline_col", "rise", "strikethrough", "strikethrough_color", "fallback", "lang", NULL };
+
+					int x = 0;
+					
+					for( int x = 0 ; sargs[x] ; x++ )
+					{
+						if ( !otag->GetAttr(sargs[x]).empty() )
+							spantxt += std::string(" ") + sargs[x] + "='" + XMLisize(otag->GetAttr(sargs[x])) + "'";
+					}
+					
+					spantxt +=">";
+					tag->GetFirstTag("output").AddText(spantxt + DeXMLisize(parse.GetFirstTag("output").GetChildrenStr()) + "</span>");
+				}
+				if ( otag->GetName() == "condition")
+				{
+					if ( otag->GetAttr("type") == "not empty" )
+					{
+						if ( !tag->GetFirstTag("variables").GetTagList(otag->GetAttr("var")).empty() )
+						{
+							if ( !tag->GetFirstTag("variables").GetFirstTag(otag->GetAttr("var")).GetBody().empty() )
+							{
+								WokXMLTag parse("parse");
+								parse.Add("<markup>" + otag->GetChildrenStr() + "</markup>");
+								parse.AddTag(&tag->GetFirstTag("variables"));
+								ParseXMLText(&parse);
+								
+								tag->GetFirstTag("output").AddText(DeXMLisize(parse.GetFirstTag("output").GetChildrenStr()));
+							}
+						}
+					}
+					
+					
+				}
+				break;
+			case 2:
+				
+				WokXMLText *tt;
+				tt = (WokXMLText *)(*oiter);
+				tag->GetFirstTag("output").AddText(tt->GetText());
+				break;
+		}
+	}
 	return 1;
 }
 

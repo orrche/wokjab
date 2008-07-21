@@ -26,6 +26,7 @@
 //
 
 #include "Tooltip.h"
+#include <sstream>
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
@@ -82,12 +83,25 @@ Tooltip::DispWindow (Tooltip * c)
 	gtk_label_set_text(GTK_LABEL(glade_xml_get_widget (c->xml, "jid_label")), c->currenttag->GetAttr("jid").c_str());
 	
 	WokXMLTag querytag(NULL, "query");
-	WokXMLTag &itemtag = querytag.AddTag("item");
+	querytag.AddTag("item");
 	
-	itemtag.AddAttr("jid", c->currenttag->GetAttr("jid"));
-	itemtag.AddAttr("session", c->currenttag->GetAttr("session"));
+	querytag.GetFirstTag("item").AddAttr("jid", c->currenttag->GetAttr("jid"));
+	querytag.GetFirstTag("item").AddAttr("session", c->currenttag->GetAttr("session"));
 	
 	c->wls->SendSignal("Jabber GUI GetIcon", &querytag);
+	WokXMLTag &itemtag = querytag.GetFirstTag("item");
+	
+	int t = time(0) - atoi(itemtag.GetFirstTag("resource").GetFirstTag("logintime").GetBody().c_str());
+	std::stringstream timestr;
+	if ( t >= 86400 )
+		timestr << t/86400 << " days ";
+	if ( t >= 3600 )
+		timestr << (t%86400) / 3600 << " hours ";
+	if ( t >= 60 )
+		timestr << (t%3600) / 60 << " minutes ";
+	timestr << t%60 << " seconds";
+
+	gtk_label_set_text(GTK_LABEL(glade_xml_get_widget (c->xml, "time_label")), timestr.str().c_str());
 	
 	
 	gtk_image_set_from_file(GTK_IMAGE(glade_xml_get_widget (c->xml, "status_img")),itemtag.GetAttr("icon").c_str());
@@ -111,7 +125,7 @@ Tooltip::DispWindow (Tooltip * c)
 	gtk_table_resize(GTK_TABLE(glade_xml_get_widget (c->xml, "table") ), 5 + entries.GetTagList("item").size(), 2);
 	
 	std::list <WokXMLTag *>::iterator entry_iter;
-	int n = 0;
+	int n = 1;
 	for( entry_iter = entries.GetTagList("item").begin() ; entry_iter != entries.GetTagList("item").end() ; entry_iter++)
 	{
 		/*

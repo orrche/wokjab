@@ -48,6 +48,7 @@ class JabberSession : public WLSignalInstance
 		std::string AddToGroup(std::string group, User *usr);
 		std::string GetID();
 		std::string GetSession();
+		int UpdateAll();
 		
 		int UpdateRoster(WokXMLTag *tag);
 		int RightButton(WokXMLTag *tag);
