@@ -56,8 +56,10 @@ public:
 	int RemoveKey(WokXMLTag *tag);
 	int NagUser(WokXMLTag *tag);
 	int PreOutMessage(WokXMLTag *tag);
-	void SaveConfig();
 	
+	void SaveConfig();
+	void RequestPassword();
+		
 	virtual std::string GetInfo() {return "GPG Enc/Dec";};
 	virtual std::string GetVersion() {return VERSION;};
 

@@ -196,8 +196,8 @@ GPGenc::AutoConnectInhibiter(WokXMLTag *tag)
 	return 0;
 }
 
-int
-GPGenc::ProgramStart(WokXMLTag *tag)
+void
+GPGenc::RequestPassword()
 {
 	WokXMLTag form("form");
 	WokXMLTag &x = form.AddTag("x");
@@ -217,6 +217,15 @@ GPGenc::ProgramStart(WokXMLTag *tag)
 	
 	wls->SendSignal("Jabber jabber:x:data Init", form);
 	EXP_SIGHOOK(form.GetAttr("signal"), &GPGenc::Setup, 500);
+}
+
+int
+GPGenc::ProgramStart(WokXMLTag *tag)
+{
+	if ( config->GetFirstTag("enabled").GetAttr("data") != "false" )
+	{
+		RequestPassword();
+	}
 	return 1;	
 }
 
@@ -253,8 +262,12 @@ GPGenc::AssignKeyData(WokXMLTag *tag)
 int
 GPGenc::ReadConfig(WokXMLTag *tag)
 {		
-	if ( tag->GetFirstTag("config").GetTagList("send_warning_message_mismatch").empty() )
+	if ( tag->GetFirstTag("config").GetTagList("enabled").empty() )
 	{
+		tag->GetFirstTag("config").GetFirstTag("enabled").AddAttr("type", "bool");
+		tag->GetFirstTag("config").GetFirstTag("enabled").AddAttr("label", _("Enable GPG"));
+		tag->GetFirstTag("config").GetFirstTag("enabled").AddAttr("tooltip", _("Stops the initiation of gpg and no more password requests"));
+		
 		tag->GetFirstTag("config").GetFirstTag("send_warning_message_mismatch").AddAttr("type", "bool");
 		tag->GetFirstTag("config").GetFirstTag("send_warning_message_mismatch").AddAttr("label", _("Warn on key mismatch"));
 		tag->GetFirstTag("config").GetFirstTag("send_warning_message_mismatch").AddAttr("tooltip", _("Warn if your encrypting to diffrent key\nthen annaunced in users presence"));
@@ -263,6 +276,10 @@ GPGenc::ReadConfig(WokXMLTag *tag)
 		tag->GetFirstTag("config").GetFirstTag("send_message_message_mismatch").AddAttr("label", _("Send unencrypted on key mismatch"));
 		tag->GetFirstTag("config").GetFirstTag("send_message_message_mismatch").AddAttr("tooltip", _("Send unencrypted on key mismatch\nYou are really suposed to KNOW WHAT YOUR DOING if you disable this"));
 	}
+	
+	
+	if ( tag->GetFirstTag("config").GetFirstTag("enabled").GetAttr("data") != "false" && config->GetFirstTag("enabled").GetAttr("data") == "false" )
+		RequestPassword ();
 	
 	if ( config )
 		delete config;
