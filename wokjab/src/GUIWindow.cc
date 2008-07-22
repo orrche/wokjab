@@ -165,7 +165,7 @@ GUIWindow::PopulateShowEntry()
 		gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, "Not Available", -1);
 		gtk_list_store_append (showmenu, &iter);
 		pixbuf = gdk_pixbuf_new_from_file (PACKAGE_DATA_DIR"/wokjab/dnd.png", NULL);
-		gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, "Do Not Disturbe", -1);
+		gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, "Do Not Disturb", -1);
 		gtk_list_store_append (showmenu, &iter);
 		pixbuf = gdk_pixbuf_new_from_file (PACKAGE_DATA_DIR"/wokjab/offline.png", NULL);
 		gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, "Offline", -1);
