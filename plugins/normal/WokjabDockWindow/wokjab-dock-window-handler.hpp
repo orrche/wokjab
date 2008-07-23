@@ -45,6 +45,15 @@ public:
 	int AddChat(WokXMLTag *tag);
 	int AddRoster(WokXMLTag *tag);
 	int Destroy(WokXMLTag *tag);
+	int Activate(WokXMLTag *tag);
+	int ActivateChat(WokXMLTag *tag);
+	int SetUrgency(WokXMLTag *tag);
+		
+	int Hide(WokXMLTag *tag);
+	int HideChat(WokXMLTag *tag);
+	int Show(WokXMLTag *tag);
+	int ShowChat(WokXMLTag *tag);
+		
 protected:
 	GtkWidget *dock;
 	std::map <std::string, WokjabDockWindow*> windows;

@@ -48,20 +48,35 @@ public:
 	static void Dock(GdlDockObject *gdldockobject, GdlDockObject *arg1, GdlDockPlacement arg2, GValue *arg3, WokjabDockWindow *c);
 	static void Unrealize(GtkWidget *widget, WokjabDockWindow *c);
 	static void Realize(GtkWidget *widget, WokjabDockWindow *c);
-		
+	static void LabelUnrealize(GtkWidget *widget, WokjabDockWindow *c);
+	static void LabelRealize(GtkWidget *widget, WokjabDockWindow *c);
+	
 	std::string GetType();
+	void SetUrgencyHint(WokXMLTag *tag);
+	void Activate();
+		
+	void Show(WokXMLTag *tag);
+	void Hide(WokXMLTag *tag);
 protected:
 	gulong sig1h;
 	gulong sig2h;
 	gulong sig3h;
+	gulong sig2lh;
+	gulong sig3lh;
+	
+	bool visible;
 		
 	WokXMLTag *inittag;		
 	GtkWidget *win;
-			
-	GtkWidget *mainsock;
+	GtkWidget *topdock;
 		
+	GtkWidget *mainsock;
 	GtkWidget *hiddenwindow;
 	GtkWidget *placeholder;
+
+	GtkWidget *labelsock;
+	GtkWidget *labelph;
+	GtkWidget *hiddenlabel;
 private:
 
 };

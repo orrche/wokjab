@@ -19,10 +19,12 @@
 
 #include "wokjab-dock-window.hpp"
 
-WokjabDockWindow::WokjabDockWindow(WLSignal *wls, WokXMLTag *in_inittag, GtkWidget *topdock, WokjabDockWindow *relative) : WLSignalInstance(wls),
-inittag(new WokXMLTag(*in_inittag))
+WokjabDockWindow::WokjabDockWindow(WLSignal *wls, WokXMLTag *in_inittag, GtkWidget *in_topdock, WokjabDockWindow *relative) : WLSignalInstance(wls),
+inittag(new WokXMLTag(*in_inittag)),
+topdock(in_topdock)
 {
 	std::cout << "Inittag: " << *inittag << std::endl;
+	visible = false;
 	GdlDockItemBehavior behavior = GDL_DOCK_ITEM_BEH_CANT_ICONIFY;
 	
 	if ( inittag->GetAttr("handle") == "false" )
@@ -31,6 +33,33 @@ inittag(new WokXMLTag(*in_inittag))
 	win = gdl_dock_item_new (inittag->GetAttr("id").c_str(), inittag->GetAttr("identifier").c_str(), behavior);
 	mainsock = gtk_socket_new();
 	placeholder = gtk_event_box_new();
+	
+		
+	if (! inittag->GetAttr("labelid").empty() )
+	{
+		std::cout << "Trying to mount the label..." << std::endl;
+		hiddenlabel = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		
+		labelsock = gtk_socket_new();
+		labelph = gtk_event_box_new();
+		
+		gtk_container_add(GTK_CONTAINER(hiddenlabel), labelsock);
+		gtk_widget_destroy(gdl_dock_item_get_tablabel(GDL_DOCK_ITEM(win)));
+		gdl_dock_item_set_tablabel (GDL_DOCK_ITEM(win), labelph);
+		
+		gtk_widget_show_all(labelph);
+		gtk_widget_show_all(hiddenlabel);
+		
+		sig2lh = g_signal_connect(G_OBJECT(labelph), "unrealize", G_CALLBACK (WokjabDockWindow::LabelUnrealize), this);
+		sig3lh = g_signal_connect(G_OBJECT(labelph), "realize", G_CALLBACK (WokjabDockWindow::LabelRealize), this);
+		
+		gtk_socket_add_id(GTK_SOCKET(labelsock), atoi(inittag->GetAttr("labelid").c_str()));
+		gtk_widget_show_all(labelsock);
+		gtk_widget_hide(hiddenlabel);
+
+	}
+	else
+		labelsock = NULL;
 	
 	sig1h = g_signal_connect(G_OBJECT(win), "detach", G_CALLBACK (WokjabDockWindow::Destroy), this);
 	sig2h = g_signal_connect(G_OBJECT(placeholder), "unrealize", G_CALLBACK (WokjabDockWindow::Unrealize), this);
@@ -42,6 +71,7 @@ inittag(new WokXMLTag(*in_inittag))
 	gtk_container_add (GTK_CONTAINER (win), placeholder);
 	
 	gdl_dock_add_item (GDL_DOCK (topdock), GDL_DOCK_ITEM (win), GDL_DOCK_TOP);
+		
 	if( relative )
 	{
 		
@@ -50,23 +80,40 @@ inittag(new WokXMLTag(*in_inittag))
 			placement = GDL_DOCK_BOTTOM;
 		else if ( inittag->GetAttr("placement") == "center" )
 			placement = GDL_DOCK_CENTER;
+
+		GdlDockObject *dockto = gdl_dock_object_get_parent_object(GDL_DOCK_OBJECT(relative->win));
+		if ( !dockto ) 
+		{
+			dockto = GDL_DOCK_OBJECT(relative->win);
+		}
 		
-		GdlDockObject *dockto = GDL_DOCK_OBJECT(relative->win);
 		
-		while( dockto && !GDL_DOCK_OBJECT(dockto) )
-			dockto = gdl_dock_object_get_parent_object(GDL_DOCK_OBJECT(dockto));
 		
-		std::cout << "1:" << GDL_IS_DOCK(relative->win) << std::endl;
-		std::cout << "2:" << GDL_IS_DOCK(gdl_dock_object_get_parent_object(GDL_DOCK_OBJECT(relative->win))) << std::endl;
-		std::cout << "3:" << GDL_IS_DOCK(gdl_dock_object_get_toplevel(GDL_DOCK_OBJECT(relative->win))) << std::endl;
-		//
+		
+		gdl_dock_item_dock_to (GDL_DOCK_ITEM (win), GDL_DOCK_ITEM(dockto), placement, -1);
+		
+		
+		
+		dockto = gdl_dock_object_get_parent_object(GDL_DOCK_OBJECT(relative->win));
 		if ( dockto ) 
-			gdl_dock_item_dock_to (GDL_DOCK_ITEM (win), GDL_DOCK_ITEM(dockto), placement, -1);
-		else
-			gdl_dock_item_dock_to (GDL_DOCK_ITEM (win), GDL_DOCK_ITEM(gdl_dock_object_get_toplevel(GDL_DOCK_OBJECT(relative->win))), placement, -1);
+		{
+			/* Take advantage of a bug in gdl that lets you put the tabs at top by specifying horizontal
+			 * and at the bottom by not touching it at all 
+			 * Horizontal most be specified before vertical tho if you want it there hehe.
+			 */
+			if ( inittag->GetAttr("orientation") != "bottom" )
+				g_object_set (dockto, "orientation", GTK_ORIENTATION_HORIZONTAL, NULL);
+			
+			if ( inittag->GetAttr("orientation") == "vertical" )
+				g_object_set (dockto, "orientation", GTK_ORIENTATION_VERTICAL, NULL);
+		}
+		
 	}
 	else
 		gdl_dock_item_dock_to (GDL_DOCK_ITEM (win), NULL, GDL_DOCK_FLOATING, -1);
+	
+
+	
 	
 	gtk_container_add(GTK_CONTAINER(hiddenwindow), mainsock);
 	gtk_socket_add_id(GTK_SOCKET(mainsock), atoi(inittag->GetAttr("id").c_str()));
@@ -81,15 +128,84 @@ WokjabDockWindow::~WokjabDockWindow()
 	WokXMLTag closetag(NULL, "close");
 	closetag.AddAttr("id", inittag->GetAttr("id"));
 
-	wls->SendSignal("GUI WindowDock Close " + inittag->GetAttr("id"), &closetag);
+	wls->SendSignal("Wokjab DockWindow Close " + inittag->GetAttr("id"), &closetag);
 		
 	g_signal_handler_disconnect (G_OBJECT(win), sig1h);
 	g_signal_handler_disconnect (G_OBJECT (placeholder), sig2h);
 	g_signal_handler_disconnect (G_OBJECT (placeholder), sig3h);
 	
+	if (! inittag->GetAttr("labelid").empty() )
+	{
+		g_signal_handler_disconnect (G_OBJECT (labelph), sig2lh);
+		g_signal_handler_disconnect (G_OBJECT (labelph), sig3lh);
+		gtk_widget_destroy(hiddenlabel);
+	}
 	gtk_widget_destroy(hiddenwindow);
 	
+	
+	Activate();
 	//gdl_dock_item_unbind(GDL_DOCK_ITEM(win));
+}
+
+void
+WokjabDockWindow::Activate()
+{
+	GdlDockObject *dock = GDL_DOCK_OBJECT(win);
+	GdlDockObject *child = dock;
+	
+	while( dock && !GDL_IS_DOCK(dock) )
+	{
+		child = dock;
+		dock = gdl_dock_object_get_parent_object(GDL_DOCK_OBJECT(dock));
+	}
+		
+	gdl_dock_object_present (gdl_dock_object_get_parent_object(GDL_DOCK_OBJECT(win)), GDL_DOCK_OBJECT(win));	
+	
+	GtkWidget *window = win;
+	
+	while ( window && !GTK_IS_WINDOW(window) )
+	{
+		window = gtk_widget_get_parent(window);
+	}
+	if ( GTK_IS_WINDOW(window) )
+	{	
+		gtk_window_present (GTK_WINDOW(window));
+	}
+}
+
+void
+WokjabDockWindow::SetUrgencyHint(WokXMLTag *tag)
+{
+	std::cout << "So we are getting here... ..." << *tag << std::endl;
+	std::cout << tag->GetFirstTag("urgency").GetAttr("data") << std::endl;
+	
+	GtkWidget *window = win;
+	while ( window && !GTK_IS_WINDOW(window) )
+	{
+		window = gtk_widget_get_parent(window);
+	}
+	
+	if ( GTK_IS_WINDOW(window) )
+	{	
+		if ( tag->GetFirstTag("urgency").GetAttr("data") != "false" )
+			gtk_window_set_urgency_hint (GTK_WINDOW(window), TRUE);
+		else
+			gtk_window_set_urgency_hint (GTK_WINDOW(window), FALSE);
+	}
+}
+
+void
+WokjabDockWindow::Hide(WokXMLTag *tag)
+{
+	gdl_dock_item_dock_to (GDL_DOCK_ITEM (win), GDL_DOCK_ITEM(topdock), GDL_DOCK_TOP, -1);
+	gtk_widget_hide(win);
+}
+
+void
+WokjabDockWindow::Show(WokXMLTag *tag)
+{
+	gdl_dock_item_dock_to (GDL_DOCK_ITEM (win), NULL, GDL_DOCK_FLOATING, -1);
+	gtk_widget_show(win);
 }
 
 std::string
@@ -97,6 +213,21 @@ WokjabDockWindow::GetType()
 {
 	return inittag->GetAttr("type");
 }
+
+
+void
+WokjabDockWindow::LabelUnrealize(GtkWidget *widget, WokjabDockWindow *c)  
+{
+	gtk_widget_reparent(c->labelsock, c->hiddenlabel);
+}
+
+void
+WokjabDockWindow::LabelRealize(GtkWidget *widget, WokjabDockWindow *c)
+{
+	gtk_widget_reparent(c->labelsock, c->labelph);
+	gtk_widget_show_all(c->labelsock);
+}
+
 
 void
 WokjabDockWindow::Unrealize(GtkWidget *widget, WokjabDockWindow *c)  

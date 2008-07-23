@@ -39,6 +39,9 @@ WokjabDockWindowHandler::WokjabDockWindowHandler(WLSignal *wls) : WoklibPlugin(w
 		
 		/* create the dock */
 		dock = gdl_dock_new ();
+		GdlDockMaster *master = GDL_DOCK_OBJECT_GET_MASTER (dock);
+		g_object_set (master, "switcher-style", GDL_SWITCHER_STYLE_TABS, NULL);
+		
 		GtkWidget *box = gtk_hbox_new( FALSE, 2);
 		
 		/* ... and the layout manager */
@@ -57,32 +60,21 @@ WokjabDockWindowHandler::WokjabDockWindowHandler(WLSignal *wls) : WoklibPlugin(w
 		gtk_widget_hide(win);
 		
 		//gdl_dock_layout_run_manager (layout);
-		
-		
 		EXP_SIGHOOK("Wokjab DockWindow Add", &WokjabDockWindowHandler::Add, 1000);
 		EXP_SIGHOOK("Wokjab DockWindow Destroy", &WokjabDockWindowHandler::Destroy, 1000);
+		EXP_SIGHOOK("Wokjab DockWindow Activate", &WokjabDockWindowHandler::Activate, 1000);
+		EXP_SIGHOOK("Wokjab DockWindow SetUrgencyHint", &WokjabDockWindowHandler::SetUrgency, 1000);
+		
+		EXP_SIGHOOK("Wokjab DockWindow Hide", &WokjabDockWindowHandler::Hide, 1000);
+		EXP_SIGHOOK("Wokjab DockWindow Show", &WokjabDockWindowHandler::Show, 1000);
+		
 		
 		EXP_SIGHOOK("GUI WindowDock AddWidget", &WokjabDockWindowHandler::AddChat, 900);
-		EXP_SIGHOOK("GUI Window AddWidget", &WokjabDockWindowHandler::AddRoster, 900);
+		EXP_SIGHOOK("GUI WindowDock Activate", &WokjabDockWindowHandler::ActivateChat, 900);
+		EXP_SIGHOOK("GUI WindowDock HideWidget", &WokjabDockWindowHandler::HideChat, 900);
+		EXP_SIGHOOK("GUI WindowDock ShowWidget", &WokjabDockWindowHandler::ShowChat, 900);
 		
-		/*
-		WokXMLTag item1("window");
-		item1.AddAttr("id", "1");
-		item1.AddAttr("title", "Hello");
-		item1.AddAttr("description", "Yay first window...");
-		wls->SendSignal("Wokjab DockWindow Add", item1);
-		
-		WokXMLTag item2("window");
-		item2.AddAttr("id", "2");
-		item2.AddAttr("title", "Bye");
-		item2.AddAttr("description", "Bye bye world");
-		wls->SendSignal("Wokjab DockWindow Add", item2);
-		*/
-		
-		/*
-		EXP_SIGHOOK("Wokjab DockWindow Init", Init, 1000);
-		
-		*/
+//		EXP_SIGHOOK("GUI Window AddWidget", &WokjabDockWindowHandler::AddRoster, 900);
 	}
 }
 
@@ -109,9 +101,77 @@ WokjabDockWindowHandler::AddRoster(WokXMLTag *tag)
 }
 
 int
+WokjabDockWindowHandler::SetUrgency(WokXMLTag *tag)
+{
+	if ( windows.find(tag->GetAttr("id"))  != windows.end() ) 
+	{
+		windows[tag->GetAttr("id")]->SetUrgencyHint(tag);
+	}
+	
+	return 1;
+}
+
+
+int
+WokjabDockWindowHandler::Hide(WokXMLTag *tag)
+{
+	if ( windows.find(tag->GetAttr("id"))  != windows.end() ) 
+	{
+		windows[tag->GetAttr("id")]->Hide(tag);
+	}
+	return 1;
+}
+
+int 
+WokjabDockWindowHandler::HideChat(WokXMLTag *tag)
+{
+	tag->AddAttr("id", tag->GetAttr("widget"));
+	wls->SendSignal("Wokjab DockWindow Hide",tag);
+	std::cout << ":::" << *tag << std::endl;
+	return 0;
+}
+
+
+int
+WokjabDockWindowHandler::Show(WokXMLTag *tag)
+{
+	if ( windows.find(tag->GetAttr("id"))  != windows.end() ) 
+	{
+		windows[tag->GetAttr("id")]->Show(tag);
+	}
+	return 1;
+}
+
+int 
+WokjabDockWindowHandler::ShowChat(WokXMLTag *tag)
+{
+	tag->AddAttr("id", tag->GetAttr("widget"));
+	wls->SendSignal("Wokjab DockWindow Show",tag);
+	return 0;
+}
+
+int
+WokjabDockWindowHandler::Activate(WokXMLTag *tag)
+{
+	if ( windows.find(tag->GetAttr("id"))  != windows.end() ) 
+	{
+		windows[tag->GetAttr("id")]->Activate();
+	}
+	return 1;
+}
+
+int 
+WokjabDockWindowHandler::ActivateChat(WokXMLTag *tag)
+{
+	wls->SendSignal("Wokjab DockWindow Activate",tag);
+	return 0;
+}
+
+int
 WokjabDockWindowHandler::AddChat(WokXMLTag *tag)
 {
 	tag->AddAttr("id", tag->GetAttr("mainwidget"));	
+	tag->AddAttr("labelid", tag->GetAttr("labelwidget"));
 	tag->AddAttr("type", "chat");
 	tag->AddAttr("handle", "true");
 	tag->AddAttr("placement", "center");
