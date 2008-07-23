@@ -1,6 +1,47 @@
-2008-02-24  gettextize  <bug-gnu-gettext@gnu.org>
+2008-07-20  ghostelf
 
-	* Makefile.am (ACLOCAL_AMFLAGS): New variable.
-	(EXTRA_DIST): New variable.
-	* configure.ac (AC_CONFIG_FILES): Add po/Makefile.in.
+	* configure.ac, plugins/JabberRoster/JabberRoster.cc,
+	  plugins/JabberRoster/User.cc, plugins/JabberRoster/User.h: Jabber
+	  roster now have configureable look on the jid's
+
+2008-07-21  ghostelf
+
+	* plugins/GPGenc/g-p-genc.cpp, plugins/GPGenc/g-p-genc.hpp: Now
+	  Configurable to disable gpg encryption, enabling it again will
+	  bring
+	  up the password request window again
+	* wokjab/include/Resource.h, wokjab/src/GUIWindow.cc,
+	  wokjab/src/Resource.cc, wokjab/src/Roster.cc: Fixed problem with
+	  bringing up the connect screen via changing presence
+	  ... the fix disables the feature that it would turn back to
+	  offline
+	  status, no idea whats really causing it to crash to switch to
+	  other
+	  status then offline seamed fine
+	* configure.ac, plugins/GPGenc/g-p-genc.cpp,
+	  plugins/JabberRoster/Group.cc, plugins/JabberRoster/Group.h,
+	  plugins/JabberRoster/JabberRoster.cc,
+	  plugins/JabberRoster/JabberRoster.h,
+	  plugins/JabberRoster/JabberSession.cc,
+	  plugins/JabberRoster/JabberSession.h,
+	  plugins/JabberRoster/User.cc, plugins/JabberRoster/User.h,
+	  plugins/jep0153-VCardAvatar/VCardAvatar.cc,
+	  plugins/normal/Tooltip/Tooltip.cc,
+	  plugins/normal/Tooltip/tooltip.glade, wokjab/src/GUIWindow.cc,
+	  wokjab/src/Initiat.cc: ... lots of changes
+
+2008-07-22  ghostelf
+
+	* wokjab/src/GUIWindow.cc: Corrected spelling error
+
+2008-07-23  ghostelf
+
+	* plugins/normal/WokjabDockWindow/wokjab-dock-window-handler.cpp,
+	  plugins/normal/WokjabDockWindow/wokjab-dock-window-handler.hpp,
+	  plugins/normal/WokjabDockWindow/wokjab-dock-window.cpp,
+	  plugins/normal/WokjabDockWindow/wokjab-dock-window.hpp: Fixed
+	  this soo it should be working good now
+	* plugins/JabberRoster/JabberRoster.cc: Removed debug output
+	* wokjab/src/GUIMessageWidget.cc: Added the new dock as the
+	  standard, hope its stabile enough now
 
