@@ -272,19 +272,21 @@ from(in_from)
 		contag.AddAttr("identifier", from);
 	else
 		contag.AddAttr("identifier", nick);
-	contag.AddAttr("session", session);
+//	contag.AddAttr("session", session);
 	sprintf(buf, "%d", gtk_plug_get_id(GTK_PLUG(mainwindowplug)));
-	contag.AddAttr("mainwidget", buf);
+	contag.AddAttr("id", buf);
 	sprintf(buf, "%d", gtk_plug_get_id(GTK_PLUG(labelplug)));
-	contag.AddAttr("labelwidget", buf);
-
-	wls->SendSignal("GUI WindowDock AddWidget",&contag);
+	contag.AddAttr("labelid", buf);
+	contag.AddAttr("type", "chat");
+	contag.AddAttr("handle", "true");
+	
+	wls->SendSignal("Wokjab DockWindow Add",&contag);
 
 	g_signal_connect ((gpointer) mainwindowplug, "destroy",
                    G_CALLBACK (GUIMessageWidget::Destroy),
                    this);
 	std::stringstream sig;
-	sig << "GUI WindowDock Close " << gtk_plug_get_id(GTK_PLUG(mainwindowplug));
+	sig << "Wokjab DockWindow Close " << gtk_plug_get_id(GTK_PLUG(mainwindowplug));
 	EXP_SIGHOOK(sig.str(), &GUIMessageWidget::Close, 500);
 
 	gtk_widget_grab_focus(textview2);
@@ -654,6 +656,14 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 			item.AddAttr("session", tag->GetAttr("session"));
 			
 			wls->SendSignal("Jabber Event Add", &eventtag);
+			
+			
+			WokXMLTag dockwid("dock");
+			std::stringstream str;
+			str << gtk_plug_get_id(GTK_PLUG(mainwindowplug));
+			dockwid.AddAttr("id", str.str());
+			dockwid.GetFirstTag("urgency").AddAttr("data", "true");
+			wls->SendSignal("Wokjab DockWindow SetUrgencyHint", dockwid);
 
 		}
 	}
@@ -823,7 +833,7 @@ GUIMessageWidget::Activate(WokXMLTag *tag)
 	WokXMLTag acttag(NULL, "window");
 	str << gtk_plug_get_id(GTK_PLUG(mainwindowplug));
 	acttag.AddAttr("id", str.str());
-	wls->SendSignal("GUI WindowDock Activate", &acttag);
+	wls->SendSignal("Wokjab DockWindow Activate", &acttag);
 	return true;
 }
 
@@ -975,6 +985,15 @@ GUIMessageWidget::focus_event(GtkWidget *widget, GdkEventFocus *event, GUIMessag
 
 			gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (c->textview1),
 				c->end_mark, .4, TRUE, 1, 1);
+			
+			
+						
+			WokXMLTag dockwid("dock");
+			std::stringstream str;
+			str << gtk_plug_get_id(GTK_PLUG(c->mainwindowplug));
+			dockwid.AddAttr("id", str.str());
+			dockwid.GetFirstTag("urgency").AddAttr("data", "false");
+			c->wls->SendSignal("Wokjab DockWindow SetUrgencyHint", dockwid);
 		}
 	}
 	else
