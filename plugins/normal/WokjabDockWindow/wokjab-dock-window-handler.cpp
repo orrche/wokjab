@@ -21,61 +21,46 @@
 
 WokjabDockWindowHandler::WokjabDockWindowHandler(WLSignal *wls) : WoklibPlugin(wls)
 {
-	WokXMLTag wargs("args");
-	wls->SendSignal("Wokjab GetArgs", wargs);
 	
-	bool wdw_debug = false;
-	std::list < WokXMLTag *>::iterator argiter;
+	GtkWidget *win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	
+	/* create the dock */
+	dock = gdl_dock_new ();
+	GdlDockMaster *master = GDL_DOCK_OBJECT_GET_MASTER (dock);
+	g_object_set (master, "switcher-style", GDL_SWITCHER_STYLE_TABS, NULL);
+	
+	GtkWidget *box = gtk_hbox_new( FALSE, 2);
+	
+	/* ... and the layout manager */
+	GdlDockLayout *layout = gdl_dock_layout_new (GDL_DOCK (dock));
 
-	for ( argiter = wargs.GetFirstTag("args").GetTagList("singlearg").begin() ; argiter != wargs.GetFirstTag("args").GetTagList("singlearg").end() ; argiter++)
-	{
-		if ( (*argiter)->GetAttr("data") == "d" )
-			wdw_debug = true;
-	}
+	/* create the dockbar */
+	GtkWidget *dockbar = gdl_dock_bar_new (GDL_DOCK (dock));
+	gdl_dock_bar_set_style(GDL_DOCK_BAR(dockbar), GDL_DOCK_BAR_TEXT);
 
-	if ( wdw_debug ) 
-	{	
-		GtkWidget *win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-		
-		/* create the dock */
-		dock = gdl_dock_new ();
-		GdlDockMaster *master = GDL_DOCK_OBJECT_GET_MASTER (dock);
-		g_object_set (master, "switcher-style", GDL_SWITCHER_STYLE_TABS, NULL);
-		
-		GtkWidget *box = gtk_hbox_new( FALSE, 2);
-		
-		/* ... and the layout manager */
-		GdlDockLayout *layout = gdl_dock_layout_new (GDL_DOCK (dock));
+	gtk_container_add(GTK_CONTAINER(win), box);
+	//gtk_box_pack_start(GTK_BOX(box), dockbar, FALSE, FALSE, 0);
+	gtk_box_pack_end(GTK_BOX(box), dock, TRUE, TRUE, 0);
+	
+	gtk_widget_show_all(dockbar);
+	gtk_widget_show_all(box);
+	gtk_widget_hide(win);
+	
+	//gdl_dock_layout_run_manager (layout);
+	EXP_SIGHOOK("Wokjab DockWindow Add", &WokjabDockWindowHandler::Add, 1000);
+	EXP_SIGHOOK("Wokjab DockWindow Destroy", &WokjabDockWindowHandler::Destroy, 1000);
+	EXP_SIGHOOK("Wokjab DockWindow Activate", &WokjabDockWindowHandler::Activate, 1000);
+	EXP_SIGHOOK("Wokjab DockWindow SetUrgencyHint", &WokjabDockWindowHandler::SetUrgency, 1000);
+	
+	EXP_SIGHOOK("Wokjab DockWindow Hide", &WokjabDockWindowHandler::Hide, 1000);
+	EXP_SIGHOOK("Wokjab DockWindow Show", &WokjabDockWindowHandler::Show, 1000);
+	
+	
+	EXP_SIGHOOK("GUI WindowDock AddWidget", &WokjabDockWindowHandler::AddChat, 900);
+	EXP_SIGHOOK("GUI WindowDock Activate", &WokjabDockWindowHandler::ActivateChat, 900);
+	EXP_SIGHOOK("GUI WindowDock HideWidget", &WokjabDockWindowHandler::HideChat, 900);
+	EXP_SIGHOOK("GUI WindowDock ShowWidget", &WokjabDockWindowHandler::ShowChat, 900);
 
-		/* create the dockbar */
-		GtkWidget *dockbar = gdl_dock_bar_new (GDL_DOCK (dock));
-		gdl_dock_bar_set_style(GDL_DOCK_BAR(dockbar), GDL_DOCK_BAR_TEXT);
-
-		gtk_container_add(GTK_CONTAINER(win), box);
-		//gtk_box_pack_start(GTK_BOX(box), dockbar, FALSE, FALSE, 0);
-		gtk_box_pack_end(GTK_BOX(box), dock, TRUE, TRUE, 0);
-		
-		gtk_widget_show_all(dockbar);
-		gtk_widget_show_all(box);
-		gtk_widget_hide(win);
-		
-		//gdl_dock_layout_run_manager (layout);
-		EXP_SIGHOOK("Wokjab DockWindow Add", &WokjabDockWindowHandler::Add, 1000);
-		EXP_SIGHOOK("Wokjab DockWindow Destroy", &WokjabDockWindowHandler::Destroy, 1000);
-		EXP_SIGHOOK("Wokjab DockWindow Activate", &WokjabDockWindowHandler::Activate, 1000);
-		EXP_SIGHOOK("Wokjab DockWindow SetUrgencyHint", &WokjabDockWindowHandler::SetUrgency, 1000);
-		
-		EXP_SIGHOOK("Wokjab DockWindow Hide", &WokjabDockWindowHandler::Hide, 1000);
-		EXP_SIGHOOK("Wokjab DockWindow Show", &WokjabDockWindowHandler::Show, 1000);
-		
-		
-		EXP_SIGHOOK("GUI WindowDock AddWidget", &WokjabDockWindowHandler::AddChat, 900);
-		EXP_SIGHOOK("GUI WindowDock Activate", &WokjabDockWindowHandler::ActivateChat, 900);
-		EXP_SIGHOOK("GUI WindowDock HideWidget", &WokjabDockWindowHandler::HideChat, 900);
-		EXP_SIGHOOK("GUI WindowDock ShowWidget", &WokjabDockWindowHandler::ShowChat, 900);
-		
-//		EXP_SIGHOOK("GUI Window AddWidget", &WokjabDockWindowHandler::AddRoster, 900);
-	}
 }
 
 #include <sstream>

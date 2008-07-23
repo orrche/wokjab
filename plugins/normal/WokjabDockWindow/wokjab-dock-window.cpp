@@ -87,12 +87,7 @@ topdock(in_topdock)
 			dockto = GDL_DOCK_OBJECT(relative->win);
 		}
 		
-		
-		
-		
 		gdl_dock_item_dock_to (GDL_DOCK_ITEM (win), GDL_DOCK_ITEM(dockto), placement, -1);
-		
-		
 		
 		dockto = gdl_dock_object_get_parent_object(GDL_DOCK_OBJECT(relative->win));
 		if ( dockto ) 
