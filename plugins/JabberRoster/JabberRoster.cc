@@ -125,8 +125,6 @@ JabberRoster::ReadConfig(WokXMLTag *tag)
 int
 JabberRoster::ParseXMLText(WokXMLTag *tag)
 {
-	std::cout << "Parsing " << *tag << std::endl;
-	
 	std::list <WokXMLObject *>::iterator oiter;
 	for ( oiter = tag->GetFirstTag("markup").GetItemList().begin() ; oiter != tag->GetFirstTag("markup").GetItemList().end() ; oiter++)
 	{
