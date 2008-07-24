@@ -19,13 +19,12 @@
 
 #include "wokjab-dock-window.hpp"
 
-WokjabDockWindow::WokjabDockWindow(WLSignal *wls, WokXMLTag *in_inittag, GtkWidget *in_topdock, WokjabDockWindow *relative) : WLSignalInstance(wls),
+WokjabDockWindow::WokjabDockWindow(WLSignal *wls, WokXMLTag *in_inittag, GtkWidget *in_topdock, WokjabDockWindow *relative, GdlDockLayout *in_layout) : WLSignalInstance(wls),
 inittag(new WokXMLTag(*in_inittag)),
+layout(in_layout),
 topdock(in_topdock)
 {
-	std::cout << "Inittag: " << *inittag << std::endl;
-	visible = false;
-	GdlDockItemBehavior behavior = GDL_DOCK_ITEM_BEH_CANT_ICONIFY;
+	GdlDockItemBehavior behavior = GDL_DOCK_ITEM_BEH_NORMAL;
 	
 	if ( inittag->GetAttr("handle") == "false" )
 		behavior = (GdlDockItemBehavior) (behavior | GDL_DOCK_ITEM_BEH_NO_GRIP);
@@ -37,7 +36,6 @@ topdock(in_topdock)
 		
 	if (! inittag->GetAttr("labelid").empty() )
 	{
-		std::cout << "Trying to mount the label..." << std::endl;
 		hiddenlabel = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 		
 		labelsock = gtk_socket_new();
@@ -61,7 +59,7 @@ topdock(in_topdock)
 	else
 		labelsock = NULL;
 	
-	sig1h = g_signal_connect(G_OBJECT(win), "detach", G_CALLBACK (WokjabDockWindow::Destroy), this);
+	sig1h = g_signal_connect_after(G_OBJECT(win), "detach", G_CALLBACK (WokjabDockWindow::Destroy), this);
 	sig2h = g_signal_connect(G_OBJECT(placeholder), "unrealize", G_CALLBACK (WokjabDockWindow::Unrealize), this);
 	sig3h = g_signal_connect(G_OBJECT(placeholder), "realize", G_CALLBACK (WokjabDockWindow::Realize), this);
 	
@@ -119,7 +117,7 @@ topdock(in_topdock)
 }
 
 WokjabDockWindow::~WokjabDockWindow()
-{
+{	
 	WokXMLTag closetag(NULL, "close");
 	closetag.AddAttr("id", inittag->GetAttr("id"));
 
@@ -136,15 +134,14 @@ WokjabDockWindow::~WokjabDockWindow()
 		gtk_widget_destroy(hiddenlabel);
 	}
 	gtk_widget_destroy(hiddenwindow);
-	
-	
-	Activate();
-	//gdl_dock_item_unbind(GDL_DOCK_ITEM(win));
 }
 
 void
 WokjabDockWindow::Activate()
 {
+	if ( GDL_DOCK_ITEM_ICONIFIED(win) )
+		Show(NULL);
+	
 	GdlDockObject *dock = GDL_DOCK_OBJECT(win);
 	GdlDockObject *child = dock;
 	
@@ -171,9 +168,6 @@ WokjabDockWindow::Activate()
 void
 WokjabDockWindow::SetUrgencyHint(WokXMLTag *tag)
 {
-	std::cout << "So we are getting here... ..." << *tag << std::endl;
-	std::cout << tag->GetFirstTag("urgency").GetAttr("data") << std::endl;
-	
 	GtkWidget *window = win;
 	while ( window && !GTK_IS_WINDOW(window) )
 	{
@@ -189,18 +183,39 @@ WokjabDockWindow::SetUrgencyHint(WokXMLTag *tag)
 	}
 }
 
+bool
+WokjabDockWindow::Visible()
+{
+	return GDL_DOCK_ITEM_ICONIFIED(win) == FALSE;
+}
+
 void
 WokjabDockWindow::Hide(WokXMLTag *tag)
 {
-	gdl_dock_item_dock_to (GDL_DOCK_ITEM (win), GDL_DOCK_ITEM(topdock), GDL_DOCK_TOP, -1);
-	gtk_widget_hide(win);
+	if ( !GDL_DOCK_ITEM_ICONIFIED(win) ) 
+		gdl_dock_item_iconify_item(GDL_DOCK_ITEM(win));
 }
 
 void
 WokjabDockWindow::Show(WokXMLTag *tag)
 {
-	gdl_dock_item_dock_to (GDL_DOCK_ITEM (win), NULL, GDL_DOCK_FLOATING, -1);
-	gtk_widget_show(win);
+	if ( GDL_DOCK_ITEM_ICONIFIED(win) )
+	{
+		gdl_dock_item_show_item(GDL_DOCK_ITEM (win));
+		gtk_widget_show(win);
+	}
+	
+	GtkWidget *window = win;
+	while ( window && window != topdock )
+	{
+		window = gtk_widget_get_parent(window);
+	}
+	
+	if ( window == topdock )
+	{
+		gdl_dock_item_dock_to (GDL_DOCK_ITEM (win), NULL, GDL_DOCK_FLOATING, -1);
+	}
+	
 }
 
 std::string
@@ -242,9 +257,12 @@ WokjabDockWindow::Destroy(GdlDockObject *gdldockobject, gboolean arg1, WokjabDoc
 {
 	if ( arg1 == 1 )
 	{
-		WokXMLTag destroy("window");
-		destroy.AddAttr("id", c->inittag->GetAttr("id"));
-		
-		c->wls->SendSignal("Wokjab DockWindow Destroy", destroy);
-	}	
+		if ( !GDL_DOCK_ITEM_ICONIFIED(c->win) )
+		{
+			WokXMLTag destroy("window");
+			destroy.AddAttr("id", c->inittag->GetAttr("id"));
+			
+			c->wls->SendSignal("Wokjab DockWindow Destroy", destroy);
+		}
+	}
 }

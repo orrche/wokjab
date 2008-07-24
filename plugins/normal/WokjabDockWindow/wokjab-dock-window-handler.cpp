@@ -21,7 +21,6 @@
 
 WokjabDockWindowHandler::WokjabDockWindowHandler(WLSignal *wls) : WoklibPlugin(wls)
 {
-	
 	GtkWidget *win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	
 	/* create the dock */
@@ -32,7 +31,7 @@ WokjabDockWindowHandler::WokjabDockWindowHandler(WLSignal *wls) : WoklibPlugin(w
 	GtkWidget *box = gtk_hbox_new( FALSE, 2);
 	
 	/* ... and the layout manager */
-	GdlDockLayout *layout = gdl_dock_layout_new (GDL_DOCK (dock));
+	layout = gdl_dock_layout_new (GDL_DOCK (dock));
 
 	/* create the dockbar */
 	GtkWidget *dockbar = gdl_dock_bar_new (GDL_DOCK (dock));
@@ -55,11 +54,12 @@ WokjabDockWindowHandler::WokjabDockWindowHandler(WLSignal *wls) : WoklibPlugin(w
 	EXP_SIGHOOK("Wokjab DockWindow Hide", &WokjabDockWindowHandler::Hide, 1000);
 	EXP_SIGHOOK("Wokjab DockWindow Show", &WokjabDockWindowHandler::Show, 1000);
 	
-	
+	/*
 	EXP_SIGHOOK("GUI WindowDock AddWidget", &WokjabDockWindowHandler::AddChat, 900);
 	EXP_SIGHOOK("GUI WindowDock Activate", &WokjabDockWindowHandler::ActivateChat, 900);
 	EXP_SIGHOOK("GUI WindowDock HideWidget", &WokjabDockWindowHandler::HideChat, 900);
 	EXP_SIGHOOK("GUI WindowDock ShowWidget", &WokjabDockWindowHandler::ShowChat, 900);
+	*/
 
 }
 
@@ -112,7 +112,6 @@ WokjabDockWindowHandler::HideChat(WokXMLTag *tag)
 {
 	tag->AddAttr("id", tag->GetAttr("widget"));
 	wls->SendSignal("Wokjab DockWindow Hide",tag);
-	std::cout << ":::" << *tag << std::endl;
 	return 0;
 }
 
@@ -174,13 +173,16 @@ WokjabDockWindowHandler::Add(WokXMLTag *tag)
 	{
 		if ( iter->second->GetType() == tag->GetAttr("type") )
 		{
-			windows[tag->GetAttr("id")] = new WokjabDockWindow(wls, tag, dock, iter->second);	
-			break;
+			if ( iter->second->Visible() )
+			{
+				windows[tag->GetAttr("id")] = new WokjabDockWindow(wls, tag, dock, iter->second, layout);	
+				break;
+			}
 		}
 	}
 	if ( iter == windows.end() )
 	{
-		windows[tag->GetAttr("id")] = new WokjabDockWindow(wls, tag, dock, NULL);
+		windows[tag->GetAttr("id")] = new WokjabDockWindow(wls, tag, dock, NULL, layout);
 	}
 		
 	return 1;

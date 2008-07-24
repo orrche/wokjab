@@ -41,7 +41,7 @@ using namespace Woklib;
 class WokjabDockWindow: public WLSignalInstance
 {
 public:
-	WokjabDockWindow(WLSignal *wls, WokXMLTag *in_inittag, GtkWidget *topdock, WokjabDockWindow *relative);
+	WokjabDockWindow(WLSignal *wls, WokXMLTag *in_inittag, GtkWidget *topdock, WokjabDockWindow *relative, GdlDockLayout *layout);
 	~WokjabDockWindow();
 		
 	static void Destroy(GdlDockObject *gdldockobject, gboolean arg1, WokjabDockWindow *c);
@@ -55,6 +55,7 @@ public:
 	void SetUrgencyHint(WokXMLTag *tag);
 	void Activate();
 		
+	bool Visible();
 	void Show(WokXMLTag *tag);
 	void Hide(WokXMLTag *tag);
 protected:
@@ -64,9 +65,8 @@ protected:
 	gulong sig2lh;
 	gulong sig3lh;
 	
-	bool visible;
-		
-	WokXMLTag *inittag;		
+	WokXMLTag *inittag;
+	GdlDockLayout *layout;
 	GtkWidget *win;
 	GtkWidget *topdock;
 		

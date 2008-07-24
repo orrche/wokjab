@@ -56,6 +56,7 @@ public:
 		
 protected:
 	GtkWidget *dock;
+	GdlDockLayout *layout;
 	std::map <std::string, WokjabDockWindow*> windows;
 		
 		
