@@ -92,21 +92,24 @@ GroupChat::Join(WokXMLTag *tag)
 	contag.AddAttr("identifier", roomjid);
 	contag.AddAttr("session", tag->GetAttr("session"));
 	sprintf(buf, "%d", wid->GetWidget());
-	contag.AddAttr("mainwidget", buf);
+	contag.AddAttr("id", buf);
 	sprintf(buf, "%d", wid->GetLabel());
-	contag.AddAttr("labelwidget", buf);
+	contag.AddAttr("labelid", buf);
+	contag.AddAttr("type", "chat");
+	contag.AddAttr("handle", "true");
+	contag.AddAttr("placement", "center");
 	contag.AddAttr("close_signal", "close_muc_dialog");
 	contag.AddAttr("minimize", tag->GetAttr("minimize"));
 
-	wls->SendSignal("GUI WindowDock AddWidget",&contag);
+	wls->SendSignal("Wokjab DockWindow Add",&contag);
 
-	EXP_SIGHOOK(std::string("GUI WindowDock Close ") + contag.GetAttr("mainwidget"), &GroupChat::CloseDialog, 500);
+	EXP_SIGHOOK(std::string("Wokjab DockWindow Close ") + contag.GetAttr("id"), &GroupChat::CloseDialog, 500);
 //	EXP_SIGHOOK(std::string("GUI WindowDock ReConnect ") + contag.GetAttr("mainwidget"), &GroupChat::ReConnect, 500);
 	
 	rooms[tag->GetAttr("session")][roomjid] = wid;
-	rosterrooms[tag->GetAttr("session")][roomjid] = new GroupChatRoster(wls, roomjid, contag.GetAttr("mainwidget"), tag->GetAttr("nick"));
-	roomids[contag.GetAttr("mainwidget")].push_back(tag->GetAttr("session"));
-	roomids[contag.GetAttr("mainwidget")].push_back(roomjid);
+	rosterrooms[tag->GetAttr("session")][roomjid] = new GroupChatRoster(wls, roomjid, contag.GetAttr("id"), tag->GetAttr("nick"));
+	roomids[contag.GetAttr("id")].push_back(tag->GetAttr("session"));
+	roomids[contag.GetAttr("id")].push_back(roomjid);
 	
 	
 	return 1;

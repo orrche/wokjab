@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2003-2008  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -112,21 +112,16 @@ session(session)
 	// The label
 	GtkWidget *label_hbox;
 	GtkWidget *label_image;
-	GtkWidget *minimize_button;
 	label_image = gtk_image_new_from_file(PACKAGE_DATA_DIR"/wokjab/groupchat/wokjab/gicon.png");
 	label_hbox = gtk_hbox_new(FALSE, 2);
 	tooltip = gtk_tooltips_new();
 	label_eventbox = gtk_event_box_new();
 	label_label = gtk_label_new(roomjid.substr(0, roomjid.find("@")).c_str());
-	minimize_button = gtk_button_new_with_label("_");
 	gtk_box_pack_start(GTK_BOX(label_hbox), label_image, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(label_hbox), label_label, TRUE, TRUE, 0);
-	gtk_box_pack_end(GTK_BOX(label_hbox), minimize_button, FALSE, FALSE, 0);
 	gtk_tooltips_set_tip(tooltip, label_eventbox, roomjid.c_str(), roomjid.c_str());
 	gtk_container_add(GTK_CONTAINER(label_eventbox), label_hbox);
-	g_signal_connect((gpointer) minimize_button, "clicked",
-									G_CALLBACK (GroupChatWidget::Minimize_button), this);
-
+	
   	gtk_text_buffer_create_tag (outputbuffer, "center", "justification", GTK_JUSTIFY_CENTER, NULL);
 	Defocus();
 
@@ -243,17 +238,6 @@ GroupChatWidget::Close(WokXMLTag *tag)
 {
 	delete this;
 	return 1;
-}
-
-void
-GroupChatWidget::Minimize_button(GtkButton *button, GroupChatWidget *c)
-{
-	char buf[10];
-	sprintf(buf, "%d", c->GetWidget());
-	WokXMLTag widget(NULL, "widget");
-	widget.AddAttr("widget", buf);
-
-	c->wls->SendSignal("GUI WindowDock HideWidget", widget);
 }
 
 void
@@ -567,6 +551,8 @@ GroupChatWidget::GetTimeStamp(WokXMLTag& tag_body)
 #ifdef __WIN32
 #else
 		struct tm tp;
+		if ( stamp[stamp.size()-1] != 'Z' )
+			stamp+="Z";
 		strptime (stamp.c_str(), "%Y%m%dT%T", &tp);
 
 		ret = GetTimeStamp(mktime(&tp));

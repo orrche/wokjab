@@ -54,7 +54,6 @@ class GroupChatWidget : public WLSignalInstance
 		static gboolean refocus ( GtkWidget *widget, GdkEventFocus *event, GroupChatWidget *c);
 		static gboolean Scroll (GtkWidget *widget, GdkEventScroll *event, GroupChatWidget *c);
 		static void Destroy(GtkWidget *widget, GroupChatWidget *c);
-		static void Minimize_button(GtkButton *button, GroupChatWidget *c);
 	protected:
 		std::string GetTimeStamp(time_t t);
 		std::string GetTimeStamp(WokXMLTag &bodytag);

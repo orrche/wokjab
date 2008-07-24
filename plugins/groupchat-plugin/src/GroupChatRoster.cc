@@ -1,3 +1,6 @@
+/***************************************************************************
+ *  Copyright (C) 2003-2008  Kent Gustavsson <nedo80@gmail.com>
+ ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -91,9 +94,9 @@ int
 GroupChatRoster::Activate(WokXMLTag *tag)
 {
 	WokXMLTag widget(NULL, "widget");
-	widget.AddAttr("widget", mainwid);
+	widget.AddAttr("id", mainwid);
 	
-	wls->SendSignal("GUI WindowDock ShowWidget", widget);
+	wls->SendSignal("Wokjab DockWindow Activate", widget);
 	return 1;
 }
 
