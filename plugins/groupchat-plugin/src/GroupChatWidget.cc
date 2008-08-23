@@ -553,9 +553,9 @@ GroupChatWidget::GetTimeStamp(WokXMLTag& tag_body)
 		struct tm tp;
 		if ( stamp[stamp.size()-1] != 'Z' )
 			stamp+="Z";
-		strptime (stamp.c_str(), "%Y%m%dT%T", &tp);
+		strptime (stamp.c_str(), "%Y%m%dT%T%Z", &tp);
 
-		ret = GetTimeStamp(mktime(&tp));
+		ret = GetTimeStamp(timegm(&tp));
 #endif
 	}
 	else

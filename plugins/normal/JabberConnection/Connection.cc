@@ -80,12 +80,12 @@ Connection::~Connection()
 	close (socket_nr);
 	delete xmlinput;
 	delete xmloutput;
+	
 }
 
 int
 Connection::Reset(WokXMLTag *tag)
 {
-//	delete xmlinput;
 	xmlinput = new XML_Input(this, wls, session);
 	if ( ssl )
 		xmlinput->SetSSL(ssl->ssl);
@@ -99,8 +99,10 @@ Connection::ReadData(WokXMLTag *tag)
 
 	xi = xmlinput;
 	if (!xmlinput->read_data (get_socket ()))
+	{
 		tag->AddAttr("error", "connection lost");
-
+		return 1;
+	}
 	if ( xi != xmlinput )
 		delete xi;
 
@@ -185,8 +187,7 @@ Connection::openconnection()
 	{
 		woklib_error(wls, "Jabber Connection couldn't get socket flags");
 	}
-
-
+	
 	if (fcntl(socket_nr, F_SETFL, flags | O_NONBLOCK) < 0)
 	{
 		woklib_error(wls, "Jabber Connection couldn't set non blocking socket");

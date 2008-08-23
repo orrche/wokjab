@@ -28,7 +28,6 @@
 
 #include "recvsocket.h"
 #include <sstream>
-#define BUFFERSIZE 300
 
 RecvSocket::RecvSocket(WLSignal *wls, int socket):
 WLSignalInstance ( wls ),
@@ -70,9 +69,13 @@ RecvSocket::ReadData(WokXMLTag *xml)
 	len = recv (socket, data + pos, BUFFERSIZE - pos, 0);
 	pos += len;
 
+	if ( len <= 0 )
+		perror(NULL);
+	
 	if( len == 0 )
 	{
 		xml->AddAttr("error","terminated");
+		delete this;
 		return 1;
 	}
 	
@@ -151,6 +154,7 @@ RecvSocket::SendData(char *data, uint len)
 		}
 		else if (br < 0)
 			return (-1);
+		
 	}
 	
 	return(0);

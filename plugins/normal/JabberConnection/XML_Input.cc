@@ -36,6 +36,7 @@ session(session),
 conn(conn),
 wls(wls)
 {
+	
 	server_terminated = false;
 	p = XML_ParserCreate (NULL);
 	
@@ -44,12 +45,12 @@ wls(wls)
 	XML_SetCharacterDataHandler (p, xml_charhndl);
 	ssl = NULL;
 	depth = 0;
+	
 }
 
 XML_Input::~XML_Input()
 {
 	XML_ParserFree(p);
-
 }
 
 int
@@ -91,9 +92,9 @@ XML_Input::read_data (int source)
 
         woklib_message(wls,"Assuming that the connection is closed, shutting down this connection" + sstr.str());
 								
-								WokXMLTag msg(NULL, "message");
-								msg.AddAttr("session", session);
-								wls->SendSignal("Jabber Connection Lost", &msg);
+		WokXMLTag msg(NULL, "message");
+		msg.AddAttr("session", session);
+		wls->SendSignal("Jabber Connection Lost", &msg);
 		return 0;
 	}
 
@@ -244,4 +245,5 @@ XML_Input::SetSSL(::SSL * s)
 		depth = 0;
 	}
 	ssl = s;
+	
 }

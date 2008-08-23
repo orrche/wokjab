@@ -110,14 +110,10 @@ void PyWXMLTagInit(PyObject* module )
 int
 PyWXMLTag_compare( PyWXMLTagHolder *o1, PyWXMLTagHolder *o2 )
 {
-	std::cout << "Ggggggg" << std::endl;
-	
 	if( *o1->c == *o2->c )
 	{
-		std::cout << "True" << std::endl;
 		return 0;
 	}
-	std::cout << "False" << std::endl;
 	return 1;
 }
 

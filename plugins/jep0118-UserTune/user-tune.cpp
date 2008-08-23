@@ -289,7 +289,6 @@ UserTune::ReadConfig(WokXMLTag *tag)
 int
 UserTune::Blank(WokXMLTag *tag)
 {
-	std::cout << "Blanking...." << std::endl;
 	WokXMLTag empty("empty");
 	SetTune(&empty);
 	tag->AddAttr("stop", "stop");

@@ -212,8 +212,6 @@ Dice::AddToCollection(WokXMLTag &xml)
 	GtkTreeIter iter;
 	
 	gtk_list_store_append (collection_store, &iter);
-	std::cout << "::" << xml.GetFirstTag("type", "common notation") << std::endl;
-	std::cout << "XML: " << xml << std::endl;
 	
 	gtk_list_store_set (collection_store, &iter, 0, (xml.GetFirstTag("name").GetBody() + " [" + xml.GetFirstTag("type", "common notation").GetBody() + "]").c_str() , 2 , new WokXMLTag (xml), -1);
 }

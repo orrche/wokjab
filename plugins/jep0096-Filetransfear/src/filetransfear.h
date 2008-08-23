@@ -94,6 +94,7 @@ class jep96 : public WoklibPlugin
 			EVENT_DATA_COLUMN,      // What is this ?!
 			SENDING_COLUMN,   // True/False
 			DATA_PROGRESS,
+			TOOLTIP_COLUMN,
 			NUM_COLUMNS
 		};
 };

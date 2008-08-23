@@ -44,14 +44,15 @@ class jep65 : public WoklibPlugin
 		int Send(WokXMLTag *xml);
 		int DiscoInfo(WokXMLTag *xml);
 		int ReadData(WokXMLTag *xml);
-	
+		int ReadConfig(WokXMLTag *tag);
+		
 		virtual std::string GetInfo() {return "jep65 Bytestream handling";};
 		virtual std::string GetVersion() {return VERSION;};
 	private:
 		std::string sport;
 		int serversock;
 		std::map <int, jep65send* > socketfiles;
-	
+		WokXMLTag *config;
 };
 
 #endif // __JEP65_H

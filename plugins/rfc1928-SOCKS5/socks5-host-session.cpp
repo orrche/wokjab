@@ -138,9 +138,6 @@ Socks5HostSession::ReadData(WokXMLTag *xml)
 	}
 	
 	return 1;
-	
-	
-	return 1;
 }
 
 int

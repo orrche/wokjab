@@ -134,6 +134,7 @@ jep65Session::SOCKS_Fail(WokXMLTag *tag)
 		
 		WokXMLTag contag(NULL, "Terminated");
 		contag.AddAttr("sid", lsid);
+		contag.AddTag(&tag->GetFirstTag("message"));
 		wls->SendSignal("Jabber Stream File Status", &contag);
 		wls->SendSignal("Jabber Stream File Status Terminated", &contag);
 		

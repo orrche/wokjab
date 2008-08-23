@@ -76,7 +76,6 @@ std::string rungpg ( const std::string &data, const std::string &arg, const std:
 	}
 	if ( pid < 0 )
 	{
-		std::cout << "Fork problem" << std::endl;
 		return "";
 	}
 

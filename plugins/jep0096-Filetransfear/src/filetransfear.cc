@@ -59,7 +59,7 @@ WoklibPlugin(wls)
 			G_CALLBACK (jep96::DragGet), this);
 	
 	file_store = gtk_list_store_new (NUM_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
-			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_BOOLEAN, G_TYPE_INT);
+			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_BOOLEAN, G_TYPE_INT, G_TYPE_STRING);
   	gtk_tree_view_set_model (GTK_TREE_VIEW(fileview), GTK_TREE_MODEL(file_store));
 	
 	renderer = gtk_cell_renderer_text_new ();
@@ -152,7 +152,6 @@ jep96::DragGet(GtkWidget *wgt, GdkDragContext *context, GtkSelectionData *select
 		gtk_tree_model_get_iter (GTK_TREE_MODEL(c->file_store), &iter, (GtkTreePath *) list->data);
 		gtk_tree_model_get(GTK_TREE_MODEL(c->file_store), &iter, SID_COLUMN, &sid, SENDING_COLUMN, &sending, -1);
 		
-		std::cout << "SID: " << sid << " xml data:\n" << *c->sessions[sid]  << std::endl;
 		
 		std::string file = c->sessions[sid]->GetAttr("file");
 		
@@ -167,7 +166,6 @@ jep96::DragGet(GtkWidget *wgt, GdkDragContext *context, GtkSelectionData *select
 	{
 		uris[i] = static_cast<gchar*>(g_malloc(sizeof(char)*data[i].size()));
 		strcpy(uris[i], data[i].c_str());
-		std::cout << "GRR " << data[i] << std::endl;
 	}
 	uris[i] = NULL;
 	
@@ -755,7 +753,7 @@ jep96::Accepted(WokXMLTag *acctag)
 			}
 		}
 	}
-	std::cout << "ACCEPTED" << *acctag << std::endl;
+	
 	if ( !acctag->GetAttr("file").empty())
 	{
 		if ( sessions.find(acctag->GetAttr("sid")) != sessions.end() )
@@ -779,7 +777,16 @@ jep96::Terminated(WokXMLTag *termtag)
 	{
 		if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[termtag->GetAttr("sid")])))
 		{
-			gtk_list_store_set (file_store, &iter, 2, "Terminated" , -1);
+			gchar *tt;
+			gtk_tree_model_get (GTK_TREE_MODEL(file_store), &iter, TOOLTIP_COLUMN, &tt, -1);
+			if ( tt )
+			{
+				gtk_list_store_set (file_store, &iter, 2, "Terminated", TOOLTIP_COLUMN, (tt + termtag->GetFirstTag("message").GetFirstTag("body").GetBody()).c_str()  , -1);
+			
+				g_free(tt);
+			}
+			else
+				gtk_list_store_set (file_store, &iter, 2, "Terminated", TOOLTIP_COLUMN, termtag->GetFirstTag("message").GetFirstTag("body").GetBody().c_str()  , -1);
 		}
 	}
 	

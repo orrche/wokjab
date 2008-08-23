@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2005-2007  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2005-2008  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,8 @@ namespace Woklib
 	conn(conn)
 	{
 		SSL_library_init();
-
+		ssl = NULL;
+		
 		EXP_SIGHOOK("Jabber XML Object stream:features", &SSL::StartSession, 500);
 		EXP_SIGHOOK("Jabber XML Object proceed", &SSL::Proceed, 500);
 

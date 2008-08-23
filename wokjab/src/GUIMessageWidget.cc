@@ -183,10 +183,10 @@ from(in_from)
 	g_signal_connect (textview2, "focus-in-event", 	G_CALLBACK (GUIMessageWidget::focus_event),this);
 	g_signal_connect (textview2, "focus-out-event", G_CALLBACK (GUIMessageWidget::focus_event),this);
 	g_signal_connect (eventbox , "key-press-event",	G_CALLBACK (GUIMessageWidget::key_press_event),this);
-	g_signal_connect (textview1, "size-allocate", 		G_CALLBACK (GUIMessageWidget::SizeAllocate),this);
+	g_signal_connect (textview1, "size-allocate", 	G_CALLBACK (GUIMessageWidget::SizeAllocate),this);
 	g_signal_connect (textview1, "key-press-event", G_CALLBACK (GUIMessageWidget::key_press_event),this);
-	g_signal_connect (textview1, "scroll-event", 			G_CALLBACK (GUIMessageWidget::Scroll), this);      				// Zooming
-	g_signal_connect (textview1, "event-after", 				G_CALLBACK (GUIMessageWidget::tw1_event_after), this); // Command press
+	g_signal_connect (textview1, "scroll-event", 	G_CALLBACK (GUIMessageWidget::Scroll), this);      				// Zooming
+	g_signal_connect (textview1, "event-after", 	G_CALLBACK (GUIMessageWidget::tw1_event_after), this); // Command press
 	expander_activate (GTK_EXPANDER(expander), (void*)this);
 
 	/* Drag and drop .... */
@@ -315,12 +315,15 @@ from(in_from)
 		if ( (*hist_iter)->GetFirstTag("xml").GetFirstTag("message").GetFirstTag("message").GetFirstTag("x", "jabber:x:delay").GetAttr("stamp").empty() )
 		{
 			time_t t;
-			struct tm tm;
-			strptime ((*hist_iter)->GetFirstTag("time").GetBody().c_str(), "%s", &tm);
-
+			struct tm *tm;
+			std::string str_time = (*hist_iter)->GetFirstTag("time").GetBody();
+			t = atol(str_time.c_str());
+			tm = gmtime(&t);
+			
+			
 			char      buf[128];
 			buf[0] = 0;
-			strftime (buf, sizeof (buf),"%Y%m%dT%T", &tm);
+			strftime (buf, sizeof (buf),"%Y%m%dT%T", tm);
 			
 			(*hist_iter)->GetFirstTag("xml").GetFirstTag("message").GetFirstTag("message").GetFirstTag("x", "jabber:x:delay").AddAttr("stamp", buf);
 		}
@@ -1309,7 +1312,7 @@ GUIMessageWidget::GetTimeStamp(WokXMLTag *tag)
 		struct tm tp;
 		strptime (stamp.c_str(), "%Y%m%dT%T", &tp);
 
-		t = mktime(&tp);
+		t = timegm(&tp);
 	}
 	
 	tm = localtime (&t);

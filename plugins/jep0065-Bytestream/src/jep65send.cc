@@ -34,9 +34,6 @@ sid(msgtag->GetAttr("sid")),
 to(msgtag->GetAttr("to")),
 sport(sport)
 {
-	
-	std::cout << "XML:" << *msgtag << std::endl;
-	
 	EXP_SIGHOOK("Jabber Stream File Send Abort " + sid, &jep65send::Abort, 1000);
 	listening = false;
 	WokXMLTag querytag(NULL, "query");
@@ -341,6 +338,8 @@ jep65send::TransfearStart(WokXMLTag *tag)
 	{
 		WokXMLTag termtag(NULL, "terminated");
 		termtag.AddAttr("sid", sid);
+		termtag.GetFirstTag("message").GetFirstTag("body").AddText("Error iq recived");
+		
 		wls->SendSignal("Jabber Stream File Status", &termtag);
 		wls->SendSignal("Jabber Stream File Status Terminated", &termtag);
 		
@@ -383,6 +382,8 @@ jep65send::FileTransfear(WokXMLTag *tag)
 	{
 		WokXMLTag termtag(NULL, "terminated");
 		termtag.AddAttr("sid", sid);
+		termtag.GetFirstTag("message").GetFirstTag("body").AddText("recv return 0");
+		
 		wls->SendSignal("Jabber Stream File Status", &termtag);
 		wls->SendSignal("Jabber Stream File Status Terminated", &termtag);
 		
@@ -455,11 +456,12 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 {
 	int sent = 0;
 	int maxsize;
-		
+	
 	if ( tag->GetAttr("error").size() )
 	{
 		WokXMLTag termtag(NULL, "terminated");
 		termtag.AddAttr("sid", sid);
+		termtag.GetFirstTag("message").GetFirstTag("body").AddText("Socked closed..");
 		wls->SendSignal("Jabber Stream File Status", &termtag);
 		wls->SendSignal("Jabber Stream File Status Terminated", &termtag);
 		
@@ -480,8 +482,6 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 		{
 			for (;;)
 			{
-				std::cout << "::::" << fbend - fbpos << std::endl;
-				
 				sent = send ( socket, filebuf + fbpos, fbend - fbpos, MSG_DONTWAIT);
 				if ( sent == -1 )
 				{
@@ -507,7 +507,6 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 				fbend = maxsize;
 			else
 				fbend = ffile.gcount();
-			std::cout << ":::: else" << fbend << " " << maxsize << std::endl;
 			sent = send ( socket, filebuf, fbend, 0 );
 			if ( sent == -1 )
 			{
@@ -517,8 +516,6 @@ jep65send::SocketAvailibule( WokXMLTag *tag)
 			fbpos = sent;
 		}
 	}
-	else
-		std::cout << "Confusing.." << std::endl;
 	
 	
 	if( fbpos == fbend)

@@ -23,6 +23,8 @@
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
+#define BUFFERSIZE 300
+
 using namespace Woklib;
 
 
@@ -39,7 +41,7 @@ class RecvSocket : public WLSignalInstance
 		int socket;
 		int pos;
 		int stage;
-		char data[300];
+		char data[BUFFERSIZE];
 };
 
 

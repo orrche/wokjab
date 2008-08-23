@@ -118,7 +118,6 @@ JIDList::Remove(GtkButton *button, JIDList *c)
 gboolean
 JIDList::DragMotion(GtkWidget *widget, GdkDragContext *drag_context, gint x, gint y, guint time, JIDList *c)
 {
-	std::cout << "Motion: " << x << ", " << y << std::endl;
 	return TRUE;
 }
 

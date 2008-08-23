@@ -127,7 +127,6 @@ PyScript::PyScript(WLSignal *wls, const std::string &filename) : WLSignalInstanc
 	
 	if ( fp == NULL )
 	{
-		std::cout << "Python file " << filename << " not found" << std::endl;
 		return;
 	}
 	

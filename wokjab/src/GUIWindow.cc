@@ -86,7 +86,7 @@ is_separator (GtkTreeModel *model,
   path = gtk_tree_model_get_path (model, iter);
   result = gtk_tree_path_get_indices (path)[0] == 5;
   gtk_tree_path_free (path);
-
+  
   return result;
 }
 
@@ -126,7 +126,7 @@ GUIWindow::GUIWindowInit(WokXMLTag *tag)
 	   
 	
 	PopulateShowEntry();
-	gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(preferencexml,"showentry")), 4);
+	SetActivePresence (4);
 
 	g_signal_connect ((gpointer) glade_xml_get_widget(preferencexml,"prioentry"), "value-changed",
 										G_CALLBACK (GUIWindow::SpinBtnPrio), this);
@@ -156,19 +156,19 @@ GUIWindow::PopulateShowEntry()
 	{
 		gtk_list_store_append (showmenu, &iter);
 		pixbuf = gdk_pixbuf_new_from_file (PACKAGE_DATA_DIR"/wokjab/online.png", NULL);
-		gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, "Online", -1);
+		gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, "Online",2,"",3,"",4,"", -1);
 		gtk_list_store_append (showmenu, &iter);
 		pixbuf = gdk_pixbuf_new_from_file (PACKAGE_DATA_DIR"/wokjab/away.png", NULL);
-		gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, "Away", -1);
+		gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, "Away",2,"",3,"",4,"", -1);
 		gtk_list_store_append (showmenu, &iter);
 		pixbuf = gdk_pixbuf_new_from_file (PACKAGE_DATA_DIR"/wokjab/xa.png", NULL);
-		gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, "Not Available", -1);
+		gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, "Not Available",2,"",3,"",4,"", -1);
 		gtk_list_store_append (showmenu, &iter);
 		pixbuf = gdk_pixbuf_new_from_file (PACKAGE_DATA_DIR"/wokjab/dnd.png", NULL);
-		gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, "Do Not Disturb", -1);
+		gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, "Do Not Disturb",2,"",3,"",4,"", -1);
 		gtk_list_store_append (showmenu, &iter);
 		pixbuf = gdk_pixbuf_new_from_file (PACKAGE_DATA_DIR"/wokjab/offline.png", NULL);
-		gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, "Offline", -1);
+		gtk_list_store_set (showmenu, &iter, 1, pixbuf, 0, "Offline",2,"",3,"",4,"", -1);
 	}
 	
 	if ( gtk_tree_model_get_iter_first (GTK_TREE_MODEL(showmenu), &iter) == TRUE )
@@ -304,13 +304,13 @@ GUIWindow::SendingPresence(WokXMLTag *tag)
 	else
 	{
 		if ( ptag.GetFirstTag("show").GetBody() == "" )
-			gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(preferencexml,"showentry")), 0);
+			SetActivePresence(0);
 		else if ( ptag.GetFirstTag("show").GetBody() == "away")
-			gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(preferencexml,"showentry")), 1);
+			SetActivePresence(1);
 		else if ( ptag.GetFirstTag("show").GetBody() == "xa")
-			gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(preferencexml,"showentry")), 2);
+			SetActivePresence(2);
 		else if ( ptag.GetFirstTag("show").GetBody() == "dnd")
-			gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(preferencexml,"showentry")), 3);
+			SetActivePresence(3);
 
 	}
 
@@ -469,6 +469,8 @@ GUIWindow::MenuActivate (GtkComboBox *widget, GUIWindow *c)
 		case 3:
 			c->status_show = "dnd";
 			break;
+		case 4:
+			return;
 		default:
 			GtkTreeIter titer;
 			if ( gtk_combo_box_get_active_iter(GTK_COMBO_BOX(glade_xml_get_widget(c->preferencexml, "showentry")), &titer) == TRUE )
@@ -496,7 +498,7 @@ GUIWindow::MenuActivate (GtkComboBox *widget, GUIWindow *c)
 		c->wls->SendSignal("MainMenu Connect", &connect);
 		
 		// For some odd reason this crashes wokjab, noo idea why that is
-		//gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(c->preferencexml, "showentry")), 4);
+		c->SetActivePresence(4);
 	}
 	else
 	{
@@ -666,6 +668,23 @@ GUIWindow::show(WLSignalData *wlsd)
 	return true;
 }
 
+void
+GUIWindow::SetActivePresence(int i)
+{
+	GtkTreeIter iter;
+	if ( gtk_tree_model_get_iter_first(GTK_TREE_MODEL(showmenu), &iter) == TRUE )
+	{
+		while ( i ) 
+		{
+			if ( gtk_tree_model_iter_next(GTK_TREE_MODEL(showmenu), &iter) == FALSE )
+				break;
+			i--;
+		}
+		if ( !i ) 
+			gtk_combo_box_set_active_iter (GTK_COMBO_BOX(glade_xml_get_widget(preferencexml,"showentry")), &iter);		
+	}	
+}
+
 int
 GUIWindow::hide(WLSignalData *wlsd)
 {
@@ -686,7 +705,7 @@ int
 GUIWindow::Loggedin(WokXMLTag *tag)
 {
 	ActiveSessions.push_back(tag->GetAttr("session"));
-	gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(preferencexml,"showentry")), 0);
+	SetActivePresence(0);
 }
 
 int
@@ -699,7 +718,7 @@ GUIWindow::Loggedout(WokXMLTag *tag)
 	ActiveSessions.erase(iter);
 
 	if(ActiveSessions.size() == 0)
-		gtk_combo_box_set_active(GTK_COMBO_BOX(glade_xml_get_widget(preferencexml,"showentry")), 4);
+		SetActivePresence(4);
 
 	return true;
 }

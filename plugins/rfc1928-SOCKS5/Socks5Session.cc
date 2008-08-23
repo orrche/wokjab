@@ -29,6 +29,7 @@
 #include <sstream>
 #include <fcntl.h> 
 #include <string.h>
+#include <errno.h>
 
 Socks5Session::Socks5Session(WLSignal *wls, WokXMLTag *tag, int id) : WLSignalInstance(wls),
 socktag(new WokXMLTag(*tag)),
@@ -73,8 +74,6 @@ id(id)
 	wls->SendSignal("Woklib Socket Out Add", sigtag);
 	signal_out = sigtag.GetAttr("signal");
 	EXP_SIGHOOK(signal_out, &Socks5Session::Ready, 1000);
-	
-	
 }
 
 
@@ -133,6 +132,7 @@ Socks5Session::Authentication(std::string data)
 		
 		WokXMLTag contag ( NULL, "connection");
 		contag.AddAttr("id", str_id);
+		contag.GetFirstTag("message").GetFirstTag("body").AddText("Proxy not accepting authentication");
 		
 		wls->SendSignal("SOCKS5 Connection Failed " + str_id, contag);
 		
@@ -152,6 +152,7 @@ Socks5Session::Read(WokXMLTag *tag)
 	
 		WokXMLTag contag ( NULL, "connection");
 		contag.AddAttr("id", str_id);
+		contag.GetFirstTag("message").GetFirstTag("body").AddText("Socket closed unexpectedly - " + tag->GetAttr("error"));
 		
 		wls->SendSignal("SOCKS5 Connection Failed " + str_id, contag);
 		close(socket_nr);
@@ -176,6 +177,7 @@ Socks5Session::Read(WokXMLTag *tag)
 		}
 		
 		int len = recv (socket_nr, buffer+pos, BUFFSIZE-pos, 0);
+
 		
 		if ( stage == 0 )
 		{
@@ -189,14 +191,17 @@ Socks5Session::Read(WokXMLTag *tag)
 				
 				Request();
 			}
-			else if ( len + pos > 2 )
+			else if ( len + pos > 2 || len < 0)
 			{
 				close(socket_nr);
 				tag->AddAttr("error", "closed");
 				
 				WokXMLTag contag ( NULL, "connection");
 				contag.AddAttr("id", str_id);
+				contag.GetFirstTag("message").GetFirstTag("body").AddText("Proxy protocol data parsing error: ");
+				contag.GetFirstTag("message").GetFirstTag("body").AddText(strerror(errno));
 				
+		
 				wls->SendSignal("SOCKS5 Connection Failed " + str_id, contag);
 				delete this;
 				
@@ -279,7 +284,8 @@ Socks5Session::Read(WokXMLTag *tag)
 			
 			WokXMLTag contag ( NULL, "connection");
 			contag.AddAttr("id", str_id);
-			
+			contag.GetFirstTag("message").GetFirstTag("body").AddText("0 data recived .. does this really mean the connection is lost?");
+		
 			wls->SendSignal("SOCKS5 Connection Failed " + str_id, contag);
 			delete this;
 		}
@@ -303,11 +309,13 @@ int
 Socks5Session::Ready(WokXMLTag *tag)
 {
 	// Version 5  Ways of authentication 1  Authentication method 0
-
+	
 	outpos += send (socket_nr, outbuffer , outsize - outpos, MSG_DONTWAIT);
 	if ( outpos == outsize ) 
 	{
 		EXP_SIGUNHOOK(signal_out, &Socks5Session::Ready, 1000);
+		tag->AddAttr("stop", "not needed anymore");
+		
 		delete [] outbuffer;
 		outbuffer = NULL;
 		
@@ -320,7 +328,7 @@ Socks5Session::Ready(WokXMLTag *tag)
 		}
 	}
 	
-	
+	return 1;
 }
 
 int

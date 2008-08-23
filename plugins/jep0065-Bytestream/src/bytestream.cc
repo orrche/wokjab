@@ -30,6 +30,10 @@
 #include "recvsocket.h"
 
 
+#ifndef _
+#define _(x) x
+#endif
+
 
 #include <sstream>
 
@@ -42,7 +46,16 @@ jep65::jep65(WLSignal *wls):
 WoklibPlugin(wls)
 {
 	struct sockaddr_in echoserver;
-	sport = "8111";
+	
+	config = new WokXMLTag("config");
+	EXP_SIGHOOK("Config XML Change /bytestream", &jep65::ReadConfig, 500);
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/bytestream");
+	wls->SendSignal("Config XML Trigger", &conftag);
+	if ( config->GetFirstTag("port").GetAttr("data").empty() )
+		sport = "8111";
+	else
+		sport = config->GetFirstTag("port").GetAttr("data");
 	
 	EXP_SIGHOOK("Jabber XML IQ New query set xmlns:http://jabber.org/protocol/bytestreams", &jep65::Session, 999);
 	EXP_SIGHOOK("Jabber Stream File Send Method http://jabber.org/protocol/bytestreams", &jep65::Send, 999);
@@ -71,7 +84,7 @@ WoklibPlugin(wls)
 	{
 		i--;
 		std::stringstream str;
-		str << 8111 + i;
+		str << atoi(sport.c_str()) + i;
 		sport = str.str();
 		
 		woklib_debug(wls, "New listening port " + sport);
@@ -97,6 +110,19 @@ WoklibPlugin(wls)
 jep65::~jep65()
 {
 	close(serversock);
+}
+
+int
+jep65::ReadConfig(WokXMLTag *tag)
+{
+	tag->GetFirstTag("config").GetFirstTag("port").AddAttr("label", _("Port"));
+	tag->GetFirstTag("config").GetFirstTag("port").AddAttr("type", "string");
+	tag->GetFirstTag("config").GetFirstTag("port").GetFirstTag("tooltip", "config").AddText(_("Base port for the filetransfer if the port is bussy it will increase by 1 until it finds an empty port\n and probably crash if it never finds an empty port"));
+	
+	
+	delete config;
+	config = new WokXMLTag(tag->GetFirstTag("config"));
+	return 1;
 }
 
 int
@@ -126,7 +152,6 @@ jep65::ReadData(WokXMLTag *xml)
 	if ((clientsock = accept(serversock, (struct sockaddr *) &echoclient, &clientlen)) < 0)
 	{
 		woklib_error(wls, "Failed to accept client connection");
-//		Die("Failed to accept client connection");
 		return 1;
 	}
 

@@ -72,6 +72,7 @@ class GUIWindow : public WLSignalInstance
 
 		void UpdateStruts();
 		void PopulateShowEntry();
+		void SetActivePresence(int i);
 	protected:
 		GladeXML *xml;
 		GladeXML *preferencexml;
