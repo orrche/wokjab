@@ -1,7 +1,8 @@
 datadir = $(prefix)/lib/woklib/glade
 pkgdata_DATA = \
         notification.control.glade
-	
+EXTRA_DIST = ${pkgdata_DATA}
+
 libdir = $(prefix)/lib/woklib-plugins/normal
 
 AM_CXXFLAGS =\
