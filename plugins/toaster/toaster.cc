@@ -119,7 +119,7 @@ Toaster::AddJIDEvent(WokXMLTag *tag)
 	
 	wls->SendSignal("Toaster Display", &toastertag);
 
-	return true;
+	return 1;
 }
 
 bool

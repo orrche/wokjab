@@ -175,6 +175,7 @@ AC_CONFIG_FILES(Makefile \
         plugins/History.SQLite/Makefile  \
         plugins/HtmlLinkMessage/Makefile  \
         plugins/normal/WokjabDockWindow/Makefile  \
+        plugins/normal/NotificationWidget/Makefile  \
 	wokjab/Makefile \
 	wokjab/src/Makefile \
 	wokjab/include/Makefile \
