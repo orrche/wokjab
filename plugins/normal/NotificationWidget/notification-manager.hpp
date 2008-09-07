@@ -45,7 +45,6 @@ public:
 	int AddJIDEvent(WokXMLTag *tag);
 	int RemoveJIDEvent(WokXMLTag *tag);
 		
-			
 	static void CloseButton(GtkWidget *widget, NotificationManager *c);
 	static void LeftButton(GtkWidget *widget, NotificationManager *c);
 	static void RightButton(GtkWidget *widget, NotificationManager *c);
@@ -60,8 +59,6 @@ private:
 	WokXMLTag *inittag;
 	std::list <NotificationWidget *> items;
 	std::list <NotificationWidget *>::iterator pos;
-		
-		
 		
 	int id;
 };

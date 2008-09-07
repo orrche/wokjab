@@ -27,10 +27,10 @@ NotificationManager::NotificationManager(WLSignal *wls) : WoklibPlugin(wls)
 	
 	EXP_SIGHOOK("Notification Add", &NotificationManager::Add, 1000);
 	EXP_SIGHOOK("Notification Remove", &NotificationManager::Remove, 1000);
-	pos = items.begin();
-	
 	
 	EXP_SIGHOOK("GUI Window Init", &NotificationManager::GUIWindowInit, 550);
+	
+	pos = items.begin();
 	
 	gxml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/notification.control.glade", "mainbox", NULL);
 	
@@ -235,7 +235,7 @@ NotificationManager::Remove(WokXMLTag *tag)
 	{
 		if ( (*iter)->GetAttr("id") != "") 
 		{
-			if ( (*pos)->GetId() == (*iter)->GetAttr("id") )
+			if ( pos != items.end() && (*pos)->GetId() == (*iter)->GetAttr("id") )
 			{
 				std::list <NotificationWidget*>::iterator tmp = pos;
 				pos++;
@@ -266,8 +266,7 @@ NotificationManager::Remove(WokXMLTag *tag)
 						siter = tmpiter;
 						continue;
 					}
-					else
-						siter++;
+					siter++;
 				}						
 			}
 			wls->SendSignal("Jabber Notification Remove '" + XMLisize((*iter)->GetAttr("id")) + "'", (*iter));

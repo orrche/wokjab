@@ -70,8 +70,6 @@ NotificationWidget::CommandExec(GtkWidget *button, GdkEventButton *event, Notifi
 	
 	WokXMLTag *tag = static_cast <WokXMLTag *> (g_object_get_data(G_OBJECT(button), "xml"));
 	
-	std::cout << "What the fuck.." << std::endl;
-	
 	if ( tag && !tag->GetFirstTag("signal").GetTags().empty() )
 	{
 		c->wls->SendSignal(tag->GetFirstTag("signal").GetAttr("name"), **tag->GetFirstTag("signal").GetTags().begin());
