@@ -59,6 +59,7 @@ class GUIRoster : public WoklibPlugin
 	protected:
 		gchar *hoverid;
 		std::map <std::string, RosterItem*> item;
+		RosterItem *root;
 		GladeXML *xml;
 		GtkWidget *mainwindowplug;
 		WokXMLTag *inittag;

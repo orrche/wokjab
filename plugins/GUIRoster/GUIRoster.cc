@@ -40,6 +40,9 @@ GUIRoster::GUIRoster(WLSignal *wls) : WoklibPlugin(wls)
 	hoverid = NULL;
 	xml = NULL;
 	CreateWid();
+	
+	WokXMLTag tag("nothing");
+	root = new RosterItem(wls, xml, std::string("root"), &tag, NULL);
 }
 
 
@@ -394,7 +397,8 @@ GUIRoster::AddItem(WokXMLTag *tag)
 	if( tag->GetAttr("parant").size() )
 		if ( item.find(tag->GetAttr("parant")) != item.end() )
 			parant = item[tag->GetAttr("parant")];
-
+	if ( parant == NULL )
+		parant = root;
 	item[id] = new RosterItem(wls, xml, id, tag, parant);
 	tag->AddAttr("id", id);
 	return 1;

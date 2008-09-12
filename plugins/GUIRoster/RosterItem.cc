@@ -31,8 +31,8 @@ id(id),
 parant(parant),
 xml(xml)
 {
-	
-	indent = 0;
+	dataxml = new WokXMLTag(*tag);
+	indent = -1;
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(glade_xml_get_widget(xml, "view_roster")));
 	
 	if(parant)
@@ -52,8 +52,6 @@ xml(xml)
 			gtk_tree_store_insert_after(GTK_TREE_STORE(model), &iter, parant->GetIter(), NULL);
 		}
 	}
-	else
-		gtk_tree_store_append(GTK_TREE_STORE(model), &iter, NULL);
 	
 	Update(tag);
 	gtk_tree_view_expand_all(GTK_TREE_VIEW(glade_xml_get_widget(xml, "view_roster")));
@@ -113,7 +111,7 @@ RosterItem::UpdatePosition(RosterItem *ri)
 			tmpiter = iter;
 			tmpiter++;
 			children.insert(tmpiter, 1, ri);
-			return ((*iter)->GetLastItem());
+			return (*iter);
 		}	
 	}
 
@@ -143,6 +141,9 @@ RosterItem::RemoveChild(RosterItem *ri)
 void
 RosterItem::Update(WokXMLTag *tag)
 {	
+	delete dataxml;
+	dataxml = new WokXMLTag(*tag);
+	
 	GError *err = NULL;
 	GdkPixbuf *pre_pix = NULL;
 	GdkPixbuf *post_pix = NULL;
@@ -190,6 +191,8 @@ RosterItem::Update(WokXMLTag *tag)
 		RosterItem *ri = parant->UpdatePosition(this);
 		if( ri )
 			gtk_tree_store_move_after(GTK_TREE_STORE(model), &iter, ri->GetIter());
+		else
+			gtk_tree_store_move_after(GTK_TREE_STORE(model), &iter, NULL);
 	}
 	gtk_tree_store_set(GTK_TREE_STORE(model), &iter,
 				PRE_PIX_COLUMN, pre_pix,
@@ -215,7 +218,9 @@ RosterItem::Update(WokXMLTag *tag)
 GtkTreeIter *
 RosterItem::GetIter()
 {
-	return &iter;
+	if ( parant )
+		return &iter;
+	return NULL;
 
 }
 

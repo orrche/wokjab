@@ -52,6 +52,7 @@ class RosterItem : public WLSignalInstance
 		RosterItem *UpdatePosition(RosterItem *ri);
 		void RemoveChild(RosterItem *);
 	protected:
+		WokXMLTag *dataxml;
 		bool folded;
 		std::list <RosterItem*> children;
 		GtkTreeIter * GetIter();
