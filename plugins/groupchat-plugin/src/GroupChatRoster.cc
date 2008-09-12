@@ -37,6 +37,7 @@ mainwid(mainwid),
 mynick(mynick)
 {
 	WokXMLTag itemtag(NULL, "item");
+	itemtag.AddAttr("order", "3");
 	WokXMLTag &columntag =  itemtag.AddTag("columns");
 	WokXMLTag &texttag = columntag.AddTag("text");
 	columntag.AddTag("pre_pix").AddText(PACKAGE_DATA_DIR"/wokjab/groupchat/wokjab/gicon.png");

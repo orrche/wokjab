@@ -38,7 +38,8 @@ parent(c)
 	WokXMLTag &columntag =  itemtag.AddTag("columns");
 	WokXMLTag &texttag = columntag.AddTag("text");
 	texttag.AddText(name);
-		
+	itemtag.AddAttr("order", "1");
+	
 	wls->SendSignal("GUIRoster AddItem", itemtag);
 	id = itemtag.GetAttr("id");
 	

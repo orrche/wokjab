@@ -104,15 +104,27 @@ RosterItem::UpdatePosition(RosterItem *ri)
 	for ( iter = children.end() ; iter != children.begin() ; )
 	{
 		iter--;
-		
-		if( (*iter)->text < ri->text )
+		int iterorder = atoi((*iter)->dataxml->GetAttr("order").c_str());
+		int riorder = atoi(ri->dataxml->GetAttr("order").c_str());
+		if ( iterorder == riorder )
+		{
+			if( (*iter)->text < ri->text )
+			{
+				std::list <RosterItem*>::iterator tmpiter;
+				tmpiter = iter;
+				tmpiter++;
+				children.insert(tmpiter, 1, ri);
+				return (*iter);
+			}
+		}
+		else if( iterorder < riorder )
 		{
 			std::list <RosterItem*>::iterator tmpiter;
 			tmpiter = iter;
 			tmpiter++;
 			children.insert(tmpiter, 1, ri);
 			return (*iter);
-		}	
+		}
 	}
 
 	children.push_front(ri);
