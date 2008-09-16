@@ -26,6 +26,7 @@ SUBDIRS= \
 	Tooltip \
 	JIDConfig \
 	WokjabDockWindow \
-	NotificationWidget
+	NotificationWidget \
+	JabberRegistration
 
 
