@@ -21,6 +21,5 @@ endif
 
 SUBDIRS= \
 	Dice\
-	P2PRandomNumberMonitor \
+	P2PRandomNumberMonitor\
 	AtomNotifications
-
