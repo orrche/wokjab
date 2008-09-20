@@ -638,7 +638,7 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 			eventtag.AddAttr("type", "message");
 			WokXMLTag &itemtag = eventtag.AddTag("item");
 
-			itemtag.AddAttr("id", "Message " + tag->GetAttr("session") + " " + tag->GetFirstTag("message").GetAttr("from"));
+			//itemtag.AddAttr("id", "Message " + tag->GetAttr("session") + " " + tag->GetFirstTag("message").GetAttr("from"));
 			itemtag.AddAttr("jid", tag->GetFirstTag("message").GetAttr("from"));
 			itemtag.AddAttr("session", tag->GetAttr("session"));
 			itemtag.AddAttr("icon", msgicon);
@@ -659,7 +659,7 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 			item.AddAttr("session", tag->GetAttr("session"));
 			
 			wls->SendSignal("Jabber Event Add", &eventtag);
-			
+			eventidlist.push_back(eventtag.GetFirstTag("item").GetAttr("id"));
 			
 			WokXMLTag dockwid("dock");
 			std::stringstream str;
@@ -981,11 +981,15 @@ GUIMessageWidget::focus_event(GtkWidget *widget, GdkEventFocus *event, GUIMessag
 
 			gtk_image_set_from_pixbuf(GTK_IMAGE(c->label_image), gtk_image_get_pixbuf(GTK_IMAGE(c->image)));
 
-			WokXMLTag eventtag(NULL, "event");
-			WokXMLTag &itemtag = eventtag.AddTag("item");
-			itemtag.AddAttr("id", "Message " + c->session + " " + c->from);
-			c->wls->SendSignal("Jabber Event Remove", &eventtag);
-
+			std::list <std::string>::iterator eventiter;
+			for( eventiter = c->eventidlist.begin() ; eventiter != c->eventidlist.end() ; eventiter++)
+			{
+				WokXMLTag eventtag(NULL, "event");
+				WokXMLTag &itemtag = eventtag.AddTag("item");
+				itemtag.AddAttr("id", *eventiter);
+				c->wls->SendSignal("Jabber Event Remove", &eventtag);
+			}
+			c->eventidlist.clear();
 			gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (c->textview1),
 				c->end_mark, .4, TRUE, 1, 1);
 			

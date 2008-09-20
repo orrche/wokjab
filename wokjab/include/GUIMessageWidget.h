@@ -121,6 +121,7 @@ class GUIMessageWidget : public WLSignalInstance
 		
 		double fontsize;
 		
+		std::list < std::string> eventidlist;
 		std::map<std::string, GtkTextTag*> tags;
 		int cmd_count;
 		std::map<int, WokXMLTag *> commands;

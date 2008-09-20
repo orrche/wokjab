@@ -10,14 +10,12 @@ AM_CXXFLAGS =\
 AM_LDFLAGS = -lwoklib  `pkg-config gtk+-2.0 libglade-2.0 --libs`
 
 lib_LTLIBRARIES = \
-	libjabberregistration.la
+	libatomnotifications.la
 
-libjabberregistration_la_SOURCES = \
-	main.cc                   \
-	jabber-reg-handler.hpp                   \
-	jabber-reg-handler.cpp                   \
-	session.hpp                   \
-	session.cpp
+libatomnotifications_la_SOURCES = \
+	main.cc                  \
+	atom-handler.hpp                  \
+	atom-handler.cpp
 
 ## File created by the gnome-build tools
 

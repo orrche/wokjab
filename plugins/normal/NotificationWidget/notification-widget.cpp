@@ -24,12 +24,13 @@ NotificationWidget::NotificationWidget(WLSignal *wls, WokXMLTag *tag) : WLSignal
 origxml(new WokXMLTag(*tag))
 {
 	box = gtk_vbox_new(FALSE, 2);
-	GtkWidget *label = gtk_label_new(tag->GetFirstTag("body").GetBody().c_str());
+	GtkWidget *label = gtk_label_new(tag->GetFirstTag("body").GetChildrenStr().c_str());
+	gtk_label_set_use_markup(GTK_LABEL(label), TRUE);
 	gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
 	
 		
 	gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);	
-	gtk_widget_set_tooltip_text(box,tag->GetFirstTag("body").GetBody().c_str());
+	gtk_widget_set_tooltip_markup(box,tag->GetFirstTag("body").GetChildrenStr().c_str());
 	
 	std::list <WokXMLTag *> *com_list;
 	std::list <WokXMLTag *>::iterator c_iter;

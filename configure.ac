@@ -102,12 +102,14 @@ AC_CONFIG_FILES(Makefile \
 	plugins/normal/GnomeStatusIcon/include/Makefile  \
 	plugins/normal/Jabber/Makefile \
         plugins/normal/JabberConnection/Makefile  \
+        plugins/normal/JabberRegistration/Makefile  \
         plugins/normal/JIDConfig/Makefile  \
 	plugins/normal/Tooltip/Makefile  \
 	plugins/system/Makefile \
 	plugins/experimental/Makefile  \
         plugins/experimental/Dice/Makefile  \
         plugins/experimental/P2PRandomNumberMonitor/Makefile  \
+        plugins/experimental/AtomNotifications/Makefile  \
 	plugins/MenuResource/Makefile  \
 	plugins/MenuRoster/Makefile  \
 	plugins/GtkTimer/Makefile  \

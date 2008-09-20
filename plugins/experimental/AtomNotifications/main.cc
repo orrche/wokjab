@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-#include "jabber-reg-handler.hpp"
+#include "atom-handler.hpp"
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
 extern "C" WoklibPlugin *maker(WLSignal *wls) {
-	return reinterpret_cast <WoklibPlugin *> (new JabberRegHandler(wls));
+	return reinterpret_cast <WoklibPlugin *> (new AtomHandler(wls));
 }
 
 extern "C" void destroyer(WoklibPlugin *plugin) {
