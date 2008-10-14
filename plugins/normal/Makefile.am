@@ -27,6 +27,7 @@ SUBDIRS= \
 	JIDConfig \
 	WokjabDockWindow \
 	NotificationWidget \
-	JabberRegistration
+	JabberRegistration \
+	XEP-0147-XMPP_URI_Scheme_Query
 
 

@@ -30,6 +30,7 @@ WokjabDockWindowHandler::WokjabDockWindowHandler(WLSignal *wls) : WoklibPlugin(w
 	
 	GtkWidget *box = gtk_hbox_new( FALSE, 2);
 	
+		
 	/* ... and the layout manager */
 	layout = gdl_dock_layout_new (GDL_DOCK (dock));
 

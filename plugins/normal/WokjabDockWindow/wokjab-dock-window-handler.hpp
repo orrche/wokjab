@@ -53,7 +53,6 @@ public:
 	int HideChat(WokXMLTag *tag);
 	int Show(WokXMLTag *tag);
 	int ShowChat(WokXMLTag *tag);
-		
 protected:
 	GtkWidget *dock;
 	GdlDockLayout *layout;

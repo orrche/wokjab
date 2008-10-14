@@ -58,6 +58,9 @@ public:
 	bool Visible();
 	void Show(WokXMLTag *tag);
 	void Hide(WokXMLTag *tag);
+		
+	static gboolean key_press_handler(GtkWidget * widget, GdkEventKey * event,
+			     WokjabDockWindow *c);
 protected:
 	gulong sig1h;
 	gulong sig2h;

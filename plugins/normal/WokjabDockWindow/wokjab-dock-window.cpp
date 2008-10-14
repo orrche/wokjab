@@ -33,7 +33,10 @@ topdock(in_topdock)
 	mainsock = gtk_socket_new();
 	placeholder = gtk_event_box_new();
 	
-		
+	gtk_signal_connect (GTK_OBJECT (win), "key_press_event",
+	    GTK_SIGNAL_FUNC (WokjabDockWindow::key_press_handler), this);
+	
+	
 	if (! inittag->GetAttr("labelid").empty() )
 	{
 		hiddenlabel = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -134,6 +137,36 @@ WokjabDockWindow::~WokjabDockWindow()
 		gtk_widget_destroy(hiddenlabel);
 	}
 	gtk_widget_destroy(hiddenwindow);
+}
+
+gboolean
+WokjabDockWindow::key_press_handler(GtkWidget * widget, GdkEventKey * event,
+			     WokjabDockWindow *c)
+{
+	if (event->state & GDK_MOD1_MASK)
+	{
+		if(event->keyval >= '0' && event->keyval <= '9') {
+			int switchto = event->keyval - '1';
+			if(switchto == -1)
+				switchto = 9;
+			
+			GdlDockObject *dockto = gdl_dock_object_get_parent_object(GDL_DOCK_OBJECT(c->win));
+			if ( dockto ) 
+			{
+				GList *list = gdl_dock_get_named_items(GDL_DOCK(dockto));
+				
+				int i = 0;
+				while(list)
+				{
+					list = list->next;
+					i++;
+				}
+				if ( switchto < i )
+					g_object_set (G_OBJECT(dockto), "page", switchto, NULL);
+			}
+		}
+	}
+	return FALSE;
 }
 
 void
