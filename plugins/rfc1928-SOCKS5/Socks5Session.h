@@ -52,6 +52,11 @@ class Socks5Session : public WLSignalInstance
 	int Authentication(std::string data);
 	int Ready(WokXMLTag *tag);
 	int Read(WokXMLTag *tag);
+	int Conn_Established(WokXMLTag *tag);
+	int Conn_Fail(WokXMLTag *tag);
+	int Conn_Data(WokXMLTag *tag);
+	void Init();
+		
 	protected:
 		WokXMLTag *socktag;
 		std::string hostname;

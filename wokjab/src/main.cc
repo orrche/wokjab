@@ -110,6 +110,8 @@ main (int argc, char **argv)
 	bool sysplug = true;
 	bool normplug = true;
 
+	std::string configfile = std::string(g_get_home_dir()) + "/.wokjab/config.xml";
+	
 	if( argc > 1 )
 	{
 		for( int i = 1; i < (argc) ; ++i)
@@ -118,6 +120,9 @@ main (int argc, char **argv)
 				sysplug = false;
 			if ( std::string("-nn") == argv[i] )
 				normplug = false;
+			if ( std::string("-c") == argv[i] && i+1 < argc )
+				configfile = argv[i+1];
+				
 		}
 	}
 
@@ -125,7 +130,7 @@ main (int argc, char **argv)
 		pluginloader(&sj.wls_main, string(PACKAGE_PLUGIN_DIR) + "/system");
 
 	WokXMLTag confinit(NULL, "init");
-	confinit.AddTag("filename").AddAttr("data", std::string(g_get_home_dir()) + "/.wokjab/config.xml");
+	confinit.AddTag("filename").AddAttr("data", configfile);
 	wls->SendSignal("Config XML Init", &confinit);
 
 	PluginLoader *pl;

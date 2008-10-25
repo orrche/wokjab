@@ -41,24 +41,92 @@ id(id)
 	buffer = NULL;
 	outbuffer = NULL;
 	
-	if ( OpenConnection() == -1 )
-	{
-		woklib_error(wls, "Couldn't open connection to the streamhost");
-		tag->AddAttr("result", "error");
-		delete this;
-		return;
-	}
-
-	std::stringstream sstr_socket;
-	sstr_socket << socket_nr;
-	str_socket = sstr_socket.str();
-	
 	std::stringstream sstr_id;
 	sstr_id << id;
 	str_id = sstr_id.str();
 	
-	tag->AddAttr("id", str_id);
+	tag->AddAttr("established", "SOCKS5 Connection Established " + str_id);
+	tag->AddAttr("data", "SOCKS5 Connection Data " + str_id);
+	tag->AddAttr("fail", "SOCKS5 Connection Fail " + str_id);
 	
+	if ( tag->GetTagList("connection").empty() )
+	{
+		std::list <WokXMLTag *>::iterator iter;
+		for ( iter = tag->GetTagList("connect").begin() ; iter != tag->GetTagList("connect").end() ; iter++ )
+		{
+			WokXMLTag conntag(**iter);
+			wls->SendSignal("Connect " + (*iter)->GetAttr("xmlns"), conntag);
+			
+			
+			EXP_SIGHOOK(conntag.GetAttr("established"), &Socks5Session::Conn_Established, 1000);
+			EXP_SIGHOOK(conntag.GetAttr("data"), &Socks5Session::Conn_Data, 1000);
+			EXP_SIGHOOK(conntag.GetAttr("fail"), &Socks5Session::Conn_Fail, 1000);
+		}
+	}
+	else
+	{
+		if ( tag->GetAttr("socket").empty() )
+		{
+			if ( OpenConnection() == -1 )
+			{
+				woklib_error(wls, "Couldn't open connection to the streamhost");
+				tag->AddAttr("result", "error");
+				delete this;
+				return;
+			}
+		}
+		else	
+			socket_nr = atoi(tag->GetAttr("socket").c_str());
+		
+		
+		Init();
+		
+	}
+}
+
+
+Socks5Session::~Socks5Session()
+{
+	delete socktag;
+	delete [] buffer;
+	delete [] outbuffer;
+}
+
+int
+Socks5Session::Conn_Established(WokXMLTag *tag)
+{
+	socket_nr = atoi(tag->GetAttr("socket").c_str());
+	Init();
+	return 1;
+}
+
+int
+Socks5Session::Conn_Fail(WokXMLTag *tag)
+{
+	WokXMLTag contag ( NULL, "connection");
+	contag.AddAttr("id", str_id);
+	contag.GetFirstTag("message").GetFirstTag("body").AddText("Previous connection failed - " + tag->GetFirstTag("message").GetFirstTag("body").GetBody());
+	contag.AddAttr("error", tag->GetAttr("error"));
+	
+	wls->SendSignal("SOCKS5 Connection Failed " + str_id, contag);
+	
+	return 1;
+}
+
+int
+Socks5Session::Conn_Data(WokXMLTag *tag)
+{
+	
+	return 1;
+}
+
+
+void
+Socks5Session::Init()
+{
+	std::stringstream sstr_socket;
+	sstr_socket << socket_nr;
+	str_socket = sstr_socket.str();
 	outbuffer = new char[3];
 	memcpy(outbuffer, "\x05\x01\x00", 3);
 	outpos = 0;
@@ -74,14 +142,7 @@ id(id)
 	wls->SendSignal("Woklib Socket Out Add", sigtag);
 	signal_out = sigtag.GetAttr("signal");
 	EXP_SIGHOOK(signal_out, &Socks5Session::Ready, 1000);
-}
 
-
-Socks5Session::~Socks5Session()
-{
-	delete socktag;
-	delete [] buffer;
-	delete [] outbuffer;
 }
 
 void

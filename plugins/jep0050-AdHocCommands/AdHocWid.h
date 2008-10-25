@@ -40,7 +40,7 @@ using namespace Woklib;
 class AdHocWid : public WLSignalInstance
 {
 	public:
-		AdHocWid(WLSignal *wls, std::string session, std::string jid, std::string node);
+		AdHocWid(WLSignal *wls, WokXMLTag &tag);
 		 ~AdHocWid();
 	
 		int Set(WokXMLTag *tag);

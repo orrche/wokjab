@@ -32,6 +32,7 @@
 Socks5::Socks5(WLSignal *wls) : WoklibPlugin(wls)
 {
 	sockid = 0;
+	EXP_SIGHOOK("Connection SOCKS5", &Socks5::Connect, 5);
 	EXP_SIGHOOK("SOCKS5 Connect", &Socks5::Connect, 5);
 	EXP_SIGHOOK("SOCKS5 Host", &Socks5::Host, 5);
 }

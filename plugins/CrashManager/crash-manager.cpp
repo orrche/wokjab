@@ -53,15 +53,6 @@ CrashManager::CrashManager(WLSignal *wls) : WoklibPlugin(wls)
 	fn << g_get_home_dir() << "/.wokjab/sig." << getpid() << ".log";
 	filename = fn.str();
 	file.open(filename.c_str(), std::ios::out);
-	     
-	
-	struct sig_linux_signal::sigaction saio;      // set the serial interrupt handler
-	saio.sa_handler = serial_handler;      // to this function
-	sig_linux_signal::sigemptyset(&saio.sa_mask);      // clear existing settings
-	saio.sa_flags = 0;      // make sure sa_flags is cleared
-	saio.sa_restorer = NULL;      // no restorer
-	sigaction(SIGHUP, &saio, NULL);      // apply new settings
-	sigaction(SIGTERM, &saio, NULL);
 }
 
 

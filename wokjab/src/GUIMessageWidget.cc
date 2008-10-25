@@ -182,9 +182,11 @@ from(in_from)
 	
 	g_signal_connect (textview2, "focus-in-event", 	G_CALLBACK (GUIMessageWidget::focus_event),this);
 	g_signal_connect (textview2, "focus-out-event", G_CALLBACK (GUIMessageWidget::focus_event),this);
-	g_signal_connect (eventbox , "key-press-event",	G_CALLBACK (GUIMessageWidget::key_press_event),this);
 	g_signal_connect (textview1, "size-allocate", 	G_CALLBACK (GUIMessageWidget::SizeAllocate),this);
+// These two are for autofocusing the input area when you start typing something
+	g_signal_connect (eventbox , "key-press-event",	G_CALLBACK (GUIMessageWidget::key_press_event),this);
 	g_signal_connect (textview1, "key-press-event", G_CALLBACK (GUIMessageWidget::key_press_event),this);
+	
 	g_signal_connect (textview1, "scroll-event", 	G_CALLBACK (GUIMessageWidget::Scroll), this);      				// Zooming
 	g_signal_connect (textview1, "event-after", 	G_CALLBACK (GUIMessageWidget::tw1_event_after), this); // Command press
 	expander_activate (GTK_EXPANDER(expander), (void*)this);
@@ -1268,7 +1270,7 @@ GUIMessageWidget::key_press_event(GtkWidget * widget, GdkEventKey * event, GUIMe
 	gtk_widget_grab_focus(c->textview2);
 	gint ret;
 	g_signal_emit_by_name(G_OBJECT(c->textview2), "key-press-event", event, ret, -1);
-	return TRUE;
+	return FALSE;
 }
 
 gboolean

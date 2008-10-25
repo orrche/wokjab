@@ -178,6 +178,7 @@ AC_CONFIG_FILES(Makefile \
         plugins/HtmlLinkMessage/Makefile  \
         plugins/normal/WokjabDockWindow/Makefile  \
         plugins/normal/NotificationWidget/Makefile  \
+        plugins/normal/XEP-0147-XMPP_URI_Scheme_Query/Makefile  \
 	wokjab/Makefile \
 	wokjab/src/Makefile \
 	wokjab/include/Makefile \

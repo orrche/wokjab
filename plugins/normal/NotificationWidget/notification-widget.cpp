@@ -42,6 +42,7 @@ origxml(new WokXMLTag(*tag))
 		GtkWidget *label;
 		bbox = gtk_vbox_new(FALSE, 2);
 		label = gtk_label_new((*c_iter)->GetAttr("name").c_str());
+		gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
 		
 		gtk_box_pack_start(GTK_BOX(box), bbox, FALSE, FALSE, 0);
 		gtk_box_pack_start(GTK_BOX(bbox), label, FALSE, FALSE, 0);
@@ -52,7 +53,8 @@ origxml(new WokXMLTag(*tag))
 		{
 			GtkWidget *button = gtk_event_box_new();
 			GtkWidget *label = gtk_label_new((*iter)->GetAttr("name").c_str());
-			
+			gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+		
 			gtk_container_add(GTK_CONTAINER(button), label);
 			
 			gtk_box_pack_start(GTK_BOX(bbox), button, FALSE, FALSE, 0);

@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2006  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2006-2008  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
@@ -32,22 +32,9 @@
 #endif
 
 
-AdHocWid::AdHocWid(WLSignal *wls, std::string session, std::string jid, std::string node) : WLSignalInstance(wls),
-session(session)
+AdHocWid::AdHocWid(WLSignal *wls, WokXMLTag &in_tag) : WLSignalInstance(wls),
+session(in_tag.GetAttr("session"))
 {
-	WokXMLTag msgtag(NULL,"message");
-	msgtag.AddAttr("session", session);
-	WokXMLTag &tag = msgtag.AddTag("iq");
-	tag.AddAttr("to", jid );
-	tag.AddAttr("type", "get");
-	WokXMLTag *query;
-	query = &tag.AddTag("query");
-	query->AddAttr("xmlns", "http://jabber.org/protocol/disco#items");
-	query->AddAttr("node", "http://jabber.org/protocol/commands");
-
-	wls->SendSignal("Jabber XML IQ Send", &msgtag);
-	EXP_SIGHOOK("Jabber XML IQ ID " + tag.GetAttr("id"), &AdHocWid::Set, 1000);
-	
 	xml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/AdHocWid.glade", NULL, NULL);
 	g_signal_connect (G_OBJECT (glade_xml_get_widget(xml, "window")), "destroy",
 				G_CALLBACK (AdHocWid::Destroy), this);
@@ -57,7 +44,10 @@ session(session)
 
 	renderer = gtk_cell_renderer_text_new ();
 	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (glade_xml_get_widget(xml, "command_view")),
-        -1, "Command", renderer, "markup", NAME_COLUMN, NULL);
+		-1, "Command", renderer, "markup", NAME_COLUMN, NULL);
+	renderer = gtk_cell_renderer_text_new ();
+	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (glade_xml_get_widget(xml, "command_view")),
+		-1, "JID", renderer, "markup", JID_COLUMN, NULL);
 
 	model = gtk_list_store_new (NUM_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
@@ -66,6 +56,53 @@ session(session)
 				 
 	g_signal_connect (G_OBJECT (glade_xml_get_widget(xml, "exec_button")), "clicked",
 					G_CALLBACK (AdHocWid::ExecButton), this);
+	
+	if ( in_tag.GetTagList("node").empty() )
+	{
+		WokXMLTag msgtag(NULL,"message");
+		msgtag.AddAttr("session", in_tag.GetAttr("session"));
+		WokXMLTag &tag = msgtag.AddTag("iq");
+		tag.AddAttr("to", in_tag.GetAttr("jid") );
+		tag.AddAttr("type", "get");
+		WokXMLTag *query;
+		query = &tag.AddTag("query");
+		query->AddAttr("xmlns", "http://jabber.org/protocol/disco#items");
+		query->AddAttr("node", "http://jabber.org/protocol/commands");
+
+		wls->SendSignal("Jabber XML IQ Send", &msgtag);
+		EXP_SIGHOOK("Jabber XML IQ ID " + tag.GetAttr("id"), &AdHocWid::Set, 1000);
+
+	}
+	else
+	{
+		std::list <WokXMLTag *>::iterator tagiter;
+		
+		
+
+		for( tagiter = in_tag.GetTagList("node").begin() ; tagiter != in_tag.GetTagList("node").end() ; tagiter++)
+		{
+			std::string name;
+			if ( (*tagiter)->GetAttr("name").empty() )
+				name = (*tagiter)->GetAttr("node");
+			else
+				name = (*tagiter)->GetAttr("name");
+			
+			GtkTreeIter treeiter;
+			gtk_list_store_append(GTK_LIST_STORE(model), &treeiter);
+			gtk_list_store_set(GTK_LIST_STORE(model), &treeiter, 
+							NAME_COLUMN , name.c_str(),
+							COMMAND_COLUMN, (*tagiter)->GetAttr("node").c_str(),
+							   JID_COLUMN, in_tag.GetAttr("jid").c_str(), -1);
+			
+			if ( tagiter == in_tag.GetTagList("node").begin() )
+			{
+				gtk_tree_selection_select_iter(gtk_tree_view_get_selection(GTK_TREE_VIEW (glade_xml_get_widget(xml, "command_view"))), &treeiter);
+			}
+		}
+		
+
+	}
+	
 }
 
 

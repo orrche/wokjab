@@ -32,7 +32,7 @@
 AdHoc::AdHoc(WLSignal *wls) : WoklibPlugin(wls)
 {
 	EXP_SIGHOOK("Jabber disco Feature http://jabber.org/protocol/commands", &AdHoc::Feature, 500);
-	EXP_SIGHOOK("Jabber GUI GetJIDMenu", &AdHoc::Menu, 2000);
+	EXP_SIGHOOK("Jabber GUI GetJIDMenu", &AdHoc::Menu, 1000);
 	EXP_SIGHOOK("Jabber AdHoc Start", &AdHoc::Start, 1000);
 	EXP_SIGHOOK("Jabber AdHoc Execute", &AdHoc::Exec, 1000);
 	
@@ -97,14 +97,14 @@ AdHoc::Message(WokXMLTag *tag)
 int
 AdHoc::Feature(WokXMLTag *tag)
 {
-	new AdHocWid(wls, tag->GetAttr("session"), tag->GetAttr("jid"), "");
+	new AdHocWid(wls, *tag);
 	return 1;
 }
 
 int
 AdHoc::Start(WokXMLTag *tag)
 {
-	new AdHocWid(wls, tag->GetAttr("session"), tag->GetAttr("jid"), "");
+	new AdHocWid(wls, *tag);
 	return 1;
 }
 
@@ -151,10 +151,10 @@ AdHoc::CommandExec(WokXMLTag *tag)
 int
 AdHoc::Exec(WokXMLTag *tag)
 {
-		wls->SendSignal("Jabber XML IQ Send", tag);
-		EXP_SIGHOOK("Jabber XML IQ ID " + tag->GetFirstTag("iq").GetAttr("id"), &AdHoc::ExecResponse, 1000);
-		
-		return 1;
+	wls->SendSignal("Jabber XML IQ Send", tag);
+	EXP_SIGHOOK("Jabber XML IQ ID " + tag->GetFirstTag("iq").GetAttr("id"), &AdHoc::ExecResponse, 1000);
+	
+	return 1;
 }
 
 int

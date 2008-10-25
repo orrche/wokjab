@@ -58,8 +58,11 @@ PubSub::Message(WokXMLTag *tag)
 			{
 				wls->SendSignal("Jabber PubSub JID '" + XMLisize(tag->GetFirstTag("message").GetAttr("from")) + "' '" + XMLisize((*item)->GetAttr("node")) + "'", tag); 				
 				wls->SendSignal("Jabber PubSub JID '" + XMLisize((*item)->GetAttr("node")) + "'", tag);
-				wls->SendSignal("Jabber PubSub Item xmlns '" + XMLisize( (*((*item)->GetFirstTag("item").GetTags().begin()))->GetName() ) + "' '" + 
-								XMLisize( (*((*item)->GetFirstTag("item").GetTags().begin()))->GetAttr("xmlns") ) + "'", tag);
+				if( !(*item)->GetFirstTag("item").GetTags().empty() )
+				{
+					wls->SendSignal("Jabber PubSub Item xmlns '" + XMLisize( (*((*item)->GetFirstTag("item").GetTags().begin()))->GetName() ) + "' '" + 
+									XMLisize( (*((*item)->GetFirstTag("item").GetTags().begin()))->GetAttr("xmlns") ) + "'", tag);
+				}
 			}
 			
 		}

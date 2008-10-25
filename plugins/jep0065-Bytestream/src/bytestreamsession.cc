@@ -86,9 +86,9 @@ session(xml->GetAttr("session"))
 				s5id = sockettag.GetAttr("id");
 				streamhost[s5id] = (*hostiter)->GetAttr("jid");
 
-				EXP_SIGHOOK("SOCKS5 Connection Established " + s5id, &jep65Session::SOCKS_Established, 1000);
-				EXP_SIGHOOK("SOCKS5 Connection Data " + s5id, &jep65Session::SOCKS_Data, 1000);
-				EXP_SIGHOOK("SOCKS5 Connection Failed " + s5id, &jep65Session::SOCKS_Fail, 1000);
+				EXP_SIGHOOK(sockettag.GetAttr("established"), &jep65Session::SOCKS_Established, 1000);
+				EXP_SIGHOOK(sockettag.GetAttr("data"), &jep65Session::SOCKS_Data, 1000);
+				EXP_SIGHOOK(sockettag.GetAttr("fail"), &jep65Session::SOCKS_Fail, 1000);
 			}
 		}
 

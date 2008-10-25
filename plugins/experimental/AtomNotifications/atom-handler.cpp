@@ -29,14 +29,20 @@ AtomHandler::AtomHandler(WLSignal *wls) : WoklibPlugin(wls)
 int
 AtomHandler::Link(WokXMLTag *tag)
 {
-	std::cout << "XML: " << *tag << std::endl;
-	
-	if ( tag->GetAttr("href").substr(0,7) == "http://" )
+	if ( tag->GetFirstTag("link").GetAttr("href").substr(0,7) == "http://" )
 	{
 		WokXMLTag run("run");
-		run.AddTag("link").AddAttr("url", tag->GetAttr("href"));
+		run.AddTag("link").AddAttr("url", tag->GetFirstTag("link").GetAttr("href"));
 		
 		wls->SendSignal("HtmlLink RunBrowser", run);
+	}
+	if ( tag->GetFirstTag("link").GetAttr("href").substr(0,5) == "xmpp:")
+	{
+		WokXMLTag uri("uri");
+		uri.AddAttr("uri", tag->GetFirstTag("link").GetAttr("href"));
+		uri.AddAttr("session", tag->GetAttr("session"));
+		
+		wls->SendSignal("Jabber URI", uri);
 	}
 		
 		
@@ -68,14 +74,15 @@ AtomHandler::NewAtom(WokXMLTag *tag)
 			for(linkiter = entry.GetTagList("link").begin(); linkiter != entry.GetTagList("link").end(); linkiter++)
 			{
 				WokXMLTag &command = commands.AddTag("command");
-				if ( (*linkiter)->GetBody().empty() )
+				if ( (*linkiter)->GetAttr("rel").empty() )
 					command.AddAttr("name", (*linkiter)->GetAttr("href"));
 				else
-					command.AddAttr("name", (*linkiter)->GetBody());
+					command.AddAttr("name", (*linkiter)->GetAttr("rel"));
 				
 				WokXMLTag &sig = command.AddTag("signal");
 				sig.AddAttr("name" , "Jabber PubSub Atom Link");
-				sig.AddTag(*linkiter);
+				sig.GetFirstTag("link").AddTag(*linkiter);
+				sig.GetFirstTag("link").AddAttr("session", tag->GetAttr("session"));
 			
 			}
 		}
