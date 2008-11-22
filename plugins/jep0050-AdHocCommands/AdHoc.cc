@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2006  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2006-2008  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify

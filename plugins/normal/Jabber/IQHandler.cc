@@ -54,12 +54,10 @@ IQHandler::sendxmliqsig( WokXMLTag *tag)
 int
 IQHandler::xml (WokXMLTag *xml)
 {
-	WokXMLTag *tag_iq = & xml->GetFirstTag("iq");
-	
-	std::string type = tag_iq->GetAttr("type");
-	std::string id = tag_iq->GetAttr("id");
-	std::string to = tag_iq->GetAttr("to");
-	std::string from = tag_iq->GetAttr("from");
+	std::string type = xml->GetFirstTag("iq").GetAttr("type");
+	std::string id = xml->GetFirstTag("iq").GetAttr("id");
+	std::string to = xml->GetFirstTag("iq").GetAttr("to");
+	std::string from = xml->GetFirstTag("iq").GetAttr("from");
 
 	
 	if(type == "result" || type == "error")
@@ -68,7 +66,7 @@ IQHandler::xml (WokXMLTag *xml)
 	}
 	else if( type == "get" || type == "set" )
 	{
-		std::list<WokXMLTag *> &tags = tag_iq->GetTags();
+		std::list<WokXMLTag *> &tags = xml->GetFirstTag("iq").GetTags();
 		std::list<WokXMLTag *>::iterator iter;
 		
 		for( iter = tags.begin() ; iter != tags.end() ; iter++)
