@@ -48,14 +48,24 @@ public:
 	static void CloseButton(GtkWidget *widget, NotificationManager *c);
 	static void LeftButton(GtkWidget *widget, NotificationManager *c);
 	static void RightButton(GtkWidget *widget, NotificationManager *c);
-		
+	static void ListButton(GtkWidget *widget, NotificationManager *c);
+	static void SelectedRemove(GtkTreePath *path, NotificationManager *c);
+	static void ListRemoveButton(GtkWidget *widget, NotificationManager *c);
+	static void ListDefaultButton(GtkWidget *widget, NotificationManager *c);
+	static void SelectedDefault(GtkTreePath *path, NotificationManager *c);
+	static void ListSelectionChange(GtkTreeView *tree_view, NotificationManager *c);	
+	static void SigButton(GtkWidget *button, NotificationManager *c);
+
 	void Update();
 protected:
 
 private:
-	GladeXML *gxml;
+	GladeXML *gxml;	
+	GladeXML *gxml_list;
+	WokXMLTag *removetag;
 
 	GtkWidget *mainwindowplug;
+	GtkListStore *event_store;
 	WokXMLTag *inittag;
 	std::list <NotificationWidget *> items;
 	std::list <NotificationWidget *>::iterator pos;

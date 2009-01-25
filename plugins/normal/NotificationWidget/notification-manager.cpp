@@ -19,6 +19,7 @@
 
 #include "notification-manager.hpp"
 #include <sstream>
+#include <algorithm>
 
 NotificationManager::NotificationManager(WLSignal *wls) : WoklibPlugin(wls)
 {	
@@ -30,9 +31,63 @@ NotificationManager::NotificationManager(WLSignal *wls) : WoklibPlugin(wls)
 	
 	EXP_SIGHOOK("GUI Window Init", &NotificationManager::GUIWindowInit, 550);
 	
+	removetag = NULL;
 	pos = items.begin();
 	
 	gxml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/notification.control.glade", "mainbox", NULL);
+	gxml_list = glade_xml_new(PACKAGE_GLADE_DIR"/wokjab/notification.control.glade", "list_window", NULL);
+	
+	
+	GtkCellRenderer *renderer;
+	GtkTreeViewColumn *column;
+	
+	renderer = gtk_cell_renderer_text_new ();
+	//~ gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (glade_xml_get_widget(xml,"tree")),
+        //~ -1, "Name", renderer, "text", 0, NULL);
+	
+	
+	column = gtk_tree_view_column_new();
+	renderer = gtk_cell_renderer_text_new ();
+	gtk_tree_view_column_pack_start(column, renderer, TRUE);
+	gtk_tree_view_column_add_attribute(column, renderer, "text", 0);
+	gtk_tree_view_column_set_sort_column_id (column, 0);
+	gtk_tree_view_column_set_title(column,"Name");
+	gtk_tree_view_append_column (GTK_TREE_VIEW (glade_xml_get_widget(gxml_list,"event_list")), GTK_TREE_VIEW_COLUMN (column));		
+		
+	column = gtk_tree_view_column_new();
+	renderer = gtk_cell_renderer_text_new ();
+	gtk_tree_view_column_pack_start(column, renderer, TRUE);
+	gtk_tree_view_column_add_attribute(column, renderer, "text", 1);
+	gtk_tree_view_column_set_sort_column_id (column, 1);
+	gtk_tree_view_column_set_title(column,"id");
+	gtk_tree_view_append_column (GTK_TREE_VIEW (glade_xml_get_widget(gxml_list,"event_list")), GTK_TREE_VIEW_COLUMN (column));		
+
+	column = gtk_tree_view_column_new();
+	renderer = gtk_cell_renderer_text_new ();
+	gtk_tree_view_column_pack_start(column, renderer, TRUE);
+	gtk_tree_view_column_add_attribute(column, renderer, "text", 2);
+	gtk_tree_view_column_set_sort_column_id (column, 2);
+	gtk_tree_view_column_set_title(column,"xml");
+	gtk_tree_view_append_column (GTK_TREE_VIEW (glade_xml_get_widget(gxml_list,"event_list")), GTK_TREE_VIEW_COLUMN (column));		
+
+	
+    GtkTreeSelection *selection = GTK_TREE_SELECTION(gtk_tree_view_get_selection (GTK_TREE_VIEW (glade_xml_get_widget(gxml_list,"event_list"))));
+	gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
+	
+	event_store = gtk_list_store_new (4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+	gtk_tree_view_set_model (GTK_TREE_VIEW (glade_xml_get_widget(gxml_list,"event_list")), GTK_TREE_MODEL(event_store));
+	
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (gxml_list, "remove")), "clicked",
+			G_CALLBACK (NotificationManager::ListRemoveButton), this);
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (gxml_list, "default")), "clicked",
+			G_CALLBACK (NotificationManager::ListDefaultButton), this);
+	gtk_signal_connect (GTK_OBJECT (glade_xml_get_widget (gxml_list, "list_window")), "delete_event",
+		GTK_SIGNAL_FUNC (gtk_widget_hide_on_delete), this);
+	g_signal_connect (G_OBJECT (selection), "changed",
+			G_CALLBACK (NotificationManager::ListSelectionChange), this);
+	
+	
+	
 	
 	mainwindowplug = gtk_plug_new(0);
 	
@@ -45,7 +100,9 @@ NotificationManager::NotificationManager(WLSignal *wls) : WoklibPlugin(wls)
 			G_CALLBACK (NotificationManager::LeftButton), this);
 	g_signal_connect (G_OBJECT (glade_xml_get_widget (gxml, "right")), "clicked",
 			G_CALLBACK (NotificationManager::RightButton), this);
-		
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (gxml, "list")), "clicked",
+			G_CALLBACK (NotificationManager::ListButton), this);
+	
 	char buf[200];
 	WokXMLTag contag(NULL, "connect");
 	sprintf(buf, "%d", gtk_plug_get_id(GTK_PLUG(mainwindowplug)));
@@ -129,6 +186,171 @@ NotificationManager::CloseButton(GtkWidget *widget, NotificationManager *c)
 		remove.AddTag("item").AddAttr("id", (*c->pos)->GetId());
 		c->wls->SendSignal("Notification Remove", remove);
 	}
+}
+
+void
+NotificationManager::SelectedRemove(GtkTreePath *path, NotificationManager *c)
+{
+	GtkTreeIter iter;
+	gtk_tree_model_get_iter(GTK_TREE_MODEL(c->event_store), &iter,path);
+	
+	gchar *id;
+	gtk_tree_model_get(GTK_TREE_MODEL(c->event_store), &iter, 1, &id, -1);
+
+	c->removetag->AddTag("item").AddAttr("id", id);
+	
+	
+	g_free(id);
+	
+}
+
+void
+NotificationManager::ListRemoveButton(GtkWidget *widget, NotificationManager *c)
+{
+	GtkTreeSelection *selection;
+	GList *list;
+	GtkTreeModel *model;
+	c->removetag = new WokXMLTag("remove");
+		
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (glade_xml_get_widget(c->gxml_list,"event_list")));
+	model = GTK_TREE_MODEL(c->event_store);
+	list = gtk_tree_selection_get_selected_rows(selection, &model);
+	g_list_foreach(list, (GFunc)(NotificationManager::SelectedRemove), c);
+	g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
+	g_list_free (list);
+
+	c->wls->SendSignal("Notification Remove", c->removetag);
+	delete c->removetag;
+}
+
+void
+NotificationManager::SelectedDefault(GtkTreePath *path, NotificationManager *c)
+{
+	GtkTreeIter iter;
+	gtk_tree_model_get_iter(GTK_TREE_MODEL(c->event_store), &iter,path);
+	
+	gchar *xml;
+	gtk_tree_model_get(GTK_TREE_MODEL(c->event_store), &iter, 2, &xml, -1);
+
+	WokXMLTag tag("data");
+	tag.Add(xml);
+	WokXMLTag &command = tag.GetFirstTag("item").GetFirstTag("commands").GetFirstTag("command");
+	if ( !command.GetFirstTag("signal").GetTags().empty() )
+	{
+		c->wls->SendSignal(command.GetFirstTag("signal").GetAttr("name"), **command.GetFirstTag("signal").GetTags().begin());
+	}
+	
+	g_free(xml);
+}
+
+void
+NotificationManager::ListDefaultButton(GtkWidget *widget, NotificationManager *c)
+{
+	GtkTreeSelection *selection;
+	GList *list;
+	GtkTreeModel *model;
+	
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (glade_xml_get_widget(c->gxml_list,"event_list")));
+	model = GTK_TREE_MODEL(c->event_store);
+	list = gtk_tree_selection_get_selected_rows(selection, &model);
+	g_list_foreach(list, (GFunc)(NotificationManager::SelectedDefault), c);
+	g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
+	g_list_free (list);
+}
+
+void
+NotificationManager::ListSelectionChange(GtkTreeView *tree_view, NotificationManager *c) 
+{
+	GtkTreeSelection *selection;
+	GList *list;
+	GtkTreeModel *model;
+	gtk_container_foreach (GTK_CONTAINER(glade_xml_get_widget(c->gxml_list, "buttonBox")),  (void(*)(GtkWidget *, void *))gtk_widget_destroy, NULL);
+
+	std::list <std::string> composesig;	
+	
+	
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (glade_xml_get_widget(c->gxml_list,"event_list")));
+	model = GTK_TREE_MODEL(c->event_store);
+	list = gtk_tree_selection_get_selected_rows(selection, &model);
+	for ( GList *pos = list ; pos ; pos = pos->next)
+	{
+		GtkTreeIter iter;
+		gtk_tree_model_get_iter(GTK_TREE_MODEL(c->event_store), &iter,(GtkTreePath*)pos->data);
+	
+		gchar *xml;
+		gtk_tree_model_get(GTK_TREE_MODEL(c->event_store), &iter, 2, &xml, -1);
+
+		WokXMLTag tag("data");
+		tag.Add(xml);
+		WokXMLTag &command = tag.GetFirstTag("item").GetFirstTag("commands");
+		for( std::list <WokXMLTag *>::iterator liter = command.GetTagList("command").begin(); liter != command.GetTagList("command").end(); liter++)
+		{
+			if ( std::find(composesig.begin(), composesig.end(), (*liter)->GetAttr("name")) == composesig.end() )
+			{
+				composesig.push_back((*liter)->GetAttr("name"));
+				GtkWidget *button = gtk_button_new_with_label((*liter)->GetAttr("name").c_str());
+				gtk_box_pack_start(GTK_BOX(glade_xml_get_widget(c->gxml_list, "buttonBox")), button, FALSE, FALSE, 0);
+
+				g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (NotificationManager::SigButton), c);		
+			}
+		
+		}
+	
+		g_free(xml);
+	}
+	
+	
+	g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
+	g_list_free (list);
+	
+	
+	gtk_widget_show_all(glade_xml_get_widget(c->gxml_list, "buttonBox"));
+}
+
+void
+NotificationManager::SigButton(GtkWidget *button, NotificationManager *c)
+{
+	GtkTreeSelection *selection;
+	GList *list;
+	GtkTreeModel *model;
+	
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (glade_xml_get_widget(c->gxml_list,"event_list")));
+	model = GTK_TREE_MODEL(c->event_store);
+	list = gtk_tree_selection_get_selected_rows(selection, &model);
+
+	for ( GList *pos = list ; pos ; pos = pos->next)
+	{
+		gchar *xml;
+		GtkTreeIter iter;
+		gtk_tree_model_get_iter(GTK_TREE_MODEL(c->event_store), &iter,(GtkTreePath*)(pos->data));
+		gtk_tree_model_get(GTK_TREE_MODEL(c->event_store), &iter, 2, &xml, -1);
+
+		WokXMLTag tag("data");
+		tag.Add(xml);
+		WokXMLTag &command = tag.GetFirstTag("item").GetFirstTag("commands");
+		for( std::list <WokXMLTag *>::iterator liter = command.GetTagList("command").begin(); liter != command.GetTagList("command").end(); liter++)
+		{
+			if((*liter)->GetAttr("name") == gtk_button_get_label(GTK_BUTTON(button)))
+			{
+				c->wls->SendSignal((*liter)->GetFirstTag("signal").GetAttr("name"), **(*liter)->GetFirstTag("signal").GetTags().begin());
+				
+			}
+		}
+	
+		g_free(xml);
+	}
+	
+	
+	g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
+	g_list_free (list);
+	
+}
+
+
+void
+NotificationManager::ListButton(GtkWidget *widget, NotificationManager *c)
+{
+	gtk_window_present(GTK_WINDOW(glade_xml_get_widget(c->gxml_list, "list_window")));
 }
 
 void
@@ -216,10 +438,24 @@ NotificationManager::Add(WokXMLTag *tag)
 		NotificationWidget *tmpwid = new NotificationWidget(wls, *iter);
 		items.push_back(tmpwid); 
 		gtk_box_pack_start(GTK_BOX(glade_xml_get_widget (gxml, "mainbox")), tmpwid->GetWidget(), FALSE, FALSE, 0);
+		
+		
+		// Adding to the list widget
+		GtkTreeIter titer;
+					
+		gtk_list_store_append (event_store, &titer);
+		gtk_list_store_set (event_store, &titer, 
+									0, (*iter)->GetFirstTag("body").GetChildrenStr().c_str(),
+									1, (*iter)->GetAttr("id").c_str(), 
+									2, (*iter)->GetStr().c_str(), 
+									3, XMLisize((*iter)->GetFirstTag("body").GetChildrenStr() + "\n\n-------\n\n" + ((*iter)->GetStr().c_str())).c_str(), -1 );
 	}
 	
 	if ( pos == items.end() )
 		pos = items.begin();
+	
+	
+	
 	Update();
 	
 	return 1;
@@ -271,6 +507,32 @@ NotificationManager::Remove(WokXMLTag *tag)
 			}
 			wls->SendSignal("Jabber Notification Remove '" + XMLisize((*iter)->GetAttr("id")) + "'", (*iter));
 			
+			
+			
+			// Searching throw all the rows for the one with the correct id 
+			GtkTreeIter titer;
+			if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(event_store), &titer) != FALSE)
+			{
+				bool loop = true;
+				while(loop)
+				{
+					gchar *id;
+					
+					gtk_tree_model_get(GTK_TREE_MODEL(event_store), &titer, 1, &id, -1);
+
+					if ((*iter)->GetAttr("id")==id)
+					{
+						if( gtk_list_store_remove (event_store, &titer) == FALSE )
+							loop = false;
+					}
+					else
+						if (gtk_tree_model_iter_next(GTK_TREE_MODEL(event_store), &titer) == FALSE )
+							loop = false;
+					
+					g_free(id);
+				}
+				
+			}
 		}
 	}
 	

@@ -66,7 +66,8 @@ IQHandler::xml (WokXMLTag *xml)
 	}
 	else if( type == "get" || type == "set" )
 	{
-		std::list<WokXMLTag *> &tags = xml->GetFirstTag("iq").GetTags();
+		WokXMLTag tmptag(*xml);
+		std::list<WokXMLTag *> &tags = tmptag.GetFirstTag("iq").GetTags();
 		std::list<WokXMLTag *>::iterator iter;
 		
 		for( iter = tags.begin() ; iter != tags.end() ; iter++)
