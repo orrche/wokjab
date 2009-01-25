@@ -42,14 +42,12 @@ NotificationManager::NotificationManager(WLSignal *wls) : WoklibPlugin(wls)
 	GtkTreeViewColumn *column;
 	
 	renderer = gtk_cell_renderer_text_new ();
-	//~ gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (glade_xml_get_widget(xml,"tree")),
-        //~ -1, "Name", renderer, "text", 0, NULL);
-	
+		
 	
 	column = gtk_tree_view_column_new();
 	renderer = gtk_cell_renderer_text_new ();
 	gtk_tree_view_column_pack_start(column, renderer, TRUE);
-	gtk_tree_view_column_add_attribute(column, renderer, "text", 0);
+	gtk_tree_view_column_add_attribute(column, renderer, "markup", 0);
 	gtk_tree_view_column_set_sort_column_id (column, 0);
 	gtk_tree_view_column_set_title(column,"Name");
 	gtk_tree_view_append_column (GTK_TREE_VIEW (glade_xml_get_widget(gxml_list,"event_list")), GTK_TREE_VIEW_COLUMN (column));		
@@ -126,7 +124,7 @@ NotificationManager::NotificationManager(WLSignal *wls) : WoklibPlugin(wls)
 	
 	/* Test debug stuff */
 #if 0
-	WokXMLTag msg("message");
+	WokXMLTag msg("message"); 
 	WokXMLTag &item = msg.AddTag("item");
 	item.AddTag("body").AddText("SL: Diablo III released");
 	item.AddAttr("id", "bullshit");
@@ -134,7 +132,9 @@ NotificationManager::NotificationManager(WLSignal *wls) : WoklibPlugin(wls)
 
 	WokXMLTag msg2("message");
 	item = msg2.AddTag("item");
-	item.AddTag("body").AddText("Facebook: John blund wants to add you as a friend");
+	item.AddTag("body").AddText("Facebook: ");
+	item.GetFirstTag("body").AddTag("b").AddText("John");
+	item.GetFirstTag("body").AddText("blund wants to add you as a friend");
 	item.AddAttr("id", "bullshit 2");
 	
 	WokXMLTag &commands = item.AddTag("commands");
@@ -447,8 +447,8 @@ NotificationManager::Add(WokXMLTag *tag)
 		gtk_list_store_set (event_store, &titer, 
 									0, (*iter)->GetFirstTag("body").GetChildrenStr().c_str(),
 									1, (*iter)->GetAttr("id").c_str(), 
-									2, (*iter)->GetStr().c_str(), 
-									3, XMLisize((*iter)->GetFirstTag("body").GetChildrenStr() + "\n\n-------\n\n" + ((*iter)->GetStr().c_str())).c_str(), -1 );
+									2, ((*iter)->GetStr()).c_str(), 
+									3, ((*iter)->GetFirstTag("body").GetChildrenStr() + "\n\n-------\n\n" + XMLisize((*iter)->GetStr())).c_str(), -1 );
 	}
 	
 	if ( pos == items.end() )
@@ -471,6 +471,23 @@ NotificationManager::Remove(WokXMLTag *tag)
 	{
 		if ( (*iter)->GetAttr("id") != "") 
 		{
+			// Searching throw all the rows for the one with the correct id 
+			GtkTreeIter titer;
+			gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(event_store), &titer);
+			while(valid != FALSE)
+			{
+				gchar *id;
+				
+				gtk_tree_model_get(GTK_TREE_MODEL(event_store), &titer, 1, &id, -1);
+
+				if ((*iter)->GetAttr("id")==id)
+					valid =  gtk_list_store_remove (event_store, &titer);
+				else
+					valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(event_store), &titer);
+				
+				g_free(id);
+			}
+			
 			if ( pos != items.end() && (*pos)->GetId() == (*iter)->GetAttr("id") )
 			{
 				std::list <NotificationWidget*>::iterator tmp = pos;
@@ -505,34 +522,9 @@ NotificationManager::Remove(WokXMLTag *tag)
 					siter++;
 				}						
 			}
+		
 			wls->SendSignal("Jabber Notification Remove '" + XMLisize((*iter)->GetAttr("id")) + "'", (*iter));
 			
-			
-			
-			// Searching throw all the rows for the one with the correct id 
-			GtkTreeIter titer;
-			if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(event_store), &titer) != FALSE)
-			{
-				bool loop = true;
-				while(loop)
-				{
-					gchar *id;
-					
-					gtk_tree_model_get(GTK_TREE_MODEL(event_store), &titer, 1, &id, -1);
-
-					if ((*iter)->GetAttr("id")==id)
-					{
-						if( gtk_list_store_remove (event_store, &titer) == FALSE )
-							loop = false;
-					}
-					else
-						if (gtk_tree_model_iter_next(GTK_TREE_MODEL(event_store), &titer) == FALSE )
-							loop = false;
-					
-					g_free(id);
-				}
-				
-			}
 		}
 	}
 	
