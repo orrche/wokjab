@@ -123,7 +123,7 @@ NotificationManager::NotificationManager(WLSignal *wls) : WoklibPlugin(wls)
 	
 	
 	/* Test debug stuff */
-#if 0
+#if 1
 	WokXMLTag msg("message"); 
 	WokXMLTag &item = msg.AddTag("item");
 	item.AddTag("body").AddText("SL: Diablo III released");
@@ -419,6 +419,14 @@ NotificationManager::Update()
 		gtk_widget_set_sensitive(glade_xml_get_widget (gxml, "right"), FALSE);
 	else
 		gtk_widget_set_sensitive(glade_xml_get_widget (gxml, "right"), TRUE);
+	
+	
+	std::list<NotificationWidget *>::iterator p = items.begin();
+	int i = 1;
+	for( ; p != pos ; i++, p++);
+	std::stringstream lpos;
+	lpos << i << "/" << items.size();
+	gtk_label_set_text(GTK_LABEL(glade_xml_get_widget(gxml, "position_label")), lpos.str().c_str());
 }
 
 int
@@ -449,6 +457,11 @@ NotificationManager::Add(WokXMLTag *tag)
 									1, (*iter)->GetAttr("id").c_str(), 
 									2, ((*iter)->GetStr()).c_str(), 
 									3, ((*iter)->GetFirstTag("body").GetChildrenStr() + "\n\n-------\n\n" + XMLisize((*iter)->GetStr())).c_str(), -1 );
+		
+		
+		
+
+		
 	}
 	
 	if ( pos == items.end() )
