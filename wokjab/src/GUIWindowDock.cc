@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2009  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#include "include/GUIWindowDock.h"
+#include "../include/GUIWindowDock.h"
 
 #include <Woklib/WokXMLTag.h>
 #include <sstream>

@@ -23,8 +23,8 @@
 #include <Woklib/WLSignal.h>
 #include <gtk/gtk.h>
 #include <iostream>
-#include "include/GUIMessageWidget.h"
-#include "include/GUIWindowDock.h"
+#include "../include/GUIMessageWidget.h"
+#include "../include/GUIWindowDock.h"
 
 class GUIMessageHandler : public WLSignalInstance
 {

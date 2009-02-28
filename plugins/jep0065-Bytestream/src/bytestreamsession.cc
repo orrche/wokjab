@@ -21,6 +21,9 @@
 #include "vector"
 #include <sstream>
 
+//* This code is for reciving files */
+
+
 jep65Session::jep65Session(WLSignal *wls, WokXMLTag *xml):
 WLSignalInstance ( wls ),
 initiator(xml->GetFirstTag("iq").GetAttr("from")),
@@ -68,6 +71,14 @@ session(xml->GetAttr("session"))
 		std::list <WokXMLTag*>::iterator hostiter;
 		std::string s5id = "";
 		
+		std::string hosts = "";
+		for ( hostiter = xml->GetFirstTag("iq").GetFirstTag("query").GetTagList("streamhost").begin() ;
+								hostiter != xml->GetFirstTag("iq").GetFirstTag("query").GetTagList("streamhost").end() ;
+								hostiter++)
+		{
+				hosts += (*hostiter)->GetAttr("host") + "\n";
+		}
+			
 		for ( hostiter = xml->GetFirstTag("iq").GetFirstTag("query").GetTagList("streamhost").begin() ;
 								hostiter != xml->GetFirstTag("iq").GetFirstTag("query").GetTagList("streamhost").end() ;
 								hostiter++)
@@ -83,6 +94,13 @@ session(xml->GetAttr("session"))
 			wls->SendSignal("SOCKS5 Connect", sockettag);
 			if ( sockettag.GetAttr("result") != "error")
 			{
+					
+				WokXMLTag contag(NULL, "Accepted");
+				contag.AddAttr("sid", lsid);
+				contag.GetFirstTag("message").GetFirstTag("body").AddText("Trying to connect to " + hosts + " sadly for the moment only the first host is supported");
+				wls->SendSignal("Jabber Stream File Status", &contag);
+				wls->SendSignal("Jabber Stream File Status Accepted", &contag);
+					
 				s5id = sockettag.GetAttr("id");
 				streamhost[s5id] = (*hostiter)->GetAttr("jid");
 
@@ -152,6 +170,11 @@ jep65Session::SOCKS_Fail(WokXMLTag *tag)
 		wls->SendSignal("Jabber XML Send", &msgtag);
 		
 		delete this;
+	}
+	else
+	{
+		woklib_message(wls, "OK... here we should reconnect to new host...");
+			
 	}
 	
 	/*

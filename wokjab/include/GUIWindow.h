@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2009  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,9 +25,9 @@
 
 #include <Woklib/WLSignalInstance.h>
 
-#include "include/GUIMessageHandler.h"
-#include "include/GUIConnectWindow.h"
-#include "include/GUIPluginWindow.h"
+#include "../include/GUIMessageHandler.h"
+#include "../include/GUIConnectWindow.h"
+#include "../include/GUIPluginWindow.h"
 
 #include <sys/types.h>
 

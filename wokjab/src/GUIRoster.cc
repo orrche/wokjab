@@ -21,11 +21,11 @@
 
 #include <Woklib/WLSignal.h>
 
-#include "include/GUIRoster.h"
+#include "../include/GUIRoster.h"
 
 // Addons .. should be plugins
-#include "include/GUIAddJIDWidget.h"
-#include "include/GUIPresentReqWidget.h"
+#include "../include/GUIAddJIDWidget.h"
+#include "../include/GUIPresentReqWidget.h"
 
 
 #include <iostream>

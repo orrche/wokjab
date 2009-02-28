@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2009  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -26,9 +26,9 @@
 #include <Woklib/WLSignal.h>
 #include <Woklib/WokLibSignal.h>
 
-#include "include/Roster.h"
-#include "include/GUIWindow.h"
-#include "include/main.h"
+#include "../include/Roster.h"
+#include "../include/GUIWindow.h"
+#include "../include/main.h"
 #include "../include/Initiat.h"
 #include "plugin-loader.hpp"
 

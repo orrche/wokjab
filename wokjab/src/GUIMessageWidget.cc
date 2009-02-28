@@ -19,8 +19,8 @@
 #  include <config.h>
 #endif
 
-#include "include/GUIMessageWidget.h"
-#include "include/main.h"
+#include "../include/GUIMessageWidget.h"
+#include "../include/main.h"
 
 #include <iostream>
 #include <fstream>
@@ -1269,7 +1269,7 @@ GUIMessageWidget::key_press_event(GtkWidget * widget, GdkEventKey * event, GUIMe
 		return FALSE;
 	gtk_widget_grab_focus(c->textview2);
 	gint ret;
-	g_signal_emit_by_name(G_OBJECT(c->textview2), "key-press-event", event, ret, -1);
+	//g_signal_emit_by_name(G_OBJECT(c->textview2), "key-press-event", event, ret, -1);
 	return FALSE;
 }
 

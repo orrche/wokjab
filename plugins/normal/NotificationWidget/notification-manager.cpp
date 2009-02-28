@@ -123,7 +123,7 @@ NotificationManager::NotificationManager(WLSignal *wls) : WoklibPlugin(wls)
 	
 	
 	/* Test debug stuff */
-#if 1
+#if 0
 	WokXMLTag msg("message"); 
 	WokXMLTag &item = msg.AddTag("item");
 	item.AddTag("body").AddText("SL: Diablo III released");

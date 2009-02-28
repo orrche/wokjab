@@ -743,13 +743,26 @@ jep96::Accepted(WokXMLTag *acctag)
 	GtkTreeIter iter;
 	GtkTreePath* path;
 	
+		
+	std::cout << "Accepted data trigger " << *acctag << std::endl;
+		
 	if ( rows.find(acctag->GetAttr("sid")) != rows.end() )
 	{
 		if( ( path = gtk_tree_row_reference_get_path(rows[acctag->GetAttr("sid")]) ) != NULL )
 		{
 			if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, path ))
 			{
-				gtk_list_store_set (file_store, &iter, 2, "Accepted" , -1);
+				gchar *tt;
+				gtk_tree_model_get (GTK_TREE_MODEL(file_store), &iter, TOOLTIP_COLUMN, &tt, -1);
+				if ( tt )
+				{
+						gtk_list_store_set (file_store, &iter, 2, "Accepted", TOOLTIP_COLUMN, (tt + acctag->GetFirstTag("message").GetFirstTag("body").GetBody()).c_str()  , -1);
+
+						g_free(tt);
+				}
+				else
+						gtk_list_store_set (file_store, &iter, 2, "Accepted", TOOLTIP_COLUMN, acctag->GetFirstTag("message").GetFirstTag("body").GetBody().c_str()  , -1);
+					
 			}
 		}
 	}

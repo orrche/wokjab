@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2008  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2009  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#include "include/Roster.h"
+#include "../include/Roster.h"
 
 
 #include <string.h>

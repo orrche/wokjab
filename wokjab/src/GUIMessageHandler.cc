@@ -20,10 +20,10 @@
 #endif
 
 #include <fstream>
-#include "include/GUIMessageHandler.h"
-#include "include/GUIWindowDock.h"
-#include "include/GUIMessageWidget.h"
-#include "include/main.h"
+#include "../include/GUIMessageHandler.h"
+#include "../include/GUIWindowDock.h"
+#include "../include/GUIMessageWidget.h"
+#include "../include/main.h"
 
 using std::string;
 

@@ -23,7 +23,7 @@
 #include <gtk/gtk.h>
 #include <Woklib/WLSignal.h>
 
-#include "include/User.h"
+#include "../include/User.h"
 
 class GUIMessageWidget : public WLSignalInstance
 {

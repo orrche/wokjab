@@ -150,7 +150,7 @@ JabberRoster::ParseXMLText(WokXMLTag *tag)
 					
 					std::string spantxt = "<span";
 					
-					char *sargs[] = {"color", "font_desc", "font_family", "face", "font_family", "size", "style", "weight", "variant", "stretch", "foreground", "background", 
+					const char *sargs[] = {"color", "font_desc", "font_family", "face", "font_family", "size", "style", "weight", "variant", "stretch", "foreground", "background", 
 						"underline", "underline_col", "rise", "strikethrough", "strikethrough_color", "fallback", "lang", NULL };
 
 					int x = 0;

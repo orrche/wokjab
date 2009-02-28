@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2008  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2009  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@
 #define MAXPENDING 5    /* Max connection requests */
 #define BUFFSIZE 32
 
-void Die(char *mess) { perror(mess); }
+void Die(const char *mess) { perror(mess); }
 	  
 jep65::jep65(WLSignal *wls):
 WoklibPlugin(wls)

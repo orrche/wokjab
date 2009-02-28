@@ -36,7 +36,7 @@ class RecvSocket : public WLSignalInstance
 	
 		int ReadData(WokXMLTag *xml);
 	private:
-		int SendData(char *data, uint len);
+		int SendData(const char *data, uint len);
 
 		int socket;
 		int pos;

@@ -137,7 +137,7 @@ RecvSocket::ReadData(WokXMLTag *xml)
 }
 
 int
-RecvSocket::SendData(char *data, uint len)
+RecvSocket::SendData(const char *data, uint len)
 {
 	uint bcount;
 	uint br;
