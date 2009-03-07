@@ -48,8 +48,7 @@ id(id)
 	tag->AddAttr("established", "SOCKS5 Connection Established " + str_id);
 	tag->AddAttr("data", "SOCKS5 Connection Data " + str_id);
 	tag->AddAttr("fail", "SOCKS5 Connection Fail " + str_id);
-	
-	std::cout << "CON DATA:" << *tag << std::endl;
+	tag->AddAttr("id", str_id);
 				
 	if ( ! tag->GetTagList("connect").empty() )
 	{
@@ -239,7 +238,6 @@ Socks5Session::Read(WokXMLTag *tag)
 			return 1;		
 		}
 		
-		std::cout << "socket nr " << socket_nr << " pos " << pos << " BUFFSIZE-pos " << BUFFSIZE-pos << std::endl;
 		int len = recv (socket_nr, buffer+pos, BUFFSIZE-pos, 0);
 
 		
@@ -398,7 +396,6 @@ Socks5Session::Ready(WokXMLTag *tag)
 int
 Socks5Session::OpenConnection()
 {	
-	std::cout << "Using OpenConnection()" << std::endl;
 	struct sockaddr_in sa;
 	struct hostent *hp;
 	

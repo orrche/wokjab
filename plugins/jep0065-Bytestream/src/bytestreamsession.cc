@@ -207,11 +207,6 @@ jep65Session::SOCKS_Data(WokXMLTag *tag)
 	char buffer[BUFFSIZE];
 	int len;
 		
-	len = recv (socket_nr, buffer, BUFFSIZE, 0);
-	std::cout << "Len: " << len << " socknr " << socket_nr << " ::: " << BUFFSIZE << std::endl;
-	sleep(5);
-	return 1;
-		
 	if( pos == 0 )
 	{
 		if ( filename.find("/") != std::string::npos )	
@@ -238,7 +233,6 @@ jep65Session::SOCKS_Data(WokXMLTag *tag)
 		
 	
 	len = recv (socket_nr, buffer, BUFFSIZE, 0);
-	std::cout << "Len: " << len << " socknr " << socket_nr << " ::: " << BUFFSIZE << std::endl;
 				
 	file.write(buffer, len);
 	pos += len;
