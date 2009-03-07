@@ -141,7 +141,7 @@ Socks5HostSession::ReadData(WokXMLTag *xml)
 }
 
 int
-Socks5HostSession::SendData(char *data, uint len)
+Socks5HostSession::SendData(const char *data, uint len)
 {
 	uint bcount;
 	uint br;

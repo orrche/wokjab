@@ -46,7 +46,7 @@ public:
 	~Socks5HostSession();
 	
 	int ReadData(WokXMLTag *xml);
-	int SendData(char *data, uint len);
+	int SendData(const char *data, uint len);
 protected:
 	WokXMLTag settings;
 	int socket;

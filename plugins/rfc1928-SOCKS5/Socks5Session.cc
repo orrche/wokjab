@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2006  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2009  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
@@ -49,7 +49,9 @@ id(id)
 	tag->AddAttr("data", "SOCKS5 Connection Data " + str_id);
 	tag->AddAttr("fail", "SOCKS5 Connection Fail " + str_id);
 	
-	if ( tag->GetTagList("connection").empty() )
+	std::cout << "CON DATA:" << *tag << std::endl;
+				
+	if ( ! tag->GetTagList("connect").empty() )
 	{
 		std::list <WokXMLTag *>::iterator iter;
 		for ( iter = tag->GetTagList("connect").begin() ; iter != tag->GetTagList("connect").end() ; iter++ )
@@ -237,6 +239,7 @@ Socks5Session::Read(WokXMLTag *tag)
 			return 1;		
 		}
 		
+		std::cout << "socket nr " << socket_nr << " pos " << pos << " BUFFSIZE-pos " << BUFFSIZE-pos << std::endl;
 		int len = recv (socket_nr, buffer+pos, BUFFSIZE-pos, 0);
 
 		
@@ -395,6 +398,7 @@ Socks5Session::Ready(WokXMLTag *tag)
 int
 Socks5Session::OpenConnection()
 {	
+	std::cout << "Using OpenConnection()" << std::endl;
 	struct sockaddr_in sa;
 	struct hostent *hp;
 	

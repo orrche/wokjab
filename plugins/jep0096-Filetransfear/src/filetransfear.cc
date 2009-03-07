@@ -195,7 +195,7 @@ jep96::SpeedCalc (jep96 * c)
 		}
 		else
 		{
-			long long int progress;
+			unsigned long long progress;
 			progress = atoll(iter->second->GetAttr("position").c_str()) - atoll(iter->second->GetAttr("lastpos").c_str());
 			iter->second->AddAttr("speed", c->PrettySize(progress));
 		}
@@ -505,19 +505,18 @@ jep96::JidMenuActivated(WokXMLTag *xml)
 int
 jep96::SendFile(WokXMLTag *xml)
 {
-	int size = 0;
+	unsigned long long size = 0;
 	struct stat results;
 	std::string filename;
-	std::string ssize;
-	char buff[20];
 	
 	std::string to = xml->GetAttr("to");
 	std::string file = xml->GetAttr("name");
 	std::string sid;
 	if ( xml->GetAttr("sid").empty() )
 	{
-		sprintf(buff,"%d", sidnum++);
-		sid = std::string("jep96-") + buff + "-";
+		std::stringstream ssid;
+		ssid << "jep96-" << sidnum++ << "-";
+		sid = ssid.str();
 		
 		
 		for(int i = 0; i < 10; i++)
@@ -535,8 +534,8 @@ jep96::SendFile(WokXMLTag *xml)
 	else
 		return 1;
 	
-	sprintf(buff, "%d", size);
-	ssize = buff;
+	std::stringstream ssize;
+	ssize << size;
 	
 	
 	filename = file.substr(file.rfind("/")+1);
@@ -587,7 +586,7 @@ jep96::SendFile(WokXMLTag *xml)
 	WokXMLTag &file_tag = si_tag.AddTag("file");
 	file_tag.AddAttr("xmlns", "http://jabber.org/protocol/si/profile/file-transfer");
 	file_tag.AddAttr("name", filename);
-	file_tag.AddAttr("size", ssize);
+	file_tag.AddAttr("size", ssize.str());
 	file_tag.AddTag("range");
 	
 	WokXMLTag &feature_tag = si_tag.AddTag("feature");
@@ -618,7 +617,7 @@ jep96::SendFile(WokXMLTag *xml)
 	data->AddAttr("rate", xml->GetAttr("rate"));
 	data->AddAttr("file", file);
 	data->AddAttr("strsize", PrettySize(size));
-	data->AddAttr("size", ssize);
+	data->AddAttr("size", ssize.str());
 	data->AddTag(&file_tag);
 	
 	sessions[iqtag.GetAttr("id")] = data;

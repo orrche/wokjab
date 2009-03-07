@@ -46,7 +46,7 @@ sport(sport)
 	WokXMLTag &filetag = msgtag->GetFirstTag("file");
 	msgtag_data = new WokXMLTag(*msgtag);
 	
-	fsize = size = atoi(filetag.GetAttr("size").c_str());
+	fsize = size = atoll(filetag.GetAttr("size").c_str());
 	file = msgtag->GetAttr("file");
 	sid = msgtag->GetAttr("sid");
 	
@@ -224,6 +224,7 @@ jep65send::SOCKS_Established(WokXMLTag *tag)
 int
 jep65send::SOCKS_Data(WokXMLTag *tag)
 {
+	std::cout << "What is really happening here !?" << std::endl;
 	// If we get here the connection is most likely closed
 	char buffer[10];
 	int len;
