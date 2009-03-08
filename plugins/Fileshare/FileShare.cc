@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2009  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,9 @@
 
 FileShare::FileShare(WLSignal *wls) : WoklibPlugin(wls)
 {
+	EXP_SIGHOOK("Jabber Disco Items Get Node http://jabber.org/protocol/commands", &FileShare::Commands, 500);
+	EXP_SIGHOOK("Jabber AdHoc Command Exec p2p search", &FileShare::Com_Search, 500);
+							
 	EXP_SIGHOOK("Jabber GUI GetJIDMenu", &FileShare::Menu, 1000);
 	EXP_SIGHOOK("Jabber FileShare FileList View", &FileShare::View, 1000);
 	EXP_SIGHOOK("Jabber XML IQ New fileshare get xmlns:http://sf.wokjab.net/fileshare", &FileShare::ListRequest, 1000);
@@ -88,6 +91,49 @@ FileShare::~FileShare()
 {
 	delete config;
 
+}
+
+int
+FileShare::Com_Search(WokXMLTag *tag)
+{
+		std::string action = tag->GetFirstTag("iq").GetFirstTag("command").GetAttr("action");
+		if( action == "cancel" )
+		{
+				
+				
+				
+		}
+		
+		
+
+		return 1;
+}
+
+
+int
+FileShare::Commands(WokXMLTag *tag)
+{
+	if ( ! HasPermission(tag->GetAttr("session"), tag->GetAttr("jid")))
+				return 1;
+		
+		
+	WokXMLTag querytag(NULL, "query");
+	WokXMLTag &itemtag = querytag.AddTag("item");
+	itemtag.AddAttr("session", tag->GetAttr("session"));
+	wls->SendSignal("Jabber Connection GetUserData", &querytag);
+		
+	WokXMLTag &item = tag->AddTag("item");
+	item.AddAttr("node", "p2p search");
+	item.AddAttr("name", "P2P Sök");
+	item.AddAttr("jid", querytag.GetFirstTag("item").GetFirstTag("jid").GetBody());
+
+		
+	WokXMLTag &filelistitem = tag->AddTag("item");
+	filelistitem.AddAttr("node", "p2p get_file_list");
+	filelistitem.AddAttr("name", "P2P Get File List");
+	filelistitem.AddAttr("jid", querytag.GetFirstTag("item").GetFirstTag("jid").GetBody());
+		
+	return 1;	
 }
 
 int
@@ -409,27 +455,31 @@ FileShare::Rebuild(WokXMLTag *tag)
 	return 1;
 }
 
-int
-FileShare::ListRequest(WokXMLTag *tag)
+bool
+FileShare::HasPermission(std::string session, std::string jid)
 {
-	bool permission = false;
-	std::string from = tag->GetFirstTag("iq").GetAttr("from");
-	if ( from.find("/") != std::string::npos )
-		from = from.substr(0, from.find("/"));
+	if ( jid.find("/") != std::string::npos )
+		jid = jid.substr(0, jid.find("/"));
 	
 	WokXMLTag group(NULL, "group");
 	group.AddAttr("group", "p2p");
-	group.AddAttr("session", tag->GetAttr("session"));
+	group.AddAttr("session", session);
 	
 	wls->SendSignal("Roster Get Members", group);
 	std::list <WokXMLTag *>::iterator jiditer;
 	for( jiditer = group.GetTagList("jid").begin() ; jiditer != group.GetTagList("jid").end() ; jiditer++)
 	{	
-		if ( from == (*jiditer)->GetBody() )
-			permission = true;
+		if ( jid == (*jiditer)->GetBody() )
+			return true;
 	}
-	
-	if ( !permission )
+		
+		return false; 
+}
+
+int
+FileShare::ListRequest(WokXMLTag *tag)
+{
+	if ( !HasPermission(tag->GetAttr("session"), tag->GetAttr("from") ))
 		return 1;
 	
 	std::list <WokXMLTag *>::iterator iter;

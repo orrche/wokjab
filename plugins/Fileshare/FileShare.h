@@ -63,7 +63,12 @@ class FileShare : public WoklibPlugin
 		int Search(WokXMLTag *xml);
 		int IncommingSearch(WokXMLTag *tag);
 		int MenuDownload(WokXMLTag *tag);
-		
+		int Commands(WokXMLTag *tag);
+
+
+		bool HasPermission(std::string session, std::string jid);
+		int Com_Search(WokXMLTag *tag);
+
 		void PopulateTree(WokXMLTag *tag, std::string dir, std::string virt_dir);
 		WokXMLTag * AddFolder(WokXMLTag *point, std::string name);
 		
