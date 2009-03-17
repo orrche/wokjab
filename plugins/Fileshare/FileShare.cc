@@ -35,6 +35,8 @@ FileShare::FileShare(WLSignal *wls) : WoklibPlugin(wls)
 {
 	EXP_SIGHOOK("Jabber Disco Items Get Node http://jabber.org/protocol/commands", &FileShare::Commands, 500);
 	EXP_SIGHOOK("Jabber AdHoc Command Exec p2p search", &FileShare::Com_Search, 500);
+	EXP_SIGHOOK("Jabber AdHoc Command Exec p2p get_file_list", &FileShare::Com_GetFileList, 500);
+	EXP_SIGHOOK("Jabber AdHoc Command Exec p2p download", &FileShare::Com_Download, 500);
 							
 	EXP_SIGHOOK("Jabber GUI GetJIDMenu", &FileShare::Menu, 1000);
 	EXP_SIGHOOK("Jabber FileShare FileList View", &FileShare::View, 1000);
@@ -93,18 +95,253 @@ FileShare::~FileShare()
 
 }
 
+
+void 
+FileShare::SendFile(std::string session, std::string jid, std::string id)
+{
+	std::stringstream sid;
+	sid << "fileshare-" << fileshareid++ << "-";
+	for(int i = 0; i < 10; i++)
+	{
+		sid << (char) (rand() % 20 + 'a' );
+	}
+
+	char *zErrMsg = 0;
+	filetosend = "";
+
+	for ( unsigned int pos = 0 ; id.find("'", pos) != std::string::npos ; )
+	{
+		pos = id.find("'", pos );
+		id.replace(pos, 1, "''");
+		pos+=2;
+
+		if ( pos >= id.size() )
+			break;
+	}
+
+	filetosend = "";
+	std::string query = "SELECT * FROM filelist WHERE id='" + id + "';";
+	/* The callback is changing the filetosend variable */
+	int rc = sqlite3_exec(db, query.c_str(), (int(*)(void *,int,char**,char**)) FileShare::sql_callback, this, &zErrMsg);
+
+	if( rc!=SQLITE_OK ){
+		fprintf(stderr, "SQL error: %s\n", zErrMsg);
+		sqlite3_free(zErrMsg);
+	}
+	std::cout << "ID: " << id << " file: " << filetosend << std::endl;
+	if ( filetosend != "" )
+	{
+		WokXMLTag send(NULL, "send");
+		send.AddAttr("to", jid);
+		send.AddAttr("session", session);
+		send.AddAttr("name", filetosend);
+		send.AddAttr("sid", sid.str());
+		send.AddAttr("popup", "false");
+		send.AddAttr("event", "false");
+
+		send.AddAttr("proxy_type", "auto");
+		wls->SendSignal("Jabber Stream File Send", send);
+	}
+}
+
+int
+FileShare::Com_Download(WokXMLTag *tag)
+{
+		if ( ! HasPermission(tag->GetAttr("session"), tag->GetFirstTag("iq").GetAttr("from")) )
+				return 1;
+		
+		
+		WokXMLTag mesg("message");
+    mesg.AddAttr("session", tag->GetAttr("session"));
+    WokXMLTag &iq = mesg.AddTag("iq");
+    iq.AddAttr("to", tag->GetFirstTag("iq").GetAttr("from"));
+    iq.AddAttr("type", "result");
+    iq.AddAttr("id", tag->GetFirstTag("iq").GetAttr("id"));
+    WokXMLTag &comm = iq.AddTag("command");
+    comm.AddAttr("xmlns", "http://jabber.org/protocol/commands");
+    comm.AddAttr("node", "p2p download");
+    comm.AddAttr("sessionid", "theoneandonly");
+		
+		if ( tag->GetFirstTag("iq").GetFirstTag("command", "http://jabber.org/protocol/commands").GetAttr("sessionid") == "" )
+		{
+				
+			comm.AddAttr("status", "executing");
+    
+		  WokXMLTag &xtag = comm.AddTag("x");
+		  xtag.AddAttr("xmlns", "jabber:x:data");
+		  xtag.AddAttr("type", "form");
+		  xtag.AddTag("title").AddText("File Download");
+		  xtag.AddTag("instructions").AddText("Enter File ID");
+									 
+			WokXMLTag &field = xtag.AddTag("field");
+		  field.AddAttr("var", "search");
+		  field.AddAttr("label", "FileID");
+		  field.AddAttr("type", "text-single" );
+		}
+		else
+		{
+			std::string id = tag->GetFirstTag("iq").GetFirstTag("command", "http://jabber.org/protocol/commands").GetFirstTag("x", "jabber:x:data").GetFirstTag("field").GetFirstTag("value").GetBody();
+			comm.AddAttr("status", "completed");
+			if ( id	 != "" )
+			{		
+				SendFile(tag->GetAttr("session"), tag->GetFirstTag("iq").GetAttr("from"), id);
+			}
+		}
+		wls->SendSignal("Jabber XML Send", mesg);
+		return 1;
+}
+
+int
+FileShare::Com_GetFileList(WokXMLTag *tag)
+{
+		if ( ! HasPermission(tag->GetAttr("session"), tag->GetFirstTag("iq").GetAttr("from")) )
+				return 1;
+		
+				
+		std::stringstream sid;
+		sid << "fileshare-" << fileshareid++ << "-";
+		for(int i = 0; i < 10; i++)
+		{
+				sid << (char) (rand() % 20 + 'a' );
+		}
+		
+		std::string filelistfile = (std::string(g_get_home_dir()) + "/.wokjab/fileshare/filelist.xml.gz").c_str();
+		
+		WokXMLTag send(NULL, "send");
+		send.AddAttr("to", tag->GetFirstTag("iq").GetAttr("from"));
+		send.AddAttr("session", tag->GetAttr("session"));
+		send.AddAttr("name", filelistfile);
+		send.AddAttr("sid", sid.str());
+		send.AddAttr("popup", "false");
+		send.AddAttr("event", "false");
+		send.AddAttr("proxy_type", "auto");
+		wls->SendSignal("Jabber Stream File Send", send);
+		
+		return 1;	
+}
+
 int
 FileShare::Com_Search(WokXMLTag *tag)
 {
+		if ( ! HasPermission(tag->GetAttr("session"), tag->GetFirstTag("iq").GetAttr("from")) )
+				return 1;
+	
 		std::string action = tag->GetFirstTag("iq").GetFirstTag("command").GetAttr("action");
 		if( action == "cancel" )
 		{
-				
-				
-				
+				WokXMLTag mesg("message");
+		    mesg.AddAttr("session", tag->GetAttr("session"));
+		    WokXMLTag &iq = mesg.AddTag("iq");
+		    iq.AddAttr("to", tag->GetFirstTag("iq").GetAttr("from"));
+		    iq.AddAttr("type", "result");
+		    iq.AddAttr("id", tag->GetFirstTag("iq").GetAttr("id"));
+		    WokXMLTag &comm = iq.AddTag("command");
+		    comm.AddAttr("xmlns", "http://jabber.org/protocol/commands");
+		    comm.AddAttr("node", "p2p search");
+		    comm.AddAttr("status", "canceled");
+		    comm.AddAttr("sessionid", "theoneandonly");
+		    
+		    wls->SendSignal("Jabber XML Send", mesg);
+		    return 1;
 		}
 		
+    WokXMLTag mesg("message");
+    mesg.AddAttr("session", tag->GetAttr("session"));
+    WokXMLTag &iq = mesg.AddTag("iq");
+    iq.AddAttr("to", tag->GetFirstTag("iq").GetAttr("from"));
+    iq.AddAttr("type", "result");
+    iq.AddAttr("id", tag->GetFirstTag("iq").GetAttr("id"));
+    WokXMLTag &comm = iq.AddTag("command");
+    comm.AddAttr("xmlns", "http://jabber.org/protocol/commands");
+    comm.AddAttr("node", "p2p search");
+    comm.AddAttr("status", "executing");
+    comm.AddAttr("sessionid", "theoneandonly");
+    WokXMLTag &actiontag = comm.AddTag("actions");
+    actiontag.AddAttr("execute", "next");
+    actiontag.AddTag("next");
+    WokXMLTag &xtag = comm.AddTag("x");
+    xtag.AddAttr("xmlns", "jabber:x:data");
+    xtag.AddAttr("type", "form");
+    xtag.AddTag("title").AddText("File Search");
+    xtag.AddTag("instructions").AddText("Search for files");
+								 
+		WokXMLTag &field = xtag.AddTag("field");
+    field.AddAttr("var", "search");
+    field.AddAttr("label", "Search");
+    field.AddAttr("type", "text-single" );
+								 
 		
+		std::list <WokXMLTag *>::iterator fielditer;
+		std::list <WokXMLTag *> *fieldlist =  &tag->GetFirstTag("iq").GetFirstTag("command", "http://jabber.org/protocol/commands").GetFirstTag("x", "jabber:x:data").GetTagList("field");
+																																						
+		for ( fielditer = fieldlist->begin() ; fielditer != fieldlist->end() ; fielditer++)
+		{
+			if ( (*fielditer)->GetAttr("var").substr(0, 7) == "file://")
+			{
+					if ( (*fielditer)->GetFirstTag("value").GetBody() == "1" || (*fielditer)->GetFirstTag("value").GetBody() == "true" )
+					{
+						SendFile(tag->GetAttr("session"), tag->GetFirstTag("iq").GetAttr("from"),(*fielditer)->GetAttr("var").substr(7) );
+					}
+			}
+			if ( 	(*fielditer)->GetAttr("var") == "search" && (*fielditer)->GetFirstTag("value").GetBody() != "" )
+			{		
+					std::string query = "SELECT * FROM filelist WHERE id LIKE '%" + XMLisize((*fielditer)->GetFirstTag("value").GetBody()) + "%' LIMIT 10;";
+				/* The callback is changing the filetosend variable */
+	
+				delete search_result;
+				search_result = new WokXMLTag (NULL, "search");
+																																																					 
+				char *zErrMsg = 0;
+				int rc = sqlite3_exec(db, query.c_str(), (int(*)(void *,int,char**,char**)) FileShare::sql_callback_search, this, &zErrMsg);
+	
+			 	if( rc!=SQLITE_OK )
+				{
+					fprintf(stderr, "SQL error: %s\n", zErrMsg);
+					sqlite3_free(zErrMsg);
+				}
+	
+				std::cout << *search_result << std::endl;
+				std::list <WokXMLTag *>::iterator res_iter;
+	
+				WokXMLTag msg(NULL, "message");
+				msg.AddAttr("session", tag->GetAttr("session"));
+				WokXMLTag &message = msg.AddTag("message");
+				message.AddAttr("to", tag->GetFirstTag("message").GetAttr("from"));
+				if ( !tag->GetFirstTag("message").GetAttr("type").empty() )
+					message.AddAttr("type", tag->GetFirstTag("message").GetAttr("type"));
+				message.AddTag("thread").AddText(tag->GetFirstTag("message").GetFirstTag("thread").GetBody());
+				WokXMLTag &x = message.AddTag("x");
+				x.AddAttr("xmlns", "http://sf.wokjab.net/fileshare");
+				x.AddAttr("type", "set");
+							
+				if ( search_result )
+				{
+					for( res_iter = search_result->GetTagList("result").begin() ; res_iter != search_result->GetTagList("result").end() ; res_iter++)
+					{
+						WokXMLTag &filefield = xtag.AddTag("field");
+						filefield.AddAttr("type", "boolean");
+						filefield.AddAttr("var", "file://" +  (*res_iter)->GetAttr("id"));
+						filefield.AddAttr("label", (*res_iter)->GetAttr("path"));
+						
+						/*
+						WokXMLTag &filevalue = filefield.AddTag("value");
+						filevalue.AddText( "Path: " + (*res_iter)->GetAttr("path") + " id: " + (*res_iter)->GetAttr("id"));
+						*/
+							
+						WokXMLTag &itemtag = filefield.AddTag("file", "http://sf.wokjab.net/fileshare");
+						itemtag.AddAttr("id", (*res_iter)->GetAttr("id"));
+						itemtag.AddAttr("name", (*res_iter)->GetAttr("path"));
+						itemtag.AddAttr("size", (*res_iter)->GetAttr("size"));
+						itemtag.AddAttr("hash", (*res_iter)->GetAttr("hash"));
+					}
+		
+					delete search_result;
+					search_result = NULL;
+				}
+			}
+		}
+								 
+		wls->SendSignal("Jabber XML Send", mesg);
 
 		return 1;
 }
@@ -132,6 +369,12 @@ FileShare::Commands(WokXMLTag *tag)
 	filelistitem.AddAttr("node", "p2p get_file_list");
 	filelistitem.AddAttr("name", "P2P Get File List");
 	filelistitem.AddAttr("jid", querytag.GetFirstTag("item").GetFirstTag("jid").GetBody());
+
+			
+	WokXMLTag &filedownloaditem = tag->AddTag("item");
+	filedownloaditem.AddAttr("node", "p2p download");
+	filedownloaditem.AddAttr("name", "P2P Download File");
+	filedownloaditem.AddAttr("jid", querytag.GetFirstTag("item").GetFirstTag("jid").GetBody());
 		
 	return 1;	
 }
@@ -479,7 +722,7 @@ FileShare::HasPermission(std::string session, std::string jid)
 int
 FileShare::ListRequest(WokXMLTag *tag)
 {
-	if ( !HasPermission(tag->GetAttr("session"), tag->GetAttr("from") ))
+	if ( !HasPermission(tag->GetAttr("session"), tag->GetFirstTag("iq").GetAttr("from") ))
 		return 1;
 	
 	std::list <WokXMLTag *>::iterator iter;

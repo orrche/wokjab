@@ -618,6 +618,8 @@ jep96::SendFile(WokXMLTag *xml)
 	data->AddAttr("file", file);
 	data->AddAttr("strsize", PrettySize(size));
 	data->AddAttr("size", ssize.str());
+	data->AddAttr("popup", xml->GetAttr("popup"));
+	data->AddAttr("event", xml->GetAttr("event"));
 	data->AddTag(&file_tag);
 	
 	sessions[iqtag.GetAttr("id")] = data;
@@ -674,14 +676,17 @@ int
 jep96::Finnished(WokXMLTag *fintag)
 {
 	GtkTreeIter iter;
-	
+	bool showevent = true;
+		
 	if ( sessions.find(fintag->GetAttr("sid")) != sessions.end() )
 	{
 		if ( ! fintag->GetAttr("filename").empty() )
 			sessions[fintag->GetAttr("sid")]->AddAttr("file", fintag->GetAttr("filename"));
-		
+		if( sessions[fintag->GetAttr("sid")]->GetAttr("event") == "false" )
+					showevent = false;
+					
 	}
-	if ( rows.find(fintag->GetAttr("sid")) != rows.end() )
+	if ( rows.find(fintag->GetAttr("sid")) != rows.end() && showevent)
 	{
 		if( gtk_tree_model_get_iter(GTK_TREE_MODEL(file_store), &iter, gtk_tree_row_reference_get_path(rows[fintag->GetAttr("sid")])))
 		{
@@ -766,13 +771,20 @@ jep96::Accepted(WokXMLTag *acctag)
 		}
 	}
 	
+	bool file_denied_popup = true;
 	if ( !acctag->GetAttr("file").empty())
 	{
 		if ( sessions.find(acctag->GetAttr("sid")) != sessions.end() )
+		{
 			sessions[acctag->GetAttr("sid")]->AddAttr("file", acctag->GetAttr("file"));
+			if ( sessions[acctag->GetAttr("sid")]->GetAttr("popup") == "false" )
+						file_denied_popup = false;
+		}
+		else
+			file_denied_popup = false;
 	}
 	
-	if ( popup_ft_wid != "false" && acctag->GetAttr("popup") != "false" )
+	if ( popup_ft_wid != "false" && acctag->GetAttr("popup") != "false" && !file_denied_popup )
 	{
 		WokXMLTag popup("popup");
 		wls->SendSignal("Jabber Stream File Show", popup);

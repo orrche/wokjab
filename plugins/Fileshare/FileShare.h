@@ -64,12 +64,15 @@ class FileShare : public WoklibPlugin
 		int IncommingSearch(WokXMLTag *tag);
 		int MenuDownload(WokXMLTag *tag);
 		int Commands(WokXMLTag *tag);
-
+		int Com_GetFileList(WokXMLTag *tag);
+		int Com_Search(WokXMLTag *tag);
+		int Com_Download(WokXMLTag *tag);
 
 		bool HasPermission(std::string session, std::string jid);
-		int Com_Search(WokXMLTag *tag);
 
 		void PopulateTree(WokXMLTag *tag, std::string dir, std::string virt_dir);
+		void SendFile(std::string session, std::string jid, std::string id);
+
 		WokXMLTag * AddFolder(WokXMLTag *point, std::string name);
 		
 		static int sql_callback(FileShare *c, int argc, char **argv, char **azColName);
