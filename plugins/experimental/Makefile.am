@@ -18,4 +18,5 @@
 SUBDIRS= \
 	Dice\
 	P2PRandomNumberMonitor\
-	AtomNotifications
+	AtomNotifications \
+	xdataConfig
