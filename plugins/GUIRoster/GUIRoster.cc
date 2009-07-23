@@ -48,6 +48,10 @@ GUIRoster::GUIRoster(WLSignal *wls) : WoklibPlugin(wls)
 
 GUIRoster::~GUIRoster()
 {
+	delete root;
+
+	gtk_widget_destroy(glade_xml_get_widget(xml, "mainbox"));
+		
 	if ( xml ) 
 		g_object_unref(xml);
 }
