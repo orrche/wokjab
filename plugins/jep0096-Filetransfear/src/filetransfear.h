@@ -72,7 +72,8 @@ class jep96 : public WoklibPlugin
 		std::string openwith;
 		std::string popup_ft_wid;
 		WokXMLTag *config;
-	
+
+		guint speedcalctimerid;
 		int sidnum;
 		GladeXML *gxml;
 		GtkWidget *filewindow;

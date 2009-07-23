@@ -119,11 +119,12 @@ WoklibPlugin(wls)
 	wls->SendSignal("Config XML Trigger", &conftag);
  
 				
-	g_timeout_add (1000, (gboolean (*)(void *)) (jep96::SpeedCalc), this);
+	speedcalctimerid = g_timeout_add (1000, (gboolean (*)(void *)) (jep96::SpeedCalc), this);
 }
 
 jep96::~jep96()
-{	
+{	 
+	g_source_destroy(g_main_context_find_source_by_id(NULL,speedcalctimerid));
 	std::map <std::string, WokXMLTag*>::iterator iter;
 	
 	for( iter = sessions.begin() ; iter != sessions.end() ; iter++)
@@ -131,6 +132,8 @@ jep96::~jep96()
 	
 	gtk_widget_destroy(filewindow);
 	g_object_unref(gxml);
+
+	delete config;
 }
 
 void
@@ -178,8 +181,6 @@ jep96::DragGet(GtkWidget *wgt, GdkDragContext *context, GtkSelectionData *select
 	
 	g_list_foreach (list, ( void(*)(void*, void*)) gtk_tree_path_free, NULL);
 	g_list_free (list);
-	
-	
 }
 
 gboolean 
