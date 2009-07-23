@@ -34,43 +34,41 @@
 GnomeTrayIcon::GnomeTrayIcon(WLSignal *wls) : WoklibPlugin (wls)
 {
 	
-	tray_icon 	= egg_tray_icon_new("WokJab Tray Icon");
-	if ( tray_icon )
-	{
-		EXP_SIGHOOK("Jabber Event Add", &GnomeTrayIcon::AddJIDEvent, 1000);
-		EXP_SIGHOOK("Jabber Event Remove", &GnomeTrayIcon::RemoveJIDEvent, 2);
-		EXP_SIGHOOK("Jabber XML Presence Send", &GnomeTrayIcon::Presence, 1000);
-		
-		eventbox 	= gtk_event_box_new();
-		tray_icon_tips = gtk_tooltips_new();
+	
+	EXP_SIGHOOK("Jabber Event Add", &GnomeTrayIcon::AddJIDEvent, 1000);
+	EXP_SIGHOOK("Jabber Event Remove", &GnomeTrayIcon::RemoveJIDEvent, 2);
+	EXP_SIGHOOK("Jabber XML Presence Send", &GnomeTrayIcon::Presence, 1000);
+	
+	/*
+	eventbox 	= gtk_event_box_new();
+	tray_icon_tips = gtk_tooltips_new();
 
-		gtk_container_add (GTK_CONTAINER (tray_icon), eventbox);
+	gtk_container_add (GTK_CONTAINER (tray_icon), eventbox);
+*/
+	
+	
+	tray_icon 	= gtk_status_icon_new_from_file(PACKAGE_DATA_DIR"/wokjab/online.png");
 
-		
-		image 		= gtk_image_new_from_file(PACKAGE_DATA_DIR"/wokjab/online.png");
-		gtk_container_add (GTK_CONTAINER (eventbox), image);
-		
-		gtk_tooltips_disable(GTK_TOOLTIPS(tray_icon_tips));
-		
-		gtk_widget_show_all (GTK_WIDGET (tray_icon));					 
-		
+		/*
+	gtk_tooltips_disable(GTK_TOOLTIPS(tray_icon_tips));
+	*/ 
+	
 
-		g_signal_connect (G_OBJECT (eventbox), "button_press_event",
-					G_CALLBACK (GnomeTrayIcon::tray_icon_pressed), this);
-		CurrentEvent = EventList.end();
+	g_signal_connect (G_OBJECT (tray_icon), "activate",
+				G_CALLBACK (GnomeTrayIcon::tray_icon_pressed), this);
+	g_signal_connect (G_OBJECT (tray_icon), "popup-menu", 
+	      G_CALLBACK (GnomeTrayIcon::tray_popup), this);
 		
-		to = g_timeout_add (500, (gboolean (*)(void *)) (GnomeTrayIcon::TimeOut), this);
-	}
+	CurrentEvent = EventList.end();
+	
+	to = g_timeout_add (500, (gboolean (*)(void *)) (GnomeTrayIcon::TimeOut), this);
+
 }
 
 GnomeTrayIcon::~GnomeTrayIcon()
 {
-	if ( tray_icon )
-	{
-		g_source_remove(to);
-	//	g_object_unref(tray_icon);
-		gtk_widget_destroy(eventbox);
-	}
+	g_source_destroy(g_main_context_find_source_by_id(NULL,to));
+	g_object_unref(G_OBJECT(tray_icon));
 	
 	
 	std::list<WokXMLTag *>::iterator iter;
@@ -80,48 +78,45 @@ GnomeTrayIcon::~GnomeTrayIcon()
 	EventList.clear(); // Not stricly nessesary now
 }
 
-
-void 
-GnomeTrayIcon::tray_icon_pressed (GtkWidget * widget, GdkEventButton *event, gpointer user_data)
+void
+GnomeTrayIcon::tray_popup (GtkWidget *widget, guint button, guint activate_time,GnomeTrayIcon *c)
 {
-	GnomeTrayIcon *gti;
-	gti = static_cast <GnomeTrayIcon*> (user_data);
-	
-	if(event->type == GDK_BUTTON_PRESS && event->button == 1)
-	{
-		if(gti->EventList.empty())
-		{
-			WokXMLTag tag(NULL, "noinfo");
-			gti->wls->SendSignal("GUI Window toggle", &tag);
-		
-			return;		
-		}
-		
-		if (!(gti->EventList.front())->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetTags().empty() )
-			gti->wls->SendSignal((gti->EventList.front())->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetAttr("name"), 
-									*(gti->EventList.front())->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetTags().begin());
-		
-		if( gti->EventList.empty() )
-			return;
-
-#warning check into how this works it really seams bad
-		WokXMLTag eventtag(NULL, "event");
-		eventtag.AddTag(gti->EventList.front());
-		gti->wls->SendSignal("Jabber Event Remove", &eventtag);
-	}
-	if(event->type == GDK_BUTTON_PRESS && event->button == 3)
-	{
 		char buf[20];
 		WokXMLTag MenuXML(NULL, "menu");
-		sprintf(buf, "%d", event->button);
+		sprintf(buf, "%d", button);
 		MenuXML.AddAttr("button", buf);
-		sprintf(buf, "%d", event->time);
+		sprintf(buf, "%d", activate_time);
 		MenuXML.AddAttr("time", buf);
 		MenuXML.AddTag("item").AddAttr("signal", "Get Main Menu");
 		MenuXML.AddTag("item").AddAttr("signal", "GetMenu");
 		WokXMLTag &data = MenuXML.AddTag("data");
-		gti->wls->SendSignal("Jabber GUI JIDMenu", &MenuXML);
-	}
+		c->wls->SendSignal("Jabber GUI JIDMenu", &MenuXML);
+}
+
+void 
+GnomeTrayIcon::tray_icon_pressed (GtkWidget * widget, GnomeTrayIcon *c)
+{
+	
+		if(c->EventList.empty())
+		{
+			WokXMLTag tag(NULL, "noinfo");
+			c->wls->SendSignal("GUI Window toggle", &tag);
+		
+			return;		
+		}
+		
+		if (!(c->EventList.front())->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetTags().empty() )
+			c->wls->SendSignal((c->EventList.front())->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetAttr("name"), 
+									*(c->EventList.front())->GetFirstTag("commands").GetFirstTag("command").GetFirstTag("signal").GetTags().begin());
+		
+		if( c->EventList.empty() )
+			return;
+
+#warning check into how this works it really seams bad
+		WokXMLTag eventtag(NULL, "event");
+		eventtag.AddTag(c->EventList.front());
+		c->wls->SendSignal("Jabber Event Remove", &eventtag);
+	
 }
 
 void
@@ -163,23 +158,11 @@ GnomeTrayIcon::UpdateList()
 			CurrentEvent++;
 		}
 		
-		
-		GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file (image_file.c_str(),  NULL);
-		if ( pixbuf )
-		{
-				
-			GdkPixbuf *scaled = gdk_pixbuf_scale_simple (pixbuf, 14, 14, GDK_INTERP_BILINEAR);
-			if ( scaled )
-			{
-				gtk_image_set_from_pixbuf (GTK_IMAGE(image), scaled);
-				g_object_unref(scaled);
-			}
-			g_object_unref(pixbuf);
-		}
+		gtk_status_icon_set_from_file(tray_icon, image_file.c_str());
 	}
 	else
 	{
-		gtk_image_set_from_file(GTK_IMAGE(image),  std::string(PACKAGE_DATA_DIR"/wokjab/online.png").c_str());
+		gtk_status_icon_set_from_file(tray_icon, PACKAGE_DATA_DIR"/wokjab/online.png");
 	}
 	
 	std::list<WokXMLTag *>::iterator iter;
@@ -191,18 +174,14 @@ GnomeTrayIcon::UpdateList()
 	}
 	if(str.str().size())
 	{
-		gtk_tooltips_set_tip(GTK_TOOLTIPS(tray_icon_tips), GTK_WIDGET(eventbox),
-				 		 str.str().substr(0,str.str().size()-1).c_str(),
-				 		 str.str().substr(0,str.str().size()-1).c_str());
-		gtk_tooltips_enable(GTK_TOOLTIPS(tray_icon_tips));
+			gtk_status_icon_set_tooltip_markup(tray_icon, str.str().substr(0,str.str().size()-1).c_str());
+			gtk_status_icon_set_has_tooltip(tray_icon, TRUE);
 	
 	}
 	else
 	{
-		gtk_tooltips_set_tip(GTK_TOOLTIPS(tray_icon_tips), GTK_WIDGET(eventbox),
-				 		 presence_tip.c_str(),
-				 		 presence_tip.c_str());
-		gtk_tooltips_enable(GTK_TOOLTIPS(tray_icon_tips));
+			gtk_status_icon_set_tooltip_markup(tray_icon, presence_tip.c_str());
+			gtk_status_icon_set_has_tooltip(tray_icon, TRUE);
 	}
 		
 }
@@ -221,10 +200,8 @@ GnomeTrayIcon::Presence(WokXMLTag *tag)
 	
 	if ( EventList.empty() )
 	{
-		gtk_tooltips_set_tip(GTK_TOOLTIPS(tray_icon_tips), GTK_WIDGET(eventbox),
-				 		 presence_tip.c_str(),
-				 		 presence_tip.c_str());
-		gtk_tooltips_enable(GTK_TOOLTIPS(tray_icon_tips));
+			gtk_status_icon_set_tooltip_markup(tray_icon, presence_tip.c_str());
+			gtk_status_icon_set_has_tooltip(tray_icon, TRUE);
 	}
 	
 	return 1;	

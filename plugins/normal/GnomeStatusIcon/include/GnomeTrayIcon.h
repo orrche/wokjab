@@ -24,7 +24,6 @@
 #include <Woklib/WokXMLTag.h>
 #include <gtk/gtk.h>
 
-#include "eggtrayicon.h"
 
 using std::list;
 
@@ -49,14 +48,15 @@ class GnomeTrayIcon : public WoklibPlugin
 		int RemoveJIDEvent( WokXMLTag *tag);
 		int Presence(WokXMLTag *tag);
 	
-		static void tray_icon_pressed (GtkWidget *button, GdkEventButton *event, gpointer gti_data);
+		static void tray_icon_pressed (GtkWidget *button, GnomeTrayIcon *c);
+		static void tray_popup (GtkWidget *widget, guint button, guint activate_time,GnomeTrayIcon *c);
 		static void MenuActivate(GtkMenuItem *menuitem,GnomeTrayIcon *data);
 		static gboolean TimeOut (GnomeTrayIcon * c);
 	protected:
-		EggTrayIcon *tray_icon;
-		GtkWidget *eventbox;	
-		GtkTooltips *tray_icon_tips;
-		GtkWidget *image;
+		GtkStatusIcon *tray_icon;
+//		GtkWidget *eventbox;	
+//		GtkTooltips *tray_icon_tips;
+//		GtkWidget *image;
 	
 		gchar sz_tip[100];
 		int to;

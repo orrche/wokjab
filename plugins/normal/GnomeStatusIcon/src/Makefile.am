@@ -28,7 +28,6 @@ lib_LTLIBRARIES = libgnomestatusicon.la
 
 libgnomestatusicon_la_SOURCES = \
 	main.cc\
-	eggtrayicon.c\
 	GnomeTrayIcon.cc
 
 libgnomestatusicon_la_LDFLAGS = \
