@@ -72,8 +72,9 @@ IQAuthManager::Feature(WokXMLTag *tag)
 				plain_possibule = true;
 			else if ( (*iter)->GetBody() == "DIGEST-MD5" )
 			{
-				new IQauth(wls, tag->GetAttr("session"), IQauth::SASLDIGESTMD5);
-				break;
+					/* This seams to be broken... */
+				// new IQauth(wls, tag->GetAttr("session"), IQauth::SASLDIGESTMD5);
+				//break;
 			}
 		}
 		if ( iter == list.end() )

@@ -69,15 +69,13 @@ JIDList::JIDList(WokXMLTag *tag) : GtkPCommon(tag)
 	
 	enum
     {
-      TARGET_STRING,
-      TARGET_URL
+      TARGET_STRING
     };
 	static GtkTargetEntry target_entry[] =
     {
       { "STRING",        0, TARGET_STRING },
-      { "text/plain",    0, TARGET_STRING },
     };
-	gtk_drag_dest_set(glade_xml_get_widget (gxml, "list"), GTK_DEST_DEFAULT_ALL, target_entry, 2, (GdkDragAction) (GDK_ACTION_COPY|GDK_ACTION_MOVE|GDK_ACTION_LINK));
+	gtk_drag_dest_set(glade_xml_get_widget (gxml, "list"), GTK_DEST_DEFAULT_DROP, target_entry, 1, (GdkDragAction) (GDK_ACTION_COPY));
 	g_signal_connect(glade_xml_get_widget (gxml, "list"), "drag_data_received", G_CALLBACK(JIDList::DataReceived), this);
 	
 	g_signal_connect(glade_xml_get_widget (gxml, "delete"), "clicked", G_CALLBACK(JIDList::Remove), this);
@@ -138,8 +136,8 @@ JIDList::DataReceived(GtkWidget *wgt, GdkDragContext *context, int x, int y,
 		gtk_list_store_append(store, &iter);
 		gtk_list_store_set(store, &iter, 1, (*jiditer)->GetAttr("data").c_str(), -1);
 	}
-	
-	gtk_drag_finish (context, TRUE, FALSE, time);
+
+	//gtk_drag_finish (context, TRUE, FALSE, time);
 }
 
 GtkWidget *
