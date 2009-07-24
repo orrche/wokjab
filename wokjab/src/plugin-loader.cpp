@@ -46,6 +46,24 @@ PluginLoader::PluginLoader(WLSignal *wls) : WLSignalInstance(wls)
 PluginLoader::~PluginLoader()
 {
 	SaveConfig();
+	EXP_SIGUNHOOK("Woklib Plugin Add", &PluginLoader::Add, 1000);
+	EXP_SIGUNHOOK("Woklib Plugin Remove", &PluginLoader::Remove, 1000);
+	
+	std::list <std::string>::iterator iter;
+
+	for( iter = plugins.begin(); iter != plugins.end() ; iter++)
+	{
+		WokXMLTag remove("remove");
+		remove.AddAttr("filename", *iter);
+		wls->SendSignal("Woklib Plugin Remove", remove);
+		std::cout << "Removing " << *iter << std::endl;
+	}
+			
+	
+
+	delete config;
+
+	
 
 }
 
