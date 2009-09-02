@@ -1,0 +1,24 @@
+datadir = $(prefix)/lib/woklib/glade
+pkgdata_DATA = 
+				
+EXTRA_DIST = ${pkgdata_DATA}
+
+libdir = $(prefix)/lib/woklib-plugins/normal
+
+
+AM_CXXFLAGS =\
+	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -O3 -Wall -lwoklib
+AM_LDFLAGS = -lwoklib  `pkg-config gtk+-2.0 libglade-2.0 --libs`
+
+lib_LTLIBRARIES = \
+	libguiwindow.la
+
+libguiwindow_la_SOURCES = \
+	GUIWindow.cc     \
+	GUIWindow.h     \
+	main.cc     \
+	wids.h     \
+	wids.cc
+
+## File created by the gnome-build tools
+
