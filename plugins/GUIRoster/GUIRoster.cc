@@ -178,7 +178,7 @@ GUIRoster::CreateWid()
 	widtag.AddAttr("id", buf);
 	widtag.AddAttr("expand", "true");
 	widtag.AddAttr("fill", "true");
-	
+	widtag.AddAttr("pos", "25");
 	if ( !wls->SendSignal("GUI Window AddWidget",&contag) )
 	{
 		inittag = new WokXMLTag (contag);

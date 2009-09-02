@@ -100,6 +100,12 @@ AC_CONFIG_FILES(Makefile \
 	plugins/normal/GnomeStatusIcon/Makefile  \
 	plugins/normal/GnomeStatusIcon/src/Makefile  \
 	plugins/normal/GnomeStatusIcon/include/Makefile  \
+        plugins/normal/GUIMessageHandler/Makefile  \
+        plugins/normal/GUIWindowDock/Makefile  \
+        plugins/normal/GUIWindow/Makefile  \
+        plugins/normal/GUIStatusViewer/Makefile  \
+        plugins/normal/GUIPresentReqWidget/Makefile  \
+        plugins/normal/GUIPluginWindow/Makefile  \
 	plugins/normal/Jabber/Makefile \
         plugins/normal/JabberConnection/Makefile  \
         plugins/normal/JabberRegistration/Makefile  \
@@ -110,6 +116,7 @@ AC_CONFIG_FILES(Makefile \
         plugins/experimental/Dice/Makefile  \
         plugins/experimental/P2PRandomNumberMonitor/Makefile  \
         plugins/experimental/AtomNotifications/Makefile  \
+        plugins/experimental/xdataConfig/Makefile  \
 	plugins/MenuResource/Makefile  \
 	plugins/MenuRoster/Makefile  \
 	plugins/GtkTimer/Makefile  \
@@ -179,6 +186,9 @@ AC_CONFIG_FILES(Makefile \
         plugins/normal/WokjabDockWindow/Makefile  \
         plugins/normal/NotificationWidget/Makefile  \
         plugins/normal/XEP-0147-XMPP_URI_Scheme_Query/Makefile  \
+        plugins/normal/AddJIDWidget/Makefile  \
+        plugins/normal/ConnectWindow/Makefile  \
+        plugins/normal/Roster/Makefile  \
 	wokjab/Makefile \
 	wokjab/src/Makefile \
 	wokjab/include/Makefile \

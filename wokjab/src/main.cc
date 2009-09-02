@@ -26,8 +26,6 @@
 #include <Woklib/WLSignal.h>
 #include <Woklib/WokLibSignal.h>
 
-#include "../include/Roster.h"
-#include "../include/GUIWindow.h"
 #include "../include/main.h"
 #include "../include/Initiat.h"
 #include "plugin-loader.hpp"
@@ -161,10 +159,7 @@ main (int argc, char **argv)
 		}
 	}
 	
-	{
-		Roster roster(&sj.wls_main);
-		GUIWindow win(&sj.wls_main);
-		
+	{		
 		{
 			WokXMLTag start("start");
 			wls->SendSignal("Program Start", start);

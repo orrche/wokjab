@@ -32,15 +32,14 @@
 RosterEvent::RosterEvent(WLSignal *wls) : WoklibPlugin(wls)
 {
 	EXP_SIGHOOK("Jabber XML Presence", &RosterEvent::Presence, 90); // Important need to be before the signal in the roster
-	CreateWid();
-
+	
 	config = new WokXMLTag(NULL, "NULL");
 	EXP_SIGHOOK("Config XML Change /main/window/roster_event", &RosterEvent::ReadConfig, 500);
 	WokXMLTag conftag(NULL, "config");
 	conftag.AddAttr("path", "/main/window/roster_event");
 	wls->SendSignal("Config XML Trigger", &conftag);
 
-
+	CreateWid();
 	EXP_SIGHOOK("GUI Window Init", &RosterEvent::GUIWindowInit, atoi(config->GetFirstTag("pos").GetAttr("data").c_str()));
 }
 
@@ -94,6 +93,8 @@ RosterEvent::ReadConfig(WokXMLTag *tag)
 void
 RosterEvent::CreateWid()
 {
+
+	
 	xml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/roster-event.glade", "mainbox", NULL);
 	GtkWidget *main_vbox = glade_xml_get_widget (xml, "mainbox");
 	char buf[40];
@@ -110,6 +111,7 @@ RosterEvent::CreateWid()
 	widtag.AddAttr("id", buf);
 	widtag.AddAttr("expand", "false");
 	widtag.AddAttr("fill", "true");
+	widtag.AddAttr("pos", config->GetFirstTag("pos").GetAttr("data"));
 	
 	if ( !wls->SendSignal("GUI Window AddWidget",&contag) )
 	{

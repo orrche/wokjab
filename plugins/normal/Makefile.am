@@ -28,6 +28,15 @@ SUBDIRS= \
 	WokjabDockWindow \
 	NotificationWidget \
 	JabberRegistration \
-	XEP-0147-XMPP_URI_Scheme_Query
+	XEP-0147-XMPP_URI_Scheme_Query \
+	AddJIDWidget \
+	ConnectWindow \
+	GUIMessageHandler \
+	GUIWindowDock \
+	GUIStatusViewer \
+	GUIPresentReqWidget \
+	GUIWindow \
+	GUIPluginWindow \
+	Roster
 
 

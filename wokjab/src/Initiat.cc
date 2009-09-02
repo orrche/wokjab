@@ -63,10 +63,11 @@ sj(sj)
 	
 	EXP_SIGHOOK("Woklib Socket In Add", &Initiat::AddListener, 800);
 	EXP_SIGHOOK("Woklib Socket Out Add", &Initiat::AddWatcher, 800);
-	EXP_SIGHOOK("Jabber Connection Authenticated", &Initiat::Connected, 200);
+	EXP_SIGHOOK("Wokjab GetArgs", &Initiat::GetArgs, 500);
+
 	EXP_SIGHOOK("Config XML Change /", &Initiat::Plugins, 200);
 	EXP_SIGHOOK("Jabber XML IQ New query get xmlns:jabber:iq:version", &Initiat::Version, 500);
-	EXP_SIGHOOK("Wokjab GetArgs", &Initiat::GetArgs, 500);
+	EXP_SIGHOOK("Jabber Connection Authenticated", &Initiat::Connected, 200);
 	
 	logged_in = false;
 
@@ -77,16 +78,6 @@ sj(sj)
         woklib_error(wls,"Couldn't init WSA no connections will be possibule");
     }
 #endif
-
-	/*
-	WokXMLTag conf2tag(NULL, "config");
-	conf2tag.AddAttr("path", "/plugin");
-	wls->SendSignal("Config XML Trigger", &conf2tag);
-
-	WokXMLTag conftag(NULL, "config");
-	conftag.AddAttr("path", "/");
-	wls->SendSignal("Config XML Trigger", &conftag);
-	*/
 	
 	EXP_SIGHOOK("Jabber AutoConnect", &Initiat::AccountConfig, 500);
 	EXP_SIGHOOK("Program Start", &Initiat::Ready, 500);

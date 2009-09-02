@@ -108,6 +108,7 @@ NotificationManager::NotificationManager(WLSignal *wls) : WoklibPlugin(wls)
 	widtag.AddAttr("id", buf);
 	widtag.AddAttr("expand", "false");
 	widtag.AddAttr("fill", "false");
+	widtag.AddAttr("pos", "40");
 	
 	if ( !wls->SendSignal("GUI Window AddWidget",&contag) )
 	{

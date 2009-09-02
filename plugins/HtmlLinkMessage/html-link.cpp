@@ -160,7 +160,7 @@ HtmlLink::RunBrowser(WokXMLTag *tag)
 			switch (fork())
 			{
 				case 0:
-					system((config->GetFirstTag("browser").GetAttr("data") + " " + tag->GetFirstTag("link").GetAttr("url")).c_str());
+					system((config->GetFirstTag("browser").GetAttr("data") + " \"" + tag->GetFirstTag("link").GetAttr("url") + "\"").c_str());
 					_exit(1);
 			}
 			_exit(1);
