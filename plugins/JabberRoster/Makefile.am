@@ -1,7 +1,8 @@
 AM_CXXFLAGS = -lwoklib `pkg-config glib-2.0 --cflags` 
 
 pkgdata_DATA = \
-	group.png
+	group.png \
+	collapsed.group.png
 
 EXTRA_DIST = ${pkgdata_DATA}
 

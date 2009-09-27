@@ -33,8 +33,6 @@
 
 GnomeTrayIcon::GnomeTrayIcon(WLSignal *wls) : WoklibPlugin (wls)
 {
-	
-	
 	EXP_SIGHOOK("Jabber Event Add", &GnomeTrayIcon::AddJIDEvent, 1000);
 	EXP_SIGHOOK("Jabber Event Remove", &GnomeTrayIcon::RemoveJIDEvent, 2);
 	EXP_SIGHOOK("Jabber XML Presence Send", &GnomeTrayIcon::Presence, 1000);
@@ -48,7 +46,7 @@ GnomeTrayIcon::GnomeTrayIcon(WLSignal *wls) : WoklibPlugin (wls)
 	
 	
 	tray_icon 	= gtk_status_icon_new_from_file(PACKAGE_DATA_DIR"/wokjab/online.png");
-
+	gtk_status_icon_set_has_tooltip(tray_icon, TRUE);
 		/*
 	gtk_tooltips_disable(GTK_TOOLTIPS(tray_icon_tips));
 	*/ 
@@ -164,7 +162,11 @@ GnomeTrayIcon::UpdateList()
 	{
 		gtk_status_icon_set_from_file(tray_icon, PACKAGE_DATA_DIR"/wokjab/online.png");
 	}
-	
+}
+
+void
+GnomeTrayIcon::UpdateTooltip()
+{
 	std::list<WokXMLTag *>::iterator iter;
 	std::stringstream str;
 	for(iter = EventList.begin(); iter != EventList.end(); iter++)
@@ -172,18 +174,17 @@ GnomeTrayIcon::UpdateList()
 		if ( (**iter).GetTagList("description").size() )
 			str << (**iter).GetFirstTag("description").GetBody() << std::endl;
 	}
+
 	if(str.str().size())
 	{
 			gtk_status_icon_set_tooltip_markup(tray_icon, str.str().substr(0,str.str().size()-1).c_str());
 			gtk_status_icon_set_has_tooltip(tray_icon, TRUE);
-	
 	}
 	else
 	{
 			gtk_status_icon_set_tooltip_markup(tray_icon, presence_tip.c_str());
 			gtk_status_icon_set_has_tooltip(tray_icon, TRUE);
 	}
-		
 }
 
 int
@@ -225,6 +226,7 @@ GnomeTrayIcon::AddJIDEvent(WokXMLTag *tag)
 		
 		ResetList();
 		UpdateList();
+		UpdateTooltip();
 	}		
 	return 1;
 }
@@ -256,6 +258,7 @@ GnomeTrayIcon::RemoveJIDEvent( WokXMLTag *tag)
 		
 		ResetList();
 		UpdateList();
+		UpdateTooltip();
 	}	
 	return true;
 }

@@ -44,8 +44,10 @@ class Group : public WLSignalInstance
 		void AddUser();
 		int RemoveUser();
 		void UpdateRow();
+		int Activate(WokXMLTag *tag);
 		void GenerateLine(WokXMLTag &line);
 	protected:
+		bool expanded;
 		JabberSession *ses;
 		std::string sessionid;
 		std::string name;

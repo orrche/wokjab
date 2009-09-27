@@ -49,12 +49,13 @@ class JabberSession : public WLSignalInstance
 		std::string GetID();
 		std::string GetSession();
 		int UpdateAll();
-		
 		int UpdateRoster(WokXMLTag *tag);
 		int RightButton(WokXMLTag *tag);
+		int Activate(WokXMLTag *tag);
 	
 		JabberRoster *parent;
 	protected:
+		WokXMLTag ritemtag;
 		std::string id,session,serverjid;
 		std::map <std::string, User*> user;
 		std::map <std::string, Group *> group;

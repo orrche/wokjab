@@ -46,15 +46,22 @@ xml(xml)
 		if (ri)
 		{
 			gtk_tree_store_insert_after(GTK_TREE_STORE(model), &iter, parant->GetIter(), ri->GetIter());
+
+			
 		}
 		else
 		{
 			gtk_tree_store_insert_after(GTK_TREE_STORE(model), &iter, parant->GetIter(), NULL);
+//			std::cout << "Expanding " << parant->text << std::endl;
+//			GtkTreePath *gtp = gtk_tree_model_get_path(model, parant->GetIter());
+//			gtk_tree_view_expand_row(GTK_TREE_VIEW(glade_xml_get_widget(xml, "view_roster")), gtp, TRUE);
+//			gtk_tree_path_free(gtp);
 		}
 	}
 	
 	Update(tag);
-	gtk_tree_view_expand_all(GTK_TREE_VIEW(glade_xml_get_widget(xml, "view_roster")));
+	// gtk_tree_view_expand_all(GTK_TREE_VIEW(glade_xml_get_widget(xml, "view_roster")));
+
 }
 
 RosterItem::~RosterItem()
@@ -204,7 +211,10 @@ RosterItem::Update(WokXMLTag *tag)
 		if( ri )
 			gtk_tree_store_move_after(GTK_TREE_STORE(model), &iter, ri->GetIter());
 		else
+		{
 			gtk_tree_store_move_after(GTK_TREE_STORE(model), &iter, NULL);
+			parant->UpdateExpand();
+		}
 	}
 	gtk_tree_store_set(GTK_TREE_STORE(model), &iter,
 				PRE_PIX_COLUMN, pre_pix,
@@ -212,7 +222,9 @@ RosterItem::Update(WokXMLTag *tag)
 				POST_PIX_COLUMN, post_pix,
 				ID_COLUMN, id.c_str(),
 				-1);
-	
+
+	UpdateExpand();
+		
 	if( pre_pix )
 		g_object_unref(pre_pix);
 	if( post_pix )
@@ -225,6 +237,30 @@ RosterItem::Update(WokXMLTag *tag)
                                                          GtkTreePath *path,
                                                          gboolean open_all);
 	*/
+}
+
+void
+RosterItem::UpdateExpand()
+{
+	GtkTreePath *gtp = gtk_tree_model_get_path(model, &iter);
+	if ( dataxml->GetAttr("expanded") == "false")
+	{
+		gtk_tree_view_collapse_row(GTK_TREE_VIEW(glade_xml_get_widget(xml, "view_roster")), gtp);
+	}
+	else
+	{
+		gtk_tree_view_expand_row(GTK_TREE_VIEW(glade_xml_get_widget(xml, "view_roster")), gtp, FALSE);
+	}
+		
+	gtk_tree_path_free(gtp);
+
+	/* Updating all the children to since gtk doesn't seam to remember that setting when you collapse a parant... */
+
+	std::list <RosterItem*>::iterator iter;
+	for ( iter = children.begin() ; iter != children.end() ; iter++)
+	{
+		(*iter)->UpdateExpand();
+	}
 }
 
 GtkTreeIter *

@@ -37,6 +37,7 @@ name(in_name),
 sessionid(in_sessionid),
 ses(ses)
 {	
+	expanded = true;
 	if ( name[0] == '.' )
 	{
 		id = "";
@@ -48,7 +49,10 @@ ses(ses)
 		
 		wls->SendSignal("GUIRoster AddItem", itemtag);
 		id = itemtag.GetAttr("id");
+		EXP_SIGHOOK("GUIRoster Activate " + id, &Group::Activate, 500);
 	}
+
+	
 	usr = 0;
 }
 
@@ -69,13 +73,28 @@ Group::GetID()
 	return id;
 }
 
+int
+Group::Activate(WokXMLTag *tag)
+{
+	if ( expanded )
+		expanded = false;
+	else
+		expanded = true;
+	UpdateRow();
+	return 1;
+}
+
 void
 Group::GenerateLine(WokXMLTag &line)
 {
 	line.AddAttr("parant", sessionid);
 	WokXMLTag &columntag =  line.AddTag("columns");
 	WokXMLTag &texttag = columntag.AddTag("text");
-	columntag.AddTag("pre_pix").AddText(PACKAGE_DATA_DIR"/wokjab/group.png");
+	if ( expanded )
+		columntag.AddTag("pre_pix").AddText(PACKAGE_DATA_DIR"/wokjab/group.png");
+	else
+		columntag.AddTag("pre_pix").AddText(PACKAGE_DATA_DIR"/wokjab/collapsed.group.png");
+	
 
 	WokXMLTag parse("parse");
 	std::string markup = ses->parent->config->GetFirstTag("groupmarkup").GetBody();
@@ -97,7 +116,12 @@ Group::UpdateRow()
 	GenerateLine(itemtag);
 	
 	std::map <std::string, std::string>::iterator iter;
-	
+
+	if ( expanded )
+		itemtag.AddAttr("expanded", "true");
+	else
+		itemtag.AddAttr("expanded", "false");
+		
 	itemtag.AddAttr("id", id);
 	wls->SendSignal("GUIRoster UpdateItem", itemtag);
 	

@@ -40,9 +40,9 @@ JabberRoster::JabberRoster(WLSignal *wls) : WoklibPlugin(wls)
 	EXP_SIGHOOK("Jabber Event Add", &JabberRoster::AddItemEvent, 1000);
 	EXP_SIGHOOK("Jabber Connection Lost", &JabberRoster::LoggedOut, 1);
 	EXP_SIGHOOK("Jabber Connection Connect" , &JabberRoster::SignIn, 1000);
-	
-	
-	#warning should get a plugin of its own 
+
+		
+	#warning should get a plugin of its own 	
 	EXP_SIGHOOK("Wokjab XMLMarkup Parse", &JabberRoster::ParseXMLText, 1000);
 	
 	

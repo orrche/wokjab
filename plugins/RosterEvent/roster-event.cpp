@@ -31,15 +31,21 @@
 
 RosterEvent::RosterEvent(WLSignal *wls) : WoklibPlugin(wls)
 {
+	
+	
 	EXP_SIGHOOK("Jabber XML Presence", &RosterEvent::Presence, 90); // Important need to be before the signal in the roster
 	
 	config = new WokXMLTag(NULL, "NULL");
+	xml = NULL;
+	
 	EXP_SIGHOOK("Config XML Change /main/window/roster_event", &RosterEvent::ReadConfig, 500);
 	WokXMLTag conftag(NULL, "config");
 	conftag.AddAttr("path", "/main/window/roster_event");
 	wls->SendSignal("Config XML Trigger", &conftag);
 
 	CreateWid();
+	
+	
 	EXP_SIGHOOK("GUI Window Init", &RosterEvent::GUIWindowInit, atoi(config->GetFirstTag("pos").GetAttr("data").c_str()));
 }
 
@@ -82,11 +88,15 @@ RosterEvent::ReadConfig(WokXMLTag *tag)
 		tag->GetFirstTag("config").GetFirstTag("timestamp_format").AddText("[%H:%M]");
 	
 	config = new WokXMLTag (tag->GetFirstTag("config"));
-	
-	if ( tag->GetFirstTag("config").GetFirstTag("hasgrip").GetAttr("data") != "false" )
-		gtk_statusbar_set_has_resize_grip(GTK_STATUSBAR(glade_xml_get_widget (xml, "statusbar")), TRUE);
-	else
-		gtk_statusbar_set_has_resize_grip(GTK_STATUSBAR(glade_xml_get_widget (xml, "statusbar")), FALSE);
+
+
+	if ( xml )
+	{
+		if ( tag->GetFirstTag("config").GetFirstTag("hasgrip").GetAttr("data") != "false" )
+			gtk_statusbar_set_has_resize_grip(GTK_STATUSBAR(glade_xml_get_widget (xml, "statusbar")), TRUE);
+		else
+			gtk_statusbar_set_has_resize_grip(GTK_STATUSBAR(glade_xml_get_widget (xml, "statusbar")), FALSE);
+	}
 	return 1;
 }
 
@@ -124,6 +134,11 @@ RosterEvent::CreateWid()
 		EXP_SIGHOOK(sig.str(), &RosterEvent::Close, 500);
 	}
 	contextid = gtk_statusbar_get_context_id(GTK_STATUSBAR(glade_xml_get_widget (xml, "statusbar")), "Last event");
+
+	if ( config->GetFirstTag("hasgrip").GetAttr("data") != "false" )
+		gtk_statusbar_set_has_resize_grip(GTK_STATUSBAR(glade_xml_get_widget (xml, "statusbar")), TRUE);
+	else
+		gtk_statusbar_set_has_resize_grip(GTK_STATUSBAR(glade_xml_get_widget (xml, "statusbar")), FALSE);
 }
 
 std::string

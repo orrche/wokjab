@@ -47,7 +47,8 @@ class GnomeTrayIcon : public WoklibPlugin
 		int AddJIDEvent( WokXMLTag *tag);
 		int RemoveJIDEvent( WokXMLTag *tag);
 		int Presence(WokXMLTag *tag);
-	
+		void UpdateTooltip();
+				
 		static void tray_icon_pressed (GtkWidget *button, GnomeTrayIcon *c);
 		static void tray_popup (GtkWidget *widget, guint button, guint activate_time,GnomeTrayIcon *c);
 		static void MenuActivate(GtkMenuItem *menuitem,GnomeTrayIcon *data);

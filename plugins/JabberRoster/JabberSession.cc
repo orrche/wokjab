@@ -27,24 +27,25 @@
 
 JabberSession::JabberSession(WLSignal *wls, WokXMLTag *tag, JabberRoster *c) : WLSignalInstance(wls),
 session(tag->GetAttr("session")),
-parent(c)
+parent(c),
+ritemtag("item")
 {
 	EXP_SIGHOOK("Jabber Roster Update " + session , &JabberSession::UpdateRoster, 1000);
 	
 	serverjid = tag->GetAttr("server");
 	std::string name = "<b>" + tag->GetAttr("username") + "@" + tag->GetAttr("server") + "/" + tag->GetAttr("resource") + "</b>";
 	
-	WokXMLTag itemtag(NULL, "item");
-	WokXMLTag &columntag =  itemtag.AddTag("columns");
+	WokXMLTag &columntag =  ritemtag.AddTag("columns");
 	WokXMLTag &texttag = columntag.AddTag("text");
 	texttag.AddText(name);
-	itemtag.AddAttr("order", "1");
-	
-	wls->SendSignal("GUIRoster AddItem", itemtag);
-	id = itemtag.GetAttr("id");
+	ritemtag.AddAttr("order", "1");
+	ritemtag.AddAttr("expanded", "true");
+	wls->SendSignal("GUIRoster AddItem", ritemtag);
+	id = ritemtag.GetAttr("id");
 	
 	
 	EXP_SIGHOOK("GUIRoster RightButton " + id, &JabberSession::RightButton, 500);
+	EXP_SIGHOOK("GUIRoster Activate " + id, &JabberSession::Activate, 500);
 }
 
 
@@ -65,6 +66,22 @@ JabberSession::~JabberSession()
 	WokXMLTag tag(NULL, "item");
 	tag.AddAttr("id", id);
 	wls->SendSignal("GUIRoster RemoveItem", tag);
+}
+
+int 
+JabberSession::Activate(WokXMLTag *tag)
+{
+	if ( ritemtag.GetAttr("expanded") == "true")
+	{
+		ritemtag.AddAttr("expanded", "false");
+	}
+	else
+	{
+		ritemtag.AddAttr("expanded", "true");
+	}
+
+	wls->SendSignal("GUIRoster UpdateItem", ritemtag);
+	return 1;
 }
 
 int
