@@ -17,21 +17,7 @@
 
 
 wokjab_include = \
-	Roster.h\
-	User.h\
-	Group.h\
-	GUIRoster.h\
-	GUIWindow.h\
-	GUIMessageHandler.h\
-	GUIMessageWidget.h\
-	GUIRosterItem.h\
-	GUIConnectWindow.h\
-	GUIPluginWindow.h\
-	GUIAddJIDWidget.h\
-	GUIPresentReqWidget.h\
-	GUIWindowDock.h\
 	main.h\
-	Resource.h\
 	Initiat.h
 
 EXTRA_DIST = $(wokjab_include)
