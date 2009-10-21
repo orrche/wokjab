@@ -23,6 +23,7 @@
 #include <list>
 #include <string>
 #include <iostream>
+#include <sstream>
 
 Roster::Roster (WLSignal *wls):
 WoklibPlugin (wls)
@@ -89,12 +90,12 @@ Roster::SignalGetResource(WokXMLTag *tag)
 					{	
 						--rrunner;
 							
-						char buf[20];
 						WokXMLTag &rtag = (*tagiter)->AddTag("resource");
 						rtag.AddAttr("name", rrunner->second->GetResource());
 						
-						sprintf(buf, "%d", rrunner->second->GetPriority());
-						rtag.AddAttr("priority", buf);
+						std::stringstream buf;
+						buf << rrunner->second->GetPriority();
+						rtag.AddAttr("priority", buf.str());
 						rtag.AddTag("show").AddText(rrunner->second->GetShow());
 						rtag.AddTag("status").AddText(rrunner->second->GetStatus());
 						rtag.AddTag("logintime").AddText(rrunner->second->GetLogontime());
@@ -109,12 +110,12 @@ Roster::SignalGetResource(WokXMLTag *tag)
 					{
 						if ( res != riter->second.GetResource() )
 							continue;
-						char buf[20];
+						std::stringstream buf;
 						WokXMLTag &rtag = (*tagiter)->AddTag("resource");
 						rtag.AddAttr("name", riter->second.GetResource());
 						
-						sprintf(buf, "%d", riter->second.GetPriority());
-						rtag.AddAttr("priority", buf);
+						buf << riter->second.GetPriority();
+						rtag.AddAttr("priority", buf.str());
 						rtag.AddTag("show").AddText(riter->second.GetShow());
 						rtag.AddTag("status").AddText(riter->second.GetStatus());
 						rtag.AddTag("logintime").AddText(riter->second.GetLogontime());
@@ -148,6 +149,8 @@ Roster::Disconnect(WokXMLTag *tag)
 	
 	Users.erase(session);
 	Groups.erase(session);
+	
+	return 1;
 }
 
 void
@@ -389,6 +392,8 @@ Roster::SignalXMLGetGroups(WokXMLTag *tag)
 	{
 		tag->AddTag("group").AddText(iter->first);
 	}
+	
+	return 1;
 }
 
 int
@@ -408,6 +413,7 @@ Roster::SignalXMLGetMembers(WokXMLTag *tag)
 			tag->AddTag("jid").AddText(iter->first);
 		}
 	}
+	return 1;
 }
 
 
@@ -415,7 +421,6 @@ int
 Roster::SignalChangeUserNick(WokXMLTag *tag)
 {
 	User *usr;
-	Group *fgrp;
 	std::string session = tag->GetAttr("session");
 	
 	std::map < std::string, Group * >grps;
@@ -425,7 +430,7 @@ Roster::SignalChangeUserNick(WokXMLTag *tag)
 
 	usr = FindUserByJID (session, tag->GetAttr("jid"));
 
-	if (!usr && !fgrp)
+	if (!usr)
 		return 1;
 
 	grps = usr->GetGroups ();
@@ -444,6 +449,8 @@ Roster::SignalChangeUserNick(WokXMLTag *tag)
 		itemtag.AddTag("group").AddText(iter->second->GetName());
 
 	wls->SendSignal("Jabber XML Send", &message);
+	
+	return 1;
 }
 
 int

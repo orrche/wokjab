@@ -1,7 +1,7 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
 /*
  * wokjab
- * Copyright (C) Kent Gustavsson 2007 <nedo80@gmail.com>
+ * Copyright (C) Kent Gustavsson 2007-2009 <nedo80@gmail.com>
  * 
  * wokjab is free software.
  * 
@@ -26,6 +26,8 @@
 
 #include <openssl/sha.h>
 #include <sstream>
+#include <stdlib.h>
+#include <stdio.h>
 
 Session::Session(WLSignal *wls, WokXMLTag *xml) : WLSignalInstance(wls),
 origxml(*xml),

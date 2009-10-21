@@ -89,6 +89,7 @@ GnomeTrayIcon::tray_popup (GtkWidget *widget, guint button, guint activate_time,
 		MenuXML.AddTag("item").AddAttr("signal", "GetMenu");
 		WokXMLTag &data = MenuXML.AddTag("data");
 		c->wls->SendSignal("Jabber GUI JIDMenu", &MenuXML);
+		
 }
 
 void 

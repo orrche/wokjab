@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2003-2009  Kent Gustavsson <oden@gmx.net>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #include "IQHandler.h"
 #include <iostream>
+#include <sstream>
 
 using std::string;
 using std::cerr;
@@ -41,9 +42,9 @@ IQHandler::sendxmliqsig( WokXMLTag *tag)
 {
 	std::string iqhook;
 	
-	char dataid[30];
-	sprintf( dataid, "wokjab%d", number++);
-	iqhook = dataid;
+	std::stringstream str;
+	str << "wokjab" << number++;
+	iqhook = str.str();
 	
 	tag->GetFirstTag("iq").AddAttr("id",  iqhook );
 	wls->SendSignal("Jabber XML Send" , tag);

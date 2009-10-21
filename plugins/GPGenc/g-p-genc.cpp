@@ -1,7 +1,7 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
 /*
  * wokjab
- * Copyright (C) Kent Gustavsson 2007-2008 <nedo80@gmail.com>
+ * Copyright (C) Kent Gustavsson 2007-2009 <nedo80@gmail.com>
  * 
  * wokjab is free software.
  * 
@@ -35,7 +35,7 @@
 #include "../../gettext.h"
 #define _(string) gettext (string)
 
-
+#include <stdio.h>
 
 std::string rungpg ( const std::string &data, const std::string &arg, const std::string &password, std::string *status = NULL)
 {

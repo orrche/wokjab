@@ -1,7 +1,7 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
 /*
  * wokjab
- * Copyright (C) Kent Gustavsson 2007 <nedo80@gmail.com>
+ * Copyright (C) Kent Gustavsson 2007-2009 <nedo80@gmail.com>
  * 
  * wokjab is free software.
  * 
@@ -25,6 +25,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include <iostream>
+#include <sstream>
 #include "history.hpp"
 static int callback(void *NotUsed, int argc, char **argv, char **azColName){
 	int i;
@@ -62,7 +64,7 @@ History::History(WLSignal *wls): WoklibPlugin(wls)
 	}
 	int rc = sqlite3_open((std::string(g_get_home_dir()) + "/.wokjab/history/history.db").c_str(), &db);
 	if( rc ){
-			fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+			std::cerr << "Can't open database: "<< sqlite3_errmsg(db) << std::endl;
 			sqlite3_close(db);
 	}
 	else
@@ -72,7 +74,7 @@ History::History(WLSignal *wls): WoklibPlugin(wls)
 		rc = sqlite3_exec( db, "CREATE TABLE history(relation varchar(255), resource varchar(255), time timestamp, to_jid varchar(255), from_jid varchar(255), xml blob)", callback, 0, &zErrMsg );
 		if( rc!=SQLITE_OK )
 		{
-			fprintf( stderr, "SQL error: %s\n", zErrMsg );
+			std::cerr << "SQL error: " << zErrMsg << std::endl;
 			sqlite3_free( zErrMsg );
 		}
 
@@ -111,7 +113,7 @@ History::GetLast(WokXMLTag *tag)
 	int rc = sqlite3_exec( db, query.c_str(), callback, &ret, &zErrMsg );
 	if( rc!=SQLITE_OK )
 	{
-		fprintf( stderr, "SQL error: %s\n", zErrMsg );
+		std::cerr << "SQL error: " << zErrMsg << std::endl;
 		sqlite3_free( zErrMsg );
 	}
 
@@ -140,7 +142,7 @@ History::PushToSQL(std::string command)
 			sqlite3 *fork_db;
 			int rc = sqlite3_open((std::string(g_get_home_dir()) + "/.wokjab/history/history.db").c_str(), &fork_db);
 			if( rc ){
-				fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(fork_db));
+				std::cerr << "Can't open database: " << sqlite3_errmsg(fork_db) << std::endl;
 				sqlite3_close(fork_db);
 				_exit(-1);
 			}
@@ -148,7 +150,7 @@ History::PushToSQL(std::string command)
 			rc = sqlite3_exec( fork_db, (lingering_command).c_str(), callback, 0, &zErrMsg );
 			if( rc!=SQLITE_OK )
 			{
-				fprintf( stderr, "SQL error: %s\n", zErrMsg );
+				std::cerr << "SQL error: " << zErrMsg << std::endl;
 				sqlite3_free( zErrMsg );
 				sqlite3_close(fork_db);
 				_exit(-1);
