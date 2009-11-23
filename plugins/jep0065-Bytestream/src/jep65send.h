@@ -61,6 +61,9 @@ class jep65send : public WLSignalInstance
 		
 		int SendData(char *data, uint len);
 	private:
+
+		void OpenFile();
+				
 		WokXMLTag *msgtag_data;
 		std::string proxy;
 		std::string proxy_type;
@@ -90,7 +93,7 @@ class jep65send : public WLSignalInstance
 	
 		bool throttled;
 	
-		std::ifstream ffile;
+		std::fstream ffile;
 };
 
 

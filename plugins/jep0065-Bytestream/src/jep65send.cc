@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2008  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2009  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -109,6 +109,18 @@ jep65send::~jep65send()
 	if ( ffile.is_open() ) 
 		ffile.close();
 	delete msgtag_data;
+}
+
+void
+jep65send::OpenFile()
+{
+	ffile.open(file.c_str(), std::ios::in);
+	if ( !ffile.is_open() )
+		woklib_error(wls, "file not opening " + file);
+
+	unsigned long long offset = atoll(msgtag_data->GetFirstTag("iq").GetFirstTag("si", "http://jabber.org/protocol/si").GetFirstTag("file", "http://jabber.org/protocol/si/profile/file-transfer").GetFirstTag("range").GetAttr("offset").c_str());
+	ffile.seekp(offset ,std::ios::beg);
+  size -= offset;
 }
 
 void
@@ -277,9 +289,8 @@ jep65send::ProxyReply(WokXMLTag *tag)
 			wls->SendSignal("Woklib Socket Out Add", sigtag);
 			EXP_SIGHOOK(sigtag.GetAttr("signal"), &jep65send::SocketAvailibule, 1000);
 		}
-		ffile.open(file.c_str(), std::ios::in);
-		if ( !ffile.is_open() )
-			woklib_error(wls, "file not opening " + file);
+
+		OpenFile();
 	}
 	else
 	{
@@ -363,9 +374,7 @@ jep65send::TransfearStart(WokXMLTag *tag)
 			wls->SendSignal("Woklib Socket Out Add", sigtag);
 			EXP_SIGHOOK(sigtag.GetAttr("signal"), &jep65send::SocketAvailibule, 1000);
 		}
-		ffile.open(file.c_str(), std::ios::in);
-		if ( !ffile.is_open() )
-			woklib_error(wls, "file not opening " + file);
+		OpenFile();
 
 	}
 	

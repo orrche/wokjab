@@ -1270,9 +1270,8 @@ GUIMessageWidget::key_press_event(GtkWidget * widget, GdkEventKey * event, GUIMe
 	else if (event->keyval == GDK_Control_L || event->keyval == GDK_Control_R )
 		return FALSE;
 	gtk_widget_grab_focus(c->textview2);
+		
 	gint ret;
-
-
 	g_signal_emit_by_name(G_OBJECT(c->textview2), "key-press-event", event, &ret, -1);
 
 	return TRUE;
