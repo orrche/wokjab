@@ -194,13 +194,13 @@ from(in_from)
 	GtkTargetEntry target_entry[3];
 
 
-	target_entry[0].target = "text/uri-list";
+	target_entry[0].target = (gchar*)"text/uri-list";
 	target_entry[0].flags = 0;
 	target_entry[0].info = 1;
-	target_entry[1].target = "STRING";
+	target_entry[1].target = (gchar*)"STRING";
 	target_entry[1].flags = 0;
 	target_entry[1].info = 2;
-	target_entry[2].target = "text/plain";
+	target_entry[2].target = (gchar*)"text/plain";
 	target_entry[2].flags = 0;
 	target_entry[2].info = 0;
 //	gtk_drag_dest_set(textview1, (GtkDestDefaults)(GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_DROP), target_entry, 3, (GdkDragAction) (GDK_ACTION_COPY));
@@ -434,7 +434,8 @@ GUIMessageWidget::tw1_event_after (GtkWidget *text_view, GdkEvent  *ev, GUIMessa
 
 	if (tags) 
 		g_slist_free (tags);
-	
+
+	return TRUE;
 }
 
 int
@@ -600,7 +601,7 @@ GUIMessageWidget::InsertCommand(WokXMLTag &tag)
 	}
 	
 	gtk_text_buffer_insert_with_tags (buffer1, &treeiter, "\n", 1, tags["forreign_text"], NULL);
-	
+	return 1;
 }
 
 int
@@ -675,6 +676,8 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 	{
 		InsertCommand(**iter);
 	}
+
+	return 1;
 }
 
 int
@@ -1023,7 +1026,7 @@ GUIMessageWidget::expander_activate (GtkExpander *expander, gpointer user_data)
 	{
 		gtk_paned_set_position(GTK_PANED(data->vpaned), data->vpaned->allocation.height - 40 - 70);
 	}
-
+	return TRUE;
 }
 
 int
@@ -1139,6 +1142,8 @@ GUIMessageWidget::PutText(GtkTextIter *iter, WokXMLTag &message)
 				break;
 		}
 	}
+
+	return 1;
 }
 
 
@@ -1177,8 +1182,6 @@ GUIMessageWidget::Message(WokXMLTag &message)
 int
 GUIMessageWidget::Message(WokXMLTag &message, std::string jid)
 {
-	int i = 0;
-
 	secondmessageme = false;
 
 	if(!focus)
@@ -1268,7 +1271,10 @@ GUIMessageWidget::key_press_event(GtkWidget * widget, GdkEventKey * event, GUIMe
 		return FALSE;
 	gtk_widget_grab_focus(c->textview2);
 	gint ret;
-	//g_signal_emit_by_name(G_OBJECT(c->textview2), "key-press-event", event, ret, -1);
+
+
+	g_signal_emit_by_name(G_OBJECT(c->textview2), "key-press-event", event, &ret, -1);
+
 	return FALSE;
 }
 
@@ -1280,8 +1286,8 @@ GUIMessageWidget::key_press_handler(GtkWidget * widget, GdkEventKey * event,
 	obj = static_cast < GUIMessageWidget * > ( data );
 	if ((event->keyval == GDK_Return || event->keyval == GDK_KP_Enter)
 	    && !(event->state & GDK_CONTROL_MASK) && !(gtk_expander_get_expanded(GTK_EXPANDER(obj->expander))) ||
-	(event->keyval == GDK_Return || event->keyval == GDK_KP_Enter)
-	    && (event->state & GDK_CONTROL_MASK) && (gtk_expander_get_expanded(GTK_EXPANDER(obj->expander))) ||
+	((event->keyval == GDK_Return || event->keyval == GDK_KP_Enter)
+	    && (event->state & GDK_CONTROL_MASK) && (gtk_expander_get_expanded(GTK_EXPANDER(obj->expander)))) ||
 			( event->state & GDK_MOD1_MASK && event->keyval == GDK_s))
 	{
 		std::string str;

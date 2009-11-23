@@ -109,11 +109,11 @@ class GUIMessageWidget : public WLSignalInstance
 		std::string xml_msg;
 		time_t xml_time;
 		
+		std::string session;
 		std::string from;
 		std::string from_no_resource;
 		std::string nick;
 		std::string resource;
-		std::string session;
 		
 		bool secondmessageother; // Shows if the user has sent more then one message for continue words..
 		bool secondmessageme;

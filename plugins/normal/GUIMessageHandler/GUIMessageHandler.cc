@@ -164,7 +164,6 @@ GUIMessageHandler::OpenDialog(WokXMLTag *tag)
 	WokXMLTag emptytag(NULL, "activate");
 	if (!wls->SendSignal("Jabber GUI Message Activate " + session + " " + jid, &emptytag ))
 	{
-		GUIMessageWidget *widget;
 		string nick;
 		new GUIMessageWidget(wls, session, tag->GetAttr("jid"), id++);
 		
