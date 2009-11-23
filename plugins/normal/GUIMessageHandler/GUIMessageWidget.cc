@@ -1275,7 +1275,7 @@ GUIMessageWidget::key_press_event(GtkWidget * widget, GdkEventKey * event, GUIMe
 
 	g_signal_emit_by_name(G_OBJECT(c->textview2), "key-press-event", event, &ret, -1);
 
-	return FALSE;
+	return TRUE;
 }
 
 gboolean
