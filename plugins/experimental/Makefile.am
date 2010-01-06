@@ -18,5 +18,6 @@
 SUBDIRS= \
 	Dice\
 	P2PRandomNumberMonitor\
+	AvatarRoster
 	AtomNotifications \
 	xdataConfig

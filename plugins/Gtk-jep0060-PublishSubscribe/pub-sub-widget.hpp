@@ -85,7 +85,7 @@ protected:
 	GtkListStore *nodemenu;
 	GtkListStore *affiliationlist;
 	GtkListStore *aff_list;
-	GladeXML *xml;
+	GtkBuilder *builder;
 	
 	std::string selected_session;
 	

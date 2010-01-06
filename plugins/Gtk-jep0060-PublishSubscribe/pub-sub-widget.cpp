@@ -32,9 +32,11 @@ PubSub_Widget::PubSub_Widget(WLSignal *wls, WokXMLTag *data, PubSubManager *para
 	WokXMLTag conftag(NULL, "config");
 	conftag.AddAttr("path", "/PubSub_Manager/window");
 	wls->SendSignal("Config XML Trigger", &conftag);
-	
-	xml = glade_xml_new (PACKAGE_GLADE_DIR"/wokjab/pubsub.glade", NULL, NULL);
 		
+	builder = gtk_builder_new ();
+    gtk_builder_add_from_file (builder, PACKAGE_GLADE_DIR"/wokjab/pubsub.xml", NULL);
+
+	
 	GtkWidget *sessionchooser;
 	GtkCellRenderer *renderer;
 	
@@ -62,18 +64,14 @@ PubSub_Widget::PubSub_Widget(WLSignal *wls, WokXMLTag *data, PubSubManager *para
                     0, "outcast",
                     -1); 
 	
-	sessionchooser = glade_xml_get_widget(xml, "session");
+	sessionchooser = GTK_WIDGET (gtk_builder_get_object (builder, "session"));
 	gtk_combo_box_set_model (GTK_COMBO_BOX(sessionchooser), GTK_TREE_MODEL(sessionmenu) );
 	
-	GtkWidget *jidchooser = glade_xml_get_widget(xml, "box_jid");
+	GtkWidget *jidchooser = GTK_WIDGET (gtk_builder_get_object (builder, "box_jid"));
 	gtk_combo_box_set_model (GTK_COMBO_BOX(jidchooser), GTK_TREE_MODEL(jidmenu) );
 	gtk_combo_box_entry_set_text_column (GTK_COMBO_BOX_ENTRY(jidchooser), 0);
 	
-	GtkWidget *jidchooser2 = glade_xml_get_widget(xml, "box_jid2");
-	gtk_combo_box_set_model (GTK_COMBO_BOX(jidchooser2), GTK_TREE_MODEL(jidmenu) );
-	gtk_combo_box_entry_set_text_column (GTK_COMBO_BOX_ENTRY(jidchooser2), 0);
-	
-	GtkWidget *nodechooser = glade_xml_get_widget(xml, "box_node");
+	GtkWidget *nodechooser = GTK_WIDGET (gtk_builder_get_object (builder, "box_node"));
 	gtk_combo_box_set_model (GTK_COMBO_BOX(nodechooser), GTK_TREE_MODEL(nodemenu) );
 	gtk_combo_box_entry_set_text_column (GTK_COMBO_BOX_ENTRY(nodechooser), 0);
 	
@@ -83,7 +81,7 @@ PubSub_Widget::PubSub_Widget(WLSignal *wls, WokXMLTag *data, PubSubManager *para
 					"text", 0,
 					NULL);
 	
-	GtkWidget *affiliationwid = glade_xml_get_widget(xml, "affiliationlist");
+	GtkWidget *affiliationwid = GTK_WIDGET (gtk_builder_get_object (builder, "affiliationlist"));
 	gtk_tree_view_set_model(GTK_TREE_VIEW(affiliationwid), GTK_TREE_MODEL(affiliationlist));
 	
 	renderer = gtk_cell_renderer_text_new ();
@@ -136,47 +134,45 @@ PubSub_Widget::PubSub_Widget(WLSignal *wls, WokXMLTag *data, PubSubManager *para
 	
 	g_signal_connect (G_OBJECT (sessionchooser), "changed", 
 		  	G_CALLBACK (PubSub_Widget::SessionChange), this);
-	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "window")), "delete-event",
+	g_signal_connect (G_OBJECT (gtk_builder_get_object (builder, "window")), "delete-event",
 			G_CALLBACK (PubSub_Widget::Delete), this);
-	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "find_jid")), "clicked", 
+	g_signal_connect (G_OBJECT (gtk_builder_get_object (builder, "find_jid")), "clicked", 
 			G_CALLBACK (PubSub_Widget::FindJidButton), this);
-	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "find_jid2")), "clicked", 
-			G_CALLBACK (PubSub_Widget::FindJidButton), this);
-	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "find_node")), "clicked", 
+	g_signal_connect (G_OBJECT (gtk_builder_get_object (builder, "find_node")), "clicked", 
 			G_CALLBACK (PubSub_Widget::FindNodeButton), this);
-	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "button_config")), "clicked", 
+	g_signal_connect (G_OBJECT (gtk_builder_get_object (builder, "button_config")), "clicked", 
 			G_CALLBACK (PubSub_Widget::ConfigButton), this);
-	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "button_register")), "clicked", 
+	g_signal_connect (G_OBJECT (gtk_builder_get_object (builder, "button_register")), "clicked", 
 			G_CALLBACK (PubSub_Widget::RegisterButton), this);	
-	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "button_read")), "clicked", 
+	g_signal_connect (G_OBJECT (gtk_builder_get_object (builder,  "button_read")), "clicked", 
 			G_CALLBACK (PubSub_Widget::ReadButton), this);	
-	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "button_add")), "clicked",
+	g_signal_connect (G_OBJECT (gtk_builder_get_object (builder, "button_add")), "clicked",
 			G_CALLBACK (PubSub_Widget::AddButton), this);
-	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "button_delete")), "clicked",
+	g_signal_connect (G_OBJECT (gtk_builder_get_object (builder, "button_delete")), "clicked",
 			G_CALLBACK (PubSub_Widget::DeleteButton), this);
-	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "button_unsubscribe")), "clicked",
+	g_signal_connect (G_OBJECT (gtk_builder_get_object (builder, "button_unsubscribe")), "clicked",
 			G_CALLBACK (PubSub_Widget::UnsubscribeButton), this);
-	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "button_subscribe")), "clicked",
+	g_signal_connect (G_OBJECT (gtk_builder_get_object (builder, "button_subscribe")), "clicked",
 			G_CALLBACK (PubSub_Widget::SubscribeButton), this);
-	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "button_apply")), "clicked",
+	g_signal_connect (G_OBJECT (gtk_builder_get_object (builder, "button_apply")), "clicked",
 			G_CALLBACK (PubSub_Widget::ApplyButton), this);
-	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "button_unregister")), "clicked",
+	g_signal_connect (G_OBJECT (gtk_builder_get_object (builder, "button_unregister")), "clicked",
 			G_CALLBACK (PubSub_Widget::UnregisterButton), this);
 	
-	gtk_window_set_default_size(GTK_WINDOW(glade_xml_get_widget(xml,"window")), 
+	gtk_window_set_default_size(GTK_WINDOW(gtk_builder_get_object (builder, "window")), 
 				atoi(config->GetFirstTag("size").GetAttr("width").c_str()),
 				atoi(config->GetFirstTag("size").GetAttr("height").c_str()));
 	
-	gtk_entry_set_text(GTK_ENTRY(glade_xml_get_widget(xml, "entry_jid")), data->GetFirstTag("data").GetFirstTag("jid").GetBody().c_str());
-	gtk_entry_set_text(GTK_ENTRY(glade_xml_get_widget(xml, "entry_node")), data->GetFirstTag("data").GetFirstTag("node").GetBody().c_str());
+	gtk_entry_set_text(GTK_ENTRY(gtk_builder_get_object (builder, "entry_jid")), data->GetFirstTag("data").GetFirstTag("jid").GetBody().c_str());
+	gtk_entry_set_text(GTK_ENTRY(gtk_builder_get_object (builder, "entry_node")), data->GetFirstTag("data").GetFirstTag("node").GetBody().c_str());
 		
 	
-	gtk_widget_show_all(glade_xml_get_widget(xml,"window"));	
+	gtk_widget_show_all(GTK_WIDGET(gtk_builder_get_object (builder,  "window")));	
 }
 
 PubSub_Widget::~PubSub_Widget()
 {
-	GtkWidget *window = glade_xml_get_widget(xml,"window");
+	GtkWidget *window = GTK_WIDGET(gtk_builder_get_object (builder,  "window"));
 	int width, height;
 	gtk_window_get_size(GTK_WINDOW(window), &width, &height);
 
@@ -189,7 +185,7 @@ PubSub_Widget::~PubSub_Widget()
 
 	SaveConfig();
 	
-	g_object_unref(xml);
+	g_object_unref(G_OBJECT(builder));
 	
 	gtk_widget_destroy(window);
 }
@@ -253,12 +249,16 @@ PubSub_Widget::XdataResp(WokXMLTag *tag)
 	WokXMLTag mesgtag("message");	
 	mesgtag.AddAttr("session", selected_session);
 	WokXMLTag &iqtag = mesgtag.AddTag("iq");
-	iqtag.AddAttr("to", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(xml, "entry_jid"))));
+	gchar *jid = gtk_combo_box_get_active_text ( GTK_COMBO_BOX(gtk_builder_get_object (builder, "box_jid")));
+	iqtag.AddAttr("to", jid);
+	g_free(jid);
 	iqtag.AddAttr("type", "set");
 	WokXMLTag &pubsub = iqtag.AddTag("pubsub");
 	pubsub.AddAttr("xmlns", "http://jabber.org/protocol/pubsub#owner");
 	WokXMLTag &config = pubsub.AddTag("configure");
-	config.AddAttr("node", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(xml, "entry_node"))));
+	gchar *node = gtk_combo_box_get_active_text ( GTK_COMBO_BOX(gtk_builder_get_object (builder, "box_node")));
+	config.AddAttr("node", node);
+	g_free(node);
 	config.AddTag(&tag->GetFirstTag("x"));
 	
 	wls->SendSignal("Jabber XML IQ Send", mesgtag);
@@ -310,19 +310,19 @@ PubSub_Widget::ConfigIQResp(WokXMLTag *tag)
 void
 PubSub_Widget::ConfButton()
 {
-	const gchar *jid, *node;
+	gchar *jid, *node;
 	
 	if ( selected_session.empty() )
 	{
 		woklib_message(wls, "You need to select a session first");
 		return;
 	}
-	if ( (jid = gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(xml, "entry_jid"))))[0] == 0 )
+	if ( (jid = gtk_combo_box_get_active_text ( GTK_COMBO_BOX(gtk_builder_get_object (builder, "box_jid"))))[0] == 0 )
 	{
 		woklib_message(wls, "You need to select a jid first");
 		return;
 	}
-	if ( (node = gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(xml, "entry_node"))))[0] == 0 )
+	if ( (node = gtk_combo_box_get_active_text ( GTK_COMBO_BOX(gtk_builder_get_object (builder, "box_node"))))[0] == 0 )
 	{
 		woklib_message(wls, "You need to select a node first");
 		return;
@@ -337,6 +337,9 @@ PubSub_Widget::ConfButton()
 	WokXMLTag &pubsub = iq.AddTag("pubsub");
 	pubsub.AddAttr("xmlns", "http://jabber.org/protocol/pubsub#owner");
 	pubsub.AddTag("configure").AddAttr("node", node);
+	
+	g_free(jid);
+	g_free(node);
 	
 	wls->SendSignal("Jabber XML IQ Send", mesgtag);
 	
@@ -376,19 +379,19 @@ PubSub_Widget::RegisterIQResp(WokXMLTag *tag)
 void
 PubSub_Widget::RegButton()
 {
-	const gchar *jid, *node;
+	gchar *jid, *node;
 	
 	if ( selected_session.empty() )
 	{
 		woklib_message(wls, "You need to select a session first");
 		return;
 	}
-	if ( (jid = gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(xml, "entry_jid"))))[0] == 0 )
+	if ( (jid = gtk_combo_box_get_active_text ( GTK_COMBO_BOX(gtk_builder_get_object (builder, "box_jid"))))[0] == 0 )
 	{
 		woklib_message(wls, "You need to select a jid first");
 		return;
 	}
-	if ( (node = gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(xml, "entry_node"))))[0] == 0 )
+	if ( (node = gtk_combo_box_get_active_text ( GTK_COMBO_BOX(gtk_builder_get_object (builder, "box_node"))))[0] == 0 )
 	{
 		woklib_message(wls, "You need to select a node first");
 		return;
@@ -403,6 +406,9 @@ PubSub_Widget::RegButton()
 	pubsub.AddAttr("xmlns", "http://jabber.org/protocol/pubsub");
 	pubsub.AddTag("create").AddAttr("node", node);
 	pubsub.AddTag("configure");
+	
+	g_free(jid);
+	g_free(node);
 	
 	wls->SendSignal("Jabber XML IQ Send", mesgtag);
 	
@@ -423,6 +429,8 @@ PubSub_Widget::ReadIQResp(WokXMLTag *tag)
 {
 	std::list <WokXMLTag *> *list;
 	list = NULL;
+	
+	gtk_list_store_clear(affiliationlist);
 	
 	std::list <WokXMLTag *>::iterator pubsubiter;
 	for( pubsubiter = tag->GetFirstTag("iq").GetTagList("pubsub").begin() ; pubsubiter != tag->GetFirstTag("iq").GetTagList("pubsub").end(); pubsubiter++)
@@ -460,19 +468,19 @@ PubSub_Widget::ReadIQResp(WokXMLTag *tag)
 void
 PubSub_Widget::ReadBtn()
 {
-	const gchar *jid, *node;
+	gchar *jid, *node;
 	
 	if ( selected_session.empty() )
 	{
 		woklib_message(wls, "You need to select a session first");
 		return;
 	}
-	if ( (jid = gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(xml, "entry_jid"))))[0] == 0 )
+	if ( (jid = gtk_combo_box_get_active_text ( GTK_COMBO_BOX(gtk_builder_get_object (builder, "box_jid"))))[0] == 0 )
 	{
 		woklib_message(wls, "You need to select a jid first");
 		return;
 	}
-	if ( (node = gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(xml, "entry_node"))))[0] == 0 )
+	if ( (node = gtk_combo_box_get_active_text ( GTK_COMBO_BOX(gtk_builder_get_object (builder, "box_node"))))[0] == 0 )
 	{
 		woklib_message(wls, "You need to select a node first");
 		return;
@@ -491,6 +499,9 @@ PubSub_Widget::ReadBtn()
 	
 	EXP_SIGHOOK("Jabber XML IQ ID " + mesgtag.GetFirstTag("iq").GetAttr("id"), &PubSub_Widget::ReadIQResp, 1000);
 	
+	
+	g_free(node);
+	g_free(jid);
 	/*
 	<iq type='get'
 		from='hamlet@denmark.lit/elsinore'
@@ -506,15 +517,22 @@ PubSub_Widget::ReadBtn()
 void
 PubSub_Widget::SaveList()
 {
+	gchar  *jid, *node;
+	jid = gtk_combo_box_get_active_text ( GTK_COMBO_BOX(gtk_builder_get_object (builder, "box_jid")));
+	node = gtk_combo_box_get_active_text ( GTK_COMBO_BOX(gtk_builder_get_object (builder, "box_node")));
+	
 	WokXMLTag mesgtag("message");	
 	mesgtag.AddAttr("session", selected_session);
 	WokXMLTag &iqtag = mesgtag.AddTag("iq");
-	iqtag.AddAttr("to", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(xml, "entry_jid"))));
+	iqtag.AddAttr("to", jid);
 	iqtag.AddAttr("type", "set");
 	WokXMLTag &pubsub = iqtag.AddTag("pubsub");
 	pubsub.AddAttr("xmlns", "http://jabber.org/protocol/pubsub#owner");
 	WokXMLTag &affiliations = pubsub.AddTag("affiliations");
-	affiliations.AddAttr("node", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(xml, "entry_node"))));
+	affiliations.AddAttr("node", node);
+	
+	g_free(jid);
+	g_free(node);
 	
 	GtkTreeIter iter;
 	
@@ -525,7 +543,7 @@ PubSub_Widget::SaveList()
 	}
 	
 	
-	gchar *jid;
+//	gchar *jid;
 	gchar *affili;
 	
 	do
@@ -577,15 +595,24 @@ PubSub_Widget::SaveList()
 void
 PubSub_Widget::UnregisterButton(GtkButton *button, PubSub_Widget *c)
 {
+	gchar *jid, *node;
+	
+	jid = gtk_combo_box_get_active_text ( GTK_COMBO_BOX(gtk_builder_get_object (c->builder, "box_jid")));
+	node = gtk_combo_box_get_active_text ( GTK_COMBO_BOX(gtk_builder_get_object (c->builder, "box_node")));
+	
+	
 	WokXMLTag mesgtag("message");	
 	mesgtag.AddAttr("session", c->selected_session);
 	WokXMLTag &iqtag = mesgtag.AddTag("iq");
-	iqtag.AddAttr("to", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(c->xml, "entry_jid"))));
+	iqtag.AddAttr("to", jid);
 	iqtag.AddAttr("type", "set");
 	WokXMLTag &pubsub = iqtag.AddTag("pubsub");
 	pubsub.AddAttr("xmlns", "http://jabber.org/protocol/pubsub#owner");
 	WokXMLTag &node_delete = pubsub.AddTag("delete");
-	node_delete.AddAttr("node", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(c->xml, "entry_node"))));
+	node_delete.AddAttr("node", node);
+	
+	g_free(jid);
+	g_free(node);
 	
 	c->wls->SendSignal("Jabber XML IQ Send", mesgtag);
 	/*
@@ -605,6 +632,12 @@ PubSub_Widget::UnregisterButton(GtkButton *button, PubSub_Widget *c)
 void
 PubSub_Widget::UnsubscribeButton(GtkButton *button, PubSub_Widget *c)
 {
+
+	gchar *in_jid, *node;
+	
+	in_jid = gtk_combo_box_get_active_text ( GTK_COMBO_BOX(gtk_builder_get_object (c->builder, "box_jid")));
+	node = gtk_combo_box_get_active_text ( GTK_COMBO_BOX(gtk_builder_get_object (c->builder, "box_node")));
+	
 	WokXMLTag querytag(NULL, "query");
 	WokXMLTag &itemtag = querytag.AddTag("item");
 	itemtag.AddAttr("session", c->selected_session);
@@ -617,12 +650,15 @@ PubSub_Widget::UnsubscribeButton(GtkButton *button, PubSub_Widget *c)
 	mesgtag.AddAttr("session", c->selected_session);
 	WokXMLTag &iq = mesgtag.AddTag("iq");
 	iq.AddAttr("type", "set");
-	iq.AddAttr("to", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(c->xml, "entry_jid"))));
+	iq.AddAttr("to", in_jid);
 	WokXMLTag &pubsub = iq.AddTag("pubsub");
 	pubsub.AddAttr("xmlns", "http://jabber.org/protocol/pubsub");
 	WokXMLTag &subscribe =  pubsub.AddTag("unsubscribe");
-	subscribe.AddAttr("node", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(c->xml, "entry_node"))));
+	subscribe.AddAttr("node", node);
 	subscribe.AddAttr("jid", jid);
+	
+	g_free(in_jid);
+	g_free(node);
 	
 	c->wls->SendSignal("Jabber XML IQ Send", mesgtag);
 	
@@ -643,6 +679,10 @@ PubSub_Widget::UnsubscribeButton(GtkButton *button, PubSub_Widget *c)
 void
 PubSub_Widget::SubscribeButton(GtkButton *button, PubSub_Widget *c)
 {
+	gchar *in_jid, *node;
+	in_jid = gtk_combo_box_get_active_text ( GTK_COMBO_BOX(gtk_builder_get_object (c->builder, "box_jid")));
+	node =gtk_combo_box_get_active_text ( GTK_COMBO_BOX(gtk_builder_get_object (c->builder, "box_node")));
+	
 	WokXMLTag querytag(NULL, "query");
 	WokXMLTag &itemtag = querytag.AddTag("item");
 	itemtag.AddAttr("session", c->selected_session);
@@ -655,12 +695,15 @@ PubSub_Widget::SubscribeButton(GtkButton *button, PubSub_Widget *c)
 	mesgtag.AddAttr("session", c->selected_session);
 	WokXMLTag &iq = mesgtag.AddTag("iq");
 	iq.AddAttr("type", "set");
-	iq.AddAttr("to", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(c->xml, "entry_jid"))));
+	iq.AddAttr("to", in_jid);
 	WokXMLTag &pubsub = iq.AddTag("pubsub");
 	pubsub.AddAttr("xmlns", "http://jabber.org/protocol/pubsub");
 	WokXMLTag &subscribe =  pubsub.AddTag("subscribe");
-	subscribe.AddAttr("node", gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(c->xml, "entry_node"))));
+	subscribe.AddAttr("node", node);
 	subscribe.AddAttr("jid", jid);
+	
+	g_free(in_jid);
+	g_free(node);
 	
 	c->wls->SendSignal("Jabber XML IQ Send", mesgtag);
 	
@@ -698,7 +741,7 @@ void
 PubSub_Widget::DeleteButton(GtkButton *button, PubSub_Widget *c)
 {
 	GtkTreeIter iter;
-	GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(glade_xml_get_widget(c->xml, "affiliationlist")));
+	GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(gtk_builder_get_object (c->builder,  "affiliationlist")));
 
 	if (gtk_tree_selection_get_selected (selection, NULL, &iter))
 		gtk_list_store_remove (GTK_LIST_STORE (c->affiliationlist), &iter);
@@ -751,14 +794,14 @@ void
 PubSub_Widget::FindNodeButton(GtkButton *button, PubSub_Widget *c)
 {
 	gtk_list_store_clear(c->jidmenu);
-	const gchar *jid;
+	gchar *jid;
 	
 	if ( c->selected_session.empty() )
 	{
 		woklib_message(c->wls, "You need to select a session first");
 		return;
 	}
-	if ( (jid = gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(c->xml, "entry_jid"))))[0] == 0 )
+	if ( (jid =  gtk_combo_box_get_active_text ( GTK_COMBO_BOX(gtk_builder_get_object (c->builder, "box_jid"))))[0] == 0 )
 	{
 		woklib_message(c->wls, "You need to select a jid first");
 		return;
@@ -776,6 +819,8 @@ PubSub_Widget::FindNodeButton(GtkButton *button, PubSub_Widget *c)
 		gtk_list_store_append(GTK_LIST_STORE(c->nodemenu), &treeiter);
 		gtk_list_store_set(GTK_LIST_STORE(c->nodemenu), &treeiter, 0 , (*iter)->GetAttr("node").c_str(), -1);
 	}
+	
+	g_free(jid);
 }
 
 void
@@ -803,7 +848,7 @@ PubSub_Widget::SesChange()
 {
 	
 	GtkTreeIter treeiter;
-	if( !gtk_combo_box_get_active_iter(GTK_COMBO_BOX(glade_xml_get_widget(xml, "session")), &treeiter) )
+	if( !gtk_combo_box_get_active_iter(GTK_COMBO_BOX(gtk_builder_get_object (builder, "session")), &treeiter) )
 	{
 		return;
 	}

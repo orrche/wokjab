@@ -1264,7 +1264,7 @@ gboolean
 GUIMessageWidget::key_press_event(GtkWidget * widget, GdkEventKey * event, GUIMessageWidget *c)
 {
 	if (event->keyval == GDK_v && (event->state & GDK_CONTROL_MASK))
-		;
+		return FALSE;
 	else if ( event->state & GDK_CONTROL_MASK )
 		return FALSE;
 	else if (event->keyval == GDK_Control_L || event->keyval == GDK_Control_R )
@@ -1273,7 +1273,7 @@ GUIMessageWidget::key_press_event(GtkWidget * widget, GdkEventKey * event, GUIMe
 		
 	gint ret;
 	g_signal_emit_by_name(G_OBJECT(c->textview2), "key-press-event", event, &ret, -1);
-
+    return ret;
 	return TRUE;
 }
 

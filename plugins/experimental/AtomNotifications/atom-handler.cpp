@@ -24,6 +24,61 @@ AtomHandler::AtomHandler(WLSignal *wls) : WoklibPlugin(wls)
 {
 	EXP_SIGHOOK("Jabber PubSub Item xmlns 'entry' 'http://www.w3.org/2005/Atom'", &AtomHandler::NewAtom, 1000);
 	EXP_SIGHOOK("Jabber PubSub Atom Link", &AtomHandler::Link, 1000);
+	
+	EXP_SIGHOOK("GetMenu", &AtomHandler::Menu, 1000);
+	
+}
+
+int 
+AtomHandler::Menu(WokXMLTag *tag)
+{
+	WokXMLTag &menuitem = tag->AddTag("item");
+	menuitem.AddAttr("name", "Atom Feeds");
+	
+	std::list<WokXMLTag *>::iterator item;
+	
+	for ( item = atomitems.begin(); item != atomitems.end(); item++)
+	{
+//		string body;
+	
+		WokXMLTag &entry = (*item)->GetFirstTag("entry", "http://www.w3.org/2005/Atom");
+
+//		body = entry.GetFirstTag("source").GetFirstTag("title").GetBody());
+		//body.AddText(">\n" +entry.GetFirstTag("title").GetBody() +"\n");
+		//body.AddTag("i").AddText(entry.GetFirstTag("summary").GetBody());
+
+		std::list <WokXMLTag *>::iterator feediter;
+		for( feediter = menuitem->GetTagList("item").begin(); feediter != menuitem->GetTagList("item").end(); feediter++)
+		{
+		//	if ( (*feediter)->GetAttr("name") == entry.
+		
+		}
+
+		WokXMLTag &subitem = menuitem.AddTag("item");
+		subitem.AddAttr("name", entry.GetFirstTag("title").GetBody());
+		
+		WokXMLTag &summaryitem = subitem.AddTag("item");
+		summaryitem.AddAttr("name", entry.GetFirstTag("summary").GetBody());
+		
+		std::list <WokXMLTag *>::iterator linkiter;
+		for(linkiter = entry.GetTagList("link").begin(); linkiter != entry.GetTagList("link").end(); linkiter++)
+		{
+			WokXMLTag &cmditem = subitem.AddTag("item");
+			
+			if ( (*linkiter)->GetAttr("rel").empty() )
+				cmditem.AddAttr("name", (*linkiter)->GetAttr("href"));
+			else
+				cmditem.AddAttr("name", (*linkiter)->GetAttr("rel"));
+			
+			cmditem.AddAttr("signal", "Jabber PubSub Atom Link");
+			WokXMLTag &sig = cmditem.AddTag("data");
+			sig.AddTag(*linkiter);
+			sig.GetFirstTag("link").AddAttr("session", (*item)->GetFirstTag("session", "wokjab").GetAttr("session"));
+		
+		}
+	}
+	
+	return 1;
 }
 
 int
@@ -57,6 +112,14 @@ AtomHandler::NewAtom(WokXMLTag *tag)
 	for ( item = tag->GetFirstTag("message").GetFirstTag("event", "http://jabber.org/protocol/pubsub#event").GetFirstTag("items").GetTagList("item").begin() ; 
 		item != tag->GetFirstTag("message").GetFirstTag("event", "http://jabber.org/protocol/pubsub#event").GetFirstTag("items").GetTagList("item").end() ; item++)
 	{
+		WokXMLTag *itemdata = new WokXMLTag(**item);
+		itemdata->AddTag("session", "wokjab").AddAttr("session", tag->GetAttr("session"));
+		atomitems.push_back(itemdata);
+		
+		while ( atomitems.size() > 20 )
+			atomitems.pop_front();
+		continue;
+		
 		WokXMLTag &entry = (*item)->GetFirstTag("entry", "http://www.w3.org/2005/Atom");
 		WokXMLTag notify("notification");
 		WokXMLTag &itemtag = notify.AddTag("item");

@@ -117,6 +117,8 @@ topdock(in_topdock)
 	
 	gtk_widget_hide(hiddenwindow);
 	gtk_widget_show_all(win);
+	
+	Activate();
 }
 
 WokjabDockWindow::~WokjabDockWindow()
@@ -283,6 +285,9 @@ WokjabDockWindow::Realize(GtkWidget *widget, WokjabDockWindow *c)
 {
 	gtk_widget_reparent(c->mainsock, c->placeholder);
 	gtk_widget_show_all(c->placeholder);
+	gtk_widget_realize(c->mainsock);
+	gtk_widget_realize(c->placeholder );
+	
 }
 
 void

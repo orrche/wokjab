@@ -42,8 +42,9 @@ public:
 			
 	int NewAtom(WokXMLTag *tag);
 	int Link(WokXMLTag *tag);
+	int Menu(WokXMLTag *tag);
 protected:
-
+	std::list <WokXMLTag *> atomitems;
 private:
 
 };

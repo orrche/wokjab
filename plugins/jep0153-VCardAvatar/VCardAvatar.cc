@@ -305,7 +305,10 @@ VCardAvatar::SetMy(WokXMLTag *tag)
 		GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file (mypictag->GetAttr("file").c_str(), NULL);
 		
 		if ( pixbuf == NULL )
+		{
+			woklib_error(wls, "Couldn't load the file " + mypictag->GetAttr("file"));
 			return 1;
+		}
 		
 		int pwidth = gdk_pixbuf_get_width(pixbuf);
 		int pheight = gdk_pixbuf_get_height(pixbuf);
@@ -327,6 +330,7 @@ VCardAvatar::SetMy(WokXMLTag *tag)
 		
 		if ( scaled == NULL )
 		{
+			woklib_error(wls, "Couldn't scale the file");
 			return 1;
 		}
 		
@@ -354,10 +358,10 @@ VCardAvatar::SetMy(WokXMLTag *tag)
 			sprintf(buf2, "%x", buf[i]);
 		myhash += buf2;
 	}
-
+	
 	
 	WokXMLTag msgtag(NULL,"message");
-	msgtag.AddAttr("session", "jabber0");
+	msgtag.AddAttr("session", tag->GetAttr("session"));
 	WokXMLTag &iqtag = msgtag.AddTag("iq");
 	iqtag.AddAttr("type", "set");
 	WokXMLTag &vtag = iqtag.AddTag(&tag->GetFirstTag("iq").GetFirstTag("vCard", "vcard-temp"));
