@@ -48,11 +48,11 @@ AtomHandler::Menu(WokXMLTag *tag)
 		//body.AddTag("i").AddText(entry.GetFirstTag("summary").GetBody());
 
 		std::list <WokXMLTag *>::iterator feediter;
-		for( feediter = menuitem->GetTagList("item").begin(); feediter != menuitem->GetTagList("item").end(); feediter++)
-		{
+//		for( feediter = menuitem->GetTagList("item").begin(); feediter != menuitem->GetTagList("item").end(); feediter++)
+	//	{
 		//	if ( (*feediter)->GetAttr("name") == entry.
 		
-		}
+	//	}
 
 		WokXMLTag &subitem = menuitem.AddTag("item");
 		subitem.AddAttr("name", entry.GetFirstTag("title").GetBody());
