@@ -104,6 +104,8 @@ DisplayWidget::Create()
 			G_CALLBACK (DisplayWidget::SignalClear), this);
 	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "DebugClear")), "clicked",
 			G_CALLBACK (DisplayWidget::DebugClear), this);
+	g_signal_connect (G_OBJECT (glade_xml_get_widget (xml, "IOClear")), "clicked", 
+	    G_CALLBACK (DisplayWidget::IOClear), this);
 }
 
 void
@@ -123,6 +125,12 @@ void
 DisplayWidget::SignalButton (GtkButton *button, DisplayWidget *c)
 {
 	new SignalGenDialog(c->wls);
+}
+
+void
+DisplayWidget::IOClear(GtkButton *button, DisplayWidget *c)
+{
+	gtk_list_store_clear(c->inout_store);
 }
 
 void
@@ -201,7 +209,7 @@ DisplayWidget::InOut(WokXMLTag *tag)
 											-1);
 	
 	
-	if( gtk_tree_model_iter_n_children (GTK_TREE_MODEL(inout_store), NULL) > 100)
+	while( gtk_tree_model_iter_n_children (GTK_TREE_MODEL(inout_store), NULL) > 100)
 	{
 		gtk_tree_model_get_iter_first(GTK_TREE_MODEL(inout_store), &iter);
 		gtk_list_store_remove(inout_store, &iter);

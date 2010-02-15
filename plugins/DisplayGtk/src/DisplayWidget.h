@@ -65,6 +65,7 @@ class DisplayWidget : public WLSignalInstance
 		static void InputButton (GtkButton *button, DisplayWidget *c);
 		static void SignalButton (GtkButton *button, DisplayWidget *c);
 		static void SignalClear (GtkButton *button, DisplayWidget *c);
+		static void IOClear (GtkButton *button, DisplayWidget *c);
 	protected:
 		GladeXML *xml;
 		GtkWidget *message_treeview;
