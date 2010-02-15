@@ -64,7 +64,7 @@ DisplayWidget::Create()
   gtk_tree_view_set_model (GTK_TREE_VIEW(signal_treeview), GTK_TREE_MODEL(signal_store));
 	message_store = gtk_list_store_new (1, G_TYPE_STRING);
   gtk_tree_view_set_model (GTK_TREE_VIEW(message_treeview), GTK_TREE_MODEL(message_store));
-	inout_store = gtk_list_store_new (1, G_TYPE_STRING);
+	inout_store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
   gtk_tree_view_set_model (GTK_TREE_VIEW(inout_treeview), GTK_TREE_MODEL(inout_store));
 	error_store = gtk_list_store_new (1, G_TYPE_STRING);
   gtk_tree_view_set_model (GTK_TREE_VIEW(error_treeview), GTK_TREE_MODEL(error_store));
@@ -82,7 +82,15 @@ DisplayWidget::Create()
 	column = gtk_tree_view_column_new_with_attributes ("Signal", renderer, "text", 0, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (message_treeview), column);
 	renderer = gtk_cell_renderer_text_new ();
-	column = gtk_tree_view_column_new_with_attributes ("Signal", renderer, "text", 0, NULL);
+	column = gtk_tree_view_column_new_with_attributes ("session", renderer, "text", 0, NULL);
+	gtk_tree_view_append_column (GTK_TREE_VIEW (inout_treeview), column);
+	renderer = gtk_cell_renderer_text_new ();
+
+	GValue a = {0};
+	g_value_init (&a, G_TYPE_INT);
+  g_value_set_int (&a, 600);
+	g_object_set_property (G_OBJECT(renderer) , "wrap-width" , &a);
+	column = gtk_tree_view_column_new_with_attributes ("data", renderer, "text", 1, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (inout_treeview), column);
 	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes ("Signal", renderer, "text", 0, NULL);
@@ -204,8 +212,9 @@ DisplayWidget::InOut(WokXMLTag *tag)
 	GtkTreeIter iter;
 	
 	gtk_list_store_append (inout_store, &iter);  /* Acquire a top-level iterator */
-	gtk_list_store_set (inout_store, &iter,
-											0, tag->GetFirstTag("body").GetBody().c_str(),
+  gtk_list_store_set (inout_store, &iter,
+											0, tag->GetAttr("session").c_str(),
+	   									1, tag->GetFirstTag("body").GetBody().c_str(),
 											-1);
 	
 	
