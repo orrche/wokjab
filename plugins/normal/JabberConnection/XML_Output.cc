@@ -115,6 +115,7 @@ XML_Output::SocketAvailibule(WokXMLTag *tag)
 		WokXMLTag sigtag(NULL, "message");
 		sigtag.AddAttr("type", "out");
 		sigtag.AddTag("body").AddText(buffer);
+		sigtag.AddAttr("session", session);
 		wls->SendSignal("Display Socket", sigtag);
 	}
 #endif // DEBUG

@@ -105,6 +105,7 @@ XML_Input::read_data (int source)
 		WokXMLTag sigtag(NULL, "message");
 		sigtag.AddAttr("type", "in");
 		sigtag.AddTag("body").AddText(buffer);
+		sigtag.AddAttr("session", session);
 		wls->SendSignal("Display Socket", sigtag);
 	}
 #endif // DEBUG
