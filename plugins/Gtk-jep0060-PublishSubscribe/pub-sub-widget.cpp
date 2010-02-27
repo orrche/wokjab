@@ -34,7 +34,7 @@ PubSub_Widget::PubSub_Widget(WLSignal *wls, WokXMLTag *data, PubSubManager *para
 	wls->SendSignal("Config XML Trigger", &conftag);
 		
 	builder = gtk_builder_new ();
-    gtk_builder_add_from_file (builder, PACKAGE_GLADE_DIR"/wokjab/pubsub.xml", NULL);
+    gtk_builder_add_from_file (builder, PACKAGE_GLADE_DIR"/wokjab/pubsub.glade", NULL);
 
 	
 	GtkWidget *sessionchooser;

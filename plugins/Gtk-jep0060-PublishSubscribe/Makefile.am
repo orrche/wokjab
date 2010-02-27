@@ -2,7 +2,7 @@ libdir = $(prefix)/lib/woklib-plugins/normal
 
 datadir = $(prefix)/lib/woklib/glade
 pkgdata_DATA = \
-        pubsub.xml
+        pubsub.glade
 
 EXTRA_DIST = ${pkgdata_DATA}
 
