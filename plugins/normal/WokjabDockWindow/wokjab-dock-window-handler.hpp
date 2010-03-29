@@ -20,16 +20,21 @@
 #ifndef _WOKJAB_DOCK_WINDOW_HANDLER_HPP_
 #define _WOKJAB_DOCK_WINDOW_HANDLER_HPP_
 
+
+#include <gtkmm.h>
+#include "wokjab-dock-window.hpp"
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
+
 #include <iostream>
-#include "wokjab-dock-window.hpp"
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
+
 
 using namespace Woklib;
 
@@ -42,22 +47,15 @@ public:
 	WokjabDockWindowHandler(WLSignal *wls);
 		
 	int Add(WokXMLTag *tag);
-	int AddChat(WokXMLTag *tag);
-	int AddRoster(WokXMLTag *tag);
 	int Destroy(WokXMLTag *tag);
 	int Activate(WokXMLTag *tag);
-	int ActivateChat(WokXMLTag *tag);
 	int SetUrgency(WokXMLTag *tag);
 		
 	int Hide(WokXMLTag *tag);
-	int HideChat(WokXMLTag *tag);
 	int Show(WokXMLTag *tag);
-	int ShowChat(WokXMLTag *tag);
 protected:
-	GtkWidget *dock;
-	GdlDockLayout *layout;
+	std::map <std::string, Gtk::Notebook *> masterlist;
 	std::map <std::string, WokjabDockWindow*> windows;
-		
 		
 	std::vector <int> Widgets;
 	std::vector <int> HiddenWidgets;
