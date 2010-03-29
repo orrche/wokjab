@@ -21,6 +21,7 @@
 #define _WOKJAB_DOCK_WINDOW_HPP_
 
 #include <gtkmm.h>
+#include <gtkmm/socket.h>
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
@@ -65,24 +66,12 @@ public:
 	static gboolean key_press_handler(GtkWidget * widget, GdkEventKey * event,
 			     WokjabDockWindow *c);
 protected:
-	gulong sig1h;
-	gulong sig2h;
-	gulong sig3h;
-	gulong sig2lh;
-	gulong sig3lh;
 	
 	WokXMLTag *inittag;
 	Gtk::Notebook *parent;
-	GtkWidget *win;
-	GtkWidget *topdock;
+	Gtk::Socket mainsock;
+	Gtk::Socket labelsock;
 		
-	GtkWidget *mainsock;
-	GtkWidget *hiddenwindow;
-	GtkWidget *placeholder;
-
-	GtkWidget *labelsock;
-	GtkWidget *labelph;
-	GtkWidget *hiddenlabel;
 private:
 
 };

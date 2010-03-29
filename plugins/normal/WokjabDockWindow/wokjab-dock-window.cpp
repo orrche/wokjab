@@ -23,49 +23,16 @@ WokjabDockWindow::WokjabDockWindow(WLSignal *wls, WokXMLTag *in_inittag, Gtk::No
 inittag(new WokXMLTag(*in_inittag)),
 parent( parent)
 {
-	if (! inittag->GetAttr("labelid").empty() )
-	{
-		hiddenlabel = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-		
-		labelsock = gtk_socket_new();
-		labelph = gtk_event_box_new();
-		
-		gtk_container_add(GTK_CONTAINER(hiddenlabel), labelsock);
-		
-		gtk_widget_show_all(labelph);
-		gtk_widget_show_all(hiddenlabel);
-		
-		sig2lh = g_signal_connect(G_OBJECT(labelph), "unrealize", G_CALLBACK (WokjabDockWindow::LabelUnrealize), this);
-		sig3lh = g_signal_connect(G_OBJECT(labelph), "realize", G_CALLBACK (WokjabDockWindow::LabelRealize), this);
-		
-		gtk_socket_add_id(GTK_SOCKET(labelsock), atoi(inittag->GetAttr("labelid").c_str()));
-		gtk_widget_show_all(labelsock);
-		gtk_widget_hide(hiddenlabel);
-
-	}
-	else
-		labelsock = NULL;
+	//if (! inittag->GetAttr("labelid").empty())
+	//{
+	//}
+	parent->append_page(mainsock, labelsock);
 	
-	sig2h = g_signal_connect(G_OBJECT(placeholder), "unrealize", G_CALLBACK (WokjabDockWindow::Unrealize), this);
-	sig3h = g_signal_connect(G_OBJECT(placeholder), "realize", G_CALLBACK (WokjabDockWindow::Realize), this);
+	mainsock.show_all();
+	labelsock.show_all();
 	
-	hiddenwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_widget_realize(hiddenwindow);
-	
-	gtk_container_add (GTK_CONTAINER (win), placeholder);
-	
-	mainsock = gtk_socket_new();
-	placeholder = gtk_event_box_new();
-	Gtk::Widget *wrapped = Glib::wrap(mainsock);
-	parent->append_page(*wrapped);
-	
-	
-	gtk_container_add(GTK_CONTAINER(hiddenwindow), mainsock);
-	gtk_socket_add_id(GTK_SOCKET(mainsock), atoi(inittag->GetAttr("id").c_str()));
-
-	
-	gtk_widget_hide(hiddenwindow);
-	gtk_widget_show_all(win);
+	mainsock.add_id(atoi(inittag->GetAttr("id").c_str()));
+	labelsock.add_id(atoi(inittag->GetAttr("labelid").c_str()));
 	
 	Activate();
 }
@@ -76,18 +43,6 @@ WokjabDockWindow::~WokjabDockWindow()
 	closetag.AddAttr("id", inittag->GetAttr("id"));
 
 	wls->SendSignal("Wokjab DockWindow Close " + inittag->GetAttr("id"), &closetag);
-		
-	g_signal_handler_disconnect (G_OBJECT(win), sig1h);
-	g_signal_handler_disconnect (G_OBJECT (placeholder), sig2h);
-	g_signal_handler_disconnect (G_OBJECT (placeholder), sig3h);
-	
-	if (! inittag->GetAttr("labelid").empty() )
-	{
-		g_signal_handler_disconnect (G_OBJECT (labelph), sig2lh);
-		g_signal_handler_disconnect (G_OBJECT (labelph), sig3lh);
-		gtk_widget_destroy(hiddenlabel);
-	}
-	gtk_widget_destroy(hiddenwindow);
 }
 
 gboolean
@@ -156,7 +111,7 @@ WokjabDockWindow::Activate()
 void
 WokjabDockWindow::SetUrgencyHint(WokXMLTag *tag)
 {
-	GtkWidget *window = win;
+	/*
 	while ( window && !GTK_IS_WINDOW(window) )
 	{
 		window = gtk_widget_get_parent(window);
@@ -169,6 +124,7 @@ WokjabDockWindow::SetUrgencyHint(WokXMLTag *tag)
 		else
 			gtk_window_set_urgency_hint (GTK_WINDOW(window), FALSE);
 	}
+	 */
 }
 
 bool
@@ -192,7 +148,8 @@ WokjabDockWindow::Hide(WokXMLTag *tag)
 void
 WokjabDockWindow::Show(WokXMLTag *tag)
 {
-	/*
+
+/*
 	if ( GDL_DOCK_ITEM_ICONIFIED(win) )
 	{
 		gdl_dock_item_show_item(GDL_DOCK_ITEM (win));
@@ -209,8 +166,7 @@ WokjabDockWindow::Show(WokXMLTag *tag)
 	{
 		gdl_dock_item_dock_to (GDL_DOCK_ITEM (win), NULL, GDL_DOCK_FLOATING, -1);
 	}
-	 */
-	
+	 */	
 }
 
 std::string
@@ -219,36 +175,6 @@ WokjabDockWindow::GetType()
 	return inittag->GetAttr("type");
 }
 
-
-void
-WokjabDockWindow::LabelUnrealize(GtkWidget *widget, WokjabDockWindow *c)  
-{
-	gtk_widget_reparent(c->labelsock, c->hiddenlabel);
-}
-
-void
-WokjabDockWindow::LabelRealize(GtkWidget *widget, WokjabDockWindow *c)
-{
-	gtk_widget_reparent(c->labelsock, c->labelph);
-	gtk_widget_show_all(c->labelsock);
-}
-
-
-void
-WokjabDockWindow::Unrealize(GtkWidget *widget, WokjabDockWindow *c)  
-{
-	gtk_widget_reparent(c->mainsock, c->hiddenwindow);
-}
-
-void
-WokjabDockWindow::Realize(GtkWidget *widget, WokjabDockWindow *c)
-{
-	gtk_widget_reparent(c->mainsock, c->placeholder);
-	gtk_widget_show_all(c->placeholder);
-	gtk_widget_realize(c->mainsock);
-	gtk_widget_realize(c->placeholder );
-	
-}
 
 /*
 void

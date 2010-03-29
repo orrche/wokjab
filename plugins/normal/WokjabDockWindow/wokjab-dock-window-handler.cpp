@@ -89,7 +89,7 @@ WokjabDockWindowHandler::Add(WokXMLTag *tag)
 		test = new Gtk::Window();
 		Gtk::Notebook *nb;
 		nb = new Gtk::Notebook(); // there should be a better way...
-		masterlist["test"] = nb;
+		masterlist[tag->GetAttr("type")] = nb;
 		
 		test->add(*nb);
 
