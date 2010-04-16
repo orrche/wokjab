@@ -73,8 +73,8 @@ IQAuthManager::Feature(WokXMLTag *tag)
 			else if ( (*iter)->GetBody() == "DIGEST-MD5" )
 			{
 					/* This seams to be broken... */
-				// new IQauth(wls, tag->GetAttr("session"), IQauth::SASLDIGESTMD5);
-				//break;
+				new IQauth(wls, tag->GetAttr("session"), IQauth::SASLDIGESTMD5);
+				break;
 			}
 		}
 		if ( iter == list.end() )
@@ -86,8 +86,8 @@ IQAuthManager::Feature(WokXMLTag *tag)
 			else
 			{
 				woklib_error(wls, "No known loginmethods found");
-				// doing a long shot
-				new IQauth(wls, tag->GetAttr("session"), IQauth::ClearTextUser);
+				// not doing a long shot
+				// new IQauth(wls, tag->GetAttr("session"), IQauth::ClearTextUser);
 			}
 		}
 		
