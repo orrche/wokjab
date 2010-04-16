@@ -87,7 +87,13 @@ MenuRoster::CreateRoster(WokXMLTag *tag)
 	for( listiter = list.begin() ; listiter != list.end(); listiter++)
 	{
 		WokXMLTag &sestag = item.AddTag("item");
-		sestag.AddAttr("name", (**listiter).GetAttr("name"));
+
+		WokXMLTag querytag(NULL, "query");
+		WokXMLTag &itemtag = querytag.AddTag("item");
+		itemtag.AddAttr("session", (**listiter).GetAttr("name"));
+		wls->SendSignal("Jabber Connection GetUserData", &querytag);
+		
+		sestag.AddAttr("name", itemtag.GetFirstTag("jid").GetBody());
 		
 		std::list<WokXMLTag *> userlist = (**listiter).GetTagList("user");
 		std::list<WokXMLTag *>::iterator useriter(userlist.begin());
@@ -99,10 +105,11 @@ MenuRoster::CreateRoster(WokXMLTag *tag)
 			{
 				std::list<WokXMLTag *> grouplist = (**useriter).GetTagList("group");
 				std::list<WokXMLTag *>::iterator groupiter(grouplist.begin());
-				
+
+
 				for( ;groupiter != grouplist.end(); groupiter++)
 				{
-					if( groupitem.find( (**groupiter).GetBody() ) == groupitem.end() )
+					if( groupitem[(**listiter).GetAttr("name")].find( (**groupiter).GetBody() ) == groupitem[(**listiter).GetAttr("name")].end() )
 					{
 						groupitem[(**listiter).GetAttr("name")][ (**groupiter).GetBody() ] = &sestag.AddTag("item");
 						groupitem[(**listiter).GetAttr("name")][ (**groupiter).GetBody() ]->AddAttr("name", (**groupiter).GetBody());
