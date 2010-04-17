@@ -26,10 +26,17 @@ parent( parent)
 	//if (! inittag->GetAttr("labelid").empty())
 	//{
 	//}
-	parent->append_page(mainsock, labelsock);
+
+	label_cbutton.set_label("x");
+	label_box.pack_start(labelsock);
+	label_box.pack_start(label_cbutton);
+	parent->append_page(mainsock, label_box);
+
+	label_cbutton.signal_clicked().connect(sigc::mem_fun(*this,
+              &WokjabDockWindow::on_cbutton_clicked));
 	
+	label_box.show_all();
 	mainsock.show_all();
-	labelsock.show_all();
 	
 	mainsock.add_id(atoi(inittag->GetAttr("id").c_str()));
 	labelsock.add_id(atoi(inittag->GetAttr("labelid").c_str()));
@@ -43,6 +50,14 @@ WokjabDockWindow::~WokjabDockWindow()
 	closetag.AddAttr("id", inittag->GetAttr("id"));
 
 	wls->SendSignal("Wokjab DockWindow Close " + inittag->GetAttr("id"), &closetag);
+}
+
+void
+WokjabDockWindow::on_cbutton_clicked()
+{
+  WokXMLTag deltag("delete");
+  deltag.AddAttr("id", inittag->GetAttr("id"));
+  wls->SendSignal("Wokjab DockWindow Destroy", deltag);
 }
 
 gboolean

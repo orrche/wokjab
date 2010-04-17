@@ -54,7 +54,8 @@ public:
 	static void Realize(GtkWidget *widget, WokjabDockWindow *c);
 	static void LabelUnrealize(GtkWidget *widget, WokjabDockWindow *c);
 	static void LabelRealize(GtkWidget *widget, WokjabDockWindow *c);
-	
+
+	void on_cbutton_clicked();
 	std::string GetType();
 	void SetUrgencyHint(WokXMLTag *tag);
 	void Activate();
@@ -71,6 +72,9 @@ protected:
 	Gtk::Notebook *parent;
 	Gtk::Socket mainsock;
 	Gtk::Socket labelsock;
+
+	Gtk::HBox label_box;
+	Gtk::Button label_cbutton;
 		
 private:
 
