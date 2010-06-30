@@ -19,8 +19,6 @@
 #  include <config.h>
 #endif
 
-#include "GUIMessageWidget.h"
-
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -31,6 +29,8 @@
 #include <sys/types.h>
 #include <sstream>
 #include <algorithm>
+
+#include "GUIMessageWidget.h"
 
 using std::string;
 
