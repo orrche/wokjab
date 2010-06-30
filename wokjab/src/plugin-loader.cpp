@@ -22,8 +22,9 @@
  * 	Boston, MA  02110-1301, USA.
  */
 
-#include "plugin-loader.hpp"
 #include <algorithm>
+#include "plugin-loader.hpp"
+
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
