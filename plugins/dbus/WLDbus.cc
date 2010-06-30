@@ -16,9 +16,10 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <algorithm>
+
 #include "WLDbus.h"
 #include "wokjab-dbus-glue.h"
-#include <algorithm>
 
 G_DEFINE_TYPE(WLDbus_obj, wokjab, G_TYPE_OBJECT);
 

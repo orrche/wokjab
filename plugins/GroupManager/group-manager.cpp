@@ -22,8 +22,8 @@
  * 	Boston, MA  02110-1301, USA.
  */
 
-#include "group-manager.hpp"
 #include <algorithm>
+#include "group-manager.hpp"
 
 GroupManager::GroupManager(WLSignal *wls) : WoklibPlugin(wls)
 {

@@ -20,9 +20,10 @@
 // Created on: Tue Jan 24 17:12:23 2006
 //
 
+#include <algorithm>
+
 #include "opener.h"
 #include "dopener.h"
-#include <algorithm>
 
 Opener::Opener(WLSignal *wls) : WoklibPlugin(wls)
 {

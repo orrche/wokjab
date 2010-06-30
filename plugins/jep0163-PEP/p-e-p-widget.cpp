@@ -22,9 +22,9 @@
  * 	Boston, MA  02110-1301, USA.
  */
 
-#include "p-e-p-widget.hpp"
 #include <sstream>
 #include <algorithm>
+#include "p-e-p-widget.hpp"
 
 PEP_Widget::PEP_Widget(WLSignal *wls, PEPManager *pm): WLSignalInstance(wls), pm(pm)
 {

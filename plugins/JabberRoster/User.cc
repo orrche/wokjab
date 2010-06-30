@@ -25,9 +25,10 @@
 // Created on: Sat Sep  2 14:39:43 2006
 //
 
+#include <algorithm>
+
 #include "User.h"
 #include "glib.h"
-#include <algorithm>
 
 #ifndef _
 #define _(x) x

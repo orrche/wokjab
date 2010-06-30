@@ -16,12 +16,13 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#include "GUIWindowDock.h"
-
-#include <Woklib/WokXMLTag.h>
 #include <sstream>
 #include <gtk/gtkprivate.h>
 #include <algorithm>
+#include <Woklib/WokXMLTag.h>
+
+#include "GUIWindowDock.h"
+
 using std::list;
 using std::string;
 

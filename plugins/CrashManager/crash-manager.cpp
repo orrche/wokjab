@@ -22,13 +22,13 @@
  * 	Boston, MA  02110-1301, USA.
  */
 
-#include "crash-manager.hpp"
 #include <sys/types.h>
 #include <unistd.h>
 #include <sstream>
 #include <algorithm>
 
 #include <gtk/gtk.h>
+#include "crash-manager.hpp"
 
 namespace sig_linux_signal
 {

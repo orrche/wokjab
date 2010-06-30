@@ -22,8 +22,8 @@
 // Created on: Fri Sep  1 12:38:53 2006
 //
 
-#include "RosterItem.h"
 #include <algorithm>
+#include "RosterItem.h"
 
 
 RosterItem::RosterItem(WLSignal *wls, GladeXML *xml, std::string id, WokXMLTag *tag, RosterItem *parant) : WLSignalInstance(wls),

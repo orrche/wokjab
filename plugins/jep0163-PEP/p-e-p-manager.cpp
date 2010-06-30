@@ -22,8 +22,8 @@
  * 	Boston, MA  02110-1301, USA.
  */
 
-#include "p-e-p-manager.hpp"
 #include <algorithm>
+#include "p-e-p-manager.hpp"
 
 
 PEPManager::PEPManager(WLSignal *wls) : WoklibPlugin(wls)

@@ -22,8 +22,8 @@
  * 	Boston, MA  02110-1301, USA.
  */
 
-#include "pub-sub-manager.hpp"
 #include <algorithm>
+#include "pub-sub-manager.hpp"
 
 
 PubSubManager::PubSubManager(WLSignal *wls) : WoklibPlugin(wls)

@@ -27,7 +27,6 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "VCardAvatar.h"
 #include <fstream>
 #include <sstream>
 
@@ -35,6 +34,9 @@
 #include <gtk/gtk.h>
 
 #include "openssl/sha.h"
+
+#include "VCardAvatar.h"
+
 const char* base64char = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 
