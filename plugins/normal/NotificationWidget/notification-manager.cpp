@@ -17,9 +17,9 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "notification-manager.hpp"
 #include <sstream>
 #include <algorithm>
+#include "notification-manager.hpp"
 
 NotificationManager::NotificationManager(WLSignal *wls) : WoklibPlugin(wls)
 {	
