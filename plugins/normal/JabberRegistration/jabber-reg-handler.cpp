@@ -77,6 +77,19 @@ JabberRegHandler::MenuAction(WokXMLTag *tag)
 	field.AddAttr("var", "server");
 	field.AddAttr("label", _("Server"));
 	
+	WokXMLTag &port_field = x.AddTag("field");
+	port_field.AddAttr("type", "text-single");
+	port_field.AddAttr("var", "port");
+	port_field.AddTag("value").AddText("5222");
+	port_field.AddAttr("label", _("Port"));
+	
+	WokXMLTag &host_field = x.AddTag("field");
+	host_field.AddAttr("type", "text-single");
+	host_field.AddAttr("var", "host");
+	host_field.AddAttr("value", "");
+	host_field.AddAttr("label", _("Host (usualy not nessesary, due to it beeing the same as server)"));
+	
+	
 	wls->SendSignal("Jabber jabber:x:data Init", form);
 	return 1;
 }
@@ -84,11 +97,39 @@ JabberRegHandler::MenuAction(WokXMLTag *tag)
 int
 JabberRegHandler::XDataResp(WokXMLTag *tag)
 {
+	std::cout << "Are we even here at the right itme?" << std::endl;
+	if ( tag->GetFirstTag("iq").GetAttr("type") == "error") 
+	{
+		woklib_error(wls, "Something went wrong with the registration");
+		return 1;
+	}
+	
+	std::string server, host, port;
+	std::list<WokXMLTag *>::iterator tagiter;
+	for( tagiter = tag->GetFirstTag("x", "jabber:x:data").GetTagList("field").begin() ; 
+		tagiter != tag->GetFirstTag("x", "jabber:x:data").GetTagList("field").end() ; tagiter++)
+	{
+		if ( (*tagiter)->GetAttr("var") == "host")
+			host = (*tagiter)->GetFirstTag("value").GetBody();
+		if ( (*tagiter)->GetAttr("var") == "server")
+			server = (*tagiter)->GetFirstTag("value").GetBody();
+		if ( (*tagiter)->GetAttr("var") == "port")
+			port = (*tagiter)->GetFirstTag("value").GetBody();
+	}
+	
+	if ( host == "" )
+		host = server;
+	if ( server == "" )
+		return 1;
+	if ( port == "" )
+		return 1;
+	
+	
 	WokXMLTag reg("register");
-	reg.AddAttr("host", tag->GetFirstTag("x", "jabber:x:data").GetFirstTag("field").GetFirstTag("value").GetBody());
-	reg.AddAttr("port", "5222");
+	reg.AddAttr("host", host);
+	reg.AddAttr("port", port);
 	reg.AddAttr("type", "1");
-	reg.AddAttr("server", tag->GetFirstTag("x", "jabber:x:data").GetFirstTag("field").GetFirstTag("value").GetBody());
+	reg.AddAttr("server", server);
 	
 	wls->SendSignal("Jabber RegisterJID",reg);
 	return 1;
