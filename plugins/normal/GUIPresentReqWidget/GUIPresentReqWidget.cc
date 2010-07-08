@@ -78,11 +78,10 @@ GUIPresentReqWidget::vcard(WokXMLTag *tag)
 	
 	from = tag->GetFirstTag("iq").GetAttr("from");
 	WokXMLTag &vcard = tag->GetFirstTag("iq").GetFirstTag("vCard");
-	WokXMLTag *tmptag;
-	
-	if( (tmptag=&vcard.GetFirstTag("NICKNAME")))
+
+	if ( !vcard.GetTagList("NICKNAME").empty() )
 	{
-		items[from]->AddAttr("nick", tmptag->GetBody());
+		items[from]->AddAttr("nick", vcard.GetFirstTag("NICKNAME").GetBody());
 		update_list();
 	}
 	
