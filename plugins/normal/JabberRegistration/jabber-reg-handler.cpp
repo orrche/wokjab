@@ -97,7 +97,6 @@ JabberRegHandler::MenuAction(WokXMLTag *tag)
 int
 JabberRegHandler::XDataResp(WokXMLTag *tag)
 {
-	std::cout << "Are we even here at the right itme?" << std::endl;
 	if ( tag->GetFirstTag("iq").GetAttr("type") == "error") 
 	{
 		woklib_error(wls, "Something went wrong with the registration");

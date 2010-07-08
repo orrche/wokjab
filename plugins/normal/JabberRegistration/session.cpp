@@ -64,8 +64,9 @@ Session::RegTagResp(WokXMLTag *tag)
 	msgtag.AddTag(&tag->GetFirstTag("iq"));
 	msgtag.GetFirstTag("iq").AddAttr("type", "set");
 	msgtag.GetFirstTag("iq").RemoveAttr("from");
+	msgtag.GetFirstTag("iq").RemoveAttr("id");
 	
-	for (tagiter = msgtag.GetFirstTag("iq").GetFirstTag("query").GetTags().begin() ; tagiter != msgtag.GetFirstTag("iq").GetFirstTag("query").GetTags().end(); tagiter++)
+	for (tagiter = msgtag.GetFirstTag("iq").GetFirstTag("query").GetTags().begin() ; tagiter != 				msgtag.GetFirstTag("iq").GetFirstTag("query").GetTags().end(); tagiter++)
 	{
 		if ( !origxml->GetAttr((*tagiter)->GetName()).empty() )
 		{
