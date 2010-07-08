@@ -494,6 +494,11 @@ VCardAvatar::GetIcon(WokXMLTag *tag)
 int
 VCardAvatar::vcard(WokXMLTag *tag)
 {
+	if ( tag->GetFirstTag("iq").GetAttr("type") == "error" )
+	{
+		return 1;	
+	}
+	
 	WokXMLTag *msgtag = &tag->GetFirstTag("iq");
 	WokXMLTag &vcard = msgtag->GetFirstTag("vCard");
 	
@@ -586,24 +591,27 @@ VCardAvatar::vcard(WokXMLTag *tag)
 			break;
 	}
 	
-	unsigned char buffer[30];
-	SHA1((unsigned char *)file.str().c_str(), file.str().size(), buffer);
-	std::string hash = "";
-	for( int i = 0 ; i < 20 ; i++)
+	if ( file.str().size() > 0 )
 	{
-		char buf2[3];
-		if(buffer[i] < 16)
-			sprintf(buf2, "0%x", buffer[i]);
-		else
-			sprintf(buf2, "%x", buffer[i]);
-		hash += buf2;
+		unsigned char buffer[30];
+		SHA1((unsigned char *)file.str().c_str(), file.str().size(), buffer);
+		std::string hash = "";
+		for( int i = 0 ; i < 20 ; i++)
+		{
+			char buf2[3];
+			if(buffer[i] < 16)
+				sprintf(buf2, "0%x", buffer[i]);
+			else
+				sprintf(buf2, "%x", buffer[i]);
+			hash += buf2;
+		}
+	
+		std::ofstream realfile((std::string(std::getenv("HOME"))+"/.wokjab/avatar/"+hash).c_str());
+		realfile << file.str();
+		realfile.close();
+	
+		WokXMLTag emptytag(NULL, "empty");
+		wls->SendSignal("Jabber Roster Update " + tag->GetAttr("session") + " " + jid, emptytag);
 	}
-	
-	std::ofstream realfile((std::string(std::getenv("HOME"))+"/.wokjab/avatar/"+hash).c_str());
-	realfile << file.str();
-	realfile.close();
-	
-	WokXMLTag emptytag(NULL, "empty");
-	wls->SendSignal("Jabber Roster Update " + tag->GetAttr("session") + " " + jid, emptytag);
 	return 1;
 }
