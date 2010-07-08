@@ -53,8 +53,12 @@ session(session)
 	gtk_widget_show_all(window);
 	
 	button = gtk_button_new_with_mnemonic("_Send");
+	
 	g_signal_connect (G_OBJECT (button), "clicked",
 		      G_CALLBACK (RegisterServiceWidget::ButtonPress), this);
+	g_signal_connect (G_OBJECT (window), "destroy",
+					G_CALLBACK (RegisterServiceWidget::Destroy), this);
+					
 	gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, FALSE,0);
 	
 }
@@ -128,6 +132,12 @@ RegisterServiceWidget::RegisterData(WokXMLTag *tag)
 	WokXMLTag *querytag;
 	std::list <WokXMLTag *> *list;
 	std::list <WokXMLTag *>::iterator iter;
+	
+	if ( tag->GetFirstTag("iq").GetAttr("type") == "error")
+	{
+		woklib_error(wls, "Something went wrong with the registration\nError code:" + tag->GetFirstTag("iq").GetFirstTag("error").GetAttr("code") + " " + tag->GetFirstTag("iq").GetFirstTag("error").GetAttr("type") );
+		return 1;
+	}
 	
 	querytag = &tag->GetFirstTag("iq").GetFirstTag("query");
 	
