@@ -114,6 +114,7 @@ AC_CONFIG_FILES(Makefile \
 	plugins/system/Makefile \
 	plugins/experimental/Makefile  \
         plugins/experimental/Dice/Makefile  \
+        plugins/experimental/MassRename/Makefile  \
         plugins/experimental/P2PRandomNumberMonitor/Makefile  \
         plugins/experimental/AtomNotifications/Makefile  \
         plugins/experimental/xdataConfig/Makefile  \

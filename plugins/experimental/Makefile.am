@@ -19,4 +19,6 @@ SUBDIRS= \
 	Dice\
 	P2PRandomNumberMonitor\
 	AtomNotifications \
-	xdataConfig
+	xdataConfig \
+	MassRename
+
