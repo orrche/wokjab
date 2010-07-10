@@ -1284,7 +1284,7 @@ GUIMessageWidget::key_press_handler(GtkWidget * widget, GdkEventKey * event,
 	GUIMessageWidget *obj;
 	obj = static_cast < GUIMessageWidget * > ( data );
 	if ((event->keyval == GDK_Return || event->keyval == GDK_KP_Enter)
-	    && !(event->state & GDK_CONTROL_MASK) && !(gtk_expander_get_expanded(GTK_EXPANDER(obj->expander))) ||
+	    && !((event->state & GDK_CONTROL_MASK) || (event->state & GDK_SHIFT_MASK)) && !(gtk_expander_get_expanded(GTK_EXPANDER(obj->expander))) ||
 	((event->keyval == GDK_Return || event->keyval == GDK_KP_Enter)
 	    && (event->state & GDK_CONTROL_MASK) && (gtk_expander_get_expanded(GTK_EXPANDER(obj->expander)))) ||
 			( event->state & GDK_MOD1_MASK && event->keyval == GDK_s))
