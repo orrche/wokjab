@@ -20,14 +20,15 @@
 #ifndef _WOKJAB_DOCK_WINDOW_HPP_
 #define _WOKJAB_DOCK_WINDOW_HPP_
 
+#include <gtkmm.h>
+#include <gtkmm/socket.h>
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
 #include <iostream>
 #include <vector>
-#include <gtk/gtk.h>
-#include <gdl/gdl.h>
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
@@ -41,16 +42,20 @@ using namespace Woklib;
 class WokjabDockWindow: public WLSignalInstance
 {
 public:
-	WokjabDockWindow(WLSignal *wls, WokXMLTag *in_inittag, GtkWidget *topdock, WokjabDockWindow *relative, GdlDockLayout *layout);
+	WokjabDockWindow(WLSignal *wls, WokXMLTag *in_inittag, Gtk::Notebook *parent);
 	~WokjabDockWindow();
-		
+
+	/*
+	 
 	static void Destroy(GdlDockObject *gdldockobject, gboolean arg1, WokjabDockWindow *c);
 	static void Dock(GdlDockObject *gdldockobject, GdlDockObject *arg1, GdlDockPlacement arg2, GValue *arg3, WokjabDockWindow *c);
+	 */
 	static void Unrealize(GtkWidget *widget, WokjabDockWindow *c);
 	static void Realize(GtkWidget *widget, WokjabDockWindow *c);
 	static void LabelUnrealize(GtkWidget *widget, WokjabDockWindow *c);
 	static void LabelRealize(GtkWidget *widget, WokjabDockWindow *c);
-	
+
+	void on_cbutton_clicked();
 	std::string GetType();
 	void SetUrgencyHint(WokXMLTag *tag);
 	void Activate();
@@ -62,24 +67,15 @@ public:
 	static gboolean key_press_handler(GtkWidget * widget, GdkEventKey * event,
 			     WokjabDockWindow *c);
 protected:
-	gulong sig1h;
-	gulong sig2h;
-	gulong sig3h;
-	gulong sig2lh;
-	gulong sig3lh;
 	
 	WokXMLTag *inittag;
-	GdlDockLayout *layout;
-	GtkWidget *win;
-	GtkWidget *topdock;
-		
-	GtkWidget *mainsock;
-	GtkWidget *hiddenwindow;
-	GtkWidget *placeholder;
+	Gtk::Notebook *parent;
+	Gtk::Socket mainsock;
+	Gtk::Socket labelsock;
 
-	GtkWidget *labelsock;
-	GtkWidget *labelph;
-	GtkWidget *hiddenlabel;
+	Gtk::HBox label_box;
+	Gtk::Button label_cbutton;
+		
 private:
 
 };

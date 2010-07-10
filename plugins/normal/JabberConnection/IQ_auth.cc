@@ -213,16 +213,18 @@ IQauth::SD_Challange(WokXMLTag *tag)
 	
 	const char* base64char = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 	std::string cnonce;
-	for( int i = 30 ; i ; i-- )
+	for( int i = 43 ; i ; i-- )
 	{
 		cnonce += base64char[rand()%strlen(base64char)];
 	}
-	cnonce += "==";
+	cnonce += "=";
 		
 	if ( data["realm"] == "" )
 		data["realm"] = "jabber";
-		
-	std::string resp = HEX(H( HEX(H(SD_A1(username, "jabber", password, data["nonce"], cnonce, ""))) + ":" + data["nonce"] + ":00000001:" +
+
+	std::cout << "username: " << username << " password: " << password << std::endl;
+	std::cout << data["realm"] << ", " << data["nonce"] << ", " << cnonce << ", " << data["digest-uri"] << std::endl;
+	std::string resp = HEX(H( HEX(H(SD_A1(username, data["realm"], password, data["nonce"], cnonce, ""))) + ":" + data["nonce"] + ":00000001:" +
                    cnonce + ":auth:" + HEX(H(SD_A2("xmpp/"+ server +"")))));
 																			
 	std::string response="charset=utf-8,username=\"" + username + "\",realm=\""+ data["realm"] + "\",nonce=\"" + data["nonce"] + "\",nc=00000001,cnonce=\"" + cnonce + "\",digest-uri=\"xmpp/"+ server +"\",response=" +
