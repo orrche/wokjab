@@ -17,9 +17,15 @@
 
 AM_LDFLAGS = -lwoklib  `pkg-config gtk+-2.0 libglade-2.0 --libs`
 
-bin_PROGRAMS = wokjab
+bin_PROGRAMS = wokjab wokbot
 
+wokbot_SOURCES = Initiat.cc bot.cc \
+	plugin-loader.hpp plugin-loader.cpp wokjab.cc
+	
+	
 wokjab_SOURCES = Initiat.cc main.cc \
-	plugin-loader.hpp plugin-loader.cpp 
+	plugin-loader.hpp plugin-loader.cpp wokjab.cc
 	
 AM_CXXFLAGS = -I.. `pkg-config gtk+-2.0 libglade-2.0 --cflags` -DLOCALEDIR=\"$(localedir)\"
+
+EXTRA_DIST = wokjab.h bot.h

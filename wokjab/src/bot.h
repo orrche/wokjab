@@ -15,27 +15,13 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
+
+#ifndef __MAIN_H
+#define __MAIN_H
+
+using namespace Woklib;
+
+#define DEBUG 1
 
 
-#include <iostream>
-
-#include "wokjab.h"
-#include "../include/main.h"
-#include <gtk/gtk.h>
-
-using std::string;
-using std::cout;
-using std::endl;
-
-int
-main (int argc, char **argv)
-{
-	gtk_init(&argc, &argv);
-	Wokjab wj(argc, argv, "wokjab");
-	gtk_main();
-	
-	return (0);
-}
+#endif // __MAIN_H

@@ -29,7 +29,7 @@
 #  include <config.h>
 #endif
 
-void pluginloader(WLSignal *wls, std::string path);
+#include "wokjab.h"
 
 PluginLoader::PluginLoader(WLSignal *wls) : WLSignalInstance(wls)
 {
@@ -78,6 +78,7 @@ PluginLoader::SaveConfig()
 	for( iter = plugins.begin() ; iter != plugins.end() ; iter++)
 	{
 		config->GetFirstTag("plugins").AddTag("item").AddAttr("filename", *iter);
+		config->GetFirstTag("plugins").AddText("\n");
 	}
 
 	WokXMLTag conftag(NULL, "config");
@@ -114,8 +115,15 @@ PluginLoader::ReadConfig(WokXMLTag *tag)
 	if ( tag->GetAttr("inited") != "true" && plugins.empty())
 	{
 		tag->AddAttr("inited", "true");
-		pluginloader(wls, std::string(PACKAGE_PLUGIN_DIR) + "/normal");
+		WokXMLTag path("path");
+		path.AddAttr("path", std::string(PACKAGE_PLUGIN_DIR) + "/normal");
+		wls->SendSignal("Wokjab Pluginloader load dir", path);
+		
+		SaveConfig();
+		WokXMLTag saveconf("saveconf");
+		wls->SendSignal("Config XML Save", saveconf);
 	}
+	
 	return 1;
 }
 
