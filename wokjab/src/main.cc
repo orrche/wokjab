@@ -97,7 +97,6 @@ load_plugin_list(WLSignal *wls, GSList * plugins)
 int
 main (int argc, char **argv)
 {
-				{
 	WLSignal *wls;
 	
 	gtk_init(&argc, &argv);
@@ -138,7 +137,7 @@ main (int argc, char **argv)
 	else
 		pl = NULL;
 
-    if( argc > 1 )
+	if( argc > 1 )
 	{
 		for(int i = 1 ; i < (argc-1) ; ++i)
 		{
@@ -159,20 +158,15 @@ main (int argc, char **argv)
 		}
 	}
 	
-	{		
-		{
-			WokXMLTag start("start");
-			wls->SendSignal("Program Start", start);
-		}
-		gtk_main();
-		delete pl;
-	}
+	WokXMLTag start("start");
+	wls->SendSignal("Program Start", start);
+	gtk_main();
+	delete pl;
 	
 	WokXMLTag saveconfig(NULL, "save");
 	wls->SendSignal("Config XML Save", &saveconfig);
 	WokXMLTag exit("exit");
 	wls->SendSignal("Program Exit", exit);
 	
-}
 	return (0);
 }
