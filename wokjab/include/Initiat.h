@@ -19,13 +19,13 @@
 
 #ifndef _INITIAT_H_
 #define _INITIAT_H_
+#include <gtk/gtk.h>
 
 #include "vector"
 
 #include <Woklib/WokLibSignal.h>
 #include <Woklib/WokLib.h>
 #include <Woklib/WLSignal.h>
-#include <gtk/gtk.h>
 
 using namespace Woklib;
 
