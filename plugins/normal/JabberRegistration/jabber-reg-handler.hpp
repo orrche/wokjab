@@ -20,17 +20,16 @@
 #ifndef _JABBER_REG_HANDLER_HPP_
 #define _JABBER_REG_HANDLER_HPP_
 
+#include <gtk/gtk.h>
+#include <glade/glade.h>
+
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
 
-#include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
-
-#include <gtk/gtk.h>
-#include <glade/glade.h>
 
 using namespace Woklib;
 class JabberRegHandler;
