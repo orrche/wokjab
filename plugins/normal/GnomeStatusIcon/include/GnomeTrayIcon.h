@@ -19,10 +19,12 @@
 
 #include <list>
 
+#include <gtk/gtk.h>
+
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
-#include <gtk/gtk.h>
 
 
 using std::list;

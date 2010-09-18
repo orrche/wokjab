@@ -20,15 +20,15 @@
 #ifndef _NOTIFICATION_WIDGET_HPP_
 #define _NOTIFICATION_WIDGET_HPP_
 
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
 
 #include <gtk/gtk.h>
 #include <glade/glade.h>
+
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
 
 using namespace Woklib;
 
