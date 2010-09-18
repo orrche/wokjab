@@ -20,10 +20,6 @@
 #ifndef _WOKJAB_DOCK_WINDOW_HPP_
 #define _WOKJAB_DOCK_WINDOW_HPP_
 
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
 #include <iostream>
 #include <vector>
 #include <gtk/gtk.h>
@@ -32,6 +28,10 @@
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
+
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
 
 using namespace Woklib;
 

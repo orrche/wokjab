@@ -7,6 +7,8 @@ libdir = $(prefix)/lib/woklib-plugins/normal
 
 AM_CXXFLAGS =\
 	`pkg-config libglade-2.0 gtk+-2.0 gdl-1.0 --cflags` -O3 -Wall -lwoklib
+AM_CFLAGS =\
+	`pkg-config libglade-2.0 gtk+-2.0 gdl-1.0 --cflags` -O3 -Wall -lwoklib
 AM_LDFLAGS = -lwoklib  `pkg-config gtk+-2.0 libglade-2.0 gdl-1.0 --libs`
 
 

@@ -20,12 +20,12 @@
 #ifndef _WOKJAB_DOCK_WINDOW_HANDLER_HPP_
 #define _WOKJAB_DOCK_WINDOW_HANDLER_HPP_
 
+#include <iostream>
+#include "wokjab-dock-window.hpp"
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
-
-#include <iostream>
-#include "wokjab-dock-window.hpp"
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
