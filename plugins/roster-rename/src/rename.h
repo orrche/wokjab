@@ -17,14 +17,14 @@
 
 #ifndef __RENAME_H
 #define __RENAME_H
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
-
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
 
 using namespace Woklib;
 

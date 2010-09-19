@@ -25,15 +25,15 @@
 #ifndef _JID_LIST_HPP_
 #define _JID_LIST_HPP_
 
+
+#include <gtk/gtk.h>
+#include <glade/glade.h>
+
 #include "GtkPCommon.h"
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
-
-#include <gtk/gtk.h>
-#include <glade/glade.h>
-
 using namespace Woklib;
 
 class JIDList: public GtkPCommon 

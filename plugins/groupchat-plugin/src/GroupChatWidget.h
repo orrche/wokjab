@@ -18,16 +18,16 @@
 #define _GROUPCHATWIDGET_H_
 
 #include <gtk/gtk.h>
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
+#include <glade/glade.h>
 #include <map>
 
 class GroupChatWidget;
 
 #include "groupchat.h"
-#include <glade/glade.h>
+
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
 
 using namespace Woklib;
 

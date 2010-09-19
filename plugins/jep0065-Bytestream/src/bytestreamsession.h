@@ -18,10 +18,6 @@
 #ifndef __JEP_65_SESSION_H
 #define __JEP_65_SESSION_H
 
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
 #include <netinet/in.h>
 #include <netdb.h>
 #include <errno.h>
@@ -30,6 +26,10 @@
 #include <gtk/gtk.h>
 #include "map"
 #include "fstream"
+
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
 
 using namespace Woklib;
 

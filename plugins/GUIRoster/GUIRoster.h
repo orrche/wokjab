@@ -24,14 +24,14 @@
 #ifndef _GUIROSTER_H_
 #define _GUIROSTER_H_
 
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
 #include <gtk/gtk.h>
 #include <glade/glade.h>
 
 #include "RosterItem.h"
+
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
 
 using namespace Woklib;
 

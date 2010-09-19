@@ -20,12 +20,14 @@
 #ifndef _CONN_WINDOW_MANAGER_H_
 #define _CONN_WINDOW_MANAGER_H_
 
+#include <gtk/gtk.h>
+#include <map>
+
+#include "GUIPluginWindow.h"
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WokXMLTag.h>
-#include <gtk/gtk.h>
 
-#include <map>
-#include "GUIPluginWindow.h"
 using namespace Woklib;
 
 

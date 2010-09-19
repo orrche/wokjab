@@ -24,11 +24,6 @@
 
 #ifndef _PUB_SUB_WIDGET_HPP_
 #define _PUB_SUB_WIDGET_HPP_
-
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
 #include <gtk/gtk.h>
 #include <glade/glade.h>
 
@@ -37,11 +32,17 @@
 #endif
 
 
-using namespace Woklib;
 
 class PubSub_Widget;
 
 #include "pub-sub-manager.hpp"
+
+
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
+
+using namespace Woklib;
 
 class PubSub_Widget: public WLSignalInstance 
 {

@@ -26,16 +26,16 @@
 #ifndef _DOWNLOAD_H_
 #define _DOWNLOAD_H_
 
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
 #include <gtk/gtk.h>
 #include <glade/glade.h>
 
 #include "File.h"
 #include <vector>
 #include <list>
+
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
 
 using namespace Woklib;
 

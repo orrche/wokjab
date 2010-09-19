@@ -18,9 +18,9 @@
 #define _WOKJABXDATAWIDGET_H_
 
 #include <gtk/gtk.h>
-#include <Woklib/WLSignal.h>
 #include <list>
 #include "../include/xdatabase.h"
+#include <Woklib/WLSignal.h>
 
 class WokJabxdataWidget : public WLSignalInstance
 {

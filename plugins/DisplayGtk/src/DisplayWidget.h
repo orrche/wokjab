@@ -27,13 +27,13 @@
 #ifndef _DISPLAYWIDGET_H_
 #define _DISPLAYWIDGET_H_
 
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
 #include <gtk/gtk.h>
 #include <glade/glade.h>
 #include <list>
+
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
 
 #define _(x) x
 

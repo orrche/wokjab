@@ -34,12 +34,12 @@
 #endif
 
 
+#include "DisplayWidget.h"
+
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
-
-#include "DisplayWidget.h"
-
 using namespace Woklib;
 /**
  * Class to handle the signals for the Debug/Error/Message display also print 

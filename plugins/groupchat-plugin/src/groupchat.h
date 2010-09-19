@@ -17,11 +17,6 @@
 
 #ifndef __GROUPCHAT_H
 #define __GROUPCHAT_H
-
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
 #include <iostream>
 #include <gtk/gtk.h>
 #include <map>
@@ -36,6 +31,11 @@ class GroupChat;
 #include "GroupChatWidget.h"
 #include "GroupChatRoster.h"
 #include "GroupChatTooltip.h"
+
+
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
 
 using namespace Woklib;
 

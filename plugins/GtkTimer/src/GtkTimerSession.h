@@ -28,14 +28,14 @@
 
 #ifndef _GTKTIMERSESSION_H_
 #define _GTKTIMERSESSION_H_
+#include <gtk/gtk.h>
+
+#include <string>
+
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
-
-#include <gtk/gtk.h>
-
-#include <string>
 
 using namespace Woklib;
 

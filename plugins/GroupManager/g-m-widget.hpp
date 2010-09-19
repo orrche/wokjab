@@ -24,17 +24,17 @@
 
 #ifndef _G_M_WIDGET_HPP_
 #define _G_M_WIDGET_HPP_
+#include <glade/glade.h>
+
+class GM_Widget;
+
+#include "group-manager.hpp"
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
-#include <glade/glade.h>
-
 using namespace Woklib;
-class GM_Widget;
-
-#include "group-manager.hpp"
 
 class GM_Widget: public WLSignalInstance 
 {

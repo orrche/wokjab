@@ -27,9 +27,10 @@
 #ifndef _GTKPCOMMON_H_
 #define _GTKPCOMMON_H_
 
+#include <gtk/gtk.h>
+
 #include <Woklib/WokXMLTag.h>
 #include <Woklib/WokLib.h>
-#include <gtk/gtk.h>
 
 using namespace Woklib;
 

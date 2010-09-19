@@ -18,12 +18,12 @@
 #ifndef _GROUPCHATJOINWINDOW_H_
 #define _GROUPCHATJOINWINDOW_H_
 
-#include <Woklib/WLSignal.h>
-#include <Woklib/WokLib.h>
 
 #include <gtk/gtk.h>
 #include <glade/glade.h>
 
+#include <Woklib/WLSignal.h>
+#include <Woklib/WokLib.h>
 using namespace Woklib;
 
 class GroupChatJoinWindow : public WLSignalInstance

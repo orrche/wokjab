@@ -29,14 +29,15 @@
 #  include <config.h>
 #endif
 
-#include <Woklib/WokLib.h>
 #include <fstream>
 
-using namespace Woklib;
 
 class CrashManager;
 
 #include "c-m-g-u-i.hpp"
+
+#include <Woklib/WokLib.h>
+using namespace Woklib;
 
 class CrashManager: public WoklibPlugin 
 {

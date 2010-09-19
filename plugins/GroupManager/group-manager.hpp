@@ -25,10 +25,6 @@
 #ifndef _GROUP_MANAGER_HPP_
 #define _GROUP_MANAGER_HPP_
 
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
 #include <gtk/gtk.h>
 
 #ifdef HAVE_CONFIG_H
@@ -38,6 +34,12 @@
 class GroupManager;
 
 #include "g-m-widget.hpp"
+
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
+
+using namespace Woklib;
 
 class GroupManager: public WoklibPlugin 
 {

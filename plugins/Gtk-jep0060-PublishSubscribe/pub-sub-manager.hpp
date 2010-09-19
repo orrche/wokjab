@@ -25,10 +25,6 @@
 #ifndef _PUB_SUB_MANAGER_HPP_
 #define _PUB_SUB_MANAGER_HPP_
 
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
 #include <gtk/gtk.h>
 
 #ifdef HAVE_CONFIG_H
@@ -36,11 +32,16 @@
 #endif
 
 
-using namespace Woklib;
 
 class PubSubManager;
 
 #include "pub-sub-widget.hpp"
+
+
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
+using namespace Woklib;
 
 class PubSubManager: public WoklibPlugin 
 {

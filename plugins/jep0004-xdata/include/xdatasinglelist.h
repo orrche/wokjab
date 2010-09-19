@@ -17,8 +17,8 @@
 #ifndef _XDATASINGLELIST_H_
 #define _XDATASINGLELIST_H_
 
-#include "xdatabase.h"
 #include <map>
+#include "xdatabase.h"
 
 class xdatasinglelist : public xdatabase
 {

@@ -29,15 +29,16 @@
 #  include <config.h>
 #endif
 
-#include <Woklib/WokLib.h>
-#include <glade/glade.h>
-#include <gtk/gtk.h>
-
-using namespace Woklib;
-
 class CMGUI;
 
 #include "crash-manager.hpp"
+
+
+#include <glade/glade.h>
+#include <gtk/gtk.h>
+
+#include <Woklib/WokLib.h>
+using namespace Woklib;
 
 class CMGUI: public WLSignalInstance 
 {

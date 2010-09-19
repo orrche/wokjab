@@ -25,21 +25,21 @@
 #ifndef _P_E_P_USER_HPP_
 #define _P_E_P_USER_HPP_
 
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
 #include <glade/glade.h>
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
 
-using namespace Woklib;
-
 class PEPUser;
 
 #include "p-e-p-widget.hpp"
+
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
+
+using namespace Woklib;
 
 class PEPUser: public WLSignalInstance 
 {

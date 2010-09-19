@@ -21,10 +21,10 @@
 #define _GUIPLUGINWINDOW_H_
 
 #include <gtk/gtk.h>
-#include <Woklib/WLSignal.h>
 #include <iostream>
 #include <glade/glade.h>
 
+#include <Woklib/WLSignal.h>
 #include <Woklib/WokLibSignal.h>
 #include <Woklib/WokXMLTag.h>
 

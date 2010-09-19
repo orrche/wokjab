@@ -18,11 +18,11 @@
 #ifndef __BROWSERWID_H
 #define __BROWSERWID_H
 
+#include <gtk/gtk.h>
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
-
-#include <gtk/gtk.h>
 
 class BrowserWidget;
 #include "browser.h"

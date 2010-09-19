@@ -24,17 +24,17 @@
 
 #ifndef _MONITOR_HPP_
 #define _MONITOR_HPP_
-
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
 
 #include <gtk/gtk.h>
 #include <glade/glade.h>
+
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
+
 
 using namespace Woklib;
 

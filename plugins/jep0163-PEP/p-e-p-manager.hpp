@@ -24,11 +24,6 @@
 
 #ifndef _P_E_P_MANAGER_HPP_
 #define _P_E_P_MANAGER_HPP_
-
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
 #include <gtk/gtk.h>
 
 #ifdef HAVE_CONFIG_H
@@ -36,11 +31,16 @@
 #endif
 
 
-using namespace Woklib;
-
 class PEPManager;
 
 #include "p-e-p-widget.hpp"
+
+
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
+
+using namespace Woklib;
 
 class PEPManager: public WoklibPlugin 
 {

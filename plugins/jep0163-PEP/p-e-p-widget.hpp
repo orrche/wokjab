@@ -25,9 +25,6 @@
 #ifndef _P_E_P_WIDGET_HPP_
 #define _P_E_P_WIDGET_HPP_
 
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
 
 #include <glade/glade.h>
 
@@ -36,12 +33,17 @@
 #endif
 
 
-using namespace Woklib;
 
 class PEP_Widget;
 
 #include "p-e-p-manager.hpp"
 #include "p-e-p-user.hpp"
+
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
+
+using namespace Woklib;
 
 class PEP_Widget: public WLSignalInstance 
 {
