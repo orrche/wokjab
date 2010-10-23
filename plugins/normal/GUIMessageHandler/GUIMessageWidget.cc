@@ -646,7 +646,8 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 			itemtag.AddAttr("icon", msgicon);
 
 			WokXMLTag &desc = itemtag.AddTag("description");
-			desc.AddText(tag->GetFirstTag("message").GetAttr("from"));
+			
+			desc.AddText(nick);
 			desc.AddText("\n\t");
 			
 			

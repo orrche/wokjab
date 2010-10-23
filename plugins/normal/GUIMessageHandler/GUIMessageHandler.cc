@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2010  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -61,16 +61,32 @@ GUIMessageHandler::~GUIMessageHandler()
 void
 GUIMessageHandler::TriggerEvent(WokXMLTag *tag)
 {
+	// Getting the Nickname, and setting the jid variable to the jid without resource
+	std::string nick;
+	WokXMLTag querytag(NULL, "query");
+	WokXMLTag &nick_itemtag = querytag.AddTag("item");
+	string jid = tag->GetFirstTag("message").GetAttr("from");
+	string::size_type pos = jid.find("/");
+  if( pos != std::string::npos )
+          jid = jid.substr(0, pos);
+	nick_itemtag.AddAttr("session", tag->GetAttr("session"));
+	nick_itemtag.AddAttr("jid", jid);
+	wls->SendSignal("Jabber Roster GetResource", &querytag);
+	if ( querytag.GetFirstTag("item").GetAttr("nick") != "" )
+		nick = querytag.GetFirstTag("item").GetAttr("nick");
+	else
+		nick = jid;
+	
+	// Creating the event
 	WokXMLTag eventtag(NULL, "event");
 	eventtag.AddAttr("type", "message");
 	WokXMLTag &itemtag = eventtag.AddTag("item");
-
 	itemtag.AddAttr("id", "Message " + tag->GetAttr("session") + " " + tag->GetFirstTag("message").GetAttr("from"));
 	itemtag.AddAttr("icon", msgicon);
 	itemtag.AddAttr("jid", tag->GetFirstTag("message").GetAttr("from"));
 	itemtag.AddAttr("session", tag->GetAttr("session"));
 	WokXMLTag &desc = itemtag.AddTag("description");
-	desc.AddText(tag->GetFirstTag("message").GetAttr("from"));
+	desc.AddText(nick);
 	desc.AddText("\n\t");
 	desc.AddText(tag->GetFirstTag("message").GetFirstTag("body").GetBody());
 
