@@ -251,7 +251,7 @@ IQauth::SD_Failure(WokXMLTag *tag)
 	message.AddAttr("session", session);
 	
 	wls->SendSignal("Jabber Connection Disconnect", message);
-	woklib_error(wls, "Could not authenticate with the server");
+	woklib_error(wls, "Could not authenticate with the server: " + server + " using the username " + username);
 	
 	delete this;
 	return 1;
@@ -267,7 +267,7 @@ IQauth::SD_Success(WokXMLTag *tag)
 	message.AddAttr("session", session);
 	
 	wls->SendSignal("Jabber Connection Reset " + session, message);
-	
+
 	delete this;
 	return 1;
 }
@@ -335,7 +335,7 @@ IQauth::InitSHA1UserStage2(WokXMLTag *tag)
 	if(tag_iq->GetAttr("type") == "error")
 	{
 		/* FIX ME do something sane here ... */
-		woklib_error(wls, "Authentication failed");
+		woklib_error(wls, "Authentication failed server: " + server + " using the username " + username);
 		delete this;
 		return;		
 	}
