@@ -6,3 +6,9 @@ sudo aptitude install libgtkmm-2.4-dev
 sudo aptitude install libsqlite3-dev        
 sudo aptitude install libdbus-glib-1-dev     
 sudo aptitude install python-dev        
+sudo aptitude install libglade2-dev
+sudo apt-get install libtool
+sudo aptitude install autoconf
+sudo apt-get install autopoint
+sudo aptitude install libgtkmm-2.4-dev
+sudo aptitude install libdbus-glib-1-dev
