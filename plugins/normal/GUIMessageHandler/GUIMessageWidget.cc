@@ -1226,12 +1226,15 @@ GUIMessageWidget::Message(WokXMLTag &message, std::string jid)
 					tags["timestamp"],
 					NULL);
 
-	gtk_text_buffer_insert_with_tags (
-					buffer, &iter,
-					nick.c_str(), nick.length(),
-					tags["forreign_name"],
-					NULL);
-
+	if ( message.GetFirstTag("message").GetAttr("type") != "error")
+	{
+		gtk_text_buffer_insert_with_tags (
+						buffer, &iter,
+						nick.c_str(), nick.length(),
+						tags["forreign_name"],
+						NULL);
+	}
+	
 	if ( ! message.GetTagList("body").empty() )
 		PutText(&iter, message.GetFirstTag("body"));
 	else

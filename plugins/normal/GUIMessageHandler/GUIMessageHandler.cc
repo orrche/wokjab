@@ -126,7 +126,15 @@ GUIMessageHandler::new_message(WokXMLTag *tag)
 	if( message_tag->GetFirstTag("body").GetBody() == "" && tag->GetTagList("command").empty() )
 		return 1;
 
-
+	if ( message_tag->GetAttr("type") == "error" )
+	{
+		tag->GetFirstTag("body").RemoveBody();
+		WokXMLTag &span = tag->GetFirstTag("body").AddTag("span");
+		span.AddAttr("style", "color:#FF0000;");
+		span.AddText("Failed to send this message:\n" + message_tag->GetFirstTag("body").GetBody());
+		
+	}
+	
 	string::size_type pos = message_tag->GetAttr("from").find("/");
 	if( pos != std::string::npos )
 	{
