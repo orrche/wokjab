@@ -1,5 +1,6 @@
 #include "wokjab.h"
 #include <dirent.h>
+#include <stdio.h>
 
 Wokjab::Wokjab(int argc, char **argv, std::string progname)
 : WLSignalInstance(&wl.wls_main)

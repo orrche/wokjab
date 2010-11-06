@@ -24,7 +24,7 @@
 
 #include "wokjab.h"
 #include "../include/main.h"
-#include <gtk/gtk.h>
+#include <glib-2.0/glib.h>
 
 using std::string;
 using std::cout;
@@ -35,7 +35,8 @@ main (int argc, char **argv)
 {
 
  	// Hum how ugly but what isn't in the main program of wokjab?
-	gtk_init_check(&argc, &argv);
+	//gtk_init_check(&argc, &argv);
+	//g_init_check(&argc, &argv);
 	Wokjab wj(argc, argv, "wokbot");
 	
 	GMainLoop *main_loop = g_main_loop_new (NULL , FALSE);   

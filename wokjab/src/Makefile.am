@@ -15,6 +15,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+if DO_GTK
+
 AM_LDFLAGS = -lwoklib  `pkg-config gtk+-2.0 libglade-2.0 --libs`
 
 bin_PROGRAMS = wokjab wokbot
@@ -29,3 +31,22 @@ wokjab_SOURCES = Initiat.cc main.cc \
 AM_CXXFLAGS = -I.. `pkg-config gtk+-2.0 libglade-2.0 --cflags` -DLOCALEDIR=\"$(localedir)\"
 
 EXTRA_DIST = wokjab.h bot.h
+
+else
+
+AM_LDFLAGS = -lwoklib `pkg-config glib-2.0 --libs` -ldl
+
+bin_PROGRAMS = wokbot
+
+wokbot_SOURCES = Initiat.cc bot.cc wokjab.cc\
+	plugin-loader.hpp plugin-loader.cpp
+	
+	
+wokjab_SOURCES = Initiat.cc main.cc \
+	plugin-loader.hpp plugin-loader.cpp
+	
+AM_CXXFLAGS = -I.. `pkg-config glib-2.0 --cflags` -DLOCALEDIR=\"$(localedir)\"
+
+EXTRA_DIST = wokjab.h bot.h
+
+endif
