@@ -34,7 +34,7 @@ EXTRA_DIST = wokjab.h bot.h
 
 else
 
-AM_LDFLAGS = -lwoklib `pkg-config glib-2.0 --libs` -ldl
+AM_LDFLAGS = -lwoklib `pkg-config gobject-2.0 glib-2.0 --libs` -ldl
 
 bin_PROGRAMS = wokbot
 
