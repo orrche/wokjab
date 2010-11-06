@@ -193,6 +193,7 @@ AC_CONFIG_FILES(Makefile \
 	plugins/jep0004-xdata/include/Makefile  \
 	plugins/jep0030-Disco/Makefile  \
         plugins/jep0050-AdHocCommands/Makefile  \
+        plugins/jep0050-AdHocCommands-Manager/Makefile  \
 	plugins/jep0065-Bytestream/Makefile \
 	plugins/jep0065-Bytestream/src/Makefile  \
         plugins/jep0060-PublishSubscribe/Makefile  \
