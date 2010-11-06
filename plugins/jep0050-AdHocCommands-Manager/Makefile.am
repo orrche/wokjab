@@ -9,8 +9,8 @@ lib_LTLIBRARIES = \
 
 libjep0050_adhoc_manager_la_SOURCES = \
 	main.cc      \
-	AdHoc.cc      \
-	AdHoc.h      
+	AdHocManager.cc      \
+	AdHocManager.h      
 
 AM_LDFLAGS = 
 
