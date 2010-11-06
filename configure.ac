@@ -49,12 +49,17 @@ if test "$gtk" = yes; then
 	
        	PKG_CHECK_EXISTS("gtk+-2.0", gtk=yes, gtk=no )
 	if test "$gtk" == "yes" ; then 
-		echo "¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ohhh gtk"
+		echo "Compiling with GTK"
 		AM_PATH_GTK_2_0
+		gtk=yes
 	else
-		echo "¤¤¤¤¤¤¤¤¤¤¤¤¤ no gtk"
+		echo "Compiling without GTK"
+		gtk=no
 	fi
 fi
+
+AM_CONDITIONAL(DO_GTK, test "x$gtk" = "xyes")
+
 
 dnl *********************************************************************
 dnl ** PYTHON ***********************************************************
