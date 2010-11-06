@@ -50,8 +50,7 @@ if test "$gtk" = yes; then
        	PKG_CHECK_EXISTS("gtk+-2.0", gtk=yes, gtk=no )
 	if test "$gtk" == "yes" ; then 
 		echo "¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ohhh gtk"
-dnl		AM_PATH_GTK_2_0(2.0.0,,AC_MSG_ERROR(Test for GTK failed. See the file 'INSTALL' for help.))
-dnl		AM_PATH_GTK_2_0
+		AM_PATH_GTK_2_0
 	else
 		echo "¤¤¤¤¤¤¤¤¤¤¤¤¤ no gtk"
 	fi
