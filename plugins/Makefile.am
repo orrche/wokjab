@@ -19,6 +19,38 @@ if DO_PYTHON
 pythondir = python
 endif
 
+if DO_GTK
+gtkdir = \
+	DisplayGtk \
+	Fileshare \
+	GtkTimer \
+	GtkPreference \
+	GtkMenu \
+	guibrowser \
+	GUIRoster \
+	OpenDialogTo \
+	Reversi \
+	Fileshare \
+	RosterEvent \
+	groupchat-plugin \
+	jep0004-xdata \
+	jep0050-AdHocCommands \
+	jep0065-Bytestream \
+	jep0096-Filetransfear \
+	jep0153-VCardAvatar \
+	registerservice \
+	roster-rename \
+	ScriptLoader \
+	toaster \
+	wokjab-jid-info \
+	AutoJoinGroupChat \
+	CrashManager \
+	Gtk-jep0060-PublishSubscribe \
+	jep0163-PEP \
+	GroupManager 
+endif
+
+
 SUBDIRS= \
 	normal \
 	system \
@@ -26,50 +58,24 @@ SUBDIRS= \
 	Authorization \
 	AutoPresence \
 	Config \
-	DisplayGtk \
 	EventSound \
-	Fileshare \
-	groupchat-plugin \
-	GtkTimer \
-	GtkPreference \
-	GtkMenu \
-	guibrowser \
-	GUIRoster \
 	JabberRoster \
-	jep0004-xdata \
 	jep0030-Disco \
-	jep0050-AdHocCommands \
-	jep0065-Bytestream \
-	jep0096-Filetransfear \
 	jep0115-EntCap \
-	jep0153-VCardAvatar \
 	MenuResource \
 	MenuRoster \
-	OpenDialogTo \
-	$(pythondir) \
-	registerservice \
-	Reversi \
-	roster-rename \
-	ScriptLoader \
-	toaster \
-	wokjab-jid-info \
 	woklib-groupchat \
 	rfc1928-SOCKS5 \
 	Idle \
 	GroupChatBookmark \
-	Fileshare \
-	AutoJoinGroupChat \
 	dbus \
-	RosterEvent \
-	GroupManager \
 	History.SQLite \
 	jep0118-UserTune \
 	jep0060-PublishSubscribe \
-	jep0163-PEP \
-	CrashManager \
-	Gtk-jep0060-PublishSubscribe \
 	EventManager \
 	HtmlLinkMessage \
 	GPGenc \
-	P2PRandomNumber
+	P2PRandomNumber \
+	$(gtkdir) \
+	$(pythondir) 
 

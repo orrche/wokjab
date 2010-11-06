@@ -25,7 +25,7 @@
 #ifndef _HISTORY_HPP_
 #define _HISTORY_HPP_
 
-#include <glib.h>
+#include <glib-2.0/glib.h>
 #include <sqlite3.h>
 
 #include <Woklib/WLSignal.h>

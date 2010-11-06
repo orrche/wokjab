@@ -1,7 +1,7 @@
 libdir = $(prefix)/lib/woklib-plugins/normal
 
 AM_CXXFLAGS =\
-	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -lwoklib -g -O3 -Wall
+	-lwoklib -g -O3 -Wall
 	
 	
 lib_LTLIBRARIES = \
@@ -15,10 +15,4 @@ libxdataConfig_la_SOURCES = \
 	xdata-config-session.cc
 
 
-## File created by the gnome-build tools
-
-datadir = $(prefix)/lib/woklib/glade
-pkgdata_DATA = 
-       
-## File created by the gnome-build tools
 
