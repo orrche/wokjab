@@ -21,9 +21,6 @@
 #define _SESSION_HPP_
 
 
-#include <gtk/gtk.h>
-#include <glade/glade.h>
-
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif

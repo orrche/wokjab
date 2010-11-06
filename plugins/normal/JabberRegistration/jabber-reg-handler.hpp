@@ -20,9 +20,6 @@
 #ifndef _JABBER_REG_HANDLER_HPP_
 #define _JABBER_REG_HANDLER_HPP_
 
-#include <gtk/gtk.h>
-#include <glade/glade.h>
-
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
