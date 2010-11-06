@@ -29,6 +29,9 @@ gtkdir = \
 	ConnectWindow \
 	Tooltip \
 	AddJIDWidget 
+else
+gtkdir = \
+	DisplayNoGtk
 endif
 
 SUBDIRS= \

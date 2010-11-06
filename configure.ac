@@ -215,6 +215,7 @@ AC_CONFIG_FILES(Makefile \
         plugins/normal/AddJIDWidget/Makefile  \
         plugins/normal/ConnectWindow/Makefile  \
         plugins/normal/Roster/Makefile  \
+        plugins/normal/DisplayNoGtk/Makefile  \
 	wokjab/Makefile \
 	wokjab/src/Makefile \
 	wokjab/include/Makefile \
