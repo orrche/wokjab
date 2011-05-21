@@ -51,6 +51,7 @@ class Tooltip : public WoklibPlugin
 		int Set(WokXMLTag &tag);
 		static gboolean DispWindow (Tooltip * c);
 		static gboolean Expose(GtkWidget *widget, GdkEventExpose *event, Tooltip *c);
+		static gboolean Pressed(GtkWidget *widget, GdkEvent *event, Tooltip *c);
 
 		virtual std::string GetInfo() {return "Tooltip";};
 		virtual std::string GetVersion() {return VERSION;};
