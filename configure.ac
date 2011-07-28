@@ -137,13 +137,14 @@ AC_CONFIG_FILES(Makefile \
         plugins/normal/JIDConfig/Makefile  \
 	plugins/normal/Tooltip/Makefile  \
 	plugins/system/Makefile \
-	plugins/experimental/Makefile  \
-        plugins/experimental/Dice/Makefile  \
-        plugins/experimental/MassRename/Makefile  \
-        plugins/experimental/P2PRandomNumberMonitor/Makefile  \
         plugins/experimental/AtomNotifications/Makefile  \
-        plugins/experimental/xdataConfig/Makefile  \
-	plugins/MenuResource/Makefile  \
+        plugins/experimental/Dice/Makefile \
+        plugins/experimental/MassRename/Makefile \
+        plugins/experimental/P2PRandomNumberMonitor/Makefile \
+        plugins/experimental/ScriptLoader/Makefile \
+        plugins/experimental/xdataConfig/Makefile \
+	plugins/experimental/Makefile  \
+	plugins/MenuResource/Makefile \
 	plugins/MenuRoster/Makefile  \
 	plugins/GtkTimer/Makefile  \
 	plugins/GtkTimer/src/Makefile  \
