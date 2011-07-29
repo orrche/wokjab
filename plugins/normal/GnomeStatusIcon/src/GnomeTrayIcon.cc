@@ -196,9 +196,9 @@ GnomeTrayIcon::Presence(WokXMLTag *tag)
 		presence_tip = tag->GetFirstTag("presence").GetFirstTag("show").GetBody() + " - ";
 	presence_tip +="You are set to: ";
 	if ( tag->GetFirstTag("presence").GetFirstTag("status").GetBody().empty() )
-		presence_tip += "<no status set>";
+		presence_tip += XMLisize("<no status set>");
 	else
-		presence_tip += tag->GetFirstTag("presence").GetFirstTag("status").GetBody();
+		presence_tip += XMLisize(tag->GetFirstTag("presence").GetFirstTag("status").GetBody());
 	
 	if ( EventList.empty() )
 	{
