@@ -43,6 +43,7 @@ class GUIMessageHandler : public WoklibPlugin
 		int JIDMenu( WokXMLTag *tag);
 		int MenuOpenDialog( WokXMLTag *tag);
 		int CopyBody(WokXMLTag *tag);
+		int Config(WokXMLTag *tag);
 
 		void TriggerEvent(WokXMLTag *tag);
 	protected:
@@ -50,7 +51,10 @@ class GUIMessageHandler : public WoklibPlugin
 		std::string msgicon;
 		GdkPixbuf *pix_msg;
 		WokXMLTag *XMLSpool;
+		WokXMLTag *config;
 		int id;
+
+		bool lock_on_resource;
 };
 
 

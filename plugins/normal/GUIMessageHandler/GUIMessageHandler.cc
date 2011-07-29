@@ -35,6 +35,15 @@ using std::string;
 #include <io.h>
 #endif
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+
+#include "../../../gettext.h"
+#define _(string) gettext (string)
+
+
 GUIMessageHandler::GUIMessageHandler(WLSignal *wls) : WoklibPlugin(wls)
 {
 	EXP_SIGHOOK("Jabber XML Message Normal", &GUIMessageHandler::new_message, 999);
@@ -45,7 +54,12 @@ GUIMessageHandler::GUIMessageHandler(WLSignal *wls) : WoklibPlugin(wls)
 	EXP_SIGHOOK("Jabber GUI GetJIDMenu", &GUIMessageHandler::JIDMenu, 1000);
 	EXP_SIGHOOK("Jabber GUI MessageDialogOpenMenu", &GUIMessageHandler::MenuOpenDialog, 1000);
 
-	
+	config = new WokXMLTag(NULL, "NULL");
+	EXP_SIGHOOK("Config XML Change /chat/window", &GUIMessageHandler::Config, 500);
+	WokXMLTag conftag(NULL, "config");
+	conftag.AddAttr("path", "/chat/window");
+	wls->SendSignal("Config XML Trigger", &conftag);
+
 	std::string datadir = PACKAGE_DATA_DIR;
 	pix_msg = gdk_pixbuf_new_from_file(std::string(datadir + "/wokjab/msg.png").c_str(),NULL);
 	msgicon = datadir + "/wokjab/msg.png";
@@ -56,6 +70,34 @@ GUIMessageHandler::GUIMessageHandler(WLSignal *wls) : WoklibPlugin(wls)
 
 GUIMessageHandler::~GUIMessageHandler()
 {
+}
+
+int
+GUIMessageHandler::Config(WokXMLTag *tag)
+{
+	delete config;
+	config = new WokXMLTag(tag->GetFirstTag("config"));
+
+
+	// Caching the lock on resource value
+	if ( config->GetFirstTag("disable_chat_window_lock").GetAttr("data") == "")
+	{
+		tag->GetFirstTag("config").GetFirstTag("disable_chat_window_lock").AddAttr("show", "true");
+		tag->GetFirstTag("config").GetFirstTag("disable_chat_window_lock").AddAttr("type", "bool");
+		tag->GetFirstTag("config").GetFirstTag("disable_chat_window_lock").AddAttr("label", _("Disabel resource lock"));
+		tag->GetFirstTag("config").GetFirstTag("disable_chat_window_lock").AddAttr("tooltip", _("Disables locking of resource in chat window."));
+	}
+	if ( config->GetFirstTag("disable_chat_window_lock").GetAttr("data") != "false")
+	{
+		lock_on_resource = false;
+	}
+	else
+	{
+		lock_on_resource = true;
+	}
+
+
+	return 1;
 }
 
 void
@@ -95,7 +137,10 @@ GUIMessageHandler::TriggerEvent(WokXMLTag *tag)
 	WokXMLTag &sig = command.AddTag("signal");
 	sig.AddAttr("name", "Jabber GUI MessageDialog Open");
 	WokXMLTag &item = sig.AddTag("item");
-	item.AddAttr("jid", tag->GetFirstTag("message").GetAttr("from"));
+	if ( lock_on_resource )
+		item.AddAttr("jid", tag->GetFirstTag("message").GetAttr("from"));
+	else
+		item.AddAttr("jid", jid);
 	item.AddAttr("session", tag->GetAttr("session"));
 	
 	wls->SendSignal("Jabber Event Add", &eventtag);
