@@ -141,7 +141,6 @@ AC_CONFIG_FILES(Makefile \
         plugins/experimental/Dice/Makefile \
         plugins/experimental/MassRename/Makefile \
         plugins/experimental/P2PRandomNumberMonitor/Makefile \
-        plugins/experimental/ScriptLoader/Makefile \
         plugins/experimental/xdataConfig/Makefile \
 	plugins/experimental/Makefile  \
 	plugins/MenuResource/Makefile \
