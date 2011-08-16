@@ -45,7 +45,8 @@ con_type(in_con_type)
 	resource = itemtag.GetFirstTag("resource").GetBody();
 	password = itemtag.GetFirstTag("password").GetBody();
 	server = itemtag.GetFirstTag("server").GetBody();
-	
+	con_id = itemtag.GetFirstTag("conid").GetBody();
+
 	switch (con_type)
 	{
 		case ClearTextUser:
@@ -79,10 +80,11 @@ IQauth::InitHandshakeComponent()
 	unsigned char buffer[30];
 	std::string iqmsg;
 	
-	iqmsg = "<handshake>";
+	iqmsg = "";
 	
 	woklib_debug(wls,"Init handshake auth");
 	std::string digest = con_id + password;
+
 	SHA1((unsigned char *)digest.c_str(), digest.size(), buffer);
 	for( int i = 0 ; i < 20 ; i++)
 	{
@@ -94,12 +96,11 @@ IQauth::InitHandshakeComponent()
 		iqmsg += buf2;
 	}
 	
-	iqmsg += "</handshake>";
 	
 	WokXMLTag msgtag(NULL,"message");
 	msgtag.AddAttr("session", session);
-	msgtag.AddText(iqmsg);
-	wls->SendSignal("Jabber Send XML Send" , &msgtag);
+	msgtag.AddTag("handshake").AddText(iqmsg);
+	wls->SendSignal("Jabber XML Send" , &msgtag);
 }
 
 void

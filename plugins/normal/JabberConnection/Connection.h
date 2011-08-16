@@ -63,7 +63,8 @@ class Connection : public WLSignalInstance
 	int GetMyNick(WokXMLTag *tag);
 	int Reset(WokXMLTag *tag);
 	int SetJID(WokXMLTag *tag);
-	
+	int GetType();
+
 	void sendinit();
 
 	void StartSSL();
