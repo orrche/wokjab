@@ -672,9 +672,13 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 			WokXMLTag &sig = command.AddTag("signal");
 			sig.AddAttr("name", "Jabber GUI MessageDialog Open");
 			WokXMLTag &item = sig.AddTag("item");
-			item.AddAttr("jid", tag->GetFirstTag("message").GetAttr("from"));
+			if ( lock_on_resource )
+				item.AddAttr("jid", tag->GetFirstTag("message").GetAttr("from"));
+			else
+				item.AddAttr("jid", from_no_resource);
 			item.AddAttr("session", tag->GetAttr("session"));
 			
+
 			wls->SendSignal("Jabber Event Add", &eventtag);
 			eventidlist.push_back(eventtag.GetFirstTag("item").GetAttr("id"));
 			
