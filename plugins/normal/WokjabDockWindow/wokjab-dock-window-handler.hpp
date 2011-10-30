@@ -1,7 +1,7 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
 /*
  * wokjab
- * Copyright (C) Kent Gustavsson 2008 <nedo80@gmail.com>
+ * Copyright (C) Kent Gustavsson 2008-2011 <nedo80@gmail.com>
  * 
  * wokjab is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -25,6 +25,7 @@
 #include <iostream>
 
 #include "wokjab-dock-window.hpp"
+#include "WokjabDockWindowMaster.h"
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
@@ -54,7 +55,7 @@ public:
 	int Hide(WokXMLTag *tag);
 	int Show(WokXMLTag *tag);
 protected:
-	std::map <std::string, Gtk::Notebook *> masterlist;
+	std::map <std::string, WokjabDockWindowMaster *> masterlist;
 	std::map <std::string, WokjabDockWindow*> windows;
 		
 	std::vector <int> Widgets;

@@ -1,7 +1,7 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
 /*
  * wokjab
- * Copyright (C) Kent Gustavsson 2008-2010 <nedo80@gmail.com>
+ * Copyright (C) Kent Gustavsson 2008-2011 <nedo80@gmail.com>
  * 
  * wokjab is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -22,9 +22,8 @@
 
 WokjabDockWindowHandler::WokjabDockWindowHandler(WLSignal *wls) : WoklibPlugin(wls)
 {
-	// This feals like a royal fucking mess.
+	// What happens if this is done elsewhere to? Feels bad.
 	Gtk::Main kit(0, NULL);
-
 
 	
 	EXP_SIGHOOK("Wokjab DockWindow Add", &WokjabDockWindowHandler::Add, 1000);
@@ -85,15 +84,9 @@ WokjabDockWindowHandler::Add(WokXMLTag *tag)
 	
 	if ( masterlist.find(tag->GetAttr("type")) == masterlist.end() )
 	{
-		Gtk::Window *test;
-		test = new Gtk::Window();
-		Gtk::Notebook *nb;
-		nb = new Gtk::Notebook(); // there should be a better way...
-		masterlist[tag->GetAttr("type")] = nb;
+		WokjabDockWindowMaster *master = new WokjabDockWindowMaster(tag->GetAttr("type"));
 		
-		test->add(*nb);
-
-		test->show_all();
+		masterlist[tag->GetAttr("type")] = master;
 	}
 	windows[tag->GetAttr("id")] = new WokjabDockWindow(wls, tag, masterlist[tag->GetAttr("type")]);
 		
@@ -107,7 +100,19 @@ WokjabDockWindowHandler::Destroy(WokXMLTag *tag)
 	{
 		WokjabDockWindow *tmp = windows[tag->GetAttr("id")];
 		windows.erase(tag->GetAttr("id"));
+
+		std::string type = tmp->GetType();
 		delete tmp;
+		WokjabDockWindowMaster *dwm = masterlist[type];
+		Gtk::Notebook *nb = dwm->GetNotebook();
+
+		std::cout << "Pages: " << nb->get_n_pages() << std::endl;
+
+		if( nb->get_n_pages() == 0 )
+		{
+			delete dwm;
+			masterlist.erase(type);
+		}
 	}
 	
 	return 1;

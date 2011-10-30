@@ -18,7 +18,9 @@ libwokjabdockwindow_la_SOURCES = \
 	wokjab-dock-window.hpp                 \
 	wokjab-dock-window.cpp                 \
 	wokjab-dock-window-handler.hpp                 \
-	wokjab-dock-window-handler.cpp                 
+	wokjab-dock-window-handler.cpp                 \
+	WokjabDockWindowMaster.cpp						\
+	WokjabDockWindowMaster.h
 
 ## File created by the gnome-build tools
 

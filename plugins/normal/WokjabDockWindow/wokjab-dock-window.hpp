@@ -1,7 +1,7 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
 /*
  * wokjab
- * Copyright (C) Kent Gustavsson 2008 <nedo80@gmail.com>
+ * Copyright (C) Kent Gustavsson 2008-2011 <nedo80@gmail.com>
  * 
  * wokjab is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -38,6 +38,8 @@
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
+#include "WokjabDockWindowMaster.h"
+
 using namespace Woklib;
 
 /**
@@ -46,7 +48,7 @@ using namespace Woklib;
 class WokjabDockWindow: public WLSignalInstance
 {
 public:
-	WokjabDockWindow(WLSignal *wls, WokXMLTag *in_inittag, Gtk::Notebook *parent);
+	WokjabDockWindow(WLSignal *wls, WokXMLTag *in_inittag, WokjabDockWindowMaster *parent);
 	~WokjabDockWindow();
 
 	/*
@@ -73,7 +75,7 @@ public:
 protected:
 	
 	WokXMLTag *inittag;
-	Gtk::Notebook *parent;
+	WokjabDockWindowMaster *parent;
 	Gtk::Socket mainsock;
 	Gtk::Socket labelsock;
 

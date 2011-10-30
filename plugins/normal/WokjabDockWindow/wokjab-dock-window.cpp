@@ -1,7 +1,7 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
 /*
  * wokjab
- * Copyright (C) Kent Gustavsson 2008 <nedo80@gmail.com>
+ * Copyright (C) Kent Gustavsson 2008-2011 <nedo80@gmail.com>
  * 
  * wokjab is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,7 +19,7 @@
 
 #include "wokjab-dock-window.hpp"
 
-WokjabDockWindow::WokjabDockWindow(WLSignal *wls, WokXMLTag *in_inittag, Gtk::Notebook *parent) : WLSignalInstance(wls),
+WokjabDockWindow::WokjabDockWindow(WLSignal *wls, WokXMLTag *in_inittag, WokjabDockWindowMaster *parent) : WLSignalInstance(wls),
 inittag(new WokXMLTag(*in_inittag)),
 parent( parent)
 {
@@ -31,7 +31,7 @@ parent( parent)
 	label_cbutton.set_relief(Gtk::RELIEF_NONE);
 	label_box.pack_start(labelsock);
 	label_box.pack_start(label_cbutton);
-	parent->append_page(mainsock, label_box);
+	parent->GetNotebook()->append_page(mainsock, label_box);
 
 	label_cbutton.signal_clicked().connect(sigc::mem_fun(*this,
               &WokjabDockWindow::on_cbutton_clicked));
@@ -65,7 +65,7 @@ gboolean
 WokjabDockWindow::key_press_handler(GtkWidget * widget, GdkEventKey * event,
 			     WokjabDockWindow *c)
 {
-	/*
+
 	if (event->state & GDK_MOD1_MASK)
 	{
 		if(event->keyval >= '0' && event->keyval <= '9') {
@@ -73,74 +73,28 @@ WokjabDockWindow::key_press_handler(GtkWidget * widget, GdkEventKey * event,
 			if(switchto == -1)
 				switchto = 9;
 			
-			GdlDockObject *dockto = gdl_dock_object_get_parent_object(GDL_DOCK_OBJECT(c->win));
-			if ( dockto ) 
-			{
-				GList *list = gdl_dock_get_named_items(GDL_DOCK(dockto));
-				
-				int i = 0;
-				while(list)
-				{
-					list = list->next;
-					i++;
-				}
-				if ( switchto < i )
-					g_object_set (G_OBJECT(dockto), "page", switchto, NULL);
-			}
+			c->parent->GetNotebook()->set_current_page(switchto);
 		}
 	}
-	 */
+
 	return FALSE;
 }
 
 void
 WokjabDockWindow::Activate()
 {
-	/*
-	if ( GDL_DOCK_ITEM_ICONIFIED(win) )
-		Show(NULL);
-	
-	GdlDockObject *dock = GDL_DOCK_OBJECT(win);
-	GdlDockObject *child = dock;
-	
-	while( dock && !GDL_IS_DOCK(dock) )
-	{
-		child = dock;
-		dock = gdl_dock_object_get_parent_object(GDL_DOCK_OBJECT(dock));
-	}
-		
-	gdl_dock_object_present (gdl_dock_object_get_parent_object(GDL_DOCK_OBJECT(win)), GDL_DOCK_OBJECT(win));	
-	
-	GtkWidget *window = win;
-	
-	while ( window && !GTK_IS_WINDOW(window) )
-	{
-		window = gtk_widget_get_parent(window);
-	}
-	if ( GTK_IS_WINDOW(window) )
-	{	
-		gtk_window_present (GTK_WINDOW(window));
-	}
-	 */
+	parent->Raise();
+
 }
 
 void
 WokjabDockWindow::SetUrgencyHint(WokXMLTag *tag)
 {
-	/*
-	while ( window && !GTK_IS_WINDOW(window) )
-	{
-		window = gtk_widget_get_parent(window);
-	}
-	
-	if ( GTK_IS_WINDOW(window) )
-	{	
-		if ( tag->GetFirstTag("urgency").GetAttr("data") != "false" )
-			gtk_window_set_urgency_hint (GTK_WINDOW(window), TRUE);
-		else
-			gtk_window_set_urgency_hint (GTK_WINDOW(window), FALSE);
-	}
-	 */
+
+	if ( tag->GetFirstTag("urgency").GetAttr("data") != "false" )
+		parent->SetUrgency(true);
+	else
+		parent->SetUrgency(false);
 }
 
 bool
@@ -190,22 +144,3 @@ WokjabDockWindow::GetType()
 {
 	return inittag->GetAttr("type");
 }
-
-
-/*
-void
-WokjabDockWindow::Destroy(GdlDockObject *gdldockobject, gboolean arg1, WokjabDockWindow *c)
-{
-	if ( arg1 == 1 )
-	{
-		if ( !GDL_DOCK_ITEM_ICONIFIED(c->win) )
-		{
-			WokXMLTag destroy("window");
-			destroy.AddAttr("id", c->inittag->GetAttr("id"));
-			
-			c->wls->SendSignal("Wokjab DockWindow Destroy", destroy);
-		}
-	}
-}
-
-*/
