@@ -1,0 +1,1 @@
+sudo aptitude install libexpat-dev libssl-dev libgdl-dev libglade2-dev libgtkmm-2.4-dev libsqlite3-dev libdbus-glib-1-dev python-dev libglade2-dev libtool autoconf autopoint libgtkmm-2.4-dev libdbus-glib-1-dev

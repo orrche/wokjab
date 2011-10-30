@@ -20,10 +20,10 @@
 #define _GUIWINDOWDOCK_H_
 
 #include <list>
-
-#include <Woklib/WokXMLTag.h>
 #include <gtk/gtk.h>
 #include <vector>
+
+#include <Woklib/WokXMLTag.h>
 
 using namespace Woklib;
 

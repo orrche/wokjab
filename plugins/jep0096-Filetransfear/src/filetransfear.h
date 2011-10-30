@@ -18,13 +18,13 @@
 #ifndef __REGISTERSERVICE_H
 #define __REGISTERSERVICE_H
 
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
 #include <iostream>
 #include <gtk/gtk.h>
 #include <glade/glade.h>
+
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
 
 using namespace Woklib;
 

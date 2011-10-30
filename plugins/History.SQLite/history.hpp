@@ -25,12 +25,12 @@
 #ifndef _HISTORY_HPP_
 #define _HISTORY_HPP_
 
+#include <glib-2.0/glib.h>
+#include <sqlite3.h>
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
-
-#include <glib.h>
-#include <sqlite3.h>
 
 using namespace Woklib;
 

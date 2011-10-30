@@ -25,12 +25,12 @@
 #ifndef _DOWNLOAD_QUEUE_HPP_
 #define _DOWNLOAD_QUEUE_HPP_
 
+#include <gtk/gtk.h>
+#include <glade/glade.h>
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
-
-#include <gtk/gtk.h>
-#include <glade/glade.h>
 
 using namespace Woklib;
 

@@ -62,6 +62,15 @@ Tooltip::Expose(GtkWidget *widget, GdkEventExpose *event, Tooltip *c)
 	return FALSE;
 }
 
+gboolean
+Tooltip::Pressed(GtkWidget *widget, GdkEvent *event, Tooltip *c)
+{
+	WokXMLTag reset("reset");
+
+	c->Reset(reset);
+	return FALSE;
+}
+
 gboolean 
 Tooltip::DispWindow (Tooltip * c)
 {
@@ -165,6 +174,10 @@ Tooltip::DispWindow (Tooltip * c)
 	
 	g_signal_connect(G_OBJECT(window), "expose_event",
 			G_CALLBACK(Tooltip::Expose), c);
+	// Fallback way of closing the tooltip, no idea why this is nessesary, but the resetsignal doesn't
+	// always get sent...
+	g_signal_connect(G_OBJECT(window), "button-press-event",
+			G_CALLBACK(Tooltip::Pressed), c);
 	
 	gtk_widget_set_app_paintable(GTK_WIDGET(window), TRUE);
 	gtk_widget_set_name(GTK_WIDGET(window), "gtk-tooltips");

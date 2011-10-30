@@ -23,12 +23,14 @@
 
 class Jabber;
 
+#include "Connection.h"
+#include "IQAuthManager.h"
+
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
-#include "Connection.h"
-#include "IQAuthManager.h"
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>

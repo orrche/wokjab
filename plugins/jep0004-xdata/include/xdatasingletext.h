@@ -19,8 +19,8 @@
 
 #include <gtk/gtk.h>
 #include <string>
-#include <Woklib/WLSignal.h>
 #include "../include/xdatabase.h"
+#include <Woklib/WLSignal.h>
 
 class xdatasingletext : public xdatabase
 {

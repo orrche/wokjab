@@ -34,6 +34,15 @@
 
 using std::string;
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+
+#include "../../../gettext.h"
+#define _(string) gettext (string)
+
+
 static gboolean DNDDragMotionCB(
         GtkWidget *widget, GdkDragContext *dc,
         gint x, gint y, guint t,
@@ -617,8 +626,10 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 	
 		WokXMLTag &msgtag = tag->GetFirstTag("message");
 
-		if(!hasresource && tag->GetFirstTag("message").GetAttr("from").find("/") != std::string::npos)
+		// Locking on resource
+		if(lock_on_resource && (!hasresource) && tag->GetFirstTag("message").GetAttr("from").find("/") != std::string::npos)
 		{
+			std::cout << "Should be locking window..." << std::endl;
 			UnHookSignals();
 			from = tag->GetFirstTag("message").GetAttr("from");
 			HookSignals();
@@ -627,6 +638,9 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 
 			SetLabel();
 		}
+		std::cout << "ok this is WIERD" << std::endl;
+		std::cout << "Lock " << lock_on_resource << std::endl;
+		std::cout << "Has " << hasresource << std::endl;
 
 		std::string stamp = "";
 		WokXMLTag tag_body = tag->GetFirstTag("message");
@@ -646,7 +660,8 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 			itemtag.AddAttr("icon", msgicon);
 
 			WokXMLTag &desc = itemtag.AddTag("description");
-			desc.AddText(tag->GetFirstTag("message").GetAttr("from"));
+			
+			desc.AddText(nick);
 			desc.AddText("\n\t");
 			
 			
@@ -657,9 +672,13 @@ GUIMessageWidget::NewMessage(WokXMLTag *tag)
 			WokXMLTag &sig = command.AddTag("signal");
 			sig.AddAttr("name", "Jabber GUI MessageDialog Open");
 			WokXMLTag &item = sig.AddTag("item");
-			item.AddAttr("jid", tag->GetFirstTag("message").GetAttr("from"));
+			if ( lock_on_resource )
+				item.AddAttr("jid", tag->GetFirstTag("message").GetAttr("from"));
+			else
+				item.AddAttr("jid", from_no_resource);
 			item.AddAttr("session", tag->GetAttr("session"));
 			
+
 			wls->SendSignal("Jabber Event Add", &eventtag);
 			eventidlist.push_back(eventtag.GetFirstTag("item").GetAttr("id"));
 			
@@ -1035,6 +1054,16 @@ GUIMessageWidget::Config(WokXMLTag *tag)
 	delete config;
 	config = new WokXMLTag(tag->GetFirstTag("config"));
 
+	// Caching the lock on resource value
+	if ( config->GetFirstTag("disable_chat_window_lock").GetAttr("data") != "false")
+	{
+		lock_on_resource = false;
+	}
+	else
+	{
+		lock_on_resource = true;
+	}
+
 	std::list <WokXMLTag *>::iterator iter;
 	std::list <WokXMLTag *> *list;
 
@@ -1225,12 +1254,15 @@ GUIMessageWidget::Message(WokXMLTag &message, std::string jid)
 					tags["timestamp"],
 					NULL);
 
-	gtk_text_buffer_insert_with_tags (
-					buffer, &iter,
-					nick.c_str(), nick.length(),
-					tags["forreign_name"],
-					NULL);
-
+	if ( message.GetFirstTag("message").GetAttr("type") != "error")
+	{
+		gtk_text_buffer_insert_with_tags (
+						buffer, &iter,
+						nick.c_str(), nick.length(),
+						tags["forreign_name"],
+						NULL);
+	}
+	
 	if ( ! message.GetTagList("body").empty() )
 		PutText(&iter, message.GetFirstTag("body"));
 	else

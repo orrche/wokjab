@@ -14,6 +14,9 @@
 /* Define if the GNU gettext() function is already present or preinstalled. */
 #undef HAVE_GETTEXT
 
+/* Define this if you want to compile with support for GTK+ 2.0. */
+#undef HAVE_GTK
+
 /* Define if you have the iconv() function. */
 #undef HAVE_ICONV
 

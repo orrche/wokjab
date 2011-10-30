@@ -151,6 +151,7 @@ Connection::GetUserVariables(WokXMLTag *tag)
 			(*iter)->AddTag("type").AddText(buf.str());
 			(*iter)->AddTag("jid").AddText(username + "@" + server + "/" + resource);
 			(*iter)->AddTag("ip").AddText(ip);
+			(*iter)->AddTag("conid").AddText(conid);
 		}
 	}
 
@@ -266,6 +267,12 @@ Connection::SetSSL(::SSL *s)
 {
 	xmlinput->SetSSL(s);
 	xmloutput->SetSSL(s);
+}
+
+int
+Connection::GetType()
+{
+	return type;
 }
 
 std::string

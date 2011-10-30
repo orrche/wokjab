@@ -45,7 +45,8 @@ con_type(in_con_type)
 	resource = itemtag.GetFirstTag("resource").GetBody();
 	password = itemtag.GetFirstTag("password").GetBody();
 	server = itemtag.GetFirstTag("server").GetBody();
-	
+	con_id = itemtag.GetFirstTag("conid").GetBody();
+
 	switch (con_type)
 	{
 		case ClearTextUser:
@@ -79,10 +80,11 @@ IQauth::InitHandshakeComponent()
 	unsigned char buffer[30];
 	std::string iqmsg;
 	
-	iqmsg = "<handshake>";
+	iqmsg = "";
 	
 	woklib_debug(wls,"Init handshake auth");
 	std::string digest = con_id + password;
+
 	SHA1((unsigned char *)digest.c_str(), digest.size(), buffer);
 	for( int i = 0 ; i < 20 ; i++)
 	{
@@ -94,12 +96,11 @@ IQauth::InitHandshakeComponent()
 		iqmsg += buf2;
 	}
 	
-	iqmsg += "</handshake>";
 	
 	WokXMLTag msgtag(NULL,"message");
 	msgtag.AddAttr("session", session);
-	msgtag.AddText(iqmsg);
-	wls->SendSignal("Jabber Send XML Send" , &msgtag);
+	msgtag.AddTag("handshake").AddText(iqmsg);
+	wls->SendSignal("Jabber XML Send" , &msgtag);
 }
 
 void
@@ -251,7 +252,7 @@ IQauth::SD_Failure(WokXMLTag *tag)
 	message.AddAttr("session", session);
 	
 	wls->SendSignal("Jabber Connection Disconnect", message);
-	woklib_error(wls, "Could not authenticate with the server");
+	woklib_error(wls, "Could not authenticate with the server: " + server + " using the username " + username);
 	
 	delete this;
 	return 1;
@@ -267,7 +268,7 @@ IQauth::SD_Success(WokXMLTag *tag)
 	message.AddAttr("session", session);
 	
 	wls->SendSignal("Jabber Connection Reset " + session, message);
-	
+
 	delete this;
 	return 1;
 }
@@ -335,7 +336,7 @@ IQauth::InitSHA1UserStage2(WokXMLTag *tag)
 	if(tag_iq->GetAttr("type") == "error")
 	{
 		/* FIX ME do something sane here ... */
-		woklib_error(wls, "Authentication failed");
+		woklib_error(wls, "Authentication failed server: " + server + " using the username " + username);
 		delete this;
 		return;		
 	}

@@ -27,9 +27,10 @@
 #ifndef _GTKPREFERENCE_H_
 #define _GTKPREFERENCE_H_
 
-#include <Woklib/WokLib.h>
 #include <gtk/gtk.h>
 #include "GtkPCommon.h"
+
+#include <Woklib/WokLib.h>
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>

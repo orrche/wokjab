@@ -120,6 +120,7 @@ class GUIMessageWidget : public WLSignalInstance
 		bool focus;
 		bool msg_waiting;
 		bool hasresource;
+		bool lock_on_resource;
 		
 		double fontsize;
 		

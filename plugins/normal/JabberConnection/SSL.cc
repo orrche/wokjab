@@ -65,12 +65,10 @@ namespace Woklib
 	{
 		if ( tag->GetAttr("session") != conn->session)
 			return true;
-		SSL_METHOD *meth;
 		SSL_CTX *ctx;
 		BIO *sbio;
 
-		meth=SSLv23_method();
-		ctx=SSL_CTX_new(meth);
+		ctx=SSL_CTX_new(SSLv23_method());
 		sslsession[tag->GetAttr("session")] = ctx;
 
 		ssl=SSL_new(ctx);

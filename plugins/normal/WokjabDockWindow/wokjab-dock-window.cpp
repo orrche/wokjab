@@ -28,6 +28,7 @@ parent( parent)
 	//}
 
 	label_cbutton.set_label("x");
+	label_cbutton.set_relief(Gtk::RELIEF_NONE);
 	label_box.pack_start(labelsock);
 	label_box.pack_start(label_cbutton);
 	parent->append_page(mainsock, label_box);

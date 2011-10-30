@@ -20,10 +20,10 @@
 #ifndef _GUIROSTER_H_
 #define _GUIROSTER_H_
 
-#include <Woklib/WLSignal.h>
-#include <Woklib/WokXMLTag.h>
 #include <gtk/gtk.h>
 
+#include <Woklib/WLSignal.h>
+#include <Woklib/WokXMLTag.h>
 class GUIRoster;
 
 using namespace Woklib;

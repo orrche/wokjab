@@ -26,13 +26,13 @@
 
 #include <glade/glade.h>
 #include <gtk/gtk.h>
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
 class DOpener;
 
 #include "opener.h"
 
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
 using namespace Woklib;
 
 /** 

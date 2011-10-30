@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2003-2010  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,13 +19,13 @@
 
 #ifndef _INITIAT_H_
 #define _INITIAT_H_
+#include <glib-2.0/glib.h>
 
 #include "vector"
 
 #include <Woklib/WokLibSignal.h>
 #include <Woklib/WokLib.h>
 #include <Woklib/WLSignal.h>
-#include <gtk/gtk.h>
 
 using namespace Woklib;
 

@@ -7,6 +7,7 @@ libdir = $(prefix)/lib/woklib-plugins/normal
 
 AM_CXXFLAGS =\
 	`pkg-config libglade-2.0 gtk+-2.0 --cflags` -lwoklib -g -O3 -Wall
+AM_LDFLAGS = -lwoklib  `pkg-config gtk+-2.0 libglade-2.0 --libs`
 
 lib_LTLIBRARIES = \
 	libnotificationwidget.la

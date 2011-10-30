@@ -18,9 +18,9 @@
 #ifndef _XDATABASE_H_
 #define _XDATABASE_H_
 
+#include <gtk/gtk.h>
 #include <Woklib/WLSignal.h>
 #include <Woklib/WokXMLTag.h>
-#include <gtk/gtk.h>
 
 using namespace Woklib;
 

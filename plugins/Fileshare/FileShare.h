@@ -30,11 +30,12 @@
 #  include <config.h>
 #endif
 
+#include <sqlite3.h>
+
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
-
-#include <sqlite3.h>
 
 using namespace Woklib;
 

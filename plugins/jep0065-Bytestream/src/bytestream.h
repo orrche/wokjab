@@ -17,20 +17,20 @@
 
 #ifndef __JEP65_H
 #define __JEP65_H
-
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
 #include <iostream>
 #include <gtk/gtk.h>
 #include "map"
 
-#include "jep65send.h"
-
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
+
+#include "jep65send.h"
+
+
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
 
 using namespace Woklib;
 

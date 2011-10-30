@@ -22,11 +22,9 @@
 
 #include <gtk/gtk.h>
 #include <glade/glade.h>
-
-#include <Woklib/WLSignalInstance.h>
-
 #include <sys/types.h>
-
+#include <vector>
+#include <map>
 /*
 #include <gdk/gdkx.h>
 #include <X11/Xmd.h>
@@ -34,12 +32,10 @@
 #include <X11/Xatom.h>
 */
 
+#include "wids.h"
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WokXMLTag.h>
-#include <gtk/gtk.h>
-#include "wids.h"
-#include <vector>
-#include <map>
 using namespace Woklib;
 
 

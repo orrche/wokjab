@@ -22,14 +22,14 @@
 
 
 #include <gtkmm.h>
+#include <iostream>
+
 #include "wokjab-dock-window.hpp"
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
-
-#include <iostream>
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>

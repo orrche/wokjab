@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2005  Kent Gustavsson <oden@gmx.net>
+ *  Copyright (C) 2003-2011  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -196,9 +196,9 @@ GnomeTrayIcon::Presence(WokXMLTag *tag)
 		presence_tip = tag->GetFirstTag("presence").GetFirstTag("show").GetBody() + " - ";
 	presence_tip +="You are set to: ";
 	if ( tag->GetFirstTag("presence").GetFirstTag("status").GetBody().empty() )
-		presence_tip += "<no status set>";
+		presence_tip += XMLisize("<no status set>");
 	else
-		presence_tip += tag->GetFirstTag("presence").GetFirstTag("status").GetBody();
+		presence_tip += XMLisize(tag->GetFirstTag("presence").GetFirstTag("status").GetBody());
 	
 	if ( EventList.empty() )
 	{

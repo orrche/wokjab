@@ -18,6 +18,8 @@
 #ifndef __WOKJAB_CONNECTION_H
 #define __WOKJAB_CONNECTION_H
 
+#include <openssl/ssl.h>
+
 #ifdef __WIN32
 #else
 #include <netinet/in.h>
@@ -29,18 +31,18 @@
 #include <unistd.h>  // close
 #include <string>
 
+
 class Connection;
 
-#include <openssl/ssl.h>
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
+#include "SSL.h"
 #include "XML_Input.h"
 #include "XML_Output.h"
 
-#include "SSL.h"
 #include "Jabber.h"
 
 using namespace Woklib;
@@ -61,7 +63,8 @@ class Connection : public WLSignalInstance
 	int GetMyNick(WokXMLTag *tag);
 	int Reset(WokXMLTag *tag);
 	int SetJID(WokXMLTag *tag);
-	
+	int GetType();
+
 	void sendinit();
 
 	void StartSSL();

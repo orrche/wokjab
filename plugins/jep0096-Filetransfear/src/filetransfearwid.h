@@ -17,13 +17,13 @@
 
 #ifndef __REGISTER_SERVICE_WIDGET_H
 #define __REGISTER_SERVICE_WIDGET_H
+#include <gtk/gtk.h>
+#include "map"
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
-#include <gtk/gtk.h>
-#include "map"
 
 using namespace Woklib;
 

@@ -20,9 +20,6 @@
 #ifndef _NOTIFICATION_MANAGER_HPP_
 #define _NOTIFICATION_MANAGER_HPP_
 
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
@@ -31,6 +28,9 @@
 #include <glade/glade.h>
 
 #include "notification-widget.hpp"
+
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
 
 using namespace Woklib;
 

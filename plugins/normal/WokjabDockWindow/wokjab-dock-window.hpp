@@ -34,6 +34,10 @@
 #  include <config.h>
 #endif
 
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
+
 using namespace Woklib;
 
 /**

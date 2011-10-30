@@ -1,5 +1,5 @@
 #
-#  Copyright (C) 2003-2008  Kent Gustavsson <nedo80@gmail.com>
+#  Copyright (C) 2003-2010  Kent Gustavsson <nedo80@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@ AM_CONFIG_HEADER([config.h])
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 #AC_PROG_RANLIB
-AM_PATH_GTK_2_0
 AM_PROG_LIBTOOL
 AM_GNU_GETTEXT_VERSION([0.14])
 AM_GNU_GETTEXT([external])
@@ -35,15 +34,41 @@ if test "x${prefix}" = "xNONE"; then
 #  prefix=${prefix}
 fi
 
-AC_ARG_ENABLE(python,
-[  --disable-python        don't build the python plugin],
-        python=$enableval, python=yes)
 
+dnl *********************************************************************
+dnl ** GTK **************************************************************
+dnl *********************************************************************
+
+AC_ARG_ENABLE(gtk, 
+[  --disable-gtk           don't build plugins depending on GTK],
+        gtk=$enableval, gtk=yes)
+
+if test "$gtk" = yes; then
+	AC_DEFINE(HAVE_GTK, 1,
+      [Define this if you want to compile with support for GTK+ 2.0.])
+	
+       	PKG_CHECK_EXISTS("gtk+-2.0", gtk=yes, gtk=no )
+	if test "$gtk" == "yes" ; then 
+		echo "Compiling with GTK"
+		AM_PATH_GTK_2_0
+		gtk=yes
+	else
+		echo "Compiling without GTK"
+		gtk=no
+	fi
+fi
+
+AM_CONDITIONAL(DO_GTK, test "x$gtk" = "xyes")
 
 
 dnl *********************************************************************
 dnl ** PYTHON ***********************************************************
 dnl *********************************************************************
+
+AC_ARG_ENABLE(python,
+[  --disable-python        don't build the python plugin],
+        python=$enableval, python=yes)
+
 
 if test "$python" = yes; then
         AC_PATH_PROG(pythonpath, python2)
@@ -112,13 +137,13 @@ AC_CONFIG_FILES(Makefile \
         plugins/normal/JIDConfig/Makefile  \
 	plugins/normal/Tooltip/Makefile  \
 	plugins/system/Makefile \
-	plugins/experimental/Makefile  \
-        plugins/experimental/Dice/Makefile  \
-        plugins/experimental/MassRename/Makefile  \
-        plugins/experimental/P2PRandomNumberMonitor/Makefile  \
         plugins/experimental/AtomNotifications/Makefile  \
-        plugins/experimental/xdataConfig/Makefile  \
-	plugins/MenuResource/Makefile  \
+        plugins/experimental/Dice/Makefile \
+        plugins/experimental/MassRename/Makefile \
+        plugins/experimental/P2PRandomNumberMonitor/Makefile \
+        plugins/experimental/xdataConfig/Makefile \
+	plugins/experimental/Makefile  \
+	plugins/MenuResource/Makefile \
 	plugins/MenuRoster/Makefile  \
 	plugins/GtkTimer/Makefile  \
 	plugins/GtkTimer/src/Makefile  \
@@ -168,6 +193,7 @@ AC_CONFIG_FILES(Makefile \
 	plugins/jep0004-xdata/include/Makefile  \
 	plugins/jep0030-Disco/Makefile  \
         plugins/jep0050-AdHocCommands/Makefile  \
+        plugins/jep0050-AdHocCommands-Manager/Makefile  \
 	plugins/jep0065-Bytestream/Makefile \
 	plugins/jep0065-Bytestream/src/Makefile  \
         plugins/jep0060-PublishSubscribe/Makefile  \
@@ -190,6 +216,7 @@ AC_CONFIG_FILES(Makefile \
         plugins/normal/AddJIDWidget/Makefile  \
         plugins/normal/ConnectWindow/Makefile  \
         plugins/normal/Roster/Makefile  \
+        plugins/normal/DisplayNoGtk/Makefile  \
 	wokjab/Makefile \
 	wokjab/src/Makefile \
 	wokjab/include/Makefile \

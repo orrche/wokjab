@@ -18,21 +18,22 @@
 #ifndef __BROWSER_H
 #define __BROWSER_H
 
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
 #include <iostream>
 #include <gtk/gtk.h>
 #include <list>
 
-class Browser;
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
 
+class Browser;
 #include "browserwid.h"
+
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
+
 
 using namespace Woklib;
 /**

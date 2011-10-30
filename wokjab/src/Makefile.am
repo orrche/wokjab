@@ -15,11 +15,38 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-AM_LDFLAGS = -lwoklib  `pkg-config gtk+-2.0 libglade-2.0 --libs`
+if DO_GTK
 
-bin_PROGRAMS = wokjab
+AM_LDFLAGS = -lwoklib  `pkg-config glib-2.0 gtk+-2.0 libglade-2.0 --libs`
 
-wokjab_SOURCES = Initiat.cc main.cc \
-	plugin-loader.hpp plugin-loader.cpp 
+bin_PROGRAMS = wokjab wokbot
+
+wokbot_SOURCES = Initiat.cc bot.cc \
+	plugin-loader.hpp plugin-loader.cpp wokjab.cc
 	
-AM_CXXFLAGS = -I.. `pkg-config gtk+-2.0 libglade-2.0 --cflags` -DLOCALEDIR=\"$(localedir)\"
+	
+wokjab_SOURCES = Initiat.cc main.cc \
+	plugin-loader.hpp plugin-loader.cpp wokjab.cc
+	
+AM_CXXFLAGS = -I.. `pkg-config glib-2.0 gtk+-2.0 libglade-2.0 --cflags` -DLOCALEDIR=\"$(localedir)\"
+
+EXTRA_DIST = wokjab.h bot.h
+
+else
+
+AM_LDFLAGS = -lwoklib `pkg-config gobject-2.0 glib-2.0 --libs` -ldl
+
+bin_PROGRAMS = wokbot
+
+wokbot_SOURCES = Initiat.cc bot.cc wokjab.cc\
+	plugin-loader.hpp plugin-loader.cpp
+	
+	
+wokjab_SOURCES = Initiat.cc main.cc \
+	plugin-loader.hpp plugin-loader.cpp
+	
+AM_CXXFLAGS = -I.. `pkg-config glib-2.0 --cflags` -DLOCALEDIR=\"$(localedir)\"
+
+EXTRA_DIST = wokjab.h bot.h
+
+endif

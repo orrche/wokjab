@@ -18,11 +18,11 @@
 #ifndef __JEP_65_SEND_H
 #define __JEP_65_SEND_H
 
+#include "fstream"
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
-
-#include "fstream"
 
 #define SHUNKSIZE 100000
 //#define SHUNKSIZE 10

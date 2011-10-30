@@ -104,9 +104,9 @@ History::GetLast(WokXMLTag *tag)
 	
 	std::string query;
 	if( tag->GetAttr("relation").empty() )
-		query = "SELECT * FROM ( SELECT * FROM history ORDER BY time DESC LIMIT " + limit + " ) ORDER BY time ASC";
+		query = "SELECT * FROM ( SELECT * FROM history WHERE time>(strftime('%s', 'now')-172800) ORDER BY time DESC LIMIT " + limit + " ) ORDER BY time ASC";
 	else
-		query = "SELECT * FROM ( SELECT * FROM history WHERE relation='" + tag->GetAttr("relation") + "' ORDER BY time DESC LIMIT " + limit + " ) ORDER BY time ASC";
+		query = "SELECT * FROM ( SELECT * FROM history WHERE relation='" + tag->GetAttr("relation") + "' AND time>(strftime('%s', 'now')-172800) ORDER BY time DESC LIMIT " + limit + " ) ORDER BY time ASC";
 	
 	WokXMLTag &ret = tag->AddTag("history");
 	

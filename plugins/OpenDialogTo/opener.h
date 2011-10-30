@@ -24,15 +24,15 @@
 #ifndef _OPENER_H_
 #define _OPENER_H_
 
-#include <Woklib/WLSignal.h>
-#include <Woklib/WoklibPlugin.h>
-#include <Woklib/WokXMLTag.h>
-
 #include <gtk/gtk.h>
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
+
+#include <Woklib/WLSignal.h>
+#include <Woklib/WoklibPlugin.h>
+#include <Woklib/WokXMLTag.h>
 
 class Opener;
 

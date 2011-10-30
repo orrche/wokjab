@@ -24,12 +24,12 @@
 #ifndef _ROSTERITEM_H_
 #define _ROSTERITEM_H_
 
+#include <gtk/gtk.h>
+#include <glade/glade.h>
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
-
-#include <gtk/gtk.h>
-#include <glade/glade.h>
 
 
 

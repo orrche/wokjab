@@ -31,11 +31,11 @@
 #  include <config.h>
 #endif
 
+#include "GtkTimerSession.h"
+
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
-
-#include "GtkTimerSession.h"
 
 using namespace Woklib;
 
