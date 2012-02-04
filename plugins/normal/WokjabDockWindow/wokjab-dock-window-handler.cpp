@@ -111,11 +111,9 @@ WokjabDockWindowHandler::RemoveWindow(WokjabDockWindowMaster *wdwm)
 
 	for( deliter = deletelist.begin() ; deliter != deletelist.end() ; deliter++) 
 	{
-
 		WokXMLTag tag("destroy");
 		tag.AddAttr("id", (*deliter)->GetID());
 		wls->SendSignal("Wokjab DockWindow Destroy", tag);
-		std::cout << "should remove a window" << std::endl;
 	}
 }
 
