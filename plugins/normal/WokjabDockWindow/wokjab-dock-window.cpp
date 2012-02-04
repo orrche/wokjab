@@ -144,3 +144,9 @@ WokjabDockWindow::GetType()
 {
 	return inittag->GetAttr("type");
 }
+
+std::string
+WokjabDockWindow::GetID()
+{
+	return inittag->GetAttr("id");
+}

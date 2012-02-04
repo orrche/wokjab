@@ -19,19 +19,39 @@
 
 #include "WokjabDockWindowMaster.h"
 
-WokjabDockWindowMaster::WokjabDockWindowMaster(std::string type) {
+WokjabDockWindowMaster::WokjabDockWindowMaster(std::string type, WokjabDockWindowHandler *handler) {
+    this->handler = handler;
+	this->type = type;
+	win.set_default_size(500,300);
 	win.add(nb);
 	win.show_all();
 	i = 0;
+
+
+	win.signal_delete_event().connect(sigc::mem_fun(*this,
+              &WokjabDockWindowMaster::on_destroy));
 }
 
 WokjabDockWindowMaster::~WokjabDockWindowMaster() {
+}
+
+bool
+WokjabDockWindowMaster::on_destroy(GdkEventAny *event)
+{
+	handler->RemoveWindow(this);
+
+	return true;
 }
 
 Gtk::Notebook *
 WokjabDockWindowMaster::GetNotebook() {
 
 	return &nb;
+}
+
+std::string
+WokjabDockWindowMaster::getType() {
+		return type;
 }
 
 void

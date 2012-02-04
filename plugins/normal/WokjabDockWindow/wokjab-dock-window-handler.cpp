@@ -19,6 +19,7 @@
 
 #include "wokjab-dock-window-handler.hpp"
 #include <sstream>
+#include <utility>
 
 WokjabDockWindowHandler::WokjabDockWindowHandler(WLSignal *wls) : WoklibPlugin(wls)
 {
@@ -84,13 +85,38 @@ WokjabDockWindowHandler::Add(WokXMLTag *tag)
 	
 	if ( masterlist.find(tag->GetAttr("type")) == masterlist.end() )
 	{
-		WokjabDockWindowMaster *master = new WokjabDockWindowMaster(tag->GetAttr("type"));
+		WokjabDockWindowMaster *master = new WokjabDockWindowMaster(tag->GetAttr("type"), this);
 		
 		masterlist[tag->GetAttr("type")] = master;
 	}
 	windows[tag->GetAttr("id")] = new WokjabDockWindow(wls, tag, masterlist[tag->GetAttr("type")]);
 		
 	return 1;
+}
+
+void
+WokjabDockWindowHandler::RemoveWindow(WokjabDockWindowMaster *wdwm)
+{
+	std::map<std::string, WokjabDockWindow*>::iterator iter;
+	std::list<WokjabDockWindow*> deletelist;
+	std::list<WokjabDockWindow*>::iterator deliter;
+
+	for ( iter = windows.begin() ; iter != windows.end() ; iter++ )
+	{
+		if ( iter->second->GetType() == wdwm->getType() )
+		{
+			deletelist.push_back(iter->second);
+		}
+	}
+
+	for( deliter = deletelist.begin() ; deliter != deletelist.end() ; deliter++) 
+	{
+
+		WokXMLTag tag("destroy");
+		tag.AddAttr("id", (*deliter)->GetID());
+		wls->SendSignal("Wokjab DockWindow Destroy", tag);
+		std::cout << "should remove a window" << std::endl;
+	}
 }
 
 int

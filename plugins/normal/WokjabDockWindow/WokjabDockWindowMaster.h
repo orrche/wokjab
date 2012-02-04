@@ -38,15 +38,26 @@
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
+class WokjabDockWindowMaster;
+
+#include "wokjab-dock-window-handler.hpp"
+
 class WokjabDockWindowMaster {
 public:
-	WokjabDockWindowMaster(std::string type);
+	WokjabDockWindowMaster(std::string type, WokjabDockWindowHandler *handler);
 	virtual ~WokjabDockWindowMaster();
 
 	Gtk::Notebook * GetNotebook();
 	void SetUrgency(bool value);
 	void Raise();
+	std::string getType();
+
+
+	bool on_destroy(GdkEventAny *event);
 private:
+	WokjabDockWindowHandler *handler;
+	
+	std::string type;
 	int i;
 	Gtk::Window win;
 	Gtk::Notebook nb;

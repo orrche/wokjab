@@ -24,6 +24,8 @@
 #include <gtkmm.h>
 #include <iostream>
 
+class WokjabDockWindowHandler;
+
 #include "wokjab-dock-window.hpp"
 #include "WokjabDockWindowMaster.h"
 
@@ -54,6 +56,8 @@ public:
 		
 	int Hide(WokXMLTag *tag);
 	int Show(WokXMLTag *tag);
+
+	void RemoveWindow(WokjabDockWindowMaster *wdwm);
 protected:
 	std::map <std::string, WokjabDockWindowMaster *> masterlist;
 	std::map <std::string, WokjabDockWindow*> windows;

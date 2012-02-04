@@ -38,6 +38,8 @@
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
+class WokjabDockWindow;
+
 #include "WokjabDockWindowMaster.h"
 
 using namespace Woklib;
@@ -63,6 +65,7 @@ public:
 
 	void on_cbutton_clicked();
 	std::string GetType();
+	std::string GetID();
 	void SetUrgencyHint(WokXMLTag *tag);
 	void Activate();
 		
