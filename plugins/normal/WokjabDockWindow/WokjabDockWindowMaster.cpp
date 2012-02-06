@@ -29,8 +29,6 @@ WokjabDockWindowMaster::WokjabDockWindowMaster(std::string type, WokjabDockWindo
 	i = 0;
 
 
-	win.add_events(Gdk::KEY_PRESS_MASK | Gdk::ALL_EVENTS_MASK);
-	
 	win.signal_delete_event().connect(sigc::mem_fun(*this,
               &WokjabDockWindowMaster::on_destroy));
 	win.signal_key_press_event().connect(sigc::mem_fun(*this, 
