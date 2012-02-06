@@ -54,6 +54,7 @@ public:
 
 
 	bool on_destroy(GdkEventAny *event);
+	bool key_press_handler(GdkEventKey *event); 
 private:
 	WokjabDockWindowHandler *handler;
 	

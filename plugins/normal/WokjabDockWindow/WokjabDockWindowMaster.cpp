@@ -23,16 +23,41 @@ WokjabDockWindowMaster::WokjabDockWindowMaster(std::string type, WokjabDockWindo
     this->handler = handler;
 	this->type = type;
 	win.set_default_size(500,300);
+	nb.set_scrollable(true);
 	win.add(nb);
 	win.show_all();
 	i = 0;
 
 
+	win.add_events(Gdk::KEY_PRESS_MASK | Gdk::ALL_EVENTS_MASK);
+	
 	win.signal_delete_event().connect(sigc::mem_fun(*this,
               &WokjabDockWindowMaster::on_destroy));
+	win.signal_key_press_event().connect(sigc::mem_fun(*this, 
+			  &WokjabDockWindowMaster::key_press_handler));
 }
 
 WokjabDockWindowMaster::~WokjabDockWindowMaster() {
+}
+
+bool
+WokjabDockWindowMaster::key_press_handler(GdkEventKey *event)
+{
+	if ( event->state & GDK_MOD1_MASK )
+	{
+		if ( event->keyval >= '0' && event->keyval <= '9' ) {
+			nb.set_current_page(event->keyval - '1');
+		}
+		else if ( event->keyval == GDK_Left )
+		{
+			nb.prev_page();	
+		}
+		else if ( event->keyval == GDK_Right )
+		{
+			nb.next_page();
+		}
+	}
+	return false;
 }
 
 bool
