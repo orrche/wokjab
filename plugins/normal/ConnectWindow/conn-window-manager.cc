@@ -37,7 +37,7 @@ ConnWindowManager::~ConnWindowManager()
 
 	for(iter = win.begin() ; iter != win.end() ; iter++)
 	{
-		delete [] iter->second;
+		delete iter->second;
 	}
 
 	win.clear();
