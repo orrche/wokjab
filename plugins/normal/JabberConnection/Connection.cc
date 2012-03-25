@@ -54,6 +54,7 @@ session(session)
 	
 	socket_nr = 0;
 	ssl = NULL;
+	reconnect = true;
 
 	xmlinput = new XML_Input(this, wls, session);
 	xmloutput = new XML_Output(wls, session);

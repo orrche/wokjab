@@ -80,6 +80,7 @@ class Connection : public WLSignalInstance
 	std::string session;
 	std::string ip;
 	std::string conid;
+	bool reconnect;
 	private:
 
 	int openconnection();
