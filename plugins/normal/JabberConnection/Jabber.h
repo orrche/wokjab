@@ -53,7 +53,8 @@ class Jabber : public WoklibPlugin
 		int ConnectionLost(WokXMLTag *tag);
 		int ServerMenu(WokXMLTag *tag);
 		int ServerMenuLogout(WokXMLTag *tag);
-	
+		int ConnectionTimedReconnect(WokXMLTag *tag);
+			
 		virtual std::string GetInfo() {return "Jabber Connection Managment";};
 		virtual std::string GetVersion() {return VERSION;};
 	protected:

@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2003-2007  Kent Gustavsson <nedo80@gmail.com>
+ *  Copyright (C) 2003-2012  Kent Gustavsson <nedo80@gmail.com>
  ****************************************************************************/
 /*
  *  This program is free software; you can redistribute it and/or modify
@@ -18,12 +18,14 @@
  */
 
 #include "Jabber.h"
+#include <sstream>
 
 Jabber::Jabber(WLSignal *wls) : WoklibPlugin(wls)
 {	
 	session_nr = 0;
 	
 	EXP_SIGHOOK("Jabber Connection Connect", &Jabber::SignalConnect, 100);
+	EXP_SIGHOOK("Jabber Connection TimedReconnect", &Jabber::ConnectionTimedReconnect, 1000);
 	EXP_SIGHOOK("Jabber GetSessions", &Jabber::GetSessions, 1000);
 	EXP_SIGHOOK("Jabber XML Send", &Jabber::SendXML, 1000);
 	
@@ -137,15 +139,57 @@ Jabber::SignalDisconnect(WokXMLTag *tag)
 	return 1;
 }
 
+int 
+Jabber::ConnectionTimedReconnect(WokXMLTag *tag)
+{
+	tag->AddAttr("stop", "true");
+
+	wls->SendSignal("Jabber Connection Connect", tag->GetFirstTag("connect"));
+
+	std::cout << *tag << std::endl;
+
+	return 1;
+}
+
+
 int
 Jabber::ConnectionLost(WokXMLTag *tag)
 {
-	if( connections.find(tag->GetAttr("session")) != connections.end() )
+	std::map<std::string, Connection *>::iterator conn_iter = connections.find(tag->GetAttr("session"));
+	
+	if( conn_iter != connections.end() )
 	{
+		Connection *connection = conn_iter->second;
+		
+
+		if ( connection->reconnect )
+		{
+			std::stringstream ss_port;
+			ss_port << connection->port;
+			std::stringstream ss_type;
+			ss_type << connection->type;
+
+			WokXMLTag reconnectTimeout("timeout");
+			reconnectTimeout.AddAttr("time", "15000");
+			reconnectTimeout.AddAttr("signal", "Jabber Connection TimedReconnect");
+			
+			WokXMLTag &reconnectSignal = reconnectTimeout.GetFirstTag("data").AddTag("connect");
+			reconnectSignal.AddAttr("server", connection->server);
+			reconnectSignal.AddAttr("username", connection->username);
+			reconnectSignal.AddAttr("password", connection->password);
+			reconnectSignal.AddAttr("resource", connection->resource);
+			reconnectSignal.AddAttr("type", ss_type.str());
+			reconnectSignal.AddAttr("port", ss_port.str());
+			reconnectSignal.AddAttr("reconnecting", "true");
+			
+			wls->SendSignal("Woklib Timmer Add", reconnectTimeout);
+		}
+
+
 		delete connections[tag->GetAttr("session")];
 		connections.erase(tag->GetAttr("session"));
 	}
-	
+
 	return true;
 }
 

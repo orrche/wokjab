@@ -54,10 +54,10 @@ session(session)
 	
 	socket_nr = 0;
 	ssl = NULL;
-	reconnect = true;
 
 	xmlinput = new XML_Input(this, wls, session);
 	xmloutput = new XML_Output(wls, session);
+	reconnect = true;
 
 	openconnection();
 
@@ -91,6 +91,8 @@ Connection::Reset(WokXMLTag *tag)
 	if ( ssl )
 		xmlinput->SetSSL(ssl->ssl);
 	sendinit();
+
+	return 1;
 }
 
 int
@@ -234,6 +236,7 @@ void Connection::sendinit()
 			break;
 		default:
 			init+= "client";
+			break;
 	}
 	init += "\" xmlns:stream=\"http://etherx.jabber.org/streams\" version='1.0'>";
 

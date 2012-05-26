@@ -81,13 +81,13 @@ class Connection : public WLSignalInstance
 	std::string ip;
 	std::string conid;
 	bool reconnect;
+	int port;
+	int type;
 	private:
 
 	int openconnection();
 
-	int port;
 	int socket_nr;
-	int type;
 
 	Woklib::SSL *ssl;
 };
