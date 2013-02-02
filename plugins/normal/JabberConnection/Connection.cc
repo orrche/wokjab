@@ -59,6 +59,7 @@ session(session)
 	xmloutput = new XML_Output(wls, session);
 	reconnect = true;
 
+
 	openconnection();
 
 	char buf[20];
@@ -150,6 +151,7 @@ Connection::GetUserVariables(WokXMLTag *tag)
 			(*iter)->AddTag("resource").AddText(resource);
 			(*iter)->AddTag("server").AddText(server);
 			(*iter)->AddTag("password").AddText(password);
+			(*iter)->AddTag("host").AddText(host);
 			buf << type;
 			(*iter)->AddTag("type").AddText(buf.str());
 			(*iter)->AddTag("jid").AddText(username + "@" + server + "/" + resource);

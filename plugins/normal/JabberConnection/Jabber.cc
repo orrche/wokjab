@@ -164,6 +164,7 @@ Jabber::ConnectionLost(WokXMLTag *tag)
 
 		if ( connection->reconnect )
 		{
+			tag->AddAttr("reconnecting", "true");
 			std::stringstream ss_port;
 			ss_port << connection->port;
 			std::stringstream ss_type;
@@ -175,6 +176,7 @@ Jabber::ConnectionLost(WokXMLTag *tag)
 			
 			WokXMLTag &reconnectSignal = reconnectTimeout.GetFirstTag("data").AddTag("connect");
 			reconnectSignal.AddAttr("server", connection->server);
+			reconnectSignal.AddAttr("host", connection->host);
 			reconnectSignal.AddAttr("username", connection->username);
 			reconnectSignal.AddAttr("password", connection->password);
 			reconnectSignal.AddAttr("resource", connection->resource);

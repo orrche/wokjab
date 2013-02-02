@@ -86,15 +86,15 @@ XML_Input::read_data (int source)
 	}
 
 	if (len == 0 || len == -1)  // wounder what this really could result in
-	{/* Connection closed */
-        std::stringstream sstr;
-        sstr << len << " ssl: " << ssl;
-
-        woklib_message(wls,"Assuming that the connection is closed, shutting down this connection" + sstr.str());
-								
+	{
 		WokXMLTag msg(NULL, "message");
 		msg.AddAttr("session", session);
 		wls->SendSignal("Jabber Connection Lost", &msg);
+
+		if ( msg.GetAttr("reconnecting") != "true" )
+		{
+			woklib_message(wls,"Assuming that the connection is closed, shutting down this connection " + conn->server);
+		}
 		return 0;
 	}
 
