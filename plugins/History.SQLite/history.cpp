@@ -27,6 +27,8 @@
 
 #include <iostream>
 #include <sstream>
+#include <unistd.h>
+
 #include "history.hpp"
 static int callback(void *NotUsed, int argc, char **argv, char **azColName){
 	int i;
