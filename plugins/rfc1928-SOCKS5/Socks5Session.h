@@ -28,15 +28,17 @@
 #define _SOCKS5SESSION_H_
 
 
+#include <netinet/in.h>
+#include <netdb.h>
+#include <errno.h>
+#include <unistd.h>
+#include <sys/socket.h>
+
 
 #include <Woklib/WLSignal.h>
 #include <Woklib/WoklibPlugin.h>
 #include <Woklib/WokXMLTag.h>
 
-#include <netinet/in.h>
-#include <netdb.h>
-#include <errno.h>
-#include <sys/socket.h>
 
 using namespace Woklib;
 #define BUFFSIZE 8000
