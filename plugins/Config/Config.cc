@@ -35,6 +35,7 @@
 #include <fstream>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #ifdef __WIN32
 #include <io.h>
